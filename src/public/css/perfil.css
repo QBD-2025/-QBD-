@@ -1,0 +1,102 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Fondo general con azul fuerte degradado */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #0515a8, #09012c);
+  color: #ffffff;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+/* Contenedor principal */
+.perfil-wrapper {
+  width: 90%;
+  max-width: 1200px;
+  padding: 40px 30px;
+  background-color: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Encabezado */
+.perfil-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.perfil-header h1 {
+  font-size: 2.5rem;
+  color: #ffc107; /* Mostaza */
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.highlight-yellow {
+  color: #ffc107;
+}
+
+.perfil-header p {
+  font-size: 1.1rem;
+  color: #dddddd;
+  margin-top: 10px;
+}
+
+/* Grid de tarjetas */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 25px;
+}
+
+/* Tarjetas */
+.dashboard-card {
+  background-color: #ffffff10;
+  border: 1px solid #ffffff22;
+  border-radius: 15px;
+  padding: 25px 20px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  text-decoration: none;
+  color: #fff;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  backdrop-filter: blur(6px);
+}
+
+.dashboard-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 25px rgba(255, 193, 7, 0.3); /* sombra mostaza */
+  border-color: #ffc107;
+}
+
+/* Icono de la tarjeta */
+.card-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.card-icon img {
+  width: 60px;
+  height: 60px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+}
+
+/* Título y texto de tarjetas */
+.dashboard-card h3 {
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+  color: #ffc107;
+}
+
+.dashboard-card p {
+  font-size: 1rem;
+  color: #e0e0e0;
+}
