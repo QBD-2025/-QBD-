@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title> QueBuenDato.com </title>           
+    <link rel="stylesheet" href="/css/styles.css">
+    
+    {{!-- GOOGLE FONTS --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    {{!-- Elementos globales de cabecera: ahora con navegación dinámica --}}
+    <div class="header-elements">
+        <div class="top-left-logo">
+            <a href="/"> {{!-- Enlace al inicio en el logo --}}
+                <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image">
+            </a>
+            <a href="/conocenos" class="header-link">Conócenos</a> 
+        </div>
+
+        {{!-- La bolita amarilla se reemplaza por la navegación dinámica --}}
+        <div class="top-right-nav">
+            {{#if user}}
+                {{!-- SI EL USUARIO INICIÓ SESIÓN --}}
+                <span class="nav-username">Hola, {{user.username}}</span>
+            {{else}}
+            {{/if}}
+        </div>
+    </div>
+
+    {{{body}}}
+
+    <div class="bottom-left-dot"></div>
+
+    <button id="playMusic" style="display: none;">Reproducir Música</button>
+    <audio id="musica" loop>
+        <source src="/Audio/bby_no.mp3" type="audio/mpeg">
+    </audio>
+</body>
+</html>

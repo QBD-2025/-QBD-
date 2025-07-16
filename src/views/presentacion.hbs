@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>QueBuenDato.com</title>
+  <link rel="stylesheet" href="/css/video-bienvenida.css" />
+</head>
+<body>
+
+  {{!-- Pantalla de inicio con botón --}}
+  <div class="pantalla-inicio">
+    <h1>¡Explora "Que Buen Dato"!</h1>
+    <p>Prepárate para aprender cosas increíbles de la manera más divertida.</p>
+    <button id="activarAnimacion" class="boton-empezar">Empezar</button>
+  </div>
+
+  {{!-- Contenedor oculto de la animación --}}
+  <div class="full-screen-animation-container" id="animacion">
+    <img id="duolingoAnimation" src="/frames/video-bienvenida_000001.jpg" alt="Animación de bienvenida a Que Buen Dato" />
+    <div id="startButtonContainer" class="start-button-container">
+      <button id="startButton" class="start-button">¡Hagámoslo!</button>
+    </div>
+  </div>
+
+  {{!-- Scripts --}}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="/utils/animacion.js"></script>
+
+</body>
+</html>

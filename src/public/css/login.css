@@ -1,0 +1,166 @@
+/* Estilos generales */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: linear-gradient(-135deg, #0515a8, #09012c);
+    min-height: 100vh;
+    margin: 0;
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Contenedor principal */
+.login-container {
+    max-width: 450px;
+    width: 100%;
+    margin: 0 auto;
+    background-color: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Sección del logo */
+.logo-section {
+    padding: 2rem;
+    text-align: center;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.logo {
+    max-height: 104px;
+    width: auto;
+}
+
+/* Sección del formulario */
+#loginForm {
+    padding: 2rem 2.5rem;
+}
+
+h2 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 1.75rem;
+    font-weight: 600;
+}
+
+.input-group {
+    margin-bottom: 1.75rem;
+    position: relative;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.75rem;
+    color: #495057;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s;
+    background-color: #f8f9fa;
+}
+
+input:focus {
+    outline: none;
+    border-color: #6a1b9a;
+    box-shadow: 0 0 0 3px rgba(106, 27, 154, 0.1);
+    background-color: white;
+}
+
+/* Estilos para mensajes de error */
+#login-error, .error-message {
+    display: block;
+    margin: 0.25rem 0 1rem;
+    color: #dc3545;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.login-actions {
+    margin: 2.5rem 0 1.5rem;
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 14px;
+    background-color: #FFC107;
+    color: #212529;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+button[type="submit"]:hover {
+    background-color: #e0a800;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+button[type="submit"]:active {
+    transform: translateY(0);
+}
+
+.register-link {
+    text-align: center;
+    margin: 2rem 0 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+    color: #6c757d;
+    font-size: 0.95rem;
+}
+
+.register-link a {
+    color: #6a1b9a;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+    color: #4a148c;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .login-container {
+        max-width: 95%;
+    }
+    
+    #loginForm {
+        padding: 1.75rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1.75rem;
+    }
+    
+    input {
+        padding: 12px 14px;
+    }
+    
+    button[type="submit"] {
+        padding: 12px;
+    }
+}

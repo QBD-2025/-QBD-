@@ -1,0 +1,269 @@
+/* La barra desplazable (el "pulgar" o "thumb") */
+::-webkit-scrollbar-thumb {
+  background: #FFC107; /* ¡Tu color amarillo característico! */
+  border-radius: 10px; /* Bordes redondeados */
+  border: 2px solid #f1f1f1; /* Un pequeño borde para darle espacio */
+}
+
+/* El efecto cuando pasas el cursor sobre la barra desplazable */
+::-webkit-scrollbar-thumb:hover {
+  background: #5926e4; /* ¡Tu color azul/morado al pasar el cursor! */
+}
+/* --- Global Header Elements (logo, title, and dots in main.hbs) --- */
+/* Esta sección es para la barra superior que debe ir en main.hbs */
+.header-elements {
+    position: absolute;
+    top: 0px;
+    left: 0;
+    width: 100%;
+    padding: 10px 0px; /* Padding general de la barra superior. Ajusta 20px para el espacio lateral. */
+    height: 75px; /* Altura de la barra superior. Puedes quitarlo si prefieres que se ajuste al contenido. */
+    display: flex; /* Usar flexbox para alinear logo/eslogan y el dot */
+    justify-content: space-between; /* Esto empuja el logo/eslogan a la izquierda y la bolita a la derecha */
+    align-items: center; /* Centra verticalmente los items dentro de la barra */
+    z-index: 1000;
+    pointer-events: none;
+    background: linear-gradient(to right, #0815c5, #0c0264);
+}
+/* --- Estilos para el nuevo enlace "Conócenos" en la cabecera --- */
+
+.top-left-logo .header-link {
+    /* Quitamos la decoración fea del enlace */
+    text-decoration: none; 
+
+    /* Replicamos el estilo del texto anterior para que se vea igual */
+    color: #FFC107;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-transform: uppercase;
+    
+    /* Usamos la nueva fuente que importamos (o la que prefieras) */
+    font-family: 'Poppins', sans-serif;
+
+    /* Aseguramos que el cursor sea la manita */
+    cursor: pointer;
+
+    /* Añadimos una transición suave para el efecto hover */
+    transition: color 0.3s ease;
+}
+
+/* Efecto al pasar el cursor por encima */
+.top-left-logo .header-link:hover {
+    color: #ffffff; /* Cambia a blanco o a un amarillo más brillante */
+}
+
+
+/* -- Ajuste Menor para la Alineación Vertical -- */
+/* Puede que necesites este pequeño ajuste para que el nuevo 
+   enlace se alinee perfectamente con el logo */
+
+
+
+.top-left-logo {
+    display: flex;
+    flex-direction: row; /* Alinea el logo y el eslogan horizontalmente */
+    align-items: center; /* Centra verticalmente el logo y el texto */
+    pointer-events: auto;
+    gap: 40px; /* Espacio entre el logo y el eslogan. Ajusta este valor (ej. 0px, 5px, 10px) */
+    /* Para asegurar que el grupo del logo se pegue a la izquierda del padding */
+    margin-right: auto; /* Empuja los elementos siguientes (el dot) al final */
+} 
+
+.top-left-logo img {
+    width: 100px; /* Tamaño del logo. Ajusta según sea necesario. */
+    height: auto;
+    margin-right: -10px; 
+}
+
+.top-left-logo h1 {
+    color: #FFC107;
+    font-size: 1.2em; /* Tamaño del eslogan. Ajusta según sea necesario. */
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Las bolitas */
+.top-right-dot, .bottom-left-dot {
+    width: 25px;
+    height: 25px;
+    background-color: #FFC107;
+    border-radius: 50%;
+    pointer-events: auto;
+}
+
+.bottom-left-dot {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1000;
+}
+
+
+
+
+/*
+================================================
+NUEVOS ESTILOS PARA PRESENTACIÓN - ESTILO DUOLINGO
+================================================
+*/
+
+/* ---- Estructura de las secciones de información ---- */
+
+
+/* Para la primera sección (hero) */
+.hero-section {
+    padding-top: 20px;
+    padding-bottom: 80px;
+    border-bottom: 2px solid #e5e5e5;
+}
+
+
+
+/* El contenedor del texto y el de la imagen */
+.text-content, .image-content {
+  flex-basis: 48%; /* Cada uno ocupa casi la mitad */
+}
+
+.image-content img, .image-content video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.promo-video {
+    border-radius: 20px;
+    background-color: #f0f0f0; /* Fondo gris claro para el video */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* Estilos de los textos */
+.hero-main-headline {
+    font-size: 2.4em;
+    font-weight: bold;
+    color: #333;
+    line-height: 1.3;
+    margin-bottom: 25px;
+}
+
+.cta-text {
+    text-align: center;
+}
+
+.info-headline {
+  font-size: 2.2em;
+  font-weight: bold;
+  line-height: 1.2;
+  margin-bottom: 15px;
+}
+.yellow-text { color: #FFC107; }
+.blue-text { color: #0817eb; }
+
+.info-description {
+  font-size: 1.1em;
+  line-height: 1.6;
+  color: #555;
+}
+
+/* Estilos de los botones (como los de Duolingo) */
+.btn-start-duo, .btn-secondary-duo {
+    width: 100%;
+    max-width: 320px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    font-size: 1em;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.btn-start-duo {
+    background-color: #FFC107;
+    color: #333;
+    border-bottom: 4px solid #e0a800;
+}
+.btn-start-duo:hover {
+    background-color: #ffd44f;
+}
+.btn-start-duo:active {
+    transform: translateY(2px);
+    border-bottom: 2px solid #e0a800;
+}
+
+.btn-secondary-duo {
+    background-color: #fff;
+    color: #FFC107;
+    border: 2px solid #e5e5e5;
+    border-bottom: 4px solid #e5e5e5;
+}
+.btn-secondary-duo:hover {
+    background-color: #f7f7f7;
+}
+.btn-secondary-duo:active {
+    transform: translateY(2px);
+    border-bottom: 2px solid #e5e5e5;
+}
+
+
+/* ---- Responsividad para Celulares ---- */
+@media (max-width: 900px) {
+  .info-section, .info-section.reverse {
+    flex-direction: column; /* Apila el texto y la imagen */
+    text-align: center;
+    padding: 40px 10px;
+}
+
+  /* Invierte el orden en móvil para que siempre sea Imagen -> Texto */
+.info-section.reverse {
+    flex-direction: column-reverse; 
+  }
+
+  .hero-main-headline, .info-headline {
+    font-size: 1.8em;
+  }
+}
+/* ... el resto de tu CSS (octopus-mascot, form styles, responsive adjustments) ... */
+
+
+
+/* --- Form Styles (used in registration/login forms) --- */
+.form-group {
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 7px;
+    color: #555;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+.form-group2 {
+    display: block;
+    margin-bottom: 7px;
+    color: #fdfcfc;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 15px 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 1em; 
+    transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+    outline: none;
+    border-color: #7B24C0
+}
