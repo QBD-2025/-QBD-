@@ -86,7 +86,7 @@ app.use('/', recoveryR);
 app.use('/', profileR);
 
 // 8. Configuración de puerto - ¡PERMANECE IGUAL!
-const PORT = process.env.PORT || 3005;
+const PORT = process.env.PORT || 3006;
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

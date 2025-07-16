@@ -18,6 +18,8 @@
     "express-handlebars": "^8.0.2",
     "express-myconnection": "^1.0.4",
     "express-session": "^1.18.1",
+    "gasp": "^0.0.2",
+    "gsap": "^3.13.0",
     "mysql": "^2.18.1",
     "mysql2": "^3.14.1",
     "nodemailer": "^7.0.3",

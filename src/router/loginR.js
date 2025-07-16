@@ -12,7 +12,12 @@ router.get('/login', (req, res) => {
     const verificado = req.query.verificado;
     res.render('login', { error, verificado, layout: 'auth-layout', title: 'Iniciar Sesión' });
 });
-
+router.get('/presentacion', (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
+    res.render('presentacion', { user: req.session.user, layout: 'main', title: 'Presentación' });
+});
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
