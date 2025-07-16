@@ -1,3 +1,36 @@
+
+
+/* public/css/styles.css */
+
+
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Ocupa el 100% del alto del viewport */
+    width: 100vw;    /* Ocupa el 100% del ancho del viewport */
+    background-color: #fbfafb; /* Un gris muy claro, casi blanco. Ajusta el tono si lo deseas. */
+    background-size: cover;
+    font-family: Arial, sans-serif;
+    overflow-y: auto; 
+    position: relative; /* For positioning global elements like dots */
+}
+
+/* --- ESTILOS PARA LA SCROLLBAR PERSONALIZADA --- */
+
+/* La barra de scroll completa */
+::-webkit-scrollbar {
+  width: 12px; /* Ancho de la barra de scroll */
+}
+
+/* El fondo o "track" sobre el que se mueve la barra */
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Un gris muy claro para el fondo */
+  border-radius: 10px;
+}
+
+
 /* La barra desplazable (el "pulgar" o "thumb") */
 ::-webkit-scrollbar-thumb {
   background: #FFC107; /* ¡Tu color amarillo característico! */
@@ -11,7 +44,11 @@
 }
 /* --- Global Header Elements (logo, title, and dots in main.hbs) --- */
 /* Esta sección es para la barra superior que debe ir en main.hbs */
+
 .header-elements {
+
+.global-header-elements {
+
     position: absolute;
     top: 0px;
     left: 0;
@@ -92,7 +129,11 @@
 }
 
 .bottom-left-dot {
+
     position: absolute;
+
+     position: absolute;
+
     bottom: 20px;
     left: 20px;
     z-index: 1000;
@@ -101,13 +142,164 @@
 
 
 
+
+/* --- Presentation Page Specific Styles (for presentation.hbs) --- */
+
+/* Contenedor principal para la presentación, ocupa todo el right-section */
+.presentation-content-wrapper {
+    display: flex;
+    flex-direction: column; /* Apilar elementos verticalmente */
+    justify-content: space-between; /* Espacio entre los grupos de contenido */
+    align-items: center; /* Centrar horizontalmente */
+    height: 100%; /* Ocupa toda la altura del right-section */
+    width: 100%; /* Ocupa todo el ancho del right-section */
+    padding: 20px;
+    gap: 40px; /* Padding general para el contenido de la presentación */
+}
+
+.headline-and-button-container {
+    display: flex;
+    flex-direction: column; /* Apila el titular y el botón */
+    align-items: center; /* Centra horizontalmente el titular y el botón */
+    justify-content: center; /* Centra verticalmente si hay espacio */
+    flex-grow: 1; /* Permite que este contenedor crezca y empuje los videos hacia abajo */
+    width: 100%;
+}
+
+.presentation-headline{
+    font-size: 3.5em;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: -100px; /* Espacio debajo del titular */
+    line-height: 1.5;
+    /* Remover propiedades de posicionamiento relativo que ahora no son necesarias */
+    position: static; /* O simplemente elimina la propiedad */
+    top: unset;
+    z-index: auto;
+}
+
+.presentation-headline .blue-text {
+    color: #5926e4; /* El azul de tu degradado, o un azul que te guste */
+}
+
+.presentation-headline .yellow-text {
+    color: #FFC107; /* El amarillo que ya tenías */
+}
+
+.btn-start {
+    position: relative; /* Para que el botón se posicione correctamente */
+    padding: 15px 20px; /* Espacio alrededor del texto del botón */
+    background-color: #FFC107;
+    color: #333;
+    border: none;
+    border-radius: 50px;
+    font-weight: bold;
+    font-size: 0.7em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    /* Remover propiedades de posicionamiento relativo que ahora no son necesarias */
+    top: unset;
+    z-index: auto;
+    align-items: center; /* Centra verticalmente los items dentro de la barra */
+    justify-content: center; /* Centra horizontalmente los items dentro de la barra */
+    left:30px;
+    display: flex; /* Para centrar el texto dentro del botón */
+    margin-bottom:-1000px; /* Espacio debajo del botón para separar de los videos */
+}
+
+.btn-start:hover {
+    background-color: #e0a800;
+    transform: translateY(-4px);
+}
+
+.videos-and-cta-container {
+    display: flex;
+    justify-content: space-around; /* Distribuye espacio entre los videos */
+    align-items: flex-end; /* Alinea los videos por la parte inferior */
+    width: 100%;
+    gap: 500px; /* Espacio entre los videos */
+    /* Remover propiedades de posicionamiento absoluto para que fluya con el contenido */
+    position: static; /* O simplemente elimina la propiedad */
+    bottom: unset;
+    left: unset;
+    padding: 0 20px; /* Ajusta el padding horizontal si es necesario */
+    z-index: auto;
+    /* margin-top: auto; /* Ya no es necesario si el contenedor de arriba tiene flex-grow */
+}
+.videos-and-cta-containerv2 {
+    display: flex;
+    justify-content: space-around; /* Distribuye espacio entre los videos */
+    align-items: flex-end; /* Alinea los videos por la parte inferior */
+    width: 100%;
+    gap: -70px; /* Espacio entre los videos */
+    /* Remover propiedades de posicionamiento absoluto para que fluya con el contenido */
+    position: static; /* O simplemente elimina la propiedad */
+    bottom: unset;
+    left: unset;
+    padding: 0 20px; /* Ajusta el padding horizontal si es necesario */
+    z-index: auto;
+    /* margin-top: auto; /* Ya no es necesario si el contenedor de arriba tiene flex-grow */
+}
+
+.video-placeholder{
+    background-color: #ffffff;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+    
+}
+.video-placeholder .big {
+    right: 100px; /* Ajusta la posición del video grande */
+    width: 450px; /* El video grande ocupa el 100% del ancho del contenedor */
+    height: 500px; /* Ajusta la altura según sea necesario */
+}
+.video-placeholder .small {
+    width: 300px; /* Ancho fijo para los videos pequeños */
+    height: 350px; /* Altura fija para los videos pequeños */
+}
+.video-placeholder .supersmall{
+    width: 150px; /* Ancho fijo para los videos pequeños */
+    height: 200px; /* Altura fija para los videos pequeños */
+}
+
+.video-placeholder iframe { /* También aplica a tus etiquetas <video> */
+    width: 100%;
+    height: 100%;
+    border: none;
+    object-fit: cover; /* Para asegurar que el video cubra todo el espacio sin distorsionarse */
+}
+
+
 /*
-================================================
+======
 NUEVOS ESTILOS PARA PRESENTACIÓN - ESTILO DUOLINGO
-================================================
+======
 */
 
+
 /* ---- Estructura de las secciones de información ---- */
+
+
+/* Contenedor principal de toda la página */
+.duo-style-wrapper {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* ---- Estructura de las secciones de información ---- */
+
+.info-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 50px; /* Espacio entre texto e imagen */
+  padding: 60px 10px; /* Espacio vertical para que respire */
+}
 
 
 /* Para la primera sección (hero) */
@@ -117,6 +309,13 @@ NUEVOS ESTILOS PARA PRESENTACIÓN - ESTILO DUOLINGO
     border-bottom: 2px solid #e5e5e5;
 }
 
+
+
+
+/* ESTA ES LA MAGIA: Invierte el orden para la sección alternada */
+.info-section.reverse {
+  flex-direction: row-reverse;
+}
 
 
 /* El contenedor del texto y el de la imagen */
@@ -214,11 +413,18 @@ NUEVOS ESTILOS PARA PRESENTACIÓN - ESTILO DUOLINGO
     flex-direction: column; /* Apila el texto y la imagen */
     text-align: center;
     padding: 40px 10px;
+/* Hola mundo*/
 }
 
   /* Invierte el orden en móvil para que siempre sea Imagen -> Texto */
 .info-section.reverse {
     flex-direction: column-reverse; 
+
+  }
+  
+  /* Invierte el orden en móvil para que siempre sea Imagen -> Texto */
+  .info-section.reverse {
+      flex-direction: column-reverse;
   }
 
   .hero-main-headline, .info-headline {
@@ -257,7 +463,11 @@ input[type="password"] {
     padding: 15px 15px;
     border-radius: 8px;
     border: 1px solid #ddd;
+
     font-size: 1em; 
+
+    font-size: 1em;
+
     transition: border-color 0.3s ease;
 }
 

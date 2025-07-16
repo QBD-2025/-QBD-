@@ -263,7 +263,7 @@ body {
 
 
 
-
+/* --- Presentation Page Specific Styles --- */ 
 /* Contenedor principal para la presentación, ocupa todo el right-section */
 .presentation-content-wrapper {
     display: flex;

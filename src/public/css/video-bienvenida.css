@@ -1,6 +1,6 @@
-/* ======================================= */
+/* ==== */
 /* Estilos Globales y Reset Básico         */
-/* ======================================= */
+/* ==== */
 html, body {
     margin: 0;
     padding: 0;
@@ -12,9 +12,9 @@ html, body {
     color: #333;
 }
 
-/* ======================================= */
+/* ==== */
 /* Contenedor de la Animación a Pantalla Completa */
-/* ======================================= */
+/* ==== */
 .full-screen-animation-container {
     position: fixed; /* Fija el contenedor a la ventana de visualización */
     top: 0;
@@ -29,9 +29,9 @@ html, body {
     z-index: 1000; /* Asegura que esté por encima de otros elementos si los hay */
 }
 
-/* ======================================= */
+/* ==== */
 /* Estilos de la Imagen de Animación        */
-/* ======================================= */
+/* ==== */
 #duolingoAnimation {
     display: block; /* Elimina cualquier espacio extra que puedan añadir los navegadores */
     /*
@@ -52,9 +52,9 @@ html, body {
 }
 
 
-/* ======================================= */
+/* ==== */
 /* Estilos del Botón "¡Hagámoslo!"          */
-/* ======================================= */
+/* ==== */
 .start-button-container {
     position: absolute;
     /* Centrado absoluto */
@@ -98,9 +98,9 @@ html, body {
     box-shadow: 0 3px 0 rgba(0,0,0,0.25);
 }
 
-/* ======================================= */
+/* ==== */
 /* Contenido debajo de la animación        */
-/* ======================================= */
+/* ==== */
 .content-below-animation {
     position: absolute; /* Para que no afecte el layout de la animación fixed */
     top: 100vh; /* Inicialmente fuera de la vista */
@@ -133,5 +133,5 @@ html, body {
     opacity: 0;
     pointer-events: none;
 }
-/* ======================================= */
+/* ==== */
 /* Estilos para el botón de "Conócenos" en la cabecera */

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -29,3 +30,38 @@
 
 </body>
 </html>
+
+    <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title> QueBuenDato.com </title>           
+    <link rel="stylesheet" href="/css/video-bienvenida.css">
+    
+    {{!-- Contenedor principal de la animación --}}
+    <div class="full-screen-animation-container">
+        <img id="duolingoAnimation" src="/frames/video-bienvenida_000001.jpg" alt="Animación de bienvenida a Que Buen Dato">
+        
+        {{!-- Contenedor para el botón "¡Hagámoslo!" --}}
+        <div id="startButtonContainer" class="start-button-container">
+            <button id="startButton" class="start-button">¡Hagámoslo!</button>
+        </div>
+    </div>
+
+    {{!-- Opcional: Otro contenido de la página que puede ir debajo o superpuesto --}}
+    <div class="content-below-animation">
+        {{!-- Aquí podrías poner el resto de tu contenido, quizás se muestra después de la animación --}}
+        <h1>¡Explora "Que Buen Dato"!</h1>
+        <p>Prepárate para aprender cosas increíbles de la manera más divertida.</p>
+        {{!-- ... más contenido ... --}}
+    </div>
+
+    {{!-- Cargar GSAP desde un CDN --}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    {{!-- Cargar tu script de animación personalizado --}}
+    <script src="/utils/animacion.js"></script>
+
+</body>
+</html>
+
