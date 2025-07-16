@@ -13,16 +13,16 @@ const framesPerStep = 3;
 
 // Escena 1: Introducción (zen00001.jpg al zen00052.jpg)
 const introStartFrameNum = 1;
-const introEndFrameNum = 500;
+const introEndFrameNum = 245;
 const introTotalImages = Math.floor((introEndFrameNum - introStartFrameNum) / framesPerStep) + 1;
 
 // Escena 2: Bucle de Espera (zen00067.jpg al zen00118.jpg)
-const loopStartFrameNum = 501;
-const loopEndFrameNum = 508 ;
+const loopStartFrameNum = 255;
+const loopEndFrameNum = 481;
 const loopTotalImages = Math.floor((loopEndFrameNum - loopStartFrameNum) / framesPerStep) + 1;
 
 // Escena 3: Salida (zen00121.jpg al zen00175.jpg)
-const outroStartFrameNum = 509;
+const outroStartFrameNum = 481;
 const outroEndFrameNum = 712;
 const outroTotalImages = Math.floor((outroEndFrameNum - outroStartFrameNum) / framesPerStep) + 1;
 
@@ -110,6 +110,7 @@ function initAnimation() {
     // 2. Animación de Bucle de Espera (Escena 2)
     loopTimeline = gsap.timeline({
         paused: true,
+        repeat: -1,
         onComplete: () => {
             console.log('Bucle completado (esto es inusual para un loop infinito, revisar lógica).');
         }
