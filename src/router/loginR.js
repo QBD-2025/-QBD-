@@ -3,8 +3,8 @@ const router = express.Router();
 const crypto = require('crypto');
 const { enviarCorreoRecuperacion } = require('../public/utils/mail.js');
 
-router.get('/perfil', (req, res) => {
-    res.render('perfil');
+router.get('/perfil2', (req, res) => {
+    res.render('perfil2');
 });
 
 router.get('/login', (req, res) => {
@@ -12,16 +12,12 @@ router.get('/login', (req, res) => {
     const verificado = req.query.verificado;
     res.render('login', { error, verificado, layout: 'auth-layout', title: 'Iniciar Sesión' });
 });
-
-
-
 router.get('/presentacion', (req, res) => {
     if (!req.session.user) {
         return res.redirect('/login');
     }
     res.render('presentacion', { user: req.session.user, layout: 'main', title: 'Presentación' });
 });
-
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -48,7 +44,7 @@ router.post('/login', async (req, res) => {
             username: user.username,
             email: user.email,
         };
-        res.redirect('/perfil');
+        res.redirect('/perfil2');
     } catch (err) {
         console.error('Error al iniciar sesión:', err);
         res.redirect('/login?error=serverError');
@@ -59,7 +55,7 @@ router.get('/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) {
             console.error("Error al cerrar sesión:", err);
-            return res.redirect('/perfil');
+            return res.redirect('/perfil2');
         }
         res.clearCookie('connect.sid');
         res.redirect('/login');

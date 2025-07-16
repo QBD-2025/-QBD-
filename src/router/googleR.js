@@ -15,11 +15,7 @@ router.get('/auth/google/callback',
       username: req.user.username,
       email: req.user.email
     };
-
-    res.redirect('/perfil');
-
     res.redirect('/presentacion');
-
   }
 );
 

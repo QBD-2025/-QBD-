@@ -1,5 +1,3 @@
-
-
 /* public/css/styles.css */
 
 
@@ -30,7 +28,6 @@ body {
   border-radius: 10px;
 }
 
-
 /* La barra desplazable (el "pulgar" o "thumb") */
 ::-webkit-scrollbar-thumb {
   background: #FFC107; /* ¡Tu color amarillo característico! */
@@ -44,11 +41,7 @@ body {
 }
 /* --- Global Header Elements (logo, title, and dots in main.hbs) --- */
 /* Esta sección es para la barra superior que debe ir en main.hbs */
-
-.header-elements {
-
 .global-header-elements {
-
     position: absolute;
     top: 0px;
     left: 0;
@@ -129,18 +122,11 @@ body {
 }
 
 .bottom-left-dot {
-
-    position: absolute;
-
      position: absolute;
-
     bottom: 20px;
     left: 20px;
     z-index: 1000;
 }
-
-
-
 
 
 /* --- Presentation Page Specific Styles (for presentation.hbs) --- */
@@ -272,16 +258,11 @@ body {
     object-fit: cover; /* Para asegurar que el video cubra todo el espacio sin distorsionarse */
 }
 
-
 /*
-======
+================================================
 NUEVOS ESTILOS PARA PRESENTACIÓN - ESTILO DUOLINGO
-======
+================================================
 */
-
-
-/* ---- Estructura de las secciones de información ---- */
-
 
 /* Contenedor principal de toda la página */
 .duo-style-wrapper {
@@ -301,7 +282,6 @@ NUEVOS ESTILOS PARA PRESENTACIÓN - ESTILO DUOLINGO
   padding: 60px 10px; /* Espacio vertical para que respire */
 }
 
-
 /* Para la primera sección (hero) */
 .hero-section {
     padding-top: 20px;
@@ -309,14 +289,10 @@ NUEVOS ESTILOS PARA PRESENTACIÓN - ESTILO DUOLINGO
     border-bottom: 2px solid #e5e5e5;
 }
 
-
-
-
 /* ESTA ES LA MAGIA: Invierte el orden para la sección alternada */
 .info-section.reverse {
   flex-direction: row-reverse;
 }
-
 
 /* El contenedor del texto y el de la imagen */
 .text-content, .image-content {
@@ -413,13 +389,6 @@ NUEVOS ESTILOS PARA PRESENTACIÓN - ESTILO DUOLINGO
     flex-direction: column; /* Apila el texto y la imagen */
     text-align: center;
     padding: 40px 10px;
-/* Hola mundo*/
-}
-
-  /* Invierte el orden en móvil para que siempre sea Imagen -> Texto */
-.info-section.reverse {
-    flex-direction: column-reverse; 
-
   }
   
   /* Invierte el orden en móvil para que siempre sea Imagen -> Texto */
@@ -463,11 +432,7 @@ input[type="password"] {
     padding: 15px 15px;
     border-radius: 8px;
     border: 1px solid #ddd;
-
-    font-size: 1em; 
-
     font-size: 1em;
-
     transition: border-color 0.3s ease;
 }
 

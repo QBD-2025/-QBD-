@@ -6,9 +6,9 @@ const animationElement = document.getElementById('duolingoAnimation');
 const startButtonContainer = document.getElementById('startButtonContainer');
 const startButton = document.getElementById('startButton');
 
-// 
-// === ¡VALORES ACTUALIZADOS BASADOS EN TUS FRAMES! 
-// 
+// ======================================================================
+// === ¡VALORES ACTUALIZADOS BASADOS EN TUS FRAMES! =====================
+// ======================================================================
 const framesPerStep = 3;
 
 // Escena 1: Introducción (zen00001.jpg al zen00052.jpg)
@@ -26,7 +26,7 @@ const outroStartFrameNum = 509;
 const outroEndFrameNum = 712;
 const outroTotalImages = Math.floor((outroEndFrameNum - outroStartFrameNum) / framesPerStep) + 1;
 
-// 
+// ======================================================================
 
 // REVISAR ESTA RUTA Y EXTENSIÓN
 // Si tus frames están en `src/media/animacion_frames_p/`,
@@ -41,9 +41,9 @@ function getFramePath(frameNumber) {
     return `${framePath}${paddedNumber}${frameExtension}`;
 }
 
-// 
-// === Pre-carga de imágenes 
-// 
+// ======================================================================
+// === Pre-carga de imágenes ==========================================
+// ======================================================================
 const preloadedImages = [];
 let loadedImagesCount = 0;
 let totalUniqueImagesToLoad = 0;
@@ -131,13 +131,8 @@ function initAnimation() {
         onComplete: () => {
             console.log('Animación de salida terminada. Redirigiendo...');
             // Aquí puedes redirigir al siguiente video o sección
-
             window.location.href = '/register';
             alert('¡Redirigiendo al registro!'); // Solo para prueba
-
-            window.location.href = '/inicio';
-            alert('¡Redirigiendo a la pagina principal!'); // Solo para prueba
-
         }
     });
 
@@ -171,8 +166,4 @@ function showStartButton() {
 
 function hideStartButton() {
     startButtonContainer.classList.remove('active');
-
 }
-
-}
-
