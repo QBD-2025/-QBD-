@@ -16,7 +16,7 @@ const reenviarCorreo = (req, res) => {
     const expiracion = new Date(Date.now() + 60 * 1000); // 1 minuto
 
     conn.query(
-      'UPDATE usuario SET token = ?, token_expira = ? WHERE correo = ?',
+      'UPDATE usuario SET token = ?, token_expira = ? WHERE email = ?',
       [token, expiracion, correo],
       async (error, result) => {
         if (error) return res.status(500).json({ ok: false, mensaje: 'Error al actualizar token', error });

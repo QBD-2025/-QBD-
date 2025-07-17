@@ -25,14 +25,16 @@ passport.use(new GoogleStrategy({
       // Usuario ya existe y está verificado
       return done(null, usuario);
     }
-
+    const points = 0;
+    const tp_user = 1; // Cambiado a 0 para indicar que el usuario
+    const status = 1; // Cambiado a 0 para indicar que el usuario no está verificado
     // Usuario no existe, insertarlo
     const result = await pool.query(
-      'INSERT INTO usuario (username, email, verificado) VALUES (?, ?, ?)',
-      [nombre, email, 1]  // lo marcamos como verificado automáticamente
+      'INSERT INTO usuario (username, email, verificado,puntos,id_tp_usuario,id_status) VALUES (?, ?, ? , ?, ?, ?)',
+      [nombre, email, 1,points,tp_user,status]  // lo marcamos como verificado automáticamente
     );
 
-    const [nuevoUsuario] = await pool.query('SELECT * FROM usuario WHERE id = ?', [result[0].insertId]);
+    const [nuevoUsuario] = await pool.query('SELECT * FROM usuario WHERE id_usuario = ?', [result[0].insertId]);
     return done(null, nuevoUsuario[0]);
 
   } catch (error) {

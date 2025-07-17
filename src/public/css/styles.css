@@ -6,12 +6,12 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh; /* Ocupa el 100% del alto del viewport */
-    width: 100vw;    /* Ocupa el 100% del ancho del viewport */
+    /*min-height: 100vh; /* Ocupa el 100% del alto del viewport */
+    /*width: 100vw;    /* Ocupa el 100% del ancho del viewport */
     background-color: #fbfafb; /* Un gris muy claro, casi blanco. Ajusta el tono si lo deseas. */
     background-size: cover;
     font-family: Arial, sans-serif;
-    overflow-y: auto; 
+    overflow-y: auto;
     position: relative; /* For positioning global elements like dots */
 }
 
@@ -52,10 +52,33 @@ body {
     justify-content: space-between; /* Esto empuja el logo/eslogan a la izquierda y la bolita a la derecha */
     align-items: center; /* Centra verticalmente los items dentro de la barra */
     z-index: 1000;
-    pointer-events: none;
+    pointer-events: auto; /* Permite que los eventos del mouse pasen a través de la barra */
     background: linear-gradient(to right, #0815c5, #0c0264);
 }
 /* --- Estilos para el nuevo enlace "Conócenos" en la cabecera --- */
+.header-link, .header-button {
+    text-decoration: none;
+    color: #555;
+    font-weight: bold;
+    padding: 8px 15px;
+    border-radius: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.header-link:hover, .header-button:hover {
+    background-color: #eee;
+}
+
+.top-right-nav {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.nav-username {
+    font-weight: bold;
+    color: #007bff;
+}
 
 .top-left-logo .header-link {
     /* Quitamos la decoración fea del enlace */
