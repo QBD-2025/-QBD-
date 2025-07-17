@@ -1,0 +1,130 @@
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="/css/login.css">
+    <style>
+        /* Estilos para el contenedor de contraseña y el ojo */
+        .password-container {
+        position: relative;
+        }
+        
+        .toggle-password {
+        position: absolute;
+        right: 5px;
+        top: 44px;
+        cursor: pointer;
+        background: none;
+        border: none;
+        font-size: 1.2em;
+        }
+        
+        input[type="password"],
+        input[type="text"] {
+        padding-right: 37px; /* Espacio para el botón del ojo */
+        width: calc(100% - 43px); /* Ajustar ancho considerando el botón */
+        }
+    </style>
+    </head>
+    <body>
+    <div class="login-container">
+        <!-- Sección del logo -->
+        <div class="logo-section">
+        <img src="/media/images/logo.png" class="logo">
+        </div>
+
+        <!-- Sección del formulario -->
+        <div class="form-section">
+        <h2>Iniciar Sesión</h2>
+        <form id="loginForm" novalidate>
+            <label for="email">Correo electrónico:</label>
+            <input type="email" id="email" name="email">
+
+            <div class="password-container">
+            <label for="password">Contraseña:</label>
+            <input type="password" id="password" name="password">
+            <!-- Botón con emoji para mostrar/ocultar contraseña -->
+            <button type="button" class="toggle-password" onclick="togglePassword('password', this)">👁</button>
+            </div>
+            <p class="login-link">
+                <a href="/buscar-correo">¿Olvidaste tu contraseña?</a>
+            </p>
+
+            <span id="login-error" style="color: red;"></span>
+
+            {{#if error}}
+            <p style="color:red;">{{error}}</p>
+            {{/if}}
+
+            <button type="submit">Ingresar</button>
+
+            <p class="login-link">
+            ¿No tienes cuenta? <a href="/register">Regístrate</a>
+            </p>
+        </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("loginForm").addEventListener("submit", function (event) {
+        event.preventDefault(); // Prevenimos el envío normal del formulario
+        
+        const email = document.getElementById("email");
+        const password = document.getElementById("password");
+        const errorSpan = document.getElementById("login-error");
+
+        // Limpiar errores anteriores
+        errorSpan.textContent = "";
+        email.style.border = "";
+        password.style.border = "";
+
+        let hasError = false;
+
+        if (!email.value) {
+            errorSpan.textContent = "Debes ingresar tu correo electrónico";
+            email.style.border = "2px solid red";
+            hasError = true;
+        } else {
+            // Validar formato básico de correo
+            const emailRegex = /^[^\s@]+@[^\s@]+\.(com|mx)$/i;
+            if (!emailRegex.test(email.value)) {
+            errorSpan.textContent = "El correo no es válido";
+            email.style.border = "2px solid red";
+            hasError = true;
+            }
+        }
+
+        if (!password.value) {
+            errorSpan.textContent = "Debes ingresar tu contraseña";
+            password.style.border = "2px solid red";
+            hasError = true;
+        }
+
+        if(!password.value && !email.value) {
+            errorSpan.textContent = "Todos los campos son obligatorios";
+            password.style.border = "2px solid red";
+            hasError = true;
+        }
+
+        if (!hasError) {
+            // Si no hay errores, redirigimos a la página deseada
+            window.location.href = "/perfil2"; // Cambia esta ruta por la que necesites
+        }
+        });
+
+        // Función para mostrar/ocultar contraseña con emojis
+        function togglePassword(inputId, buttonElement) {
+        const input = document.getElementById(inputId);
+        if (input.type === "password") {
+            input.type = "text";
+            buttonElement.textContent = "🔒";
+        } else {
+            input.type = "password";
+            buttonElement.textContent = "👁";
+        }
+        }
+    </script>
+    </body>
+    </html>

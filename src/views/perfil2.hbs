@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login</title>
+<link rel="stylesheet" href="/css/perfil.css">
+{{!-- 
+  VISTA DE PERFIL / DASHBOARD
+  Esta es la primera página que ve un usuario al iniciar sesión.
+--}}
+
+<div class="perfil-wrapper">
+
+  {{!-- Encabezado de bienvenida personalizado --}}
+  <header class="perfil-header">
+    {{!-- Usamos la variable 'user' que hicimos disponible en todas las vistas --}}
+    <h1>¡Bienvenido de nuevo, <span class="highlight-yellow">{{user.username}}</span>!</h1>
+    <p>¿Qué te gustaría hacer hoy?</p>
+  </header>
+
+  {{!-- Grid con las opciones principales de la aplicación --}}
+  <main class="dashboard-grid">
+
+    {{!-- Tarjeta para empezar a aprender --}}
+    <a href="/aprender" class="dashboard-card card-learn">
+      <div class="card-icon">
+        <img src="/media/images/icon-brain.png" alt="Aprender">
+      </div>
+      <h3>Empezar a Aprender</h3>
+      <p>Explora nuevos temas y expande tus conocimientos con nuestros datos curados.</p>
+    </a>
+
+    {{!-- Tarjeta para los minijuegos --}}
+    <a href="/juegos" class="dashboard-card card-play">
+      <div class="card-icon">
+        <img src="/media/images/juegos_mesa.png" alt="Jugar">
+      </div>
+      <h3>Jugar Minijuegos</h3>
+      <p>Ponte a prueba con retos divertidos y compite para ser el número uno.</p>
+    </a>
+
+    {{!-- Tarjeta para el Dato del Día --}}
+    <div class="dashboard-card card-fact">
+      <div class="card-icon">
+        <img src="/media/images/icon-idea.png" alt="Dato del día">
+      </div>
+      <h3>Dato del Día</h3>
+      <p>"Los pulpos tienen tres corazones. Dos bombean sangre a las branquias y uno al resto del cuerpo."</p>
+    </div>
+    
+    {{!-- Tarjeta para la configuración de la cuenta --}}
+    <a href="/configuracion-cuenta" class="dashboard-card card-settings">
+      <div class="card-icon">
+          <img src="/media/images/icon-settings.png" alt="Configuración">
+      </div>
+      <h3>Mi Cuenta</h3>
+      <p>Administra tu información personal, contraseña y preferencias.</p>
+    </a>
+
+  </main>
+
+</div>
