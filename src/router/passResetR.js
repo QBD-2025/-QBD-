@@ -1,29 +1,52 @@
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcrypt'); // Agrega esta línea para importar bcrypt directamente
 
 router.get('/buscar-correo', (req, res) => {
     const error = req.query.error;
     res.render('buscar-correo', { error, layout: 'main', title: 'Buscar Correo' });
 });
+
 router.get('/cambiar-contrasena', (req, res) => {
     const error = req.query.error;
-    res.render('cambiar-contrasena', { error, layout: 'main', title: 'cambiar_contrasena' });
+    res.render('cambiar-contrasena', { error, layout: 'main', title: 'Cambiar Contraseña' });
 });
-
 
 router.post('/solicitar-recuperacion', async (req, res) => {
     const { correo } = req.body;
+    const pool = req.pool; // Obtener pool de la solicitud
     
     try {
-        // ... (lógica de recuperación)
+        const [users] = await pool.query('SELECT * FROM usuario WHERE email = ?', [correo]);
+
+        if (users.length === 0) {
+            return res.render('buscar-correo', {
+                layout: 'main',
+                mensaje: 'Si tu correo está registrado con nosotros, recibirás un enlace para restablecer tu contraseña.'
+            });
+        }
+
+        const crypto = require('crypto');
+        const token = crypto.randomBytes(20).toString('hex');
+        const expiracion = new Date(Date.now() + 3600000); // 1 hora
+
+        await pool.query(
+            'UPDATE usuario SET token_reseteo = ?, token_reseteo_expira = ? WHERE email = ?',
+            [token, expiracion, correo]
+        );
+        
+        const { enviarCorreoRecuperacion } = require('../public/utils/mail.js');
+        await enviarCorreoRecuperacion(correo, token);
+        
         res.render('buscar-correo', {
             layout: 'main',
-            mensaje: 'Si tu correo está registrado, recibirás un enlace...'
+            mensaje: 'Si tu correo está registrado, recibirás un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada o spam.'
         });
+
     } catch (error) {
         console.error("Error en solicitar-recuperacion:", error);
         res.render('buscar-correo', {
-            layout: 'auth-layout',
+            layout: 'main',
             error: 'Ocurrió un error. Por favor, inténtalo de nuevo.'
         });
     }
@@ -31,6 +54,7 @@ router.post('/solicitar-recuperacion', async (req, res) => {
 
 router.get('/restablecer-contrasena', async (req, res) => {
     const { token } = req.query;
+    const pool = req.pool; // Obtener pool de la solicitud
 
     if (!token) {
         return res.redirect('/login');
@@ -43,29 +67,38 @@ router.get('/restablecer-contrasena', async (req, res) => {
         );
 
         if (users.length === 0) {
-            // El token es inválido o ha expirado
-            return res.render('error', { // Crea una vista de error simple si no la tienes
-                layout: 'auth-layout',
+            return res.render('error', {
+                layout: 'main',
                 mensajeError: 'El enlace para restablecer la contraseña es inválido o ha expirado. Por favor, solicita uno nuevo.'
             });
         }
         
-        // El token es válido, renderizamos el formulario para cambiar la contraseña
         res.render('cambiar-contrasena', {
             layout: 'main',
-            token: token // Pasamos el token a la vista para incluirlo en el form
+            token: token
         });
 
     } catch (error) {
         console.error("Error al verificar el token de reseteo:", error);
-        res.status(500).send("Error del servidor");
+        res.status(500).render('error', {
+            layout: 'main',
+            mensajeError: 'Error del servidor'
+        });
     }
 });
 
 router.post('/restablecer-contrasena', async (req, res) => {
     const { token, password, confirmPassword } = req.body;
-    const pool = req.pool;
-    const bcrypt = req.bcrypt;
+    const pool = req.pool; // Obtener pool de la solicitud
+
+    // Verificar que las contraseñas coincidan
+    if (password !== confirmPassword) {
+        return res.render('cambiar-contrasena', {
+            layout: 'main',
+            token: token,
+            error: 'Las contraseñas no coinciden'
+        });
+    }
 
     try {
         const [users] = await pool.query(
@@ -75,20 +108,17 @@ router.post('/restablecer-contrasena', async (req, res) => {
         
         if (users.length === 0) {
             return res.render('error', {
-                layout: 'auth-layout',
+                layout: 'main',
                 mensajeError: 'El enlace para restablecer la contraseña es inválido o ha expirado.'
             });
         }
 
         const hashedPassword = await bcrypt.hash(password, 12);
-        const [resultado] = await pool.query(
-        'UPDATE usuario SET password = ?, token_reseteo = NULL, token_reseteo_expira = NULL WHERE id_usuario = ? AND token_reseteo = ?',
-        [hashedPassword, users[0].id, token]
+        await pool.query(
+            'UPDATE usuario SET password = ?, token_reseteo = NULL, token_reseteo_expira = NULL WHERE id_usuario = ?',
+            [hashedPassword, users[0].id_usuario] // Usar id_usuario en lugar de id
         );
-        const [check] = await pool.query('SELECT password FROM usuario WHERE id_usuario = ?', [users[0].id]);
-        console.log('Hash guardado en BD:', check[0].password);
 
-        // Redirigir al login con un mensaje de éxito
         res.redirect('/login?passwordRestablecido=true');
 
     } catch (error) {

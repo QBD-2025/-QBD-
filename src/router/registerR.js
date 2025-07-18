@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
+const bcrypt = require('bcrypt'); // ← CORRECTO
 const { enviarCorreoVerificacion } = require('../public/utils/mail.js');
 
 router.get('/register', (req, res) => {
@@ -14,10 +15,13 @@ router.post('/register', async (req, res) => {
     let errorMessage = '';
     const emailRegex = /^[^\s@]+@[^\s@]+\.(com|mx)$/i;
 
-    // Validaciones...
     if (!emailRegex.test(email)) {
         errorMessage = 'invalidEmail';
-    } // ... (resto de validaciones)
+    }
+
+    if (password !== confirm_password) {
+        errorMessage = 'passwordMismatch';
+    }
 
     if (errorMessage) {
         return res.redirect(`/register?error=${errorMessage}`);
@@ -34,23 +38,23 @@ router.post('/register', async (req, res) => {
             }
         }
 
-        const hashedPassword = await req.bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(password, 10); // ← CORRECTO
         const token = crypto.randomBytes(16).toString('hex');
         const tokenExpires = new Date(Date.now() + 1000 * 60 * 10);
-        const points=0
-        const tp_user = 1; // Cambiado a 0 para indicar que el usuario no está verificado
-        const status=1
-        
+        const points = 0;
+        const tp_user = 1;
+        const status = 1;
 
         await req.pool.query(
-            'INSERT INTO usuario (username, email, password, verificado, token, token_expira,puntos,id_tp_usuario,id_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [username, email, hashedPassword, 0, token, tokenExpires,points, tp_user, status]
+            'INSERT INTO usuario (username, email, password, verificado, token, token_expira, puntos, id_tp_usuario, id_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [username, email, hashedPassword, 0, token, tokenExpires, points, 1, 1]
         );
-
+        
         const mailResult = await enviarCorreoVerificacion(email, token);
 
         if (mailResult.ok) {
             res.redirect(`/verificacion?correo=${encodeURIComponent(email)}`);
+            console.log(`Correo de verificación enviado a ${email}`);
         } else {
             await req.pool.query('DELETE FROM usuario WHERE email = ?', [email]);
             return res.redirect('/register?error=emailSendFailed');

@@ -12,7 +12,7 @@ async function enviarCorreoVerificacion(correoDestino, token) {
       },
     });
 
-    const verifyLink = `http://localhost:${process.env.PORT || 3005}/login?token=${token}`;
+    const verifyLink = `http://localhost:${process.env.PORT || 3005}/verificar-cuenta?correo=${encodeURIComponent(correoDestino)}&token=${token}`;
 
     const htmlBody = `
       <html lang='es'>

@@ -1,0 +1,230 @@
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: #f9fafb;
+  margin: 0;
+  padding: 0;
+  color: #1f2937;
+  line-height: 1.6;
+}
+
+/* Encabezado mejorado */
+.admin-header {
+  width: 100%;
+  height: 120px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  padding: 0 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.8), rgba(255,255,255,0.3));
+}
+
+.admin-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.admin-welcome {
+  margin: 8px 0 0;
+  font-size: 16px;
+  font-weight: 400;
+  opacity: 0.9;
+}
+.admin-container {
+  max-width: 1200px;
+  background: rgb(73, 73, 73);
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transition: all 0.4s ease;
+  position: absolute;
+  top: 200px;
+  left: 50px; /* Ajusta este valor para mover a izquierda/derecha */
+  right: 50px; /* Mantiene márgenes laterales */
+  margin: 0 auto; /* Solo necesario si quieres centrar dentro del espacio restante */
+}
+
+.admin-container:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.admin-subtitle {
+  margin-top: 0;
+  margin-bottom: 25px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1d4ed8;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.admin-subtitle::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: #2563eb;
+  border-radius: 3px;
+}
+
+/* Tabla de usuarios mejorada */
+.admin-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 70px;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.admin-table thead {
+  background: linear-gradient(to right, #2563eb, #3b82f6);
+  color: #fff;
+}
+
+.admin-table th {
+  padding: 15px 20px;
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  position: relative;
+}
+
+.admin-table th:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 60%;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.admin-table td {
+  padding: 12px 20px;
+  text-align: center;
+  border-bottom: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.admin-table tbody tr:hover td {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Badges mejorados */
+.badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.8em;
+  display: inline-block;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.bg-danger {
+  background-color: #ef4444;
+  color: white;
+}
+
+.bg-warning {
+  background-color: #f59e0b;
+  color: #000;
+}
+
+.bg-primary {
+  background-color: #2563eb;
+  color: white;
+}
+
+.bg-success {
+  background-color: #10b981;
+  color: white;
+}
+
+/* Select mejorado */
+.role-select {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background-color: white;
+  color: #1f2937;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.role-select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+/* Botón mejorado */
+.admin-btn {
+  background: linear-gradient(to right, #2563eb, #3b82f6);
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.admin-btn:hover {
+  background: linear-gradient(to right, #1d4ed8, #2563eb);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.admin-btn:active {
+  transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .admin-container {
+    padding: 20px;
+    margin: 20px;
+  }
+  
+  .admin-table {
+    display: block;
+    overflow-x: auto;
+  }
+}

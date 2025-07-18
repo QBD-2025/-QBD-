@@ -26,15 +26,12 @@
             {{#if user}}
                 {{!-- SI EL USUARIO INICIÓ SESIÓN --}}
                 <span class="nav-username">Hola, {{user.username}}</span>
+                <a href="/perfil2" class="header-link">Perfil</a>
+                <a href="/logout" class="header-link cerrar-sesion">Cerrar sesión</a>
             {{else}}
                 {{!-- SI EL USUARIO NO INICIÓ SESIÓN --}}
                 <a href="/login" class="header-link">Iniciar Sesión</a>
                 <a href="/register" class="header-link">Registrarse</a>
-            {{/if}}
-
-            {{!-- Enlace al perfil, visible solo si el usuario ha iniciado sesión --}}
-            {{#if user}}
-                <a href="/perfil2" class="header-link">Perfil</a>
             {{/if}}
         </div>
     </div>

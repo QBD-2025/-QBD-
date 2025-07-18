@@ -1,0 +1,167 @@
+/* Estilos generales */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+}
+
+/* Header del usuario */
+.user-header {
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+    color: white;
+    padding: 2rem 1rem;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.user-title {
+    margin: 0;
+    font-size: 2.2rem;
+    font-weight: 600;
+}
+
+.user-welcome {
+    margin: 0.5rem 0 1.5rem;
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.logout-btn {
+    display: inline-block;
+    padding: 0.5rem 1.5rem;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-decoration: none;
+    border-radius: 30px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-weight: 500;
+}
+
+.logout-btn:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+/* Contenedor principal */
+.user-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.user-subtitle {
+    color: #444;
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #eee;
+}
+
+/* Tabla de información del usuario */
+.user-info {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.user-table th, .user-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.user-table th {
+    width: 30%;
+    color: #666;
+    font-weight: 500;
+}
+
+.user-table td {
+    font-weight: 400;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.bg-primary {
+    background-color: #6e8efb;
+    color: white;
+}
+
+/* Sección de acciones */
+.user-actions {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+}
+
+.user-actions h3 {
+    margin-top: 0;
+    color: #444;
+    font-size: 1.4rem;
+    margin-bottom: 1.5rem;
+}
+
+.user-actions ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.user-actions li {
+    margin-bottom: 0.8rem;
+}
+
+.action-link {
+    display: block;
+    padding: 0.8rem 1rem;
+    background-color: #f8f9fa;
+    color: #555;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    border-left: 4px solid #6e8efb;
+}
+
+.action-link:hover {
+    background-color: #e9ecef;
+    transform: translateX(5px);
+    color: #333;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .user-table th, .user-table td {
+        display: block;
+        width: 100%;
+    }
+    
+    .user-table th {
+        padding-bottom: 0.5rem;
+    }
+    
+    .user-table td {
+        padding-top: 0.5rem;
+    }
+    
+    .user-table tr {
+        margin-bottom: 1rem;
+    }
+}

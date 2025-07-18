@@ -28,11 +28,15 @@ app.engine('.hbs', exphbs.engine({
     defaultLayout: 'main',
     layoutsDir: path.join(__dirname, 'src', 'views', 'layouts'),
     partialsDir: path.join(__dirname, 'src', 'views', 'partials'),
-    extname: '.hbs'
+    extname: '.hbs',
+    helpers: {
+        eq: (a, b) => a === b
+    }
 }));
 
 app.set('view engine', '.hbs');
 app.set('views', path.join(__dirname, 'src', 'views'));
+
 
 // 3. Middlewares - ¡PERMANECEN IGUALES!
 app.use(express.urlencoded({ extended: true }));
@@ -40,6 +44,8 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'src', 'public')));
 app.use('/media', express.static(path.join(__dirname, 'src', 'media')));
 app.use('/Audio', express.static(path.join(__dirname, 'src', 'Audio')));
+app.use('/animacion_frames_p', express.static(path.join(__dirname, 'src','media','animacion_frames_p')));
+
 
 // 4. Configuración de sesión y Passport - ¡PERMANECE IGUAL!
 app.use(session({
@@ -59,6 +65,7 @@ app.use((req, res, next) => {
     next();
 });
 
+
 app.use((req, res, next) => {
     req.pool = pool;
     req.mailer = mailer;
@@ -67,7 +74,12 @@ app.use((req, res, next) => {
 });
 
 
+ // o el nombre correcto del archivo
+
+
 // Configuración de routers
+const usuarioR = require('./src/router/usuarioR');
+const adminR = require('./src/router/adminR');
 const generalR = require('./src/router/generalR');
 const googleR = require('./src/router/googleR');
 const loginR = require('./src/router/loginR');
@@ -77,16 +89,20 @@ const recoveryR = require('./src/router/passResetR');
 const profileR = require('./src/router/profileR');
 
 // 7. Uso de routers (ORDEN RECOMENDADO)
-app.use('/', generalR);
+app.use('/', usuarioR);
+app.use('/', adminR);
 app.use('/', googleR);
 app.use('/', loginR);
 app.use('/', registerR);
 app.use('/', verifyR);
 app.use('/', recoveryR);
 app.use('/', profileR);
+app.use('/', generalR);
+
+
 
 // 8. Configuración de puerto - ¡PERMANECE IGUAL!
-const PORT = process.env.PORT || 3006;
+const PORT = process.env.PORT || 3005;
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
