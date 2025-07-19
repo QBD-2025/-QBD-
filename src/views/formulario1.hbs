@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QueBuenDato.com.mx</title>
+  <link rel="stylesheet" href="/css/formulario1.css" />
+</head>
+<body class="page-usuario">
+
+  <!-- Contenedor principal con dos columnas -->
+  <div class="main-form-container">
+
+    <!-- Columna de imagen -->
+    <div class="image-column"></div>
+
+    <!-- Columna del formulario -->
+    <div class="form-column">
+      <form action="/procesar-formulario" method="POST">
+        {{#each preguntas}}
+          <div class="pregunta">
+            <p><strong>{{pregunta}}</strong></p>
+
+            {{#each opciones}}
+              <label>
+                <input type="radio" name="respuesta_{{../id_pregunta}}" value="{{id_opcion}}" />
+                {{texto_opcion}}
+              </label>
+            {{/each}}
+
+            {{!-- Opción "Otro", opcional --}}
+            {{!--
+            <label>
+              <input type="radio" name="respuesta_{{id_pregunta}}" value="otro" />
+              Otro:
+              <input type="text" name="otro_{{id_pregunta}}" placeholder="Especifica..." />
+            </label>
+            --}}
+          </div>
+          <hr>
+        {{/each}}
+
+        <button type="submit">Enviar respuestas</button>
+      </form>
+    </div>
+
+  </div>
+
+</body>
+</html>

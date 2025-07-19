@@ -1,167 +1,261 @@
-/* Estilos generales */
+/* ==================================================
+   VARIABLES GLOBALES
+================================================== */
+:root {
+  --azul-oscuro: #1a237e;
+  --azul-medio: #283593;
+  --azul-claro: #3949ab;
+  --mostaza: #ffb300;
+  --mostaza-claro: #ffca28;
+  --blanco: #ffffff;
+  --gris-claro: #f5f5f5;
+  --texto-oscuro: #212121;
+}
+
+/* ==================================================
+   RESET BÁSICO
+================================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.6;
-    color: #333;
-    background-color: #f5f5f5;
-    margin: 0;
-    padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--gris-claro);
+  color: var(--texto-oscuro);
+  min-height: 100vh;
+  line-height: 1.6;
 }
 
-/* Header del usuario */
-.user-header {
-    background: linear-gradient(135deg, #6e8efb, #a777e3);
-    color: white;
-    padding: 2rem 1rem;
-    text-align: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+/* ==================================================
+   CONTENEDOR PRINCIPAL
+================================================== */
+.profile-full {
+  width: 100%;
+  margin: 0;
+  padding: 2rem;
 }
 
-.user-title {
-    margin: 0;
-    font-size: 2.2rem;
-    font-weight: 600;
+
+
+/* ==================================================
+   TARJETA DEL PERFIL
+================================================== */
+.profile-card {
+  background: var(--blanco);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* ==================================================
+   ENCABEZADO
+================================================== */
+.profile-header {
+  background: linear-gradient(135deg, var(--azul-oscuro), var(--azul-medio));
+  color: var(--blanco);
+  padding: 2.5rem 1.5rem 2rem;
+  text-align: center;
+  position: relative;
+}
+
+.profile-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
 }
 
 .user-welcome {
-    margin: 0.5rem 0 1.5rem;
-    font-size: 1.1rem;
-    opacity: 0.9;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 1.2rem;
 }
 
 .logout-btn {
-    display: inline-block;
-    padding: 0.5rem 1.5rem;
-    background-color: rgba(255, 255, 255, 0.2);
-    color: white;
-    text-decoration: none;
-    border-radius: 30px;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    font-weight: 500;
+  display: inline-block;
+  padding: 0.6rem 1.4rem;
+  background-color: var(--mostaza);
+  color: var(--azul-oscuro);
+  text-decoration: none;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .logout-btn:hover {
-    background-color: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
+  background-color: var(--mostaza-claro);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Contenedor principal */
-.user-container {
-    max-width: 1000px;
-    margin: 2rem auto;
-    padding: 0 1rem;
+/* ==================================================
+   CUERPO DEL PERFIL
+================================================== */
+.profile-body {
+  padding: 2rem 1.5rem;
 }
 
+/* Subtítulo */
 .user-subtitle {
-    color: #444;
-    font-size: 1.8rem;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #eee;
+  color: var(--azul-oscuro);
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--mostaza);
+  display: inline-block;
+  padding-bottom: 0.4rem;
 }
 
-/* Tabla de información del usuario */
-.user-info {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
-    padding: 1.5rem;
-    margin-bottom: 2rem;
+/* ==================================================
+   TABLA DE INFORMACIÓN
+================================================== */
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
 }
 
-.user-table {
-    width: 100%;
-    border-collapse: collapse;
+.info-table th {
+  text-align: left;
+  padding: 1rem 0.8rem;
+  color: var(--azul-medio);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  width: 35%;
+  background: #f8f8f8;
 }
 
-.user-table th, .user-table td {
-    padding: 1rem;
-    text-align: left;
-    border-bottom: 1px solid #eee;
+.info-table td {
+  padding: 1rem 0.8rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-bottom: 1px solid var(--gris-claro);
 }
 
-.user-table th {
-    width: 30%;
-    color: #666;
-    font-weight: 500;
+.info-table tr:last-child td {
+  border-bottom: none;
 }
 
-.user-table td {
-    font-weight: 400;
+/* ==================================================
+   SECCIÓN DE ACCIONES
+================================================== */
+.actions-section {
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--gris-claro);
 }
 
-.badge {
-    display: inline-block;
-    padding: 0.35rem 0.75rem;
-    border-radius: 50px;
-    font-size: 0.85rem;
-    font-weight: 600;
+.actions-section h3 {
+  font-size: 1.2rem;
+  color: var(--azul-oscuro);
+  margin-bottom: 1rem;
+  position: relative;
 }
 
-.bg-primary {
-    background-color: #6e8efb;
-    color: white;
+.actions-section h3::after {
+  content: "";
+  position: absolute;
+  width: 50px;
+  height: 3px;
+  background: var(--mostaza);
+  bottom: -6px;
+  left: 0;
 }
 
-/* Sección de acciones */
-.user-actions {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
-    padding: 1.5rem;
+/* Lista de acciones */
+.actions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 1rem;
 }
 
-.user-actions h3 {
-    margin-top: 0;
-    color: #444;
-    font-size: 1.4rem;
-    margin-bottom: 1.5rem;
+.action-item {
+  margin: 0;
 }
 
-.user-actions ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.user-actions li {
-    margin-bottom: 0.8rem;
-}
-
+/* Enlaces de acción */
 .action-link {
-    display: block;
-    padding: 0.8rem 1rem;
-    background-color: #f8f9fa;
-    color: #555;
-    text-decoration: none;
-    border-radius: 6px;
-    transition: all 0.3s ease;
-    border-left: 4px solid #6e8efb;
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.2rem;
+  background: var(--gris-claro);
+  color: var(--azul-oscuro);
+  text-decoration: none;
+  border-left: 5px solid var(--mostaza);
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  gap: 0.7rem;
+  position: relative;
+}
+
+.action-link::before {
+  content: "→";
+  color: var(--mostaza);
+  transition: transform 0.3s ease;
 }
 
 .action-link:hover {
-    background-color: #e9ecef;
-    transform: translateX(5px);
-    color: #333;
+  background: var(--azul-claro);
+  color: var(--blanco);
+  transform: translateX(5px);
 }
 
-/* Responsive design */
+.action-link:hover::before {
+  color: var(--blanco);
+  transform: translateX(5px);
+}
+
+.profile-full {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.page-usuario .global-header-elements {
+  display: none;
+}
+
+
+/* ==================================================
+   RESPONSIVE DESIGN
+================================================== */
 @media (max-width: 768px) {
-    .user-table th, .user-table td {
-        display: block;
-        width: 100%;
-    }
-    
-    .user-table th {
-        padding-bottom: 0.5rem;
-    }
-    
-    .user-table td {
-        padding-top: 0.5rem;
-    }
-    
-    .user-table tr {
-        margin-bottom: 1rem;
-    }
+  .profile-half-width {
+    width: 90vw;
+    min-width: unset;
+    max-width: unset;
+  }
+
+  .profile-title {
+    font-size: 1.5rem;
+  }
+
+  .user-welcome {
+    font-size: 1rem;
+  }
+
+  .info-table th,
+  .info-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .info-table th {
+    padding-bottom: 0.3rem;
+    background: none;
+  }
+
+  .info-table td {
+    padding-top: 0.2rem;
+    padding-bottom: 1rem;
+  }
 }

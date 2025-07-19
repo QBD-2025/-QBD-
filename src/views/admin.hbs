@@ -1,71 +1,94 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel de Administración</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/css/admin.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración</title>
+    
+    <link rel="stylesheet" href="/css/styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <header class="admin-header">
+        <div class="header-left">
+            <a href="/perfil2">
+                <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image-header">
+            </a>
+        </div>
+        <div class="header-center">
+            <h1 class="admin-title">Panel de Administración</h1>
+            <p class="admin-welcome">Bienvenido {{user.username}} (ADMIN)</p>
+        </div>
+        <div class="header-right">
+            <a href="/perfil2" class="volver-button">Volver</a>
+        </div>
+    </header>
 
-  <header class="admin-header bg-dark text-white p-3">
-    <h1 class="admin-title">Panel de Administración</h1>
-    <p class="admin-welcome">Bienvenido {{user.username}} (ADMIN)</p>
-  </header>
+    <img src="/images/stuart_recargado.png" alt="Personaje Administrador" class="character-image">
 
-  <div class="admin-container container mt-4">
-    <h2 class="admin-subtitle mb-4">Usuarios del Sistema</h2>
-    <form method="POST" action="/admin/cambiar-rol" class="admin-form">
-      <table class="admin-table table table-striped table-hover">
-        <thead class="table-dark">
-          <tr>
-            <th>ID</th>
-            <th>Email</th>
-            <th>Nombre</th>
-            <th>Rol actual</th>
-            <th>Cambiar a</th>
-          </tr>
-        </thead>
-        <tbody>
-          {{#each usuarios}}    
-          <tr>
-            <td>{{this.id_usuario}}</td>
-            <td>{{this.email}}</td>
-            <td>{{this.username}}</td>
-            <td>
-              {{#if (eq this.id_tp_usuario 3)}}
-                <span class="badge bg-danger">ADMIN</span>
-              {{else if (eq this.id_tp_usuario 2)}}
-                <span class="badge bg-warning text-dark">EDITOR</span>
-              {{else}}
-                <span class="badge bg-primary">USUARIO</span>
-              {{/if}}
-            </td>
-            <td>
-              <select name="roles[{{this.id_usuario}}]" class="form-select role-select">
-                <option value="1" {{#if (eq this.id_tp_usuario 1)}}selected{{/if}}>USUARIO</option>
-                <option value="2" {{#if (eq this.id_tp_usuario 2)}}selected{{/if}}>EDITOR</option>
-                <option value="3" {{#if (eq this.id_tp_usuario 3)}}selected{{/if}}>ADMIN</option>
-              </select>
-            </td>
-          </tr>
-          {{/each}}
-        </tbody>
-      </table>
+    <div class="admin-container container mt-4">
+        <h2 class="admin-subtitle mb-4">Usuarios del Sistema</h2>
+        <form method="POST" action="/admin/actualizar-usuarios" class="admin-form">
+            <table class="admin-table table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>Nombre</th>
+                        <th>Rol</th>
+                        <th>Cambiar Rol</th>
+                        <th>Estatus</th>
+                        <th>Cambiar Estatus</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each usuarios}}
+                    <tr>
+                        <td>{{this.id_usuario}}</td>
+                        <td>{{this.email}}</td>
+                        <td>{{this.username}}</td>
+                        <td>
+                            {{#if (eq this.id_tp_usuario 3)}}
+                                <span class="badge bg-danger">ADMIN</span>
+                            {{else if (eq this.id_tp_usuario 2)}}
+                                <span class="badge bg-warning text-dark">EDITOR</span>
+                            {{else}}
+                                <span class="badge bg-primary">USUARIO</span>
+                            {{/if}}
+                        </td>
+                        <td>
+                            <input type="hidden" name="usuario_ids" value="{{this.id_usuario}}">
+                            <select name="nuevos_roles" class="form-select role-select">
+                                <option value="1" {{#if (eq this.id_tp_usuario 1)}}selected{{/if}}>USUARIO</option>
+                                <option value="2" {{#if (eq this.id_tp_usuario 2)}}selected{{/if}}>EDITOR</option>
+                                <option value="3" {{#if (eq this.id_tp_usuario 3)}}selected{{/if}}>ADMIN</option>
+                            </select>
+                        </td>
+                        <td>
+                            <span class="badge status-{{this.descripcion}}">{{this.descripcion}}</span>
+                        </td>
+                        <td>
+                            <select name="nuevos_status" class="form-select role-select">
+                                {{#each ../lista_status}}
+                                <option value="{{this.id_status}}" {{#if (eq this.id_status ../../this.id_status)}}selected{{/if}}>
+                                    {{this.descripcion}}
+                                </option>
+                                {{/each}}
+                            </select>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
 
-      <button type="submit" class="admin-btn btn btn-primary mt-3">Actualizar permisos</button>
-    </form>
-  </div>
+            <button type="submit" class="admin-btn btn btn-primary mt-3">Guardar Cambios</button>
+        </form>
+    </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-  document.querySelector("form").addEventListener("submit", () => {
-    console.log("Formulario enviado");
-    setTimeout(() => {
-      alert("¡Formulario fue enviado! Verifica en el backend los datos.");
-    }, 100);
-  });
-</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

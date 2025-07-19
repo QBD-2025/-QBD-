@@ -4,11 +4,10 @@ const router = express.Router();
 // Middleware mejorado
 const isAuthenticated = (req, res, next) => {
     if (req.session.user) return next();
-    // Redirigir a login en lugar de a /usuario
     res.redirect('/login');
 };
 
-// Ruta única y consolidada
+// Ruta perfil de usuario
 router.get('/usuario', isAuthenticated, async (req, res) => {
     try {
         const [userData] = await req.pool.query(
@@ -17,14 +16,14 @@ router.get('/usuario', isAuthenticated, async (req, res) => {
             [req.session.user.id_usuario]
         );
 
-        if (!userData.length === 0 ) {
+        if (userData.length === 0) {
             return res.status(404).render('error', {
                 layout: 'main',
                 mensajeError: 'Usuario no encontrado en DB'
             });
         }
 
-        // Mapear roles
+        // Mapear roles a texto
         const roles = {
             1: 'USUARIO',
             2: 'EDITOR',
@@ -32,16 +31,16 @@ router.get('/usuario', isAuthenticated, async (req, res) => {
         };
 
         res.render('usuario', {
-            layout: 'main',
+            layout: 'main', // Nombre de tu archivo layout (usuario-layout.hbs)
+        user: req.user,
+        title: 'Perfil de Usuario',
             user: {
                 ...userData[0],
                 role: roles[userData[0].id_tp_usuario] || 'USUARIO'
             }
         });
 
-
-        
-} catch (error) {
+    } catch (error) {
         console.error('Error en la consulta:', error);
         res.status(500).send('Error al cargar el perfil');
     }

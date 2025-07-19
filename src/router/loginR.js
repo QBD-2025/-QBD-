@@ -34,6 +34,7 @@ const isEditor = (req, res, next) => {
 
 // Rutas
 router.get('/perfil2', (req, res) => {
+    console.log('Usuario en sesión:', req.session.user); // Aquí imprime
     res.render('perfil2', {
         layout: 'main',
         title: 'Perfil',
@@ -106,7 +107,7 @@ router.post('/login', async (req, res) => {
                 case 'EDITOR':
                     return res.redirect('/editor/panel');
                 default: // USUARIO
-                    return res.redirect('/perfil2');
+                    return res.redirect('/formulario1');
             }
         });
     } catch (err) {
@@ -133,19 +134,49 @@ router.get('/editor/panel', isAuthenticated, isEditor, (req, res) => {
     });
 });
 
-router.get('/logout', (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            console.error('Error al cerrar sesión:', err);
-            return res.redirect('/perfil2');
+// loginR.js - Ruta /logout corregida
+
+// ... (El resto de tu código de loginR.js queda igual) ...
+
+router.get('/logout', async (req, res) => { // 1. Hacemos la función asíncrona
+    try {
+        // 2. Verificamos si hay un usuario en la sesión
+        if (req.session.user) {
+            const userId = req.session.user.id_usuario;
+            console.log(`Cerrando sesión para el usuario ID: ${userId}. Actualizando estatus a Inactivo (2).`);
+
+            // 3. Actualizamos el estatus en la BD ANTES de destruir la sesión
+            await req.pool.query(
+                'UPDATE usuario SET id_status = ? WHERE id_usuario = ?',
+                [2, userId] // Usamos el ID del usuario de la sesión
+            );
         }
-        res.clearCookie('connect.sid');
-        return res.redirect('/');
-    });
+
+        // 4. Ahora sí, destruimos la sesión
+        req.session.destroy((err) => {
+            if (err) {
+                console.error('Error al destruir la sesión:', err);
+                // Aún si hay un error, intentamos redirigir al usuario
+                return res.redirect('/');
+            }
+
+            // 5. Limpiamos la cookie de la sesión y redirigimos al inicio
+            res.clearCookie('connect.sid');
+            return res.redirect('/');
+        });
+
+    } catch (dbError) {
+        console.error('Error de base de datos al intentar cerrar sesión:', dbError);
+        // En caso de un error de BD, de todos modos intentamos destruir la sesión
+        // para no dejar al usuario en un estado inconsistente.
+        req.session.destroy((err) => {
+            res.clearCookie('connect.sid');
+            return res.redirect('/');
+        });
+    }
 });
 
-// Resto de rutas (recuperación y cambio de contraseña)
-// ... (igual que en tu código actual, no modificado para brevedad)
+// ... (El resto de tus rutas y el module.exports quedan igual) ...
 
 // EXPORTA EL ROUTER
 module.exports = router;

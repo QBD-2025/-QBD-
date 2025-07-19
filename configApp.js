@@ -42,10 +42,11 @@ app.set('views', path.join(__dirname, 'src', 'views'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'src', 'public')));
+app.use(express.static(path.join(__dirname, 'src', 'media')));
 app.use('/media', express.static(path.join(__dirname, 'src', 'media')));
 app.use('/Audio', express.static(path.join(__dirname, 'src', 'Audio')));
 app.use('/animacion_frames_p', express.static(path.join(__dirname, 'src','media','animacion_frames_p')));
-
+app.use('/images', express.static(path.join(__dirname, 'src', 'public', 'media', 'images'))); // Asegúrate de que la ruta sea correcta
 
 // 4. Configuración de sesión y Passport - ¡PERMANECE IGUAL!
 app.use(session({
@@ -79,6 +80,7 @@ app.use((req, res, next) => {
 
 // Configuración de routers
 const usuarioR = require('./src/router/usuarioR');
+const formulario1R = require('./src/router/formulario1');
 const adminR = require('./src/router/adminR');
 const generalR = require('./src/router/generalR');
 const googleR = require('./src/router/googleR');
@@ -90,7 +92,8 @@ const profileR = require('./src/router/profileR');
 
 // 7. Uso de routers (ORDEN RECOMENDADO)
 app.use('/', usuarioR);
-app.use('/', adminR);
+app.use('/', formulario1R);
+app.use('/admin', adminR);
 app.use('/', googleR);
 app.use('/', loginR);
 app.use('/', registerR);
@@ -98,8 +101,6 @@ app.use('/', verifyR);
 app.use('/', recoveryR);
 app.use('/', profileR);
 app.use('/', generalR);
-
-
 
 // 8. Configuración de puerto - ¡PERMANECE IGUAL!
 const PORT = process.env.PORT || 3005;

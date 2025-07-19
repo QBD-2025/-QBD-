@@ -7,22 +7,77 @@ body {
   line-height: 1.6;
 }
 
-/* Encabezado mejorado */
 .admin-header {
-  width: 100%;
-  height: 120px;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: white;
-  padding: 0 20px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  position: relative;
-  overflow: hidden;
-}
+   width: 100%;
+   height: auto; /* Ajustar altura automáticamente al contenido */
+   background: linear-gradient(135deg, #2563eb, #1d4ed8);
+   color: white;
+   padding: 10px 20px; /* Ajustar el padding vertical */
+   display: flex; /* Usar flex para alinear elementos internos */
+   justify-content:space-around; /* Espacio entre logo/título y "Volver" */
+   align-items: center; /* Centrar verticalmente los elementos */
+   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+   position: relative;
+   overflow: hidden;
+   /* ✨ ELIMINAMOS EL MARGEN SUPERIOR QUE TENÍAMOS ANTES ✨ */
+   margin-top: 0;
+   flex-wrap: wrap; /* Permite que el contenido se envuelva en pantallas pequeñas */
+ }
+ 
+ .admin-header::after {
+   content: '';
+   position: absolute;
+   bottom: 0;
+   left: 0;
+   right: 0;
+   height: 4px;
+   background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.8), rgba(255,255,255,0.3));
+ }
+ 
+ .top-left-logo {
+   display: flex;
+   align-items: center;
+ }
+ 
+ .logo-image-header {
+   width: 100px; /* Ajusta el tamaño del logo en el header */
+   height: auto;
+   margin-right: 15px;
+ }
+ 
+ .admin-title {
+   margin: 0;
+    color: #f59e0b;
+   font-size: 24px; /* Un poco más pequeño para que quepa mejor */
+   font-weight: 700;
+   letter-spacing: 0.5px;
+ }
+ 
+ .admin-welcome {
+   margin: 5px 0 0; /* Reducir un poco el margen */
+   font-size: 14px; /* Un poco más pequeño */
+   font-weight: 400;
+   opacity: 0.9;
+   /* Lo movemos dentro del header y lo alineamos con flexbox */
+   width: 100%;
+   text-align: center;
+   margin-top: 10px;
+ }
+ 
+ .volver-button {
+   text-decoration: none;
+   color: #f59e0b;
+   font-weight: bold;
+   padding: 8px 15px;
+   border-radius: 20px;
+   transition: background-color 0.3s ease;
+   border: 2px solid transparent; /* Añadimos un borde transparente para el hover */
+ }
+ 
+ .volver-button:hover {
+   background-color: rgba(255, 255, 255, 0.2); /* Un fondo ligeramente transparente al pasar el mouse */
+   border-color: white; /* Borde blanco al pasar el mouse */
+ }
 
 .admin-header::after {
   content: '';
@@ -55,7 +110,7 @@ body {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   transition: all 0.4s ease;
   position: absolute;
-  top: 200px;
+  top: 350px;
   left: 50px; /* Ajusta este valor para mover a izquierda/derecha */
   right: 50px; /* Mantiene márgenes laterales */
   margin: 0 auto; /* Solo necesario si quieres centrar dentro del espacio restante */
@@ -227,4 +282,59 @@ body {
     display: block;
     overflow-x: auto;
   }
+}
+/* admin.css MODIFICADO */
+
+/* ... (todo tu CSS existente va aquí arriba) ... */
+
+
+/* ✨ ESTILOS PARA LA IMAGEN DEL PERSONAJE ✨ */
+.character-image {
+  position: absolute;
+  /* z-index asegura que la imagen esté por encima de otros elementos */
+  z-index: 10;
+  height: 250px; /* Puedes ajustar este tamaño si lo necesitas */
+  width: auto;
+
+  /* Centramos la imagen horizontalmente en la página */
+  left: 50%;
+  
+  /* La posicionamos verticalmente. 
+    El contenedor del formulario empieza en `top: 200px`. 
+    Movemos la imagen a `top: 130px` para que la parte inferior
+    se superponga con la parte superior del formulario, creando el efecto deseado.
+  */
+  top: 150px;
+
+  /* Terminamos de centrar con transform */
+  transform: translateX(-50%);
+
+  /* Evita que la imagen transparente bloquee clics en elementos debajo de ella */
+  pointer-events: none;
+}
+/* Agrega esto al final de admin.css para los badges de estatus */
+
+.status-Activo {
+  background-color: #28a745; /* Verde */
+  color: white;
+}
+.status-Inactivo {
+  background-color: #6c757d; /* Gris */
+  color: white;
+}
+.status-Suspendido {
+  background-color: #ffc107; /* Amarillo */
+  color: black;
+}
+.status-Pendiente {
+  background-color: #17a2b8; /* Azul claro */
+  color: white;
+}
+.status-Baja {
+  background-color: #dc3545; /* Rojo */
+  color: white;
+}
+.status-Bloqueado {
+    background-color: #343a40; /* Negro/Gris oscuro */
+    color: white;
 }

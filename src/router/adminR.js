@@ -1,3 +1,5 @@
+// adminR.js - VERSIÓN CORREGIDA Y COMPLETA
+
 const express = require('express');
 const router = express.Router();
 
@@ -8,78 +10,101 @@ const isAuthenticated = (req, res, next) => {
 };
 
 const isAdmin = (req, res, next) => {
-    if (req.session.user?.id_tp_usuario === 3) return next(); // 3 = admin
+    if (req.session.user?.id_tp_usuario === 3) return next();
     return res.status(403).render('error', {
         layout: 'main',
         mensajeError: 'Acceso reservado para administradores',
     });
 };
 
-router.get('/admin', isAuthenticated, isAdmin, async (req, res) => {
-    console.log('Cargando usuarios para admin:', req.session.user?.id_usuario);
-    const [usuarios] = await req.pool.query(`
-        SELECT id_usuario, username, email, id_tp_usuario FROM usuario
-    `);
+// GET / -> Ruta para mostrar el panel de administración
+router.get('/', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+        // ✨ CONSULTA CORREGIDA: Hacemos JOIN para obtener los nombres de rol y estatus
+        const [usuarios] = await req.pool.query(`
+            SELECT 
+                u.id_usuario, u.username, u.email, 
+                u.id_tp_usuario, tr.descripcion,
+                u.id_status, s.descripcion
+            FROM usuario u
+            LEFT JOIN tipo_usuario tr ON u.id_tp_usuario = tr.id_tp_usuario
+            LEFT JOIN status s ON u.id_status = s.id_status
+            ORDER BY u.id_usuario ASC
+        `);
 
-    // 🔍 Verifica qué contiene esto
-    console.log('Usuarios cargados:', usuarios);
+        // Consulta para obtener la lista de todos los estatus posibles
+        const [lista_status] = await req.pool.query('SELECT id_status, descripcion FROM status');
 
-    res.render('admin', {
-        layout: 'admin-layout',
-        user: req.session.user,
-        usuarios
-    });
+        // Renderizamos la vista con todos los datos necesarios
+        res.render('admin', {
+            layout: false, // Tu admin.hbs ya es un HTML completo
+            user: req.session.user,
+            usuarios: usuarios,
+            lista_status: lista_status
+        });
+
+    } catch (error) {
+        console.error("Error cargando el panel de admin:", error);
+        res.status(500).send("Error interno del servidor al cargar el panel.");
+    }
 });
 
-router.post('/admin/cambiar-rol', isAuthenticated, isAdmin, async (req, res) => {
-    const rolesActualizados = req.body.roles;
-    console.log('Roles actualizados:', rolesActualizados);
-    console.log('BODY COMPLETO:', req.body)
+// POST /actualizar-usuarios -> Ruta para procesar los cambios del formulario
+router.post('/actualizar-usuarios', isAuthenticated, isAdmin, async (req, res) => {
+    const { usuario_ids, nuevos_roles, nuevos_status } = req.body;
+    
+    // IMPORTANTE: Asumimos que el ID para "Baja" en tu tabla status es 5.
+    // Si es diferente, cámbialo aquí.
+    const ID_STATUS_BAJA = 5; 
+
+    if (!usuario_ids || !nuevos_roles || !nuevos_status || usuario_ids.length !== nuevos_roles.length || usuario_ids.length !== nuevos_status.length) {
+        return res.redirect('/admin?error=datos_inconsistentes');
+    }
+
     try {
-        for (const id_usuario in rolesActualizados) {
-            const nuevoRol = parseInt(rolesActualizados[id_usuario], 10);
+        const usuariosParaEliminar = [];
+        const promesasDeActualizacion = [];
 
-            // Validación de rol válido
-            if (![1, 2, 3].includes(nuevoRol)) {
-                console.warn(`Rol inválido para usuario ${id_usuario}: ${nuevoRol}`);
-                continue;
-            }
+        for (let i = 0; i < usuario_ids.length; i++) {
+            const id_usuario = parseInt(usuario_ids[i], 10);
+            const nuevoRolId = parseInt(nuevos_roles[i], 10);
+            const nuevoStatusId = parseInt(nuevos_status[i], 10);
 
-            // Consulta del rol actual
-            const [[usuario]] = await req.pool.query(
-                'SELECT id_tp_usuario FROM usuario WHERE id_usuario = ?',
-                [id_usuario]
-            );
-
-            if (!usuario) {
-                console.warn(`Usuario no encontrado: ${id_usuario}`);
-                continue;
-            }
-
-            const rolActual = usuario.id_tp_usuario;
-
-            // Solo actualizar si el rol cambió
-            if (rolActual !== nuevoRol) {
-                console.log(`Actualizando usuario ${id_usuario} de rol ${rolActual} a ${nuevoRol}`);
-                await req.pool.query(
-                    'UPDATE usuario SET id_tp_usuario = ? WHERE id_usuario = ?',
-                    [nuevoRol, id_usuario]
+            // Si el estatus es "Baja", lo agregamos a la lista para eliminar
+            if (nuevoStatusId === ID_STATUS_BAJA) {
+                // Evitar que un admin se elimine a sí mismo
+                if (id_usuario === req.session.user.id_usuario) {
+                    console.warn(`El admin ${id_usuario} intentó darse de baja a sí mismo. Acción omitida.`);
+                    continue;
+                }
+                usuariosParaEliminar.push(id_usuario);
+            } 
+            // Si no, lo actualizamos
+            else {
+                const promesa = req.pool.query(
+                    'UPDATE usuario SET id_tp_usuario = ?, id_status = ? WHERE id_usuario = ?',
+                    [nuevoRolId, nuevoStatusId, id_usuario]
                 );
-            } else {
-                console.log(`Sin cambios para usuario ${id_usuario}`);
+                promesasDeActualizacion.push(promesa);
             }
         }
 
-        // Mensaje de éxito para mostrar en la vista
-        req.session.mensaje = "Roles actualizados correctamente.";
+        // Ejecutamos las eliminaciones
+        if (usuariosParaEliminar.length > 0) {
+            await req.pool.query('DELETE FROM usuario WHERE id_usuario IN (?)', [usuariosParaEliminar]);
+        }
+
+        // Ejecutamos las actualizaciones
+        if (promesasDeActualizacion.length > 0) {
+            await Promise.all(promesasDeActualizacion);
+        }
+
+        req.session.mensaje = "Cambios guardados exitosamente.";
         res.redirect('/admin');
 
     } catch (error) {
-        console.error("Error actualizando roles:", error);
-        res.status(500).render('error', {
-            layout: 'main',
-            mensajeError: 'Error al actualizar los roles de los usuarios.',
-        });
+        console.error("Error masivo al actualizar usuarios:", error);
+        res.status(500).send("Error al guardar los cambios.");
     }
 });
 

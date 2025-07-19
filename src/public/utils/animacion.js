@@ -133,7 +133,7 @@ function initAnimation() {
             console.log('Animación de salida terminada. Redirigiendo...');
             // Aquí puedes redirigir al siguiente video o sección
             window.location.href = '/register';
-            alert('¡Redirigiendo al registro!'); // Solo para prueba
+            alert('¡Redirigiendo al Formulario!'); // Solo para prueba
         }
     });
 

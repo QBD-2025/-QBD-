@@ -1,56 +1,69 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mi Perfil</title>
-  <link rel="stylesheet" href="/css/usuario.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QueBuenDato.com.mx</title>
+  <link rel="stylesheet" href="/css/usuario.css" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet" />
 </head>
 <body>
+  <div class="profile-full">
+    <div class="profile-card">
+      <body class="page-usuario">
 
-  <header class="user-header">
-    <h1 class="user-title">Mi Perfil de Usuario</h1>
-    <p class="user-welcome">Bienvenido {{user.username}} (USUARIO)</p>
-    <a href="/logout" class="logout-btn">Cerrar sesión</a>
-  </header>
+      
+      <!-- Encabezado del perfil -->
+      <header class="profile-header">
+        <h1 class="profile-title">Mi Perfil</h1>
+        <p class="user-welcome">Bienvenido {{user.username}} ({{user.role}})</p>
+        <a href="/logout" class="logout-btn">Cerrar sesión</a>
+      </header>
 
-  <div class="user-container">
-    <h2 class="user-subtitle">Mis Datos</h2>
-    
-    <div class="user-info">
-      <table class="user-table">
-        <tr>
-          <th>ID</th>
-          <td>{{user.id_usuario}}</td>
-        </tr>
-        <tr>
-          <th>Email</th>
-          <td>{{user.email}}</td>
-        </tr>
-        <tr>
-          <th>Nombre de usuario</th>
-          <td>{{user.username}}</td>
-        </tr>
-        <tr>
-          <th>Tipo de cuenta</th>
-          <td>
-            <span class="badge bg-primary">USUARIO</span>
-          </td>
-        </tr>
-      </table>
-    </div>
+      <!-- Contenido del perfil -->
+      <div class="profile-body">
+        <h2 class="user-subtitle">Tu información</h2>
 
-    <div class="user-actions">
-      <h3>Acciones disponibles</h3>
-      <ul>
-        <li><a href="/cambiar-password" class="action-link">Cambiar mi contraseña</a></li>
-        <li><a href="/editar-perfil" class="action-link">Editar mi perfil</a></li>
-        <li><a href="/mis-actividades" class="action-link">Ver mis actividades</a></li>
-      </ul>
+        <table class="info-table">
+          <tr>
+            <th>ID</th>
+            <td>{{user.id_usuario}}</td>
+          </tr>
+          <tr>
+            <th>Email</th>
+            <td>{{user.email}}</td>
+          </tr>
+          <tr>
+            <th>Nombre de usuario</th>
+            <td>{{user.username}}</td>
+          </tr>
+          <tr>
+            <th>Tipo de cuenta</th>
+            <td>{{user.role}}</td>
+          </tr>
+        </table>
+
+        <div class="actions-section">
+          <h3>Acciones disponibles</h3>
+          <ul class="actions-list">
+            <li class="action-item">
+              <a href="/buscar-correo" class="action-link">Cambiar mi contraseña</a>
+            </li>
+            <li class="action-item">
+              <a href="/editar-perfil" class="action-link">Editar mi perfil</a>
+            </li>
+            <li class="action-item">
+              <a href="/mis-actividades" class="action-link">Ver mis actividades</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
     </div>
   </div>
-
-
-
 </body>
 </html>
