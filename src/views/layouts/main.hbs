@@ -1,54 +1,90 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>QueBuenDato.com.mx</title>           
-    <link rel="stylesheet" href="/css/styles.css">
-    
-    {{!-- GOOGLE FONTS --}}
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>QueBuenDato.com.mx</title>           
+  <link rel="stylesheet" href="/css/styles.css">
+  
+  {{!-- GOOGLE FONTS --}}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
-    {{!-- TOPBAR: Cabecera Global --}}
-    <div class="global-header-elements">
-        <div class="top-left-logo">
-            <a href="/">
-                <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image">
-            </a>
-            <a href="/conocenos" class="header-link">Conócenos</a> 
-        </div>
 
-        <div class="top-right-nav">
-            {{#if user}}
-                <span class="nav-username">Hola, {{user.username}}</span>
-                <a href="/perfil2" class="header-link">Perfil</a>
-
-  
-                {{#if user}}
-                {{#if (eq user.id_tp_usuario 3)}}
-                    <a href="/admin" class="header-link">Permisos</a>
-                {{/if}}
-                {{/if}}
-
-                <a href="/logout" class="header-link cerrar-sesion">Cerrar sesión</a>
-            {{else}}
-                <a href="/login" class="header-link">Iniciar Sesión</a>
-                <a href="/register" class="header-link">Registrarse</a>
-            {{/if}}
-        </div>
+  {{!-- TOPBAR: Cabecera Global --}}
+  <div class="global-header-elements">
+    <div class="top-left-logo">
+      <a href="/">
+        <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image">
+      </a>
+      <a href="/conocenos" class="header-link">Conócenos</a> 
     </div>
 
-    {{!-- Aquí se renderiza el contenido de cada vista --}}
-    {{{body}}}
+    <div class="top-right-nav">
 
-    <div class="bottom-left-dot"></div>
+      {{#if user}}
+        <span class="nav-username">Hola, {{user.username}}</span>
 
-    <button id="playMusic" style="display: none;">Reproducir Música</button>
-    <audio id="musica" loop>
-        <source src="/Audio/bby_no.mp3" type="audio/mpeg">
-    </audio>
+        {{!-- Botón de tres puntos --}}
+        <div class="menu-container">
+          <button class="menu-button" onclick="toggleMenu()">&#8942;</button>
+
+              
+
+          <ul class="dropdown-menu" id="dropdown">
+            <li><a href="/perfil2">Perfil</a></li>
+
+            <li><a href="/usuario">Mi cuenta</a></li>
+
+            {{#if (eq user.id_tp_usuario 3)}}
+              <li><a href="/admin">Permisos</a></li>
+
+            {{/if}}
+                        {{#if (eq user.id_tp_usuario 3)}}
+              <li><a href="/editor">Editor</a></li>
+            {{/if}}
+
+            {{#if (eq user.id_tp_usuario 2)}}
+              <li><a href="/editor">Editor</a></li>
+            {{/if}}
+
+            <li><a href="/logout" class="cerrar-sesion">Cerrar sesión</a></li>
+          </ul>
+        </div>
+
+      {{else}}
+        <a href="/login" class="header-link">Iniciar Sesión</a>
+        <a href="/register" class="header-link">Registrarse</a>
+      {{/if}}
+
+    </div>
+  </div>
+
+  {{!-- Aquí se renderiza el contenido de cada vista --}}
+  {{{body}}}
+
+  <div class="bottom-left-dot"></div>
+
+  <button id="playMusic" style="display: none;">Reproducir Música</button>
+  <audio id="musica" loop>
+    <source src="/Audio/bby_no.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    function toggleMenu() {
+      const menu = document.getElementById('dropdown');
+      menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+    }
+
+    document.addEventListener('click', function(event) {
+      const menu = document.getElementById('dropdown');
+      const button = document.querySelector('.menu-button');
+      if (!menu.contains(event.target) && !button.contains(event.target)) {
+        menu.style.display = 'none';
+      }
+    });
+  </script>
 </body>
 </html>

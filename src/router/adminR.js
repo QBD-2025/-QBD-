@@ -12,7 +12,6 @@ const isAuthenticated = (req, res, next) => {
 const isAdmin = (req, res, next) => {
     if (req.session.user?.id_tp_usuario === 3) return next();
     return res.status(403).render('error', {
-        layout: 'main',
         mensajeError: 'Acceso reservado para administradores',
     });
 };
@@ -86,7 +85,7 @@ router.post('/actualizar-usuarios', isAuthenticated, isAdmin, async (req, res) =
                     [nuevoRolId, nuevoStatusId, id_usuario]
                 );
                 promesasDeActualizacion.push(promesa);
-            }
+            };
         }
 
         // Ejecutamos las eliminaciones

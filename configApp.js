@@ -79,6 +79,7 @@ app.use((req, res, next) => {
 
 
 // Configuración de routers
+const editorR = require('./src/router/editorR');
 const usuarioR = require('./src/router/usuarioR');
 const formulario1R = require('./src/router/formulario1');
 const adminR = require('./src/router/adminR');
@@ -91,6 +92,7 @@ const recoveryR = require('./src/router/passResetR');
 const profileR = require('./src/router/profileR');
 
 // 7. Uso de routers (ORDEN RECOMENDADO)
+app.use('/editor', editorR);
 app.use('/', usuarioR);
 app.use('/', formulario1R);
 app.use('/admin', adminR);

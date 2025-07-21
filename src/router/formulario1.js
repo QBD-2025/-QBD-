@@ -7,7 +7,7 @@ router.get('/formulario1', async (req, res) => {
       SELECT p.id_pregunta, p.texto AS pregunta, o.id_opcion, o.texto_opcion
       FROM pregunta_encuesta p
       JOIN opcion_pregunta o ON p.id_pregunta = o.id_pregunta
-      WHERE p.id_encuesta = ?
+      WHERE p.id_encuesta = ? and p.id_estatus_p = 1
       ORDER BY p.id_pregunta, o.id_opcion
     `, [1]); // ← Cambia el ID por el de tu encuesta actual
 

@@ -1,46 +1,48 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Perfil</title>
-<link rel="stylesheet" href="/css/perfil.css">
-{{!-- 
-  VISTA DE PERFIL / DASHBOARD
-  Esta es la primera página que ve un usuario al iniciar sesión.
---}}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title> QueBuenDato.com </title>           
+    <link rel="stylesheet" href="/css/perfil.css">
 
-<div class="perfil-wrapper">
-
-  {{!-- Encabezado de bienvenida personalizado --}}
-  <header class="perfil-header">
-    {{!-- Usamos la variable 'user' que hicimos disponible en todas las vistas --}}
-    <h1>¡Bienvenido de nuevo, <span class="highlight-yellow">{{user.username}}</span>!</h1>
-    <p>¿Qué te gustaría hacer hoy?</p>
-  </header>
-
-  {{!-- Grid con las opciones principales de la aplicación --}}
-  <main class="dashboard-grid">
+</head>
+<body>
 
 
-    {{!-- Tarjeta para el Dato del Día --}}
-    <div class="dashboard-card card-fact">
-      <div class="card-icon">
-        <img src="/media/images/icon-idea.png" alt="Dato del día">
-      </div>
-      <h3>Dato del Día</h3>
-      <p>"Los pulpos tienen tres corazones. Dos bombean sangre a las branquias y uno al resto del cuerpo."</p>
+  <div class="perfil-container">
+    <div class="perfil-frase frase1 floating">
+      <i class="fas fa-running icon" style="color: var(--color-primary);"></i>
+
+      <span class="amarillo"><i class="fas fa-book icon"></i>¿Examen pronto? No te preocupes repasalo con nosotros 💪</span>
     </div>
-    
-    {{!-- Tarjeta para la configuración de la cuenta --}}
-    <a href="/usuario" class="dashboard-card card-settings">
-      <div class="card-icon">
-          <img src="/media/images/icon-settings.png" alt="Configuración">
-      </div>
-      <h3>Mi Cuenta</h3>
-      <p>Administra tu información personal, contraseña y preferencias.</p>
-    </a>
 
-  </main>
+    <div class="perfil-frase frase2 floating" style="animation-delay: 0.5s;">
+      <i class="fas fa-gamepad icon" style="color: var(--color-secondary);"></i>
+      <span class="azulito">¿Aburrido? Juega un juego rápido y aprende algo nuevo 😎</span>
+    </div>
 
+    <div class="perfil-frase frase3 floating" style="animation-delay: 1s;">
+      <i class="fas fa-search icon" style="color: #00D1A0;"></i>
+      Animación vectorizada de Stuart y Octavio caminando de un lado a otro mirando un papel analizándolo
+    </div>
+
+    <div class="perfil-frase frase4 floating" style="animation-delay: 1.5s;">
+      <i class="fas fa-trophy icon" style="color: var(--color-accent);"></i>
+      <span class="azulito">Nadie puede ser mejor que yo. Compite con tus amigos y sé el mejor siempre 🔥</span>
+    </div>
+
+    <div class="perfil-frase frase5 floating" style="animation-delay: 0.7s;">
+      <i class="fas fa-brain icon" style="color: #00C9FF;"></i>
+      <span class="verdeagua">¿Te sientes olvidadizo? <br> ¡Repasemos! 💯</span>
+    </div>
+
+  <div class="perfil-frase frase6 floating" style="animation-delay: 1.2s;">
+    <i class="fas fa-book-reader icon" style="color: #A569BD;"></i>
+    <br>
+    <img src="/images/.png" alt="Stuart y Octavio leyendo en la biblioteca" style="max-width: 100%; border-radius: 12px;">
+  </div>
 </div>
+
+</body>
+</html>

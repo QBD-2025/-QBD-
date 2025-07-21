@@ -102,10 +102,10 @@ router.post('/login', async (req, res) => {
             // Redirección basada en el id_tp_usuario
             console.log('Usuario autenticado:', req.session.user);
             switch (user.id_tp_usuario) {
-                case 'ADMINISTRADOR':
+                case 3:
                     return res.redirect('/admin');
-                case 'EDITOR':
-                    return res.redirect('/editor/panel');
+                case 2:
+                    return res.redirect('/editor');
                 default: // USUARIO
                     return res.redirect('/formulario1');
             }
