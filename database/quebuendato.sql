@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 17-07-2025 a las 09:35:47
+-- Tiempo de generación: 22-07-2025 a las 01:51:18
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -43,6 +43,45 @@ CREATE TABLE `dificultad` (
   `descripcion` varchar(250) DEFAULT NULL,
   `puntos` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `encuesta`
+--
+
+CREATE TABLE `encuesta` (
+  `id_encuesta` int(11) NOT NULL,
+  `titulo` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `encuesta`
+--
+
+INSERT INTO `encuesta` (`id_encuesta`, `titulo`) VALUES
+(1, 'encuesta_preferencias');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `estatus_pregunta`
+--
+
+CREATE TABLE `estatus_pregunta` (
+  `id_estatus_p` int(11) NOT NULL,
+  `estatus` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `estatus_pregunta`
+--
+
+INSERT INTO `estatus_pregunta` (`id_estatus_p`, `estatus`) VALUES
+(1, 'Publicado'),
+(2, 'Borrador'),
+(3, 'Archivado'),
+(4, 'Revision');
 
 -- --------------------------------------------------------
 
@@ -148,6 +187,35 @@ INSERT INTO `materias` (`id_materia`, `descripcion`) VALUES
 (11, 'CULTURA GENERAL'),
 (12, 'ARTES'),
 (13, 'TECNOLOGÍA');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `opcion_pregunta`
+--
+
+CREATE TABLE `opcion_pregunta` (
+  `id_opcion` int(11) NOT NULL,
+  `id_pregunta` int(11) DEFAULT NULL,
+  `texto_opcion` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `opcion_pregunta`
+--
+
+INSERT INTO `opcion_pregunta` (`id_opcion`, `id_pregunta`, `texto_opcion`) VALUES
+(5, 2, 'Prepararme para mi examen de admision'),
+(6, 2, 'Mejorar mis conocimientos en general'),
+(7, 2, 'Competir y ponerme a prueba'),
+(8, 3, 'Menos de 30 minutos'),
+(9, 3, '30 minutos - 1 hora'),
+(10, 3, '1 a 2 horas'),
+(11, 3, 'Mas de 2 horas'),
+(12, 4, 'Preparatoria'),
+(13, 4, 'Egresado'),
+(14, 5, 'Si'),
+(15, 5, 'No');
 
 -- --------------------------------------------------------
 
@@ -658,6 +726,29 @@ INSERT INTO `pregunta` (`id_pregunta`, `id_materia`, `pregunta`, `retroalimentac
 (488, 11, '¿Qué gas se utiliza en los globos aerostáticos porque es menos denso que el aire?', NULL, NULL),
 (489, 11, '¿Cuál es el componente básico de las proteínas?', NULL, NULL),
 (490, 11, '¿Qué molécula transporta el oxígeno en la sangre?', NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `pregunta_encuesta`
+--
+
+CREATE TABLE `pregunta_encuesta` (
+  `id_pregunta` int(11) NOT NULL,
+  `id_encuesta` int(11) DEFAULT NULL,
+  `texto` text DEFAULT NULL,
+  `id_estatus_p` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `pregunta_encuesta`
+--
+
+INSERT INTO `pregunta_encuesta` (`id_pregunta`, `id_encuesta`, `texto`, `id_estatus_p`) VALUES
+(2, 1, '¿Cual es tu meta principal al usar esta plataforma?', 1),
+(3, 1, '¿Cuanto tiempo podrias dedicar al estudio al dia?', 1),
+(4, 1, '¿En que etapa estas actualmente?', 1),
+(5, 1, '¿Te gustaria recibir recomendaciones personalizadas?', 1);
 
 -- --------------------------------------------------------
 
@@ -2654,6 +2745,40 @@ INSERT INTO `respuesta` (`id_respuesta`, `id_pregunta`, `respuesta`, `correcta`,
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `respuesta_encuesta`
+--
+
+CREATE TABLE `respuesta_encuesta` (
+  `id_usuario` int(11) NOT NULL,
+  `id_pregunta` int(11) NOT NULL,
+  `id_opcion` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `respuesta_encuesta`
+--
+
+INSERT INTO `respuesta_encuesta` (`id_usuario`, `id_pregunta`, `id_opcion`) VALUES
+(38, 2, 5),
+(38, 3, 10),
+(38, 4, 12),
+(38, 5, 14),
+(55, 2, 5),
+(55, 3, 8),
+(55, 4, 12),
+(55, 5, 14),
+(55, 2, 6),
+(55, 3, 8),
+(55, 4, 12),
+(55, 5, 14),
+(54, 2, 6),
+(54, 3, 9),
+(54, 4, 12),
+(54, 5, 15);
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `status`
 --
 
@@ -2720,9 +2845,15 @@ CREATE TABLE `usuario` (
 --
 
 INSERT INTO `usuario` (`id_usuario`, `username`, `email`, `password`, `verificado`, `token`, `actualizacion`, `token_expira`, `puntos`, `id_tp_usuario`, `id_status`, `token_reseteo`, `token_reseteo_expira`) VALUES
-(2, 'titin', '23301061550112@cetis155.edu.mx', '$2b$10$5H5HUE3HBcgAgp7DwcIWe.2WH13i6gG2iGld/lAHKHZ1kQc4LLsQO', 0, 'f9661b5164cb211d87a9ffd4d6ad98ce', NULL, '2025-07-17 01:20:23', 0, 1, 1, NULL, NULL),
-(3, 'diegorangl', 'padosterreneitor@gmail.com', '$2b$10$.LrvUtA9KuNj8X6bsIuG..mzvR68fEXxj9zj80P1fhywzGhfGkHcG', 0, 'f6587a671c4d3b396cc5c26464a7cab7', NULL, '2025-07-17 01:21:40', 0, 1, 1, '0000-00-00 00:00:00', '2025-07-17 02:20:57'),
-(5, 'SeniorSoldado Razosonicko', 'seniorsoldadorazosonicko@gmail.com', '', 1, NULL, NULL, NULL, 0, 1, 1, '0000-00-00 00:00:00', '2025-07-17 02:29:59');
+(38, 'Daniel', 'danielviramontes562@gmail.com', '$2b$12$1wNg9kjfQN8eCMWWul0cH.edQ6xnhgmyztaAK21l1Snr/A6.hj2T2', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
+(39, 'juanito14', 'juanjose.chavez.15153@gmail.com', '$2b$10$pbg4j7.mldd547o6OyIjSe8oH3Um1/JvswGLOnAnvXdnvPuqWnIpu', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
+(40, 'Nievedeposole12', 'pedrozamiguel0123@gmail.com', '$2b$10$OYweYO11IUbWFmwRywa33eL/iTG0bcsK/v7hQXdQWRatpMsNZGU/W', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
+(45, 'Eduardo García', 'eduardogarcia080806@gmail.com', '$2b$12$7ANoCz8irhoWI1/xfJgame05jYw6HH8ZQTF0AA4pwaTTUN1mBcN86', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
+(49, 'snejen', 'diegoleonardoportillarangel@gmail.com', '$2b$10$eo.bd/ZJ6OfBYYH4nYh84OBrE1IcgFrVbpZ5nGYIA0m0AIpuAKW6C', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
+(51, 'kjdsndfnjnf', 'seniorsoldadorazosonicko@gmail.com', '$2b$10$g30xIr/ilg/Wsrd9IyeffeaXLpGAaXYYUP5OaQjZM9y9BiFZWZiLu', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
+(53, 'DIEGO LEONARDO PORTILLA RANGEL', '23301061550112@cetis155.edu.mx', '', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
+(54, 'pedrito', '23301061550096@cetis155.edu.mx', '$2b$10$z31U6ZVL01y.JZDqyh6WZOJDVr3IaR1aIkqm.jN3bnm3MmiBlya7G', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
+(55, 'Daniel Viramontes', 'danielviramontes762@gmail.com', '$2b$10$z3chtHtEI5nYtydBOzhleu5vx9JHBXrAlm0tXo7bNgudtXtoBwnDC', 1, NULL, NULL, NULL, 0, 1, 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -2765,6 +2896,18 @@ ALTER TABLE `carrera`
 --
 ALTER TABLE `dificultad`
   ADD PRIMARY KEY (`id_dificultad`);
+
+--
+-- Indices de la tabla `encuesta`
+--
+ALTER TABLE `encuesta`
+  ADD PRIMARY KEY (`id_encuesta`);
+
+--
+-- Indices de la tabla `estatus_pregunta`
+--
+ALTER TABLE `estatus_pregunta`
+  ADD PRIMARY KEY (`id_estatus_p`);
 
 --
 -- Indices de la tabla `examen`
@@ -2815,11 +2958,26 @@ ALTER TABLE `materias`
   ADD PRIMARY KEY (`id_materia`);
 
 --
+-- Indices de la tabla `opcion_pregunta`
+--
+ALTER TABLE `opcion_pregunta`
+  ADD PRIMARY KEY (`id_opcion`),
+  ADD KEY `fk_opcion_pregunta_pregunta` (`id_pregunta`);
+
+--
 -- Indices de la tabla `pregunta`
 --
 ALTER TABLE `pregunta`
   ADD PRIMARY KEY (`id_pregunta`),
   ADD KEY `id_materia` (`id_materia`);
+
+--
+-- Indices de la tabla `pregunta_encuesta`
+--
+ALTER TABLE `pregunta_encuesta`
+  ADD PRIMARY KEY (`id_pregunta`),
+  ADD KEY `fk_pregunta_encuesta_encuesta` (`id_encuesta`),
+  ADD KEY `fk_estatus_p` (`id_estatus_p`);
 
 --
 -- Indices de la tabla `pregunta_examen`
@@ -2834,6 +2992,14 @@ ALTER TABLE `pregunta_examen`
 ALTER TABLE `respuesta`
   ADD PRIMARY KEY (`id_respuesta`),
   ADD KEY `id_pregunta` (`id_pregunta`);
+
+--
+-- Indices de la tabla `respuesta_encuesta`
+--
+ALTER TABLE `respuesta_encuesta`
+  ADD KEY `fk_respuesta_usuario` (`id_usuario`),
+  ADD KEY `fk_respuesta_pregunta` (`id_pregunta`),
+  ADD KEY `fk_respuesta_opcion` (`id_opcion`);
 
 --
 -- Indices de la tabla `status`
@@ -2887,6 +3053,18 @@ ALTER TABLE `dificultad`
   MODIFY `id_dificultad` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT de la tabla `encuesta`
+--
+ALTER TABLE `encuesta`
+  MODIFY `id_encuesta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de la tabla `estatus_pregunta`
+--
+ALTER TABLE `estatus_pregunta`
+  MODIFY `id_estatus_p` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
 -- AUTO_INCREMENT de la tabla `examen`
 --
 ALTER TABLE `examen`
@@ -2911,10 +3089,22 @@ ALTER TABLE `materias`
   MODIFY `id_materia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
+-- AUTO_INCREMENT de la tabla `opcion_pregunta`
+--
+ALTER TABLE `opcion_pregunta`
+  MODIFY `id_opcion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+
+--
 -- AUTO_INCREMENT de la tabla `pregunta`
 --
 ALTER TABLE `pregunta`
-  MODIFY `id_pregunta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=491;
+  MODIFY `id_pregunta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=492;
+
+--
+-- AUTO_INCREMENT de la tabla `pregunta_encuesta`
+--
+ALTER TABLE `pregunta_encuesta`
+  MODIFY `id_pregunta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT de la tabla `respuesta`
@@ -2938,7 +3128,7 @@ ALTER TABLE `tipo_usuario`
 -- AUTO_INCREMENT de la tabla `usuario`
 --
 ALTER TABLE `usuario`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- Restricciones para tablas volcadas
@@ -2974,10 +3164,23 @@ ALTER TABLE `historial`
   ADD CONSTRAINT `historial_ibfk_4` FOREIGN KEY (`id_respuesta`) REFERENCES `respuesta` (`id_respuesta`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
+-- Filtros para la tabla `opcion_pregunta`
+--
+ALTER TABLE `opcion_pregunta`
+  ADD CONSTRAINT `fk_opcion_pregunta_pregunta` FOREIGN KEY (`id_pregunta`) REFERENCES `pregunta_encuesta` (`id_pregunta`) ON DELETE CASCADE;
+
+--
 -- Filtros para la tabla `pregunta`
 --
 ALTER TABLE `pregunta`
   ADD CONSTRAINT `pregunta_ibfk_1` FOREIGN KEY (`id_materia`) REFERENCES `materias` (`id_materia`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Filtros para la tabla `pregunta_encuesta`
+--
+ALTER TABLE `pregunta_encuesta`
+  ADD CONSTRAINT `fk_estatus_p` FOREIGN KEY (`id_estatus_p`) REFERENCES `estatus_pregunta` (`id_estatus_p`),
+  ADD CONSTRAINT `fk_pregunta_encuesta_encuesta` FOREIGN KEY (`id_encuesta`) REFERENCES `encuesta` (`id_encuesta`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `pregunta_examen`
@@ -2991,6 +3194,14 @@ ALTER TABLE `pregunta_examen`
 --
 ALTER TABLE `respuesta`
   ADD CONSTRAINT `respuesta_ibfk_1` FOREIGN KEY (`id_pregunta`) REFERENCES `pregunta` (`id_pregunta`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Filtros para la tabla `respuesta_encuesta`
+--
+ALTER TABLE `respuesta_encuesta`
+  ADD CONSTRAINT `fk_respuesta_opcion` FOREIGN KEY (`id_opcion`) REFERENCES `opcion_pregunta` (`id_opcion`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_respuesta_pregunta` FOREIGN KEY (`id_pregunta`) REFERENCES `pregunta_encuesta` (`id_pregunta`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_respuesta_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `usuario`
