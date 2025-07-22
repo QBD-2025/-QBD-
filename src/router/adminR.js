@@ -1,5 +1,4 @@
-// adminR.js - VERSIÓN CORREGIDA Y COMPLETA
-
+const bcrypt = require('bcrypt');
 const express = require('express');
 const router = express.Router();
 
@@ -106,5 +105,78 @@ router.post('/actualizar-usuarios', isAuthenticated, isAdmin, async (req, res) =
         res.status(500).send("Error al guardar los cambios.");
     }
 });
+
+
+router.post('/editar-usuario', isAuthenticated, isAdmin, async (req, res) => {
+    const { id_usuario, username, email, password } = req.body;
+
+    if (!id_usuario) {
+        return res.status(400).send("ID de usuario requerido.");
+    }
+
+    try {
+        const campos = [];
+        const valores = [];
+
+        if (username && username.trim() !== '') {
+            campos.push("username = ?");
+            valores.push(username);
+        }
+
+        if (email && email.trim() !== '') {
+            campos.push("email = ?");
+            valores.push(email);
+        }
+
+        if (password && password.trim() !== '') {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            campos.push("password = ?");
+            valores.push(hashedPassword);
+        }
+
+        if (campos.length === 0) {
+            return res.status(400).send("No se enviaron campos para actualizar.");
+        }
+
+        valores.push(id_usuario);
+
+        const query = `UPDATE usuario SET ${campos.join(', ')} WHERE id_usuario = ?`;
+        await req.pool.query(query, valores);
+
+        res.status(200).send("Usuario actualizado.");
+    } catch (error) {
+        console.error("Error al editar usuario:", error);
+        res.status(500).send("Error interno al editar usuario.");
+    }
+});
+
+
+// Agregar nuevo usuario
+router.post('/agregar-usuario', isAuthenticated, isAdmin, async (req, res) => {
+    const { username, email, password, verificado } = req.body;
+
+    // Validar que password no esté vacío o undefined
+    if (!password || password.trim() === "") {
+        return res.status(400).send("La contraseña es obligatoria.");
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        if (!username || !email || !password) {
+        return res.status(400).send("Faltan datos obligatorios.");
+    }
+        const [result] = await req.pool.query(
+            
+            'INSERT INTO usuario (username, email, password, verificado, id_tp_usuario, id_status) VALUES (?, ?, ?, ?, 1, 1)',
+            [username, email, hashedPassword, verificado || 0]
+        );
+
+        res.status(201).json({ id_usuario: result.insertId });
+    } catch (error) {
+        console.error('Error agregando usuario:', error);
+        res.sendStatus(500);
+    }
+});
+
 
 module.exports = router;

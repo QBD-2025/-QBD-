@@ -39,7 +39,6 @@ router.get('/formulario1', async (req, res) => {
 
 router.post('/procesar-formulario', async (req, res) => {
   try {
-    const userId = req.session.user.id_usuario;
     const body = req.body;
 
     for (const key in body) {
@@ -49,8 +48,8 @@ router.post('/procesar-formulario', async (req, res) => {
 
         // Insertar en respuesta_encuesta
         await req.pool.query(
-          `INSERT INTO respuesta_encuesta (id_usuario, id_pregunta, id_opcion) VALUES (?, ?, ?)`,
-          [userId, id_pregunta, id_opcion]
+          `INSERT INTO respuesta_encuesta (id_pregunta, id_opcion) VALUES ( ?, ?)`,
+          [ id_pregunta, id_opcion]
         );
       }
     }

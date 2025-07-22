@@ -8,76 +8,20 @@ body {
 }
 
 .admin-header {
-   width: 100%;
-   height: auto; /* Ajustar altura automáticamente al contenido */
-   background: linear-gradient(135deg, #2563eb, #1d4ed8);
-   color: white;
-   padding: 10px 20px; /* Ajustar el padding vertical */
-   display: flex; /* Usar flex para alinear elementos internos */
-   justify-content:space-around; /* Espacio entre logo/título y "Volver" */
-   align-items: center; /* Centrar verticalmente los elementos */
-   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-   position: relative;
-   overflow: hidden;
-   /* ✨ ELIMINAMOS EL MARGEN SUPERIOR QUE TENÍAMOS ANTES ✨ */
-   margin-top: 0;
-   flex-wrap: wrap; /* Permite que el contenido se envuelva en pantallas pequeñas */
- }
- 
- .admin-header::after {
-   content: '';
-   position: absolute;
-   bottom: 0;
-   left: 0;
-   right: 0;
-   height: 4px;
-   background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.8), rgba(255,255,255,0.3));
- }
- 
- .top-left-logo {
-   display: flex;
-   align-items: center;
- }
- 
- .logo-image-header {
-   width: 100px; /* Ajusta el tamaño del logo en el header */
-   height: auto;
-   margin-right: 15px;
- }
- 
- .admin-title {
-   margin: 0;
-    color: #f59e0b;
-   font-size: 24px; /* Un poco más pequeño para que quepa mejor */
-   font-weight: 700;
-   letter-spacing: 0.5px;
- }
- 
- .admin-welcome {
-   margin: 5px 0 0; /* Reducir un poco el margen */
-   font-size: 14px; /* Un poco más pequeño */
-   font-weight: 400;
-   opacity: 0.9;
-   /* Lo movemos dentro del header y lo alineamos con flexbox */
-   width: 100%;
-   text-align: center;
-   margin-top: 10px;
- }
- 
- .volver-button {
-   text-decoration: none;
-   color: #f59e0b;
-   font-weight: bold;
-   padding: 8px 15px;
-   border-radius: 20px;
-   transition: background-color 0.3s ease;
-   border: 2px solid transparent; /* Añadimos un borde transparente para el hover */
- }
- 
- .volver-button:hover {
-   background-color: rgba(255, 255, 255, 0.2); /* Un fondo ligeramente transparente al pasar el mouse */
-   border-color: white; /* Borde blanco al pasar el mouse */
- }
+  width: 100%;
+  height: auto;
+  background: linear-gradient(135deg, #1e3a8a, #0f172a);
+  color: white;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  margin-top: 0;
+  flex-wrap: wrap;
+}
 
 .admin-header::after {
   content: '';
@@ -86,22 +30,53 @@ body {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.8), rgba(255,255,255,0.3));
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.15));
+}
+
+.top-left-logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo-image-header {
+  width: 100px;
+  height: auto;
+  margin-right: 15px;
 }
 
 .admin-title {
   margin: 0;
-  font-size: 28px;
+  color: #facc15;
+  font-size: 24px;
   font-weight: 700;
   letter-spacing: 0.5px;
 }
 
 .admin-welcome {
-  margin: 8px 0 0;
-  font-size: 16px;
+  margin: 5px 0 0;
+  font-size: 14px;
   font-weight: 400;
   opacity: 0.9;
+  width: 100%;
+  text-align: center;
+  margin-top: 10px;
 }
+
+.volver-button {
+  text-decoration: none;
+  color: #facc15;
+  font-weight: bold;
+  padding: 8px 15px;
+  border-radius: 20px;
+  transition: background-color 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.volver-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: #facc15;
+}
+
 .admin-container {
   max-width: 1200px;
   background: rgb(73, 73, 73);
@@ -111,9 +86,9 @@ body {
   transition: all 0.4s ease;
   position: absolute;
   top: 350px;
-  left: 50px; /* Ajusta este valor para mover a izquierda/derecha */
-  right: 50px; /* Mantiene márgenes laterales */
-  margin: 0 auto; /* Solo necesario si quieres centrar dentro del espacio restante */
+  left: 50px;
+  right: 50px;
+  margin: 0 auto;
 }
 
 .admin-container:hover {
@@ -141,7 +116,6 @@ body {
   border-radius: 3px;
 }
 
-/* Tabla de usuarios mejorada */
 .admin-table {
   width: 100%;
   border-collapse: separate;
@@ -153,7 +127,7 @@ body {
 }
 
 .admin-table thead {
-  background: linear-gradient(to right, #2563eb, #3b82f6);
+  background: linear-gradient(to right, #031c5f, #093aac);
   color: #fff;
 }
 
@@ -191,8 +165,13 @@ body {
   border-bottom: none;
 }
 
-/* Badges mejorados */
-.badge {
+.badge,
+.status-Activo,
+.status-Inactivo,
+.status-Suspendido,
+.status-Pendiente,
+.status-Baja,
+.status-Bloqueado {
   padding: 6px 12px;
   border-radius: 20px;
   font-weight: 600;
@@ -203,27 +182,18 @@ body {
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
-.bg-danger {
-  background-color: #ef4444;
-  color: white;
-}
+.bg-danger { background-color: #ef4444; color: white; }
+.bg-warning { background-color: #f59e0b; color: #000; }
+.bg-primary { background-color: #2563eb; color: white; }
+.bg-success { background-color: #10b981; color: white; }
 
-.bg-warning {
-  background-color: #f59e0b;
-  color: #000;
-}
+.status-Activo { background-color: #28a745; color: white; }
+.status-Inactivo { background-color: #6c757d; color: white; }
+.status-Suspendido { background-color: #ffc107; color: black; }
+.status-Pendiente { background-color: #17a2b8; color: white; }
+.status-Baja { background-color: #dc3545; color: white; }
+.status-Bloqueado { background-color: #343a40; color: white; }
 
-.bg-primary {
-  background-color: #2563eb;
-  color: white;
-}
-
-.bg-success {
-  background-color: #10b981;
-  color: white;
-}
-
-/* Select mejorado */
 .role-select {
   padding: 8px 12px;
   border-radius: 6px;
@@ -242,9 +212,8 @@ body {
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
-/* Botón mejorado */
 .admin-btn {
-  background: linear-gradient(to right, #2563eb, #3b82f6);
+  background: linear-gradient(to right, #1e3a8a, #0f172a);
   color: white;
   padding: 12px 24px;
   border: none;
@@ -254,7 +223,6 @@ body {
   font-size: 15px;
   letter-spacing: 0.5px;
   transition: all 0.3s ease;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -262,7 +230,7 @@ body {
 }
 
 .admin-btn:hover {
-  background: linear-gradient(to right, #1d4ed8, #2563eb);
+  background: linear-gradient(to right, #0f172a, #1e3a8a);
   transform: translateY(-2px);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
@@ -271,70 +239,25 @@ body {
   transform: translateY(0);
 }
 
-/* Responsive */
+.character-image {
+  position: absolute;
+  z-index: 10;
+  height: 250px;
+  width: auto;
+  left: 50%;
+  top: 150px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
 @media (max-width: 768px) {
   .admin-container {
     padding: 20px;
     margin: 20px;
   }
-  
+
   .admin-table {
     display: block;
     overflow-x: auto;
   }
-}
-/* admin.css MODIFICADO */
-
-/* ... (todo tu CSS existente va aquí arriba) ... */
-
-
-/* ✨ ESTILOS PARA LA IMAGEN DEL PERSONAJE ✨ */
-.character-image {
-  position: absolute;
-  /* z-index asegura que la imagen esté por encima de otros elementos */
-  z-index: 10;
-  height: 250px; /* Puedes ajustar este tamaño si lo necesitas */
-  width: auto;
-
-  /* Centramos la imagen horizontalmente en la página */
-  left: 50%;
-  
-  /* La posicionamos verticalmente. 
-    El contenedor del formulario empieza en `top: 200px`. 
-    Movemos la imagen a `top: 130px` para que la parte inferior
-    se superponga con la parte superior del formulario, creando el efecto deseado.
-  */
-  top: 150px;
-
-  /* Terminamos de centrar con transform */
-  transform: translateX(-50%);
-
-  /* Evita que la imagen transparente bloquee clics en elementos debajo de ella */
-  pointer-events: none;
-}
-/* Agrega esto al final de admin.css para los badges de estatus */
-
-.status-Activo {
-  background-color: #28a745; /* Verde */
-  color: white;
-}
-.status-Inactivo {
-  background-color: #6c757d; /* Gris */
-  color: white;
-}
-.status-Suspendido {
-  background-color: #ffc107; /* Amarillo */
-  color: black;
-}
-.status-Pendiente {
-  background-color: #17a2b8; /* Azul claro */
-  color: white;
-}
-.status-Baja {
-  background-color: #dc3545; /* Rojo */
-  color: white;
-}
-.status-Bloqueado {
-    background-color: #343a40; /* Negro/Gris oscuro */
-    color: white;
 }

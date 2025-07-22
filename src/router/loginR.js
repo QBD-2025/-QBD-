@@ -107,7 +107,7 @@ router.post('/login', async (req, res) => {
                 case 2:
                     return res.redirect('/editor');
                 default: // USUARIO
-                    return res.redirect('/formulario1');
+                    return res.redirect('/perfil2');
             }
         });
     } catch (err) {
