@@ -82,6 +82,10 @@ body {
   left: 50px;
   right: 50px;
   margin: 0 auto;
+
+  
+  /* Agrega esto 👇 */
+  border: 4px solid #b45309;  /* Marco negro */
 }
 
 .editor-subtitle {
@@ -232,4 +236,9 @@ body {
     display: block;
     overflow-x: auto;
   }
+}
+.editor-table {
+  border: 4px solid #b45309; /* Borde negro */
+  margin: 20px auto;        /* Margen exterior opcional */
+  border-radius: 8px;       /* Bordes ligeramente redondeados */
 }
