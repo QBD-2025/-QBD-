@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Configuración de frames
   const framesPerStep = 3;
   const introStartFrameNum = 1;
-  const introEndFrameNum = 189;
+  const introEndFrameNum = 71;
   const introTotalImages = Math.floor((introEndFrameNum - introStartFrameNum) / framesPerStep) + 1;
 
   const framePath = '/media/caminando_stuart_octavio/caminando_stuart_octavio_';
