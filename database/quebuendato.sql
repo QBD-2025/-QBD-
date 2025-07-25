@@ -3293,7 +3293,7 @@ INSERT INTO `usuario` (`id_usuario`, `username`, `email`, `password`, `verificad
 (49, 'snejen', 'diegoleonardoportillarangel@gmail.com', '$2b$10$eo.bd/ZJ6OfBYYH4nYh84OBrE1IcgFrVbpZ5nGYIA0m0AIpuAKW6C', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
 (51, 'kjdsndfnjnf', 'seniorsoldadorazosonicko@gmail.com', '$2b$10$g30xIr/ilg/Wsrd9IyeffeaXLpGAaXYYUP5OaQjZM9y9BiFZWZiLu', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
 (53, 'DIEGO LEONARDO PORTILLA RANGEL', '23301061550112@cetis155.edu.mx', '', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
-(54, 'pedritoelmascapit12', '23301061550096@cetis155.edu.mx', '$2b$10$TzF8TXwXHOw4TUOf/zUJ3.y7rUixsqXJCCLMgXWswbnHVQ3niloMm', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
+(54, 'pedrito', '23301061550096@cetis155.edu.mx', '$2b$10$TzF8TXwXHOw4TUOf/zUJ3.y7rUixsqXJCCLMgXWswbnHVQ3niloMm', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
 (64, 'Daniel', 'danielviramontes762@gmail.com', '$2b$10$esSX6qM6QfXeJfiZloenVuntJ.UM8M.Dtr.CfitKpUVeiKNs6iSGm', 1, NULL, NULL, NULL, 0, 1, 1, NULL, NULL);
 
 -- --------------------------------------------------------
