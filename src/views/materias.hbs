@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ruleta de Materias</title>
+  <link rel="stylesheet" href="/css/dato.css" />
+  <style>
+    #elegirMateria {
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.8rem 2rem;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    #elegirMateria:hover {
+      background: #34c759;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    #elegirMateria:active {
+      transform: translateY(1px);
+    }
+
+    .global-header-elements {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="contenedor-ruleta">
+    <h1>Materia</h1>
+
+    <div class="ruleta" id="ruleta">
+      <div class="materia activa">
+        <span class="texto">Geografía</span>
+        <div class="animacion-deco">
+          <img src="/media/videos/geografia.gif" alt="Animación Geografía" />
+        </div>
+      </div>
+      <div class="materia">
+        <span class="texto">Historia</span>
+        <div class="animacion-deco">
+          <img src="/media/videos/historia.gif" alt="Animación Historia" />
+        </div>
+      </div>  
+      <div class="materia">
+        <span class="texto">Matemáticas</span>
+        <div class="animacion-deco">
+          <img src="/media/videos/matematicas.gif" alt="Animación Matemáticas" />
+        </div>
+      </div>
+      <div class="materia">
+        <span class="texto">Biologia</span>
+        <div class="animacion-deco">
+          <img src="/media/videos/biologia.gif" alt="Animación Matemáticas" />
+        </div>
+      </div>
+      <div class="materia">
+        <span class="texto">Tecnologia</span>
+        <div class="animacion-deco">
+          <img src="/media/videos/tecnologia.gif" alt="Animación Matemáticas" />
+        </div>
+      </div>
+      <div class="materia">
+        <span class="texto">Fisica</span>
+        <div class="animacion-deco">
+          <img src="/media/videos/fisica.gif" alt="Animación Matemáticas" />
+        </div>
+      </div>
+    </div>
+
+    <div class="controles-ruleta">
+      <button id="anterior">◀ Anterior</button>
+      <button id="aleatorio">Girar</button>
+      <button id="siguiente">Siguiente ▶</button>
+    </div>
+
+    <!-- Botón para elegir materia -->
+    <div class="controles-ruleta" style="margin-top: 1rem;">
+      <button id="elegirMateria">Elegir esta materia</button>
+    </div>
+    <div class="controles-ruleta" style="margin-top: 1rem;">
+      <button onclick="window.location.href='/perfil2'"  id="btnRegresar" style="background: #0056b3; color: white; border: none; border-radius: 8px; padding: 0.8rem 2rem; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-left: 1rem; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: all 0.3s;">
+        Regresar
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const materias = document.querySelectorAll('.materia');
+    const btnAnterior = document.getElementById('anterior');
+    const btnSiguiente = document.getElementById('siguiente');
+    const btnAleatorio = document.getElementById('aleatorio');
+    const btnElegir = document.getElementById('elegirMateria');
+    let posicionActual = 0;
+
+    function actualizarRuleta() {
+      materias.forEach((materia, index) => {
+        materia.classList.remove('activa');
+        materia.style.transform = `rotateX(${index * 120}deg) translateZ(150px)`;
+      });
+      materias[posicionActual].classList.add('activa');
+    }
+
+    function girarRuleta(direccion) {
+      const ruleta = document.getElementById('ruleta');
+      ruleta.style.transition = 'transform 1s ease-out';
+
+      if (direccion === 'aleatorio') {
+        posicionActual = Math.floor(Math.random() * materias.length);
+      } else {
+        posicionActual = (posicionActual + (direccion === 'siguiente' ? 1 : -1) + materias.length) % materias.length;
+      }
+
+      ruleta.style.transform = `rotateX(${posicionActual * -120}deg)`;
+
+      setTimeout(() => {
+        actualizarRuleta();
+        ruleta.style.transition = 'none';
+      }, 1000);
+    }
+
+    // Event listeners
+    btnAnterior.addEventListener('click', () => girarRuleta('anterior'));
+    btnSiguiente.addEventListener('click', () => girarRuleta('siguiente'));
+    btnAleatorio.addEventListener('click', () => girarRuleta('aleatorio'));
+
+    btnElegir.addEventListener('click', () => {
+      const materiaSeleccionada = materias[posicionActual].querySelector('.texto').textContent;
+      alert(`Has elegido: ${materiaSeleccionada}`);
+      // Aquí puedes hacer una redirección o enviar al servidor
+      window.location.href = '/dato';
+    });
+
+    // Inicializar
+    actualizarRuleta();
+  </script>
+</body>
+</html>

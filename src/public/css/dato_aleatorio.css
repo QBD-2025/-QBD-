@@ -1,0 +1,62 @@
+body {
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(135deg, #0515a8, #09012c);
+  color: #fff;
+  margin: 0;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.contenedor-dato {
+  display: flex;
+  gap: 2rem;
+  max-width: 900px;
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.recuadro-imagen {
+  width: 250px;
+  height: 250px;
+  background-color: #FFC300;
+  border-radius: 10px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Si usas imagen dentro de .recuadro-imagen, aplica esto */
+.recuadro-imagen img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 10px;
+}
+
+.contenido-dato {
+  flex-grow: 1;
+  color: #0a2472;
+}
+
+.contenido-dato h1 {
+  margin-bottom: 1rem;
+  font-size: 2rem;
+  color: #0515a8;
+}
+
+.contenido-dato p {
+  white-space: pre-line; /* Para que el salto de línea en {{dato}} se respete */
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* Ocultar elementos globales si es necesario */
+.global-header-elements {
+  display: none !important;
+}

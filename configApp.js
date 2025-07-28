@@ -90,8 +90,13 @@ const registerR = require('./src/router/registerR');
 const verifyR = require('./src/router/verificationR');
 const recoveryR = require('./src/router/passResetR');
 const profileR = require('./src/router/profileR');
+const materiasR = require('./src/router/materiasR');
+const minijuegosR = require('./src/router/minijuegosR');
+const datoR = require('./src/router/datoR.js');
 
 // 7. Uso de routers (ORDEN RECOMENDADO)
+
+app.use('/', datoR);
 app.use('/editor', editorR);
 app.use('/', usuarioR);
 app.use('/', formulario1R);
@@ -103,6 +108,8 @@ app.use('/', verifyR);
 app.use('/', recoveryR);
 app.use('/', profileR);
 app.use('/', generalR);
+app.use('/', materiasR);
+app.use('/', minijuegosR);
 
 // 8. Configuración de puerto - ¡PERMANECE IGUAL!
 const PORT = process.env.PORT || 3005;
