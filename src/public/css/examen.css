@@ -1,0 +1,141 @@
+/* Fondo general */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0515a8, #09012c);
+  color: #111;
+}
+
+/* Encabezado principal del examen */
+header {
+  background: white;
+  color: #f59e0b;
+  padding: 20px;
+  text-align: center;
+  font-size: 28px;
+  font-weight: bold;
+  border-bottom: 4px solid #f59e0b;
+}
+
+/* Contenedor de cada pregunta */
+.contenedor-pregunta {
+  background-color: white;
+  border: 3px solid #ccc;
+  max-width: 750px;
+  margin: 40px auto;
+  padding: 25px;
+  border-radius: 15px;
+  display: none;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.contenedor-pregunta.activa {
+  display: block;
+}
+
+/* Encabezado de la tarjeta */
+.encabezado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #0515a8, #09012c);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 10px 10px 0 0;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+/* Texto de la pregunta */
+.pregunta {
+  margin-top: 25px;
+  font-size: 22px;
+  font-weight: bold;
+  color: #0a0a3b;
+}
+
+/* Opciones de respuesta */
+.opciones {
+  margin: 25px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.opciones button {
+  padding: 12px;
+  border: 2px solid #0515a8;
+  border-radius: 10px;
+  background-color: white;
+  cursor: pointer;
+  font-size: 17px;
+  transition: all 0.3s;
+}
+
+.opciones button:hover {
+  background-color: #e0f0ff;
+}
+
+.opciones button.seleccionada {
+  background: rgb(131, 129, 129);
+  color: white;
+  border-color: #007bff;
+}
+
+/* Navegación entre preguntas */
+.navegacion {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.navegacion button {
+  padding: 12px 25px;
+  background-color: #f59e0b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.navegacion button:hover {
+  background-color: #ac6700;
+}
+
+/* Espacio inferior */
+.abajo {
+  margin-top: 25px;
+  text-align: center;
+}
+
+/* Distribución de contenido con imagen */
+.contenido-pregunta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0;
+}
+
+/* Pregunta textual */
+.cuerpo-pregunta {
+  flex: 1;
+}
+
+/* Imagen del pulpo */
+.pulpo-container {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+}
+
+.pulpo {
+  height: 280px;
+  position: absolute;
+  bottom: 32px;
+  right: 220px;
+}

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestión de Datos</title>
+  <link rel="stylesheet" href="/css/editor.css" />
+</head>
+<body>
+  <header class="editor-header">
+    <div class="header-left">
+      <a href="/">
+        <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image-header">
+      </a>
+    </div>
+    <div class="header-center">
+      <h1 class="editor-title">Panel de Edición</h1>
+      <p class="editor-welcome">Bienvenido {{user.username}} (EDITOR)</p>
+    </div>
+    <div class="header-right">
+      <a href="/perfil2" class="volver-button">Volver</a>
+    </div>
+  </header>
+
+  <img src="/images/stuart_recargado.png" alt="Personaje Editor" class="character-image">
+
+  <div class="editor-container container mt-4">
+    <h2 class="editor-subtitle mb-4">Gestión de Datos</h2>
+    <a href="/editor" class="editor-btn">Gestión de Exámenes</a>
+
+    <table class="editor-table mt-3">
+      <thead>
+        <tr>
+          <th>ID Materia</th>
+          <th>Dato</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each datos}}
+        <tr>
+          <td>{{id_materia}} - {{nombre_materia}}</td>
+          <td>{{dato}}</td>
+          <td>
+            <button class="editor-action-btn" onclick="editarDato({{id_dato}}, '{{dato}}')">✏️ Editar</button>
+            <button class="editor-action-btn" onclick="eliminarDato({{id_dato}})">🗑️ Eliminar</button>
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <button class="editor-btn mt-3" onclick="agregarDato()">➕ Agregar dato</button>
+  </div>
+
+  <script>
+    function eliminarDato(id) {
+      if (confirm("¿Eliminar este dato?")) {
+        fetch(`/editor/eliminar-dato/${id}`, { method: "DELETE" })
+          .then(res => res.ok ? location.reload() : alert("Error eliminando"));
+      }
+    }
+
+    function editarDato(id, texto) {
+      const nuevo = prompt("Editar dato:", texto);
+      if (nuevo && nuevo !== texto) {
+        fetch(`/editor/editar-dato`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, nuevo })
+        }).then(res => res.ok ? location.reload() : alert("Error editando"));
+      }
+    }
+
+    function agregarDato() {
+      const dato = prompt("Nuevo dato:");
+      const id_materia = prompt("ID de materia:");
+      if (!dato || !id_materia) return;
+      
+      fetch(`/editor/agregar-dato`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dato, id_materia })
+      }).then(res => res.ok ? location.reload() : alert("Error agregando"));
+    }
+  </script>
+</body>
+</html>

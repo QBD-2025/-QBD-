@@ -30,7 +30,11 @@ app.engine('.hbs', exphbs.engine({
     partialsDir: path.join(__dirname, 'src', 'views', 'partials'),
     extname: '.hbs',
     helpers: {
-        eq: (a, b) => a === b
+        eq: (a, b) => a === b,
+        lower: (str) => str.toLowerCase(),
+        inc: (value) => parseInt(value) + 1,
+        json: context => JSON.stringify(context),
+        sum: (a, b) => a + b
     }
 }));
 
@@ -93,9 +97,11 @@ const profileR = require('./src/router/profileR');
 const materiasR = require('./src/router/materiasR');
 const minijuegosR = require('./src/router/minijuegosR');
 const datoR = require('./src/router/datoR.js');
+const examenR = require('./src/router/examenR');
 
 // 7. Uso de routers (ORDEN RECOMENDADO)
 
+app.use('/', examenR);
 app.use('/', datoR);
 app.use('/editor', editorR);
 app.use('/', usuarioR);

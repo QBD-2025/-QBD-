@@ -39,42 +39,14 @@
     <h1>Materia</h1>
 
     <div class="ruleta" id="ruleta">
-      <div class="materia activa">
-        <span class="texto">Geografía</span>
+      {{#each materias}}
+      <div class="materia">
+        <span class="texto">{{descripcion}}</span>
         <div class="animacion-deco">
-          <img src="/media/videos/geografia.gif" alt="Animación Geografía" />
+          <img src="/media/videos/{{descripcion}}.gif" alt="Animación {{descripcion}}" />
         </div>
       </div>
-      <div class="materia">
-        <span class="texto">Historia</span>
-        <div class="animacion-deco">
-          <img src="/media/videos/historia.gif" alt="Animación Historia" />
-        </div>
-      </div>  
-      <div class="materia">
-        <span class="texto">Matemáticas</span>
-        <div class="animacion-deco">
-          <img src="/media/videos/matematicas.gif" alt="Animación Matemáticas" />
-        </div>
-      </div>
-      <div class="materia">
-        <span class="texto">Biologia</span>
-        <div class="animacion-deco">
-          <img src="/media/videos/biologia.gif" alt="Animación Matemáticas" />
-        </div>
-      </div>
-      <div class="materia">
-        <span class="texto">Tecnologia</span>
-        <div class="animacion-deco">
-          <img src="/media/videos/tecnologia.gif" alt="Animación Matemáticas" />
-        </div>
-      </div>
-      <div class="materia">
-        <span class="texto">Fisica</span>
-        <div class="animacion-deco">
-          <img src="/media/videos/fisica.gif" alt="Animación Matemáticas" />
-        </div>
-      </div>
+      {{/each}}
     </div>
 
     <div class="controles-ruleta">
@@ -83,12 +55,11 @@
       <button id="siguiente">Siguiente ▶</button>
     </div>
 
-    <!-- Botón para elegir materia -->
     <div class="controles-ruleta" style="margin-top: 1rem;">
       <button id="elegirMateria">Elegir esta materia</button>
     </div>
     <div class="controles-ruleta" style="margin-top: 1rem;">
-      <button onclick="window.location.href='/perfil2'"  id="btnRegresar" style="background: #0056b3; color: white; border: none; border-radius: 8px; padding: 0.8rem 2rem; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-left: 1rem; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: all 0.3s;">
+      <button onclick="window.location.href='/perfil2'" id="btnRegresar" style="background: #0056b3; color: white; border: none; border-radius: 8px; padding: 0.8rem 2rem; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-left: 1rem; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: all 0.3s;">
         Regresar
       </button>
     </div>
@@ -128,19 +99,16 @@
       }, 1000);
     }
 
-    // Event listeners
     btnAnterior.addEventListener('click', () => girarRuleta('anterior'));
     btnSiguiente.addEventListener('click', () => girarRuleta('siguiente'));
     btnAleatorio.addEventListener('click', () => girarRuleta('aleatorio'));
 
     btnElegir.addEventListener('click', () => {
-      const materiaSeleccionada = materias[posicionActual].querySelector('.texto').textContent;
-      alert(`Has elegido: ${materiaSeleccionada}`);
-      // Aquí puedes hacer una redirección o enviar al servidor
-      window.location.href = '/dato';
+      //const materiaSeleccionada = materias[posicionActual].querySelector('.texto').textContent;
+      //alert(`Has elegido: ${materiaSeleccionada}`);
+      window.location.href = '/dato'; // o puedes pasar la materia por query param si necesitas
     });
 
-    // Inicializar
     actualizarRuleta();
   </script>
 </body>

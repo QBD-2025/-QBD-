@@ -192,5 +192,23 @@ router.post('/agregar-pregunta', isAuthenticated, async (req, res) => {
     }
 });
 
+router.get('/datos', isAuthenticated, async (req, res) => {
+    try {
+        const [datos] = await req.pool.query(`
+            SELECT d.id_dato, d.dato,d.id_materia
+            FROM dato_curioso d;
+        `);
+
+        res.render('editor_datos', {
+            layout: false,
+            user: req.session.user,
+            datos
+        });
+    } catch (error) {
+        console.error("Error cargando datos:", error);
+        res.status(500).send("Error cargando datos");
+    }
+});
+
 module.exports = router;
 
