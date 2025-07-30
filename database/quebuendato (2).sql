@@ -1,9 +1,10 @@
+use quebuendato;
 -- phpMyAdmin SQL Dump
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 22-07-2025 a las 23:19:58
+-- Tiempo de generación: 30-07-2025 a las 06:39:51
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -18,454 +19,8 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: `phpmyadmin`
---
-CREATE DATABASE IF NOT EXISTS `phpmyadmin` DEFAULT CHARACTER SET utf8 COLLATE utf8_bin;
-USE `phpmyadmin`;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pma__bookmark`
---
-
-CREATE TABLE `pma__bookmark` (
-  `id` int(10) UNSIGNED NOT NULL,
-  `dbase` varchar(255) NOT NULL DEFAULT '',
-  `user` varchar(255) NOT NULL DEFAULT '',
-  `label` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
-  `query` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Bookmarks';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pma__central_columns`
---
-
-CREATE TABLE `pma__central_columns` (
-  `db_name` varchar(64) NOT NULL,
-  `col_name` varchar(64) NOT NULL,
-  `col_type` varchar(64) NOT NULL,
-  `col_length` text DEFAULT NULL,
-  `col_collation` varchar(64) NOT NULL,
-  `col_isNull` tinyint(1) NOT NULL,
-  `col_extra` varchar(255) DEFAULT '',
-  `col_default` text DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Central list of columns';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pma__column_info`
---
-
-CREATE TABLE `pma__column_info` (
-  `id` int(5) UNSIGNED NOT NULL,
-  `db_name` varchar(64) NOT NULL DEFAULT '',
-  `table_name` varchar(64) NOT NULL DEFAULT '',
-  `column_name` varchar(64) NOT NULL DEFAULT '',
-  `comment` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
-  `mimetype` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '',
-  `transformation` varchar(255) NOT NULL DEFAULT '',
-  `transformation_options` varchar(255) NOT NULL DEFAULT '',
-  `input_transformation` varchar(255) NOT NULL DEFAULT '',
-  `input_transformation_options` varchar(255) NOT NULL DEFAULT ''
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Column information for phpMyAdmin';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pma__designer_settings`
---
-
-CREATE TABLE `pma__designer_settings` (
-  `username` varchar(64) NOT NULL,
-  `settings_data` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Settings related to Designer';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pma__export_templates`
---
-
-CREATE TABLE `pma__export_templates` (
-  `id` int(5) UNSIGNED NOT NULL,
-  `username` varchar(64) NOT NULL,
-  `export_type` varchar(10) NOT NULL,
-  `template_name` varchar(64) NOT NULL,
-  `template_data` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Saved export templates';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pma__favorite`
---
-
-CREATE TABLE `pma__favorite` (
-  `username` varchar(64) NOT NULL,
-  `tables` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Favorite tables';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pma__history`
---
-
-CREATE TABLE `pma__history` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `username` varchar(64) NOT NULL DEFAULT '',
-  `db` varchar(64) NOT NULL DEFAULT '',
-  `table` varchar(64) NOT NULL DEFAULT '',
-  `timevalue` timestamp NOT NULL DEFAULT current_timestamp(),
-  `sqlquery` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='SQL history for phpMyAdmin';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pma__navigationhiding`
---
-
-CREATE TABLE `pma__navigationhiding` (
-  `username` varchar(64) NOT NULL,
-  `item_name` varchar(64) NOT NULL,
-  `item_type` varchar(64) NOT NULL,
-  `db_name` varchar(64) NOT NULL,
-  `table_name` varchar(64) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Hidden items of navigation tree';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pma__pdf_pages`
---
-
-CREATE TABLE `pma__pdf_pages` (
-  `db_name` varchar(64) NOT NULL DEFAULT '',
-  `page_nr` int(10) UNSIGNED NOT NULL,
-  `page_descr` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT ''
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='PDF relation pages for phpMyAdmin';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pma__recent`
---
-
-CREATE TABLE `pma__recent` (
-  `username` varchar(64) NOT NULL,
-  `tables` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Recently accessed tables';
-
---
--- Volcado de datos para la tabla `pma__recent`
---
-
-INSERT INTO `pma__recent` (`username`, `tables`) VALUES
-('root', '[{\"db\":\"quebuendato\",\"table\":\"usuario\"},{\"db\":\"quebuendato\",\"table\":\"tipo_usuario\"}]');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pma__relation`
---
-
-CREATE TABLE `pma__relation` (
-  `master_db` varchar(64) NOT NULL DEFAULT '',
-  `master_table` varchar(64) NOT NULL DEFAULT '',
-  `master_field` varchar(64) NOT NULL DEFAULT '',
-  `foreign_db` varchar(64) NOT NULL DEFAULT '',
-  `foreign_table` varchar(64) NOT NULL DEFAULT '',
-  `foreign_field` varchar(64) NOT NULL DEFAULT ''
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Relation table';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pma__savedsearches`
---
-
-CREATE TABLE `pma__savedsearches` (
-  `id` int(5) UNSIGNED NOT NULL,
-  `username` varchar(64) NOT NULL DEFAULT '',
-  `db_name` varchar(64) NOT NULL DEFAULT '',
-  `search_name` varchar(64) NOT NULL DEFAULT '',
-  `search_data` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Saved searches';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pma__table_coords`
---
-
-CREATE TABLE `pma__table_coords` (
-  `db_name` varchar(64) NOT NULL DEFAULT '',
-  `table_name` varchar(64) NOT NULL DEFAULT '',
-  `pdf_page_number` int(11) NOT NULL DEFAULT 0,
-  `x` float UNSIGNED NOT NULL DEFAULT 0,
-  `y` float UNSIGNED NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Table coordinates for phpMyAdmin PDF output';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pma__table_info`
---
-
-CREATE TABLE `pma__table_info` (
-  `db_name` varchar(64) NOT NULL DEFAULT '',
-  `table_name` varchar(64) NOT NULL DEFAULT '',
-  `display_field` varchar(64) NOT NULL DEFAULT ''
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Table information for phpMyAdmin';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pma__table_uiprefs`
---
-
-CREATE TABLE `pma__table_uiprefs` (
-  `username` varchar(64) NOT NULL,
-  `db_name` varchar(64) NOT NULL,
-  `table_name` varchar(64) NOT NULL,
-  `prefs` text NOT NULL,
-  `last_update` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Tables'' UI preferences';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pma__tracking`
---
-
-CREATE TABLE `pma__tracking` (
-  `db_name` varchar(64) NOT NULL,
-  `table_name` varchar(64) NOT NULL,
-  `version` int(10) UNSIGNED NOT NULL,
-  `date_created` datetime NOT NULL,
-  `date_updated` datetime NOT NULL,
-  `schema_snapshot` text NOT NULL,
-  `schema_sql` text DEFAULT NULL,
-  `data_sql` longtext DEFAULT NULL,
-  `tracking` set('UPDATE','REPLACE','INSERT','DELETE','TRUNCATE','CREATE DATABASE','ALTER DATABASE','DROP DATABASE','CREATE TABLE','ALTER TABLE','RENAME TABLE','DROP TABLE','CREATE INDEX','DROP INDEX','CREATE VIEW','ALTER VIEW','DROP VIEW') DEFAULT NULL,
-  `tracking_active` int(1) UNSIGNED NOT NULL DEFAULT 1
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Database changes tracking for phpMyAdmin';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pma__userconfig`
---
-
-CREATE TABLE `pma__userconfig` (
-  `username` varchar(64) NOT NULL,
-  `timevalue` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `config_data` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='User preferences storage for phpMyAdmin';
-
---
--- Volcado de datos para la tabla `pma__userconfig`
---
-
-INSERT INTO `pma__userconfig` (`username`, `timevalue`, `config_data`) VALUES
-('root', '2025-07-22 21:19:57', '{\"Console\\/Mode\":\"collapse\",\"lang\":\"es\"}');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pma__usergroups`
---
-
-CREATE TABLE `pma__usergroups` (
-  `usergroup` varchar(64) NOT NULL,
-  `tab` varchar(64) NOT NULL,
-  `allowed` enum('Y','N') NOT NULL DEFAULT 'N'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='User groups with configured menu items';
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `pma__users`
---
-
-CREATE TABLE `pma__users` (
-  `username` varchar(64) NOT NULL,
-  `usergroup` varchar(64) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='Users and their assignments to user groups';
-
---
--- Índices para tablas volcadas
---
-
---
--- Indices de la tabla `pma__bookmark`
---
-ALTER TABLE `pma__bookmark`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indices de la tabla `pma__central_columns`
---
-ALTER TABLE `pma__central_columns`
-  ADD PRIMARY KEY (`db_name`,`col_name`);
-
---
--- Indices de la tabla `pma__column_info`
---
-ALTER TABLE `pma__column_info`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `db_name` (`db_name`,`table_name`,`column_name`);
-
---
--- Indices de la tabla `pma__designer_settings`
---
-ALTER TABLE `pma__designer_settings`
-  ADD PRIMARY KEY (`username`);
-
---
--- Indices de la tabla `pma__export_templates`
---
-ALTER TABLE `pma__export_templates`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `u_user_type_template` (`username`,`export_type`,`template_name`);
-
---
--- Indices de la tabla `pma__favorite`
---
-ALTER TABLE `pma__favorite`
-  ADD PRIMARY KEY (`username`);
-
---
--- Indices de la tabla `pma__history`
---
-ALTER TABLE `pma__history`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `username` (`username`,`db`,`table`,`timevalue`);
-
---
--- Indices de la tabla `pma__navigationhiding`
---
-ALTER TABLE `pma__navigationhiding`
-  ADD PRIMARY KEY (`username`,`item_name`,`item_type`,`db_name`,`table_name`);
-
---
--- Indices de la tabla `pma__pdf_pages`
---
-ALTER TABLE `pma__pdf_pages`
-  ADD PRIMARY KEY (`page_nr`),
-  ADD KEY `db_name` (`db_name`);
-
---
--- Indices de la tabla `pma__recent`
---
-ALTER TABLE `pma__recent`
-  ADD PRIMARY KEY (`username`);
-
---
--- Indices de la tabla `pma__relation`
---
-ALTER TABLE `pma__relation`
-  ADD PRIMARY KEY (`master_db`,`master_table`,`master_field`),
-  ADD KEY `foreign_field` (`foreign_db`,`foreign_table`);
-
---
--- Indices de la tabla `pma__savedsearches`
---
-ALTER TABLE `pma__savedsearches`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `u_savedsearches_username_dbname` (`username`,`db_name`,`search_name`);
-
---
--- Indices de la tabla `pma__table_coords`
---
-ALTER TABLE `pma__table_coords`
-  ADD PRIMARY KEY (`db_name`,`table_name`,`pdf_page_number`);
-
---
--- Indices de la tabla `pma__table_info`
---
-ALTER TABLE `pma__table_info`
-  ADD PRIMARY KEY (`db_name`,`table_name`);
-
---
--- Indices de la tabla `pma__table_uiprefs`
---
-ALTER TABLE `pma__table_uiprefs`
-  ADD PRIMARY KEY (`username`,`db_name`,`table_name`);
-
---
--- Indices de la tabla `pma__tracking`
---
-ALTER TABLE `pma__tracking`
-  ADD PRIMARY KEY (`db_name`,`table_name`,`version`);
-
---
--- Indices de la tabla `pma__userconfig`
---
-ALTER TABLE `pma__userconfig`
-  ADD PRIMARY KEY (`username`);
-
---
--- Indices de la tabla `pma__usergroups`
---
-ALTER TABLE `pma__usergroups`
-  ADD PRIMARY KEY (`usergroup`,`tab`,`allowed`);
-
---
--- Indices de la tabla `pma__users`
---
-ALTER TABLE `pma__users`
-  ADD PRIMARY KEY (`username`,`usergroup`);
-
---
--- AUTO_INCREMENT de las tablas volcadas
---
-
---
--- AUTO_INCREMENT de la tabla `pma__bookmark`
---
-ALTER TABLE `pma__bookmark`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `pma__column_info`
---
-ALTER TABLE `pma__column_info`
-  MODIFY `id` int(5) UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `pma__export_templates`
---
-ALTER TABLE `pma__export_templates`
-  MODIFY `id` int(5) UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `pma__history`
---
-ALTER TABLE `pma__history`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `pma__pdf_pages`
---
-ALTER TABLE `pma__pdf_pages`
-  MODIFY `page_nr` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `pma__savedsearches`
---
-ALTER TABLE `pma__savedsearches`
-  MODIFY `id` int(5) UNSIGNED NOT NULL AUTO_INCREMENT;
---
 -- Base de datos: `quebuendato`
 --
-CREATE DATABASE IF NOT EXISTS `quebuendato` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE `quebuendato`;
 
 -- --------------------------------------------------------
 
@@ -476,6 +31,18 @@ USE `quebuendato`;
 CREATE TABLE `carrera` (
   `id_carrera` int(11) NOT NULL,
   `descripcion` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `dato_curioso`
+--
+
+CREATE TABLE `dato_curioso` (
+  `id_dato` int(11) NOT NULL,
+  `id_materia` int(11) NOT NULL,
+  `dato` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -632,7 +199,10 @@ INSERT INTO `materias` (`id_materia`, `descripcion`) VALUES
 (10, 'MEDICINA'),
 (11, 'CULTURA GENERAL'),
 (12, 'ARTES'),
-(13, 'TECNOLOGÍA');
+(13, 'TECNOLOGÍA'),
+(16, 'Historia'),
+(17, 'Biologia'),
+(18, 'fisica');
 
 -- --------------------------------------------------------
 
@@ -661,7 +231,11 @@ INSERT INTO `opcion_pregunta` (`id_opcion`, `id_pregunta`, `texto_opcion`) VALUE
 (12, 4, 'Preparatoria'),
 (13, 4, 'Egresado'),
 (14, 5, 'Si'),
-(15, 5, 'No');
+(15, 5, 'No'),
+(19, 15, 'Matematicas'),
+(20, 15, 'Comunicacion'),
+(21, 15, 'Ciencias Naturales'),
+(22, 15, 'Ciencias Sociales');
 
 -- --------------------------------------------------------
 
@@ -1194,7 +768,8 @@ INSERT INTO `pregunta_encuesta` (`id_pregunta`, `id_encuesta`, `texto`, `id_esta
 (2, 1, '¿Cual es tu meta principal al usar esta plataforma?', 1),
 (3, 1, '¿Cuanto tiempo podrias dedicar al estudio al dia?', 1),
 (4, 1, '¿En que etapa estas actualmente?', 1),
-(5, 1, '¿Te gustaria recibir recomendaciones personalizadas?', 1);
+(5, 1, '¿Te gustaria recibir recomendaciones personalizadas?', 1),
+(15, 1, '¿En que area te gustaria reforzar tus conocimientos?', 1);
 
 -- --------------------------------------------------------
 
@@ -3215,6 +2790,58 @@ INSERT INTO `respuesta_encuesta` (`id_pregunta`, `id_opcion`) VALUES
 (2, 6),
 (3, 9),
 (4, 12),
+(5, 14),
+(2, 5),
+(3, 10),
+(4, 12),
+(5, 14),
+(2, 5),
+(3, 10),
+(4, 12),
+(5, 14),
+(2, 6),
+(3, 9),
+(4, 12),
+(5, 15),
+(2, 6),
+(3, 9),
+(4, 12),
+(5, 14),
+(2, 5),
+(3, 10),
+(4, 12),
+(5, 14),
+(2, 6),
+(3, 9),
+(4, 12),
+(5, 15),
+(2, 6),
+(3, 9),
+(4, 12),
+(5, 14),
+(2, 5),
+(3, 10),
+(4, 12),
+(5, 14),
+(2, 6),
+(3, 9),
+(4, 12),
+(5, 15),
+(2, 6),
+(3, 9),
+(4, 12),
+(5, 14),
+(2, 5),
+(3, 10),
+(4, 12),
+(5, 14),
+(2, 6),
+(3, 9),
+(4, 12),
+(5, 15),
+(2, 6),
+(3, 9),
+(4, 12),
 (5, 14);
 
 -- --------------------------------------------------------
@@ -3288,13 +2915,13 @@ CREATE TABLE `usuario` (
 INSERT INTO `usuario` (`id_usuario`, `username`, `email`, `password`, `verificado`, `token`, `actualizacion`, `token_expira`, `puntos`, `id_tp_usuario`, `id_status`, `token_reseteo`, `token_reseteo_expira`) VALUES
 (38, 'Daniel', 'danielviramontes562@gmail.com', '$2b$10$d1hj5RO7GIBbSdLjNLq2QuMVukUQe4ORySBIJJ4mlK223ARbZgw.u', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
 (39, 'juanito14', 'juanjose.chavez.15153@gmail.com', '$2b$10$pbg4j7.mldd547o6OyIjSe8oH3Um1/JvswGLOnAnvXdnvPuqWnIpu', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
-(40, 'Nievedeposole12', 'pedrozamiguel0123@gmail.com', '$2b$10$OYweYO11IUbWFmwRywa33eL/iTG0bcsK/v7hQXdQWRatpMsNZGU/W', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
-(45, 'Eduardo García', 'eduardogarcia080806@gmail.com', '$2b$12$7ANoCz8irhoWI1/xfJgame05jYw6HH8ZQTF0AA4pwaTTUN1mBcN86', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
-(49, 'snejen', 'diegoleonardoportillarangel@gmail.com', '$2b$10$eo.bd/ZJ6OfBYYH4nYh84OBrE1IcgFrVbpZ5nGYIA0m0AIpuAKW6C', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
-(51, 'kjdsndfnjnf', 'seniorsoldadorazosonicko@gmail.com', '$2b$10$g30xIr/ilg/Wsrd9IyeffeaXLpGAaXYYUP5OaQjZM9y9BiFZWZiLu', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
-(53, 'DIEGO LEONARDO PORTILLA RANGEL', '23301061550112@cetis155.edu.mx', '', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
-(54, 'pedrito', '23301061550096@cetis155.edu.mx', '$2b$10$TzF8TXwXHOw4TUOf/zUJ3.y7rUixsqXJCCLMgXWswbnHVQ3niloMm', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL),
-(64, 'Daniel', 'danielviramontes762@gmail.com', '$2b$10$esSX6qM6QfXeJfiZloenVuntJ.UM8M.Dtr.CfitKpUVeiKNs6iSGm', 1, NULL, NULL, NULL, 0, 1, 1, NULL, NULL);
+(40, 'Nievedeposole12', 'pedrozamiguel0123@gmail.com', '$2b$10$OYweYO11IUbWFmwRywa33eL/iTG0bcsK/v7hQXdQWRatpMsNZGU/W', 1, NULL, NULL, NULL, 0, 1, 1, NULL, NULL),
+(45, 'Eduardo García', 'eduardogarcia080806@gmail.com', '$2b$12$7ANoCz8irhoWI1/xfJgame05jYw6HH8ZQTF0AA4pwaTTUN1mBcN86', 1, NULL, NULL, NULL, 0, 1, 1, NULL, NULL),
+(49, 'snejen', 'diegoleonardoportillarangel@gmail.com', '$2b$10$eo.bd/ZJ6OfBYYH4nYh84OBrE1IcgFrVbpZ5nGYIA0m0AIpuAKW6C', 1, NULL, NULL, NULL, 0, 1, 1, NULL, NULL),
+(51, 'kjdsndfnjnf', 'seniorsoldadorazosonicko@gmail.com', '$2b$10$g30xIr/ilg/Wsrd9IyeffeaXLpGAaXYYUP5OaQjZM9y9BiFZWZiLu', 1, NULL, NULL, NULL, 0, 1, 1, NULL, NULL),
+(53, 'DIEGO LEONARDO PORTILLA RANGEL', '23301061550112@cetis155.edu.mx', '', 1, NULL, NULL, NULL, 0, 1, 1, NULL, NULL),
+(54, 'RIZ0Z1', '23301061550096@cetis155.edu.mx', '$2b$10$vjYqv2e6AD2rOMVN1tvHU.a.OTBoMDxvMioPx0qO5JeTmmaNPRc4u', 1, NULL, NULL, NULL, 0, 3, 1, '0000-00-00 00:00:00', '2025-07-24 16:07:46'),
+(68, 'daniel', 'danielviramontes762@gmail.com', '$2b$10$SJwOHZd6jrfo04Rvo8cp7OBuWbqbrinD5tbTAT5Ji1hDqU217PAbO', 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -3331,6 +2958,13 @@ CREATE TABLE `usuario_examen` (
 --
 ALTER TABLE `carrera`
   ADD PRIMARY KEY (`id_carrera`);
+
+--
+-- Indices de la tabla `dato_curioso`
+--
+ALTER TABLE `dato_curioso`
+  ADD PRIMARY KEY (`id_dato`),
+  ADD KEY `id_materia` (`id_materia`);
 
 --
 -- Indices de la tabla `dificultad`
@@ -3487,6 +3121,12 @@ ALTER TABLE `carrera`
   MODIFY `id_carrera` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT de la tabla `dato_curioso`
+--
+ALTER TABLE `dato_curioso`
+  MODIFY `id_dato` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de la tabla `dificultad`
 --
 ALTER TABLE `dificultad`
@@ -3526,13 +3166,13 @@ ALTER TABLE `grupos`
 -- AUTO_INCREMENT de la tabla `materias`
 --
 ALTER TABLE `materias`
-  MODIFY `id_materia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id_materia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de la tabla `opcion_pregunta`
 --
 ALTER TABLE `opcion_pregunta`
-  MODIFY `id_opcion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id_opcion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT de la tabla `pregunta`
@@ -3544,7 +3184,7 @@ ALTER TABLE `pregunta`
 -- AUTO_INCREMENT de la tabla `pregunta_encuesta`
 --
 ALTER TABLE `pregunta_encuesta`
-  MODIFY `id_pregunta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id_pregunta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT de la tabla `respuesta`
@@ -3568,11 +3208,17 @@ ALTER TABLE `tipo_usuario`
 -- AUTO_INCREMENT de la tabla `usuario`
 --
 ALTER TABLE `usuario`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
 
 --
 -- Restricciones para tablas volcadas
 --
+
+--
+-- Filtros para la tabla `dato_curioso`
+--
+ALTER TABLE `dato_curioso`
+  ADD CONSTRAINT `dato_curioso_ibfk_1` FOREIGN KEY (`id_materia`) REFERENCES `materias` (`id_materia`);
 
 --
 -- Filtros para la tabla `examen`
@@ -3662,476 +3308,6 @@ ALTER TABLE `usuario_carrera`
 ALTER TABLE `usuario_examen`
   ADD CONSTRAINT `usuario_examen_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `usuario_examen_ibfk_2` FOREIGN KEY (`id_examen`) REFERENCES `examen` (`id_examen`) ON DELETE NO ACTION ON UPDATE NO ACTION;
---
--- Base de datos: `sis_doc`
---
-CREATE DATABASE IF NOT EXISTS `sis_doc` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE `sis_doc`;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `academia`
---
-
-CREATE TABLE `academia` (
-  `id_academia` int(11) NOT NULL,
-  `nombre` varchar(100) NOT NULL,
-  `nombre_corto` int(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `centro_trabajo`
---
-
-CREATE TABLE `centro_trabajo` (
-  `id_cct` int(11) NOT NULL,
-  `CCT` varchar(10) NOT NULL,
-  `Nombre` varchar(100) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `centro_trabajo`
---
-
-INSERT INTO `centro_trabajo` (`id_cct`, `CCT`, `Nombre`) VALUES
-(1, '01DCT0004C', 'CETIS 155');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `docente`
---
-
-CREATE TABLE `docente` (
-  `id_docente` int(11) NOT NULL,
-  `RFC` varchar(13) NOT NULL,
-  `Nombre` varchar(100) NOT NULL,
-  `Apellido_pat` varchar(100) NOT NULL,
-  `Apellido_mat` varchar(100) DEFAULT NULL,
-  `Perfil` text DEFAULT NULL,
-  `correo_e` varchar(100) DEFAULT NULL,
-  `Telefono` varchar(100) DEFAULT NULL,
-  `id_turno` int(11) NOT NULL,
-  `id_cct` int(11) NOT NULL,
-  `id_status` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `docente`
---
-
-INSERT INTO `docente` (`id_docente`, `RFC`, `Nombre`, `Apellido_pat`, `Apellido_mat`, `Perfil`, `correo_e`, `Telefono`, `id_turno`, `id_cct`, `id_status`) VALUES
-(1, 'AAMP600211E43', 'PEDRO', 'ALCALA', 'MARTINEZ', 'M', 'alcalapedro@hotmail.com', '4491514748', 1, 1, 1),
-(2, 'AEDL710625ST0', 'LUZ AURORA', 'ALENCASTRO', 'DURON', 'I', 'e_dusa@hotmail.com', '4491099168', 3, 1, 1),
-(3, 'BAMC7409035Q3', 'CARMEN ROSALBA', 'BARBA', 'MACIAS', 'I', 'rosalba.barba@hotmail.com', '4491141784', 3, 1, 1),
-(4, 'COMA5812092Z5', 'ARTURO', 'CORONA', 'MONTES', 'M', 'anlope85@hotmail.com', '4492321141', 1, 1, 1),
-(5, 'DIVG880109DG9', 'GERARDO JESUS', 'DIAZ', 'VELA', 'V', 'gerardo.diaz.vela@gmail.com', '4492094476', 2, 1, 1),
-(6, 'DILM771216LS9', 'MARCELA ESTHELA', 'DIAZ', 'LIMON', 'M', 'markiela3012@hotmail.com', '', 1, 1, 1),
-(7, 'DOLP721020I52', 'PEDRO', 'DOMINGUEZ', 'LOPEZ', 'M', 'yopedro72@live.com.mx', '', 1, 1, 1),
-(8, 'DUME680417TW0', 'ELBA ELIZABETH', 'DURON', 'MACIAS', 'I', 'eliz_duron@yahoo.com.mx', '', 3, 1, 1),
-(9, 'LOOF691212ECA', 'FABIOLA GUADALUPE', 'LOPEZ', 'OCHOA', 'M', 'fabilupis@yahoo.com.mx', '4491094794', 1, 1, 1),
-(10, 'BACM8210133S9', 'MARTHA ELIZABETH', 'BRAMBILA', 'CASTILLO', 'M', 'vicky23222008@hotmail.com', '', 1, 1, 1),
-(11, 'MEGG690303RM4', 'MA. GUADALUPE', 'MENDOZA', 'GONZALEZ', 'V', 'mendozgl@gmail.com', '', 2, 1, 1),
-(12, 'MOAL6303017G8', 'MA. LETICIA', 'MORALES', 'ACOSTA', 'I', 'mariel_shell@hotmail.com', '4491787136', 3, 1, 1),
-(13, 'MOEU640726VB1', 'URIEL', 'MORALES', 'ELIAS', 'M', 'urimoraeli@hotmail.com', '4491378997', 1, 1, 1),
-(15, 'JAPA8009252M9', 'AMIRA', 'J UREGUI', 'P REZ', 'V', 'eriosparra@yahoo.com.mx', '', 2, 1, 1),
-(16, 'ROSP820128EC7', 'PAMELA VIRIDIANA', 'ROBLEDO', 'SAMANO', 'M', 'pamikitty@hotmail.com', '', 1, 1, 1),
-(17, 'CAMJ840102S86', 'JANETTE DEL ROSARIO', 'CAMPOS', 'M RQUEZ', 'M', 'cecilia_1309@hotmail.com', '4492310718', 1, 1, 1),
-(18, 'TITA670625G21', 'ANABEL', 'TRINIDAD', 'TRINIDAD', 'M', 'aniytt@yahoo.com.mx', '4493000488', 1, 1, 1),
-(19, 'CAOM630224RI5', 'MARICELA', 'CAMACHO', 'OVALLE', 'I', 'urzana660@yahoo.com.mx', '', 3, 1, 1),
-(20, 'LUGJ921118NZA', 'JUAN MANUEL', 'LUEVANO', 'GOMEZ', 'I', 'vhas58@hotmail.com', '', 3, 1, 1),
-(21, 'CACJ670802F64', 'J. ANGEL', 'CARRANZA', 'CARLIN', 'M', 'carranzacarlinl.angel@yahoo.com', '', 1, 1, 1),
-(23, 'COAJ810226E94', 'JOSEFINA', 'CONTRERAS', 'ARRIAGA', 'M', 'yulery@hotmail.com', '4491827174', 1, 1, 1),
-(24, 'CORM6410047G9', 'MARTIN', 'CONTRERAS', 'ROMO', 'V', 'conromo64@hotmail.com', '4491062147', 2, 1, 1),
-(25, 'TOSJ641125R23', 'JAIME', 'DE LA TORRE', 'SIFUENTES', 'I', 'jaimerutilio@msn.com', '4491981786', 3, 1, 1),
-(26, '', ' ALBERTO', 'QUEZADA', ' VAZQUEZ', 'I', 'maester56@hotmail.com', '4491027162', 3, 1, 1),
-(27, 'HEMA631216DV8', 'MARIA ALICIA', 'HERNANDEZ', 'MORAN', 'V', 'aliferic@yahoo.com.mx', '', 2, 1, 1),
-(28, 'MOOA840616DAA', 'ANA LAURA', 'MONTES', 'ORTEGA', 'M', 'anylu38@hotmail.com', '', 1, 1, 1),
-(29, '', 'ARY ISRAEL', 'HERNANDEZ', 'LAZCANO', 'I', 'marcolino.nava@gmail.com', '4491556989', 3, 1, 1),
-(30, '', 'SERGIO LUIS', 'PALACIO', 'IBARROLA', 'V', '', '', 2, 1, 1),
-(32, 'ROTB620901N91', 'BERNARDO', 'RODRIGUEZ', 'TAPIA', 'V', 'joseph-pozos@hotmail.com', '4491735905', 2, 1, 1),
-(33, 'ROGH7601068V4', 'HILDA LUCIA', 'RODRIGUEZ', 'GOMEZ', 'V', 'hildardz76@hotmail.com', '', 2, 1, 1),
-(34, 'ROES620528EKA', 'SERGIO ENRIQUE', 'ROMERO', 'ESCOBOSA', 'I', 'serenrique62@gmail.com', '4491107054', 3, 1, 1),
-(35, 'QUGK801111UA3', 'KARLA ALEJANDRA', 'QUEZADA', 'GALVAN', 'V', '', '', 2, 1, 1),
-(36, 'VARL7107197Z8', 'LAURA', 'VARGAS', 'RIVERA', 'V', '', '4492128801', 2, 1, 1),
-(37, 'LODG7107077T2', 'GUILLERMO', 'LOPEZ', 'DIEGO', 'M', 'guillermo_l_d@hotmail.com', '', 1, 1, 1),
-(38, '', 'JANELY ANAYENZI', 'GARCIA', 'QUIROZ', 'I', '', '', 3, 1, 1),
-(39, 'AASP9308261U8', 'PRISCILA GABRIELA', 'ANDRADE', 'SANCHEZ', 'V', '', '', 2, 1, 1),
-(40, '', 'ERNESTO ROMEO', 'GARIBAY', 'MARTINEZ', 'V', '', '', 2, 1, 1),
-(41, '', 'VICTOR HUGO', 'MARIN', 'RAMIREZ', 'I', '', '', 3, 1, 1),
-(42, '', 'FABIOLA GUADALUPE', 'ARELLANO', 'RANGEL', 'V', '', '', 2, 1, 1),
-(43, '', 'MARIA GUADALUPE', 'MANCILLA', 'ROMO', 'V', '', '', 2, 1, 1),
-(44, '', 'CARLOS ALBERTO', 'ACEVEDO', 'SANCHEZ', 'M', '', '', 1, 1, 1),
-(45, '', 'VERONICA DEL ROCIO', 'FLORES', 'REYES', 'M', '', '', 1, 1, 1),
-(46, '', 'LETICIA ANGELICA', 'LEDESMA', 'ESPINOZA', 'M', '', '', 1, 1, 1),
-(47, '', 'ERIKA LILIANA', 'PADILLA', 'CONTRERAS', 'V', '', '', 2, 1, 1),
-(48, '', 'MANUEL', 'TRINIDAD', 'RODRIGUEZ', 'V', '', '', 2, 1, 1),
-(49, '', 'MAYRA', 'GUERRERO', 'ARROYO', '', '', '', 1, 1, 1),
-(53, '', 'TERESA', 'MORALES', 'ESPARZA', 'M', '', '', 1, 1, 1),
-(54, '', 'JOSE FERNANDO', 'MONTANTES', 'CASTA EDA', 'V', '', '', 2, 1, 1),
-(55, 'MOSR8707093VA', 'ROSA ARCELIA', 'MONTOYA', 'SANTOYO', 'V', '', '', 2, 1, 1),
-(56, '', 'OSCAR EDUARDO', 'ORNELAS', 'URZ A', 'M', '', '', 1, 1, 1),
-(59, '', 'DAVID', 'ACOSTA', 'MARQUEZ', 'V', '', '', 2, 1, 1),
-(64, '', 'LUIS MANUEL', 'RAMOS', 'SANDOVAL', '', '', '', 1, 1, 1),
-(70, '', 'JANELY ANAYENZI', 'GARCIA', 'QUIROZ', '', '', '', 1, 1, 1),
-(71, '', 'URIEL', 'MORALES', 'ELIAS', 'V', '', '', 2, 1, 1),
-(72, '', 'KARLA CECILIA', 'ACEVEDO', 'MORENO', 'V', '', '', 2, 1, 1),
-(75, '', 'FERNANDO MISAEL', 'PEREZ', 'HERNANDEZ', 'V', '', '', 2, 1, 1),
-(89, '', 'FATIMA ENEDINA', 'SABAD', 'ROSALES', 'I', '', '', 3, 1, 1),
-(90, '', ' OMAR GUADALUPE', 'CLAUDIO', 'GOMEZ', 'I', '', '', 3, 1, 1);
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `materia`
---
-
-CREATE TABLE `materia` (
-  `id_materia` int(11) NOT NULL,
-  `nombre` varchar(100) NOT NULL,
-  `nombre_corto` varchar(20) NOT NULL,
-  `semestre` int(11) NOT NULL,
-  `especialidad` varchar(20) NOT NULL,
-  `horas` int(11) NOT NULL,
-  `tipo_semestre` varchar(1) DEFAULT NULL,
-  `id_academia` int(11) DEFAULT NULL,
-  `id_status` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `materia`
---
-
-INSERT INTO `materia` (`id_materia`, `nombre`, `nombre_corto`, `semestre`, `especialidad`, `horas`, `tipo_semestre`, `id_academia`, `id_status`) VALUES
-(1, 'GEOMETRIA Y TRIGONOMETRIA', 'GEO Y TRIGO', 2, 'B', 4, 'P', NULL, 0),
-(2, 'INGLES II', 'INGLES II', 2, 'B', 3, 'P', NULL, 0),
-(3, 'CONSERVACION DE LA ENERGIA Y SUS INTERACCIONES CON LA MATERIA', 'CONS ENE IM', 2, 'B', 4, 'P', NULL, 0),
-(4, 'LECTURA, EXPRESION ORAL Y ESCRITA II', 'LEOYE II', 2, 'B', 4, 'P', NULL, 0),
-(5, 'DESARROLLA SOFTWARE UTILIZANDO PROGRAMACION ESTRUCTURADA', 'PROG. ESTRUC.', 2, 'P', 10, 'P', NULL, 0),
-(6, 'DISE¥A Y ADMINISTRA BDD SIMPLES', 'D. BASE DATOS', 2, 'P', 7, 'P', NULL, 0),
-(7, 'ENSAMBLA E INSTALA CONTROLADORES Y DISPOSITIVOS PERIFERICOS', 'ENS. INST. CONT', 2, 'S', 10, 'P', NULL, 0),
-(8, 'INSTALA Y CONFIGURA SOFTWARE', 'INS. CONF. SOFTW', 2, 'S', 7, 'P', NULL, 0),
-(9, 'INSTALA Y CONFIGURA SOFTWARE DE ACUERDO A LAS ESPECIFICACIONES Y REQUERIMIENTOS DEL USUARIO', 'INS. SOFT.', 2, 'S', 5, 'P', NULL, 0),
-(10, 'DISTINGUE LOS DIFERENTES TIPOS DE EMPRESAS, DOCUMENTOS, ADMINISTRACIONN Y RECURSOS', 'DIS.TIP.EMP.', 2, 'H', 10, 'P', NULL, 0),
-(11, 'ELABORA ESTRARTEGIAS PARA REALIZAR ACTIVIDADES EN SU AREA', 'ELAB. ESTRATEGIAS', 2, 'H', 7, 'P', NULL, 0),
-(12, 'MANTIENE EL SISTEMA ELECTRICO DEL AUTOMOVIL CON BASE EN EL MANUAL DEL FABRICANTE', 'M.S. ELECT.', 2, 'M', 6, 'P', NULL, 0),
-(13, 'MANTIENE EL SISTEMA ELECTRONICO DEL AUTOMOVIL', 'M. SIS. EL. AUT', 2, 'M', 11, 'P', NULL, 0),
-(14, 'CALCULO DIFERENCIAL', 'CALCULO DIF', 4, 'B', 4, 'P', NULL, 0),
-(15, 'INGLES IV', 'INGLES IV', 4, 'B', 3, 'P', NULL, 0),
-(16, 'FISICA I', 'FISICA', 4, 'B', 4, 'P', NULL, 0),
-(17, 'ECOLOGIA', 'ECOLOGIA', 4, 'B', 4, 'P', NULL, 0),
-(18, 'DESARROLLA APLICACIONES M?VILES PARA ANDROID', 'DES. AP. ANDROID', 6, 'P', 6, 'P', NULL, 0),
-(19, 'DESARROLLA APLICACIONES MOVILES PARA IOS', 'DES. AP. IOS', 6, 'P', 6, 'P', NULL, 0),
-(20, 'BRINDA SOPORTE TECNICO DE MANERA PRESENCIAL', 'SOP.TEC.PRE.', 4, 'S', 6, 'P', NULL, 0),
-(21, 'BRINDA SOPORTE TECNICO A DISTANCIA', 'SOP.TEC.DIS.', 4, 'S', 11, 'P', NULL, 0),
-(22, 'ASISTE EN LAS ACTIVIDADES DE CAPACITACION PARA EL DESARROLLO DEL CAPITAL HUMANO', 'ASIS.CAP. C.H', 4, 'H', 7, 'P', NULL, 0),
-(23, 'EVALUA EL DESEMPE¥O DE LA ORGANIZACION UTILIZANDO HERRAMIENTAS DE CALIDAD', 'EV.DES.ORG.H.C', 4, 'H', 10, 'P', NULL, 0),
-(24, 'CORRIGE FALLAS DE LOS SISTEMAS DE INYECCION ELECTRONICA DE LOS MOTORES DE GASOLINA Y DIESEL', 'CORR.INY.ELECT.', 4, 'M', 7, 'P', NULL, 0),
-(25, 'MANTIENE LAS EMISIONES CONTAMINANTES DENTRO DE LAS ESPECIFICACIONES DEL FABRICANTE', 'MAN.EM.CON.E.F', 4, 'M', 4, 'P', NULL, 0),
-(26, 'DIAGNOSTICA EL FUNCIONAMIENTO DE LOS SISTEMAS DE ENCENDIDO ELECTRONICO Y COMPUTARIZADO DEL MOTOR', 'DIAG.F.S.E.CONT.', 4, 'M', 6, 'P', NULL, 0),
-(27, 'GESTIONA LOS PROCESOS DE CAPACITACI?N PARA EL DESARROLLO DEL TALENTO HUMANO', 'GES P CAP DTH', 4, 'H', 10, 'P', NULL, 0),
-(28, 'PROMUEVE CONDICIONES DE TRABAJO SALUDABLES EN LA ORGANIZACI?N', 'PCT SALUD ORG', 4, 'H', 7, 'P', NULL, 0),
-(29, 'PROBABILIDAD Y ESTADISTICA', 'PROB. Y EST.', 6, 'B', 5, 'P', NULL, 0),
-(30, 'TEMAS DE FILOSOFIA', 'T. DE FILOSOFIA', 6, 'B', 5, 'P', NULL, 0),
-(31, 'ADMINISTRA Y CONFIGURA PLATAFORMAS DE E-LEARNING', 'A Y C P.ELEARNING', 6, 'P', 6, 'P', NULL, 0),
-(32, 'TEMAS SELECTOS DE MATEM?TICAS I', 'T.SEL MATE I', 4, 'B', 4, 'P', NULL, 0),
-(33, 'INSTALA UNA RED LAN', 'INST. RED LAN', 6, 'S', 6, 'P', NULL, 0),
-(34, 'OPERA UNA RED LAN', 'OPERA RED LAN', 6, 'S', 6, 'P', NULL, 0),
-(35, 'DETERMINA LA NOMINA DEL PERSONAL DE LA ORGANIZACION TOMANDO EN CUENTA LA NORMATIVIDAD LABORAL', 'DET.NOM.NORM.', 6, 'H', 8, 'P', NULL, 0),
-(36, 'DETERMINA REMUNERACIONES DEL PERSONAL EN SITUACIONES EXTRAORDINARIAS', 'DET.REM.P.S.EXT.', 6, 'H', 4, 'P', NULL, 0),
-(37, 'MANTIENE LOS SISTEMAS DE SUSPENSION Y DIRECCION DEL AUTOMOVIL', 'MAN.SIS.SUSP Y DIR', 6, 'M', 5, 'P', NULL, 0),
-(38, 'MANTIENE LOS SISTEMAS DE FRENOS EN CONDICIONES DE OPERACION', 'MAN. SIST. FRENOS', 6, 'M', 7, 'P', NULL, 0),
-(39, 'IMPLEMENTA BASE DE DATOS NO RELACIONALES EN UN SISTEMA DE INFORMACI?N', 'IMPLE BD NO REL SI', 4, 'P', 8, 'P', NULL, 0),
-(40, 'REACCIONES QU?MICAS: CONSERVACI?N DE LA MATERIA EN LA FORMACI?N DE NUEVAS SUSTANCIAS', 'REACC QUIMICAS', 4, 'B', 4, 'P', NULL, 0),
-(41, 'TEMAS DE ADMINISTRACION', 'ADMINISTRACION', 6, 'O', 5, 'P', NULL, 0),
-(42, 'INTRODUCCION A LA ECONOMIA', 'ECONOMIA', 6, 'O', 5, 'P', NULL, 0),
-(43, 'TEMAS DE FISICA', 'TEM. FISICA', 6, 'O', 5, 'P', NULL, 0),
-(44, 'IMPLEMENTA BASE DE DATOS RELACIONALES EN UN SISTEMA DE INFORMACI?N', 'IMPLE BD REL SI', 4, 'P', 9, 'P', NULL, 0),
-(45, 'MATEMATICAS APLICADAS', 'MAT. APL.', 6, 'O', 5, 'P', NULL, 0),
-(46, 'BIOLOGIA CONTEMPORANEA', 'BIOLOGIA C.', 6, 'O', 5, 'P', NULL, 0),
-(47, 'CIENCIAS SOCIALES II', 'CIEN SOC  II', 2, 'B', 2, 'P', NULL, 0),
-(48, 'CIENCIAS SOCIALES III', 'CIEN SOC  III', 4, 'B', 2, 'P', NULL, 0),
-(49, 'CONCIENCIA HIST?RICA I. PERSPECTIVAS DEL MXICO ANTIGUO EN LOS CONTEXTOS GLOBALES', 'CONC HIST I', 4, 'B', 3, 'P', NULL, 0),
-(50, 'CULTURA DIGITAL II', 'CULT DIGITAL II', 2, 'B', 2, 'P', NULL, 0),
-(51, 'DISE¥A SOFTWARE DE SISTEMAS INFORM?TICOS', 'DISE¥A SOFT SI', 2, 'P', 5, 'P', NULL, 0),
-(52, 'CODIFICA SOFTWARE DE SISTEMAS INFORM?TICOS', 'CODIFICA SOFT SI', 2, 'P', 7, 'P', NULL, 0),
-(53, 'IMPLEMENTA SOFTWARE DE SISTEMAS INFORM?TICOS', 'IMPLEMENTA SOFT SI', 2, 'P', 5, 'P', NULL, 0),
-(54, 'PENSAMIENTO MATEM?TICO II', 'PENS. MATE. II', 2, 'B', 4, 'P', NULL, 0),
-(55, 'MANTIENE EL SISTEMA DE INYECCI?N ELECTR?NICA DE LOS MOTORES DE GASOLINA Y DISEL', 'MSIEMGD', 4, 'M', 7, 'P', NULL, 0),
-(56, 'MANTIENE EL SISTEMA DE EMISIONES CONTAMINANTES DEL AUTOM?VIL', 'MSECA', 4, 'M', 4, 'P', NULL, 0),
-(57, 'MANTIENE EL SISTEMA DE ENCENDIDO ELECTR?NICO Y COMPUTARIZADO DEL AUTOM?VIL', 'MSEECA', 4, 'M', 6, 'P', NULL, 0),
-(58, 'EJECUTA PROCEDIMIENTOS ADMINISTRATIVOS DEL ?REA DE RECURSOS HUMANOS', 'EJECUTA PAARH', 2, 'H', 10, 'P', NULL, 0),
-(59, 'GESTIONA DOCUMENTACI?N DEL ?REA DE RECURSOS HUMANOS', 'GEST DOC ARH', 2, 'H', 7, 'P', NULL, 0),
-(60, 'LENGUA Y COMUNICACI?N', 'LENG Y COMUN II', 2, 'B', 3, 'P', NULL, 0),
-(61, 'TUTOR?A', 'TUTOR?A', 0, 'T', 1, 'P', NULL, 0),
-(62, 'ESCOLTA', 'ESCOLTA', 0, '', 1, 'P', NULL, 0),
-(63, 'ACT. INTEGRAL BANDA DE GUERRA', 'BANDA DE GUERRA', 0, '', 1, 'P', NULL, 0),
-(64, 'ACT. INTEGRAL GUITARRA', 'GUITARRA', 0, '', 1, 'P', NULL, 0),
-(65, 'ACT. INTEGRAL DIBUJO, PINTURA O COMICS (EAC)', 'EAC', 0, '', 1, 'P', NULL, 0),
-(66, 'ACT. INTEGRAL MEDIOAMBIENTAL', 'MEDIOAMBIENTAL', 0, '', 1, 'P', NULL, 0),
-(67, 'DEPORTES', 'DEPORTES', 0, 'T', 1, 'P', NULL, 0),
-(68, 'ACT. PORRA T.M.', 'PORRA', 0, 'H', 1, 'P', NULL, 0);
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `status`
---
-
-CREATE TABLE `status` (
-  `id_status` int(20) NOT NULL,
-  `descripcion` varchar(100) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `status`
---
-
-INSERT INTO `status` (`id_status`, `descripcion`) VALUES
-(1, 'Activo'),
-(2, 'Inactivo'),
-(3, 'Suspendido'),
-(4, 'Pendiente'),
-(5, 'Baja');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `tipo_usuario`
---
-
-CREATE TABLE `tipo_usuario` (
-  `id_tipo_usuario` int(20) NOT NULL,
-  `descripcion` varchar(200) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `tipo_usuario`
---
-
-INSERT INTO `tipo_usuario` (`id_tipo_usuario`, `descripcion`) VALUES
-(1, 'Super Administrador'),
-(2, 'Administrador'),
-(3, 'Captura'),
-(4, 'Docente');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `turno`
---
-
-CREATE TABLE `turno` (
-  `id_turno` int(11) NOT NULL,
-  `Descripcion` varchar(100) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `turno`
---
-
-INSERT INTO `turno` (`id_turno`, `Descripcion`) VALUES
-(1, 'Matutino'),
-(2, 'Vespertino'),
-(3, 'Mixto');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `usuario`
---
-
-CREATE TABLE `usuario` (
-  `id_usuario` int(20) NOT NULL,
-  `nombre` varchar(200) NOT NULL,
-  `correo_electronico` varchar(100) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `tipo_usuario` int(20) NOT NULL,
-  `status` int(20) NOT NULL,
-  `telefono` varchar(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `usuario`
---
-
-INSERT INTO `usuario` (`id_usuario`, `nombre`, `correo_electronico`, `password`, `tipo_usuario`, `status`, `telefono`) VALUES
-(1, 'Super Administrador', 'superAdm@gmail.com', '$2b$12$aXt.urKj5OgRLGnATTloj.siVIgmasf7uCVdWndWHyK/raktqif3a', 1, 4, '449 429 6282'),
-(2, 'Martin', 'martin@gmail.com', '$2b$12$1SGgp4REQ8oF178B55IgfeEzFvx4gD2L1wAH6lQTW5dANqBN8X8SK', 2, 4, '449 223 9955'),
-(3, 'Bernado', 'bernardo@gmail.com', '$2b$12$cZp3DQIUwFj8rKttO3lxC.CdFzpCvQeSE7TsMgup6iYb2osX/GMZ.', 3, 4, '449 107 7654'),
-(4, 'luis', 'luis@gmail.com', '$2b$12$x12.RpNjleTnslNzHs7S3eKPGbzjuVxnyj72rWrrXR12T5zTEzCIK', 4, 4, '449 568 6105'),
-(5, 'Regina', 'ReginaOdette@gmail.com', '$2b$12$AYcZPArJZHlyAXpvOltE8.0kdEEz4jZwYSK9d/us4EnWHDZWyxMtu', 4, 4, '351 304 6049'),
-(6, 'Mar', 'marlne@gmail.com', '$2b$12$7Fff2WKw7GEtESTEPVkvh.kmIgyCynpqYFoz7ciVWhhW0tUXuWcFC', 4, 4, '449 539 6287'),
-(7, 'Ian', 'ianYeshua@gmail.com', '$2b$12$mNtF3BfNJpMah78Dyw93i.CQYrF/tD6h7jscGgBuxtb/R4mImlqpy', 4, 4, '444 444 4444'),
-(8, 'daniel', 'Danielviramontes762@gmail.com', '$2b$12$RtM4klA8heTWDu1iyLM85udRCiGjGi1mPRSdhU5MNll9np/.9Hzrq', 3, 1, '444 444 4443');
-
--- --------------------------------------------------------
-
---
--- Estructura Stand-in para la vista `vista_docente`
--- (Véase abajo para la vista actual)
---
-CREATE TABLE `vista_docente` (
-`id_docente` int(11)
-,`RFC` varchar(13)
-,`Nombre` varchar(100)
-,`Apellido_pat` varchar(100)
-,`Apellido_mat` varchar(100)
-,`Perfil` text
-,`correo_e` varchar(100)
-,`Telefono` varchar(100)
-,`id_turno` int(11)
-,`id_cct` int(11)
-,`turno` varchar(100)
-,`centro_trabajo` varchar(100)
-,`id_status` int(11)
-,`status` varchar(100)
-);
-
--- --------------------------------------------------------
-
---
--- Estructura para la vista `vista_docente`
---
-DROP TABLE IF EXISTS `vista_docente`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `vista_docente`  AS SELECT `do`.`id_docente` AS `id_docente`, `do`.`RFC` AS `RFC`, `do`.`Nombre` AS `Nombre`, `do`.`Apellido_pat` AS `Apellido_pat`, `do`.`Apellido_mat` AS `Apellido_mat`, `do`.`Perfil` AS `Perfil`, `do`.`correo_e` AS `correo_e`, `do`.`Telefono` AS `Telefono`, `do`.`id_turno` AS `id_turno`, `do`.`id_cct` AS `id_cct`, `tu`.`Descripcion` AS `turno`, `ct`.`Nombre` AS `centro_trabajo`, `do`.`id_status` AS `id_status`, `st`.`descripcion` AS `status` FROM (((`docente` `do` left join `turno` `tu` on(`do`.`id_turno` = `tu`.`id_turno`)) left join `centro_trabajo` `ct` on(`do`.`id_cct` = `ct`.`id_cct`)) left join `status` `st` on(`do`.`id_status` = `st`.`id_status`)) ;
-
---
--- Índices para tablas volcadas
---
-
---
--- Indices de la tabla `academia`
---
-ALTER TABLE `academia`
-  ADD PRIMARY KEY (`id_academia`);
-
---
--- Indices de la tabla `centro_trabajo`
---
-ALTER TABLE `centro_trabajo`
-  ADD PRIMARY KEY (`id_cct`);
-
---
--- Indices de la tabla `docente`
---
-ALTER TABLE `docente`
-  ADD PRIMARY KEY (`id_docente`),
-  ADD KEY `fk_docente_turnp` (`id_turno`),
-  ADD KEY `fk_docente_cct` (`id_cct`),
-  ADD KEY `fk_docente_status` (`id_status`);
-
---
--- Indices de la tabla `materia`
---
-ALTER TABLE `materia`
-  ADD PRIMARY KEY (`id_materia`);
-
---
--- Indices de la tabla `status`
---
-ALTER TABLE `status`
-  ADD PRIMARY KEY (`id_status`);
-
---
--- Indices de la tabla `tipo_usuario`
---
-ALTER TABLE `tipo_usuario`
-  ADD PRIMARY KEY (`id_tipo_usuario`);
-
---
--- Indices de la tabla `turno`
---
-ALTER TABLE `turno`
-  ADD PRIMARY KEY (`id_turno`);
-
---
--- Indices de la tabla `usuario`
---
-ALTER TABLE `usuario`
-  ADD PRIMARY KEY (`id_usuario`),
-  ADD KEY `FK_usuarios_tipo` (`tipo_usuario`),
-  ADD KEY `FK_usuarios_status` (`status`);
-
---
--- AUTO_INCREMENT de las tablas volcadas
---
-
---
--- AUTO_INCREMENT de la tabla `academia`
---
-ALTER TABLE `academia`
-  MODIFY `id_academia` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `centro_trabajo`
---
-ALTER TABLE `centro_trabajo`
-  MODIFY `id_cct` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT de la tabla `docente`
---
-ALTER TABLE `docente`
-  MODIFY `id_docente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=91;
-
---
--- AUTO_INCREMENT de la tabla `materia`
---
-ALTER TABLE `materia`
-  MODIFY `id_materia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
-
---
--- AUTO_INCREMENT de la tabla `status`
---
-ALTER TABLE `status`
-  MODIFY `id_status` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
--- AUTO_INCREMENT de la tabla `tipo_usuario`
---
-ALTER TABLE `tipo_usuario`
-  MODIFY `id_tipo_usuario` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
--- AUTO_INCREMENT de la tabla `turno`
---
-ALTER TABLE `turno`
-  MODIFY `id_turno` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT de la tabla `usuario`
---
-ALTER TABLE `usuario`
-  MODIFY `id_usuario` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
-
---
--- Restricciones para tablas volcadas
---
-
---
--- Filtros para la tabla `docente`
---
-ALTER TABLE `docente`
-  ADD CONSTRAINT `fk_docente_cct` FOREIGN KEY (`id_cct`) REFERENCES `centro_trabajo` (`id_cct`),
-  ADD CONSTRAINT `fk_docente_status` FOREIGN KEY (`id_status`) REFERENCES `status` (`id_status`),
-  ADD CONSTRAINT `fk_docente_turnp` FOREIGN KEY (`id_turno`) REFERENCES `turno` (`id_turno`);
-
---
--- Filtros para la tabla `usuario`
---
-ALTER TABLE `usuario`
-  ADD CONSTRAINT `FK_usuarios_status` FOREIGN KEY (`status`) REFERENCES `status` (`id_status`),
-  ADD CONSTRAINT `FK_usuarios_tipo` FOREIGN KEY (`tipo_usuario`) REFERENCES `tipo_usuario` (`id_tipo_usuario`);
---
--- Base de datos: `test`
---
-CREATE DATABASE IF NOT EXISTS `test` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci;
-USE `test`;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
