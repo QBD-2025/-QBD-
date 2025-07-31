@@ -93,23 +93,37 @@ router.post('/login', async (req, res) => {
             id_tp_usuario: user.id_tp_usuario,
         };
 
-        req.session.save((err) => {
-            if (err) {
-                console.error('Error al guardar sesión:', err);
-                return res.redirect('/login?error=serverError');
-            }
+                req.session.save(async (err) => {
+        if (err) {
+            console.error('Error al guardar sesión:', err);
+            return res.redirect('/login?error=serverError');
+        }
 
-            // Redirección basada en el id_tp_usuario
-            console.log('Usuario autenticado:', req.session.user);
+        console.log('Usuario autenticado:', req.session.user);
+
+        try {
             switch (user.id_tp_usuario) {
-                case 3:
-                    return res.redirect('/admin');
-                case 2:
-                    return res.redirect('/editor');
-                default: // USUARIO
-                    return res.redirect('/perfil2');
+            case 3:
+                return res.redirect('/admin');
+            case 2:
+                return res.redirect('/editor');
+            default: {
+                const [datos] = await req.pool.query('SELECT dato, imagen FROM dato_curioso ORDER BY RAND() LIMIT 1');
+                const datoCurioso = datos[0];
+
+                return res.render('dato-sesion', {
+                layout: false,
+                dato: datoCurioso.dato,
+                imagen: datoCurioso.imagen ? datoCurioso.imagen.toString('base64') : null,
+                });
             }
+            }
+        } catch (error) {
+            console.error('Error al obtener dato curioso:', error);
+            return res.redirect('/perfil2');
+        }
         });
+
     } catch (err) {
         console.error('Error al iniciar sesión:', err);
         return res.redirect('/login?error=serverError');

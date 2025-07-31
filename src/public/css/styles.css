@@ -42,19 +42,19 @@ body {
 /* --- Global Header Elements (logo, title, and dots in main.hbs) --- */
 /* Esta sección es para la barra superior que debe ir en main.hbs */
 .global-header-elements {
-    position: absolute;
-    top: 0px;
-    left: 0;
-    width: 100%;
-    padding: 10px 0px; /* Padding general de la barra superior. Ajusta 20px para el espacio lateral. */
-    height: 75px; /* Altura de la barra superior. Puedes quitarlo si prefieres que se ajuste al contenido. */
-    display: flex; /* Usar flexbox para alinear logo/eslogan y el dot */
-    justify-content: space-between; /* Esto empuja el logo/eslogan a la izquierda y la bolita a la derecha */
-    align-items: center; /* Centra verticalmente los items dentro de la barra */
-    z-index: 1000;
-    pointer-events: auto; /* Permite que los eventos del mouse pasen a través de la barra */
-    background: linear-gradient(to right, #0815c5, #0c0264);
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 75px !important;
+  background: linear-gradient(to right, #0815c5, #0c0264) !important;
+  z-index: 1000 !important;
 }
+
 /* --- Estilos para el nuevo enlace "Conócenos" en la cabecera --- */
 .header-link, .header-button {
     text-decoration: none;

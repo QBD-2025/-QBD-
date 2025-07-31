@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title> QueBuenDato.com </title>           
+    <link rel="stylesheet" href="/css/dato-sesion.css">
+  <script>
+    setTimeout(() => {
+      window.location.href = "/perfil2";
+    }, 15000); // Redirección en 5 segundos
+  </script>
+</head>
+<body>
+  <div class="dato-container">
+    <h2 class="title">Sabias que</h2>
+    <p class="texto-dato">{{dato}}</p>
+    {{#if imagen}}
+      <img src="data:image/jpeg;base64,{{imagen}}" alt="Imagen del dato curioso">
+    {{/if}}
+    <p style="margin-top: 1.5em; color: #888;">Redirigiendo a tu perfil...</p>
+  </div>
+</body>
+</html>

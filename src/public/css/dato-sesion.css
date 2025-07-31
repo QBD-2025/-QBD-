@@ -1,0 +1,40 @@
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(-135deg, #0515a8, #09012c);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .dato-container {
+
+      padding: 2em;
+      border-radius: 10px;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    .dato-container img {
+      max-width: 100%;
+      margin-top: 1em;
+      border-radius: 8px;
+    }
+
+    .title {
+    color: #FFC107;
+    font-size: 2.5em;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    margin: 0 20px; /* Margen horizontal para no pegarse a los bordes */
+    z-index: 2;
+}
+
+.texto-dato {
+  color: white;
+  font-size: 1.3em; /* Puedes ajustar según se vea mejor */
+  line-height: 1.6;
+  margin-top: 1em;
+}

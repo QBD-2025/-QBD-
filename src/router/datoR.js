@@ -1,4 +1,4 @@
-const express = require('express');
+ const express = require('express');
 const router = express.Router();
 const pool = require('../db/conexion'); // Asegúrate de importar tu pool de conexión MySQL configurado
 

@@ -35,7 +35,7 @@
   
     <div class="controls">
       <button id="prevBtn">◀ Anterior</button>
-      <button id="randomBtn" class="boton-aleatorio">Aleatorio 🎲</button>
+      <button onclick="location.href='/examen-aleatorio'" id="randomBtn" class="boton-aleatorio">Aleatorio 🎲</button>
       <button id="nextBtn">Siguiente ▶</button>
       <div><button onclick="location.href='/perfil2'">Regresar</button></div>
     </div>  
@@ -47,7 +47,7 @@
     const carousel = document.getElementById('carousel');
     const cardCount = materias.length;
     const theta = 360 / cardCount;
-    const radius = 780;
+    const radius = 820;
     let currIndex = 0;
 
     materias.forEach((materia, i) => {
@@ -75,7 +75,7 @@
       card.onclick = () => {
         currIndex = i;
         rotateCarousel();
-        window.location.href = `/dato-curioso/${materia.id_materia}`;
+        window.location.href = `/examen/${materia.id_materia}`;
       };
 
       carousel.appendChild(card);
@@ -96,17 +96,7 @@
       currIndex = (currIndex + 1) % cardCount;
       rotateCarousel();
     });
-
-    document.getElementById('randomBtn').addEventListener('click', () => {
-      const randomIndex = Math.floor(Math.random() * materias.length);
-      currIndex = randomIndex;
-      rotateCarousel();
-      setTimeout(() => {
-        window.location.href = `/dato-curioso/${materias[randomIndex].id_materia}`;
-      }, 1500);
-    });
-
-    rotateCarousel();
+    
   </script>
 </body>
 </html>
