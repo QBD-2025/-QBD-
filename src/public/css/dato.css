@@ -7,15 +7,18 @@
 
 body {
   font-family: 'Arial', sans-serif;
-  background:linear-gradient(-135deg, #0515a8, #09012c);
+  background: linear-gradient(-135deg, #0515a8, #09012c);
   color: #0a2472;
   display: flex;
   justify-content: center;
-  align-items: center;
-  overflow: hidden;  /* Bloquea scroll vertical y horizontal */
-  height: 100vh;
+  align-items: start; /* cambia 'center' a 'start' si el contenido se extiende hacia abajo */
+  min-height: 100vh;
   perspective: 1000px;
+  overflow-x: hidden;   /* Solo bloquea el scroll horizontal */
+  overflow-y: auto;     /* Permite scroll vertical */
+  padding: 2rem;        /* Espacio alrededor del contenido */
 }
+
 
 .contenedor-ruleta {
   text-align: center;
@@ -162,16 +165,6 @@ h1 {
 #elegirMateria:active {
   transform: translateY(1px);
 }
-body {
-  font-family: 'Arial', sans-serif;
-  background: linear-gradient(-135deg, #0515a8, #09012c);
-  color: #fff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  margin: 0;
-}
 
 .contenedor-ruleta {
   text-align: center;
@@ -234,4 +227,76 @@ body {
 
 .top-right-dot, .bottom-left-dot {
     display: none !important;
+}
+
+  
+.contenedor-datos {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.titulo {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #FFC107;
+}
+
+.lista-datos {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.tarjeta-dato {
+  background: white;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.2s;
+}
+
+.tarjeta-dato:hover {
+  transform: scale(1.02);
+}
+
+.texto-dato {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.imagen-dato {
+  width: 100%;
+  max-width: 300px;     /* Limita el ancho */
+  height: auto;         /* Mantiene la proporción */
+  object-fit: contain;  /* Muestra la imagen completa sin recortar */
+  border-radius: 12px;
+  margin-top: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.sin-datos {
+  text-align: center;
+  color: #888;
+}
+
+.contenedor-boton {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.boton-volver {
+  display: inline-block;
+  background-color: #0056b3;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background-color 0.3s;
+}
+
+.boton-volver:hover {
+  background-color: #003f80;
 }

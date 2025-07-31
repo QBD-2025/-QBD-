@@ -3,113 +3,110 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ruleta de Materias</title>
-  <link rel="stylesheet" href="/css/dato.css" />
+  <title>EXAMEN</title>
+  <link rel="stylesheet" href="/css/eleccion-examen.css" />
   <style>
-    #elegirMateria {
-      background: #28a745;
-      color: white;
-      border: none;
+    .card {
+      width: 200px;
+      height: 250px;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      padding: 1rem;
+      text-align: center;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .gif-materia {
+      width: 100%;
+      max-height: 150px;
+      object-fit: contain;
       border-radius: 8px;
-      padding: 0.8rem 2rem;
-      font-size: 1.1rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    #elegirMateria:hover {
-      background: #34c759;
-      transform: translateY(-3px);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-    }
-
-    #elegirMateria:active {
-      transform: translateY(1px);
-    }
-
-    .global-header-elements {
-      display: none !important;
     }
   </style>
 </head>
 <body>
-  <div class="contenedor-ruleta">
-    <h1>Materia</h1>
-
-    <div class="ruleta" id="ruleta">
-      {{#each materias}}
-      <div class="materia">
-        <span class="texto">{{descripcion}}</span>
-        <div class="animacion-deco">
-          <img src="/media/videos/{{descripcion}}.gif" alt="Animación {{descripcion}}" />
-        </div>
-      </div>
-      {{/each}}
-    </div>
-
-    <div class="controles-ruleta">
-      <button id="anterior">◀ Anterior</button>
-      <button id="aleatorio">Girar</button>
-      <button id="siguiente">Siguiente ▶</button>
-    </div>
-
-    <div class="controles-ruleta" style="margin-top: 1rem;">
-      <button id="elegirMateria">Elegir esta materia</button>
-    </div>
-    <div class="controles-ruleta" style="margin-top: 1rem;">
-      <button onclick="window.location.href='/perfil2'" id="btnRegresar" style="background: #0056b3; color: white; border: none; border-radius: 8px; padding: 0.8rem 2rem; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-left: 1rem; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: all 0.3s;">
-        Regresar
-      </button>
-    </div>
+  <div class="carousel-container">
+    <div class="carousel" id="carousel"></div>
+  
+    <div class="controls">
+      <button id="prevBtn">◀ Anterior</button>
+      <button id="randomBtn" class="boton-aleatorio">Aleatorio 🎲</button>
+      <button id="nextBtn">Siguiente ▶</button>
+      <div><button onclick="location.href='/perfil2'">Regresar</button></div>
+    </div>  
   </div>
 
   <script>
-    const materias = document.querySelectorAll('.materia');
-    const btnAnterior = document.getElementById('anterior');
-    const btnSiguiente = document.getElementById('siguiente');
-    const btnAleatorio = document.getElementById('aleatorio');
-    const btnElegir = document.getElementById('elegirMateria');
-    let posicionActual = 0;
+    const materias = {{{json materias}}}; // Pasamos desde el servidor en formato JS válido
 
-    function actualizarRuleta() {
-      materias.forEach((materia, index) => {
-        materia.classList.remove('activa');
-        materia.style.transform = `rotateX(${index * 120}deg) translateZ(150px)`;
-      });
-      materias[posicionActual].classList.add('activa');
-    }
+    const carousel = document.getElementById('carousel');
+    const cardCount = materias.length;
+    const theta = 360 / cardCount;
+    const radius = 780;
+    let currIndex = 0;
 
-    function girarRuleta(direccion) {
-      const ruleta = document.getElementById('ruleta');
-      ruleta.style.transition = 'transform 1s ease-out';
+    materias.forEach((materia, i) => {
+      const card = document.createElement('div');
+      card.className = 'card';
 
-      if (direccion === 'aleatorio') {
-        posicionActual = Math.floor(Math.random() * materias.length);
-      } else {
-        posicionActual = (posicionActual + (direccion === 'siguiente' ? 1 : -1) + materias.length) % materias.length;
-      }
+      // Crear el GIF
+      const gif = document.createElement('img');
+      gif.src = `/media/videos/${materia.descripcion}.gif`;
+      gif.alt = `Animación de ${materia.descripcion}`;
+      gif.className = 'gif-materia';
 
-      ruleta.style.transform = `rotateX(${posicionActual * -120}deg)`;
+      // Texto de la materia
+      const texto = document.createElement('div');
+      texto.textContent = materia.descripcion;
 
-      setTimeout(() => {
-        actualizarRuleta();
-        ruleta.style.transition = 'none';
-      }, 1000);
-    }
+      // Agregar al DOM
+      card.appendChild(gif);
+      card.appendChild(texto);
 
-    btnAnterior.addEventListener('click', () => girarRuleta('anterior'));
-    btnSiguiente.addEventListener('click', () => girarRuleta('siguiente'));
-    btnAleatorio.addEventListener('click', () => girarRuleta('aleatorio'));
+      // Posición en carrusel
+      const angle = theta * i;
+      card.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
 
-    btnElegir.addEventListener('click', () => {
-      //const materiaSeleccionada = materias[posicionActual].querySelector('.texto').textContent;
-      //alert(`Has elegido: ${materiaSeleccionada}`);
-      window.location.href = '/dato'; // o puedes pasar la materia por query param si necesitas
+      card.onclick = () => {
+        currIndex = i;
+        rotateCarousel();
+        window.location.href = `/dato-curioso/${materia.id_materia}`;
+      };
+
+      carousel.appendChild(card);
     });
 
-    actualizarRuleta();
+    function rotateCarousel() {
+      const angle = currIndex * -theta;
+      carousel.style.transition = 'transform 1.5s ease-in-out';
+      carousel.style.transform = `translateZ(-${radius}px) rotateY(${angle}deg)`;
+    }
+
+    document.getElementById('prevBtn').addEventListener('click', () => {
+      currIndex = (currIndex - 1 + cardCount) % cardCount;
+      rotateCarousel();
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      currIndex = (currIndex + 1) % cardCount;
+      rotateCarousel();
+    });
+
+    document.getElementById('randomBtn').addEventListener('click', () => {
+      const randomIndex = Math.floor(Math.random() * materias.length);
+      currIndex = randomIndex;
+      rotateCarousel();
+      setTimeout(() => {
+        window.location.href = `/dato-curioso/${materias[randomIndex].id_materia}`;
+      }, 1500);
+    });
+
+    rotateCarousel();
   </script>
 </body>
 </html>
