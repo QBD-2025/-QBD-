@@ -83,6 +83,7 @@ app.use((req, res, next) => {
 
 
 // Configuración de routers
+const simuladorR = require('./src/router/simuladorR');
 const editorR = require('./src/router/editorR');
 const usuarioR = require('./src/router/usuarioR');
 const formulario1R = require('./src/router/formulario1');
@@ -101,6 +102,7 @@ const examenR = require('./src/router/examenR');
 
 // 7. Uso de routers (ORDEN RECOMENDADO)
 
+app.use('/', simuladorR);
 app.use('/', examenR);
 app.use('/', datoR);
 app.use('/editor', editorR);

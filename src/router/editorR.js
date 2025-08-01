@@ -166,6 +166,7 @@ router.get('/datos', isAuthenticated, async (req, res) => {
     const [datos] = await req.pool.query(`
       SELECT d.id_dato, d.dato, d.imagen, d.id_materia, d.fuente
       FROM dato_curioso d
+      ORDER BY d.id_materia
     `);
     res.render('editor_datos', {
       layout: false,

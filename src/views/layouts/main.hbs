@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>QueBuenDato.com.mx</title>           
   <link rel="stylesheet" href="/css/styles.css">
-  
+
   {{!-- GOOGLE FONTS --}}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,12 +16,31 @@
   {{!-- TOPBAR: Cabecera Global --}}
   <div class="global-header-elements">
     <div class="top-left-logo">
-      <a href="/">
-        <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image">
-      </a>
-      <a href="/conocenos" class="header-link">Conócenos</a> 
+      {{!-- Redirección del logo según tipo de usuario --}}
+      {{#if user}}
+        {{#if (eq user.id_tp_usuario 1)}}
+          <a href="/perfil2">
+            <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image">
+          </a>
+        {{else if (eq user.id_tp_usuario 2)}}
+          <a href="/editor">
+            <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image">
+          </a>
+        {{else if (eq user.id_tp_usuario 3)}}
+          <a href="/admin">
+            <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image">
+          </a>
+        {{else}}
+          <a href="/">
+            <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image">
+          </a>
+        {{/if}}
+      {{else}}
+        <a href="/">
+          <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image">
+        </a>
+      {{/if}}
     </div>
-
     <div class="top-right-nav">
 
       {{#if user}}

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Portal de Admisiones</title>
+  <link rel="stylesheet" href="/css/simulador.css" />
+ 
+</head>
+<body>
+  <div class="container">
+    <header>
+  <div class="inner-container">
+    <h1>Portal de Admisiones</h1>
+    <p>Practica y presenta tu examen de admisión para las universidades de Aguascalientes.</p>
+  </div>
+</header>
+
+
+    <!-- Universidades destacadas -->
+    <section class="universidades">
+      <h2>🏫 Universidades por su alta demanda</h2>
+      <div class="universidades-grid" id="universidadesDestacadas"></div>
+    </section>
+
+    <!-- Carrusel -->
+    <section class="carrusel-universidades">
+      <h2>🔍 Otras universidades que pueden interesarte</h2>
+      <div class="wrapper">
+        <div class="carousel-container">
+          <div class="carousel" id="carousel"></div>
+        </div>
+      </div>
+      <div class="controls">
+        <button id="prevBtn">◀</button>
+        <button id="startExamBtn" class="boton-aleatorio">Comenzar examen</button>
+        <button id="nextBtn">▶</button>
+      </div>
+    </section>
+
+    <footer>
+      <p>© 2025 Portal de Admisiones Aguascalientes. Todos los derechos reservados.</p>
+    </footer>
+  </div>
+
+  <!-- Modal -->
+  <div id="modalInfo">
+    <div class="modal-content">
+      <button class="close-btn">&times;</button>
+      <h3 id="modalTitle"></h3>
+      <p id="modalDescription"></p>
+      <h4>Carreras disponibles:</h4>
+      <ul id="modalCareers"></ul>
+    </div>
+  </div>
+
+<script>
+  const universidadesDestacadas = [
+    {
+      id: 1,
+      nombre: "Universidad Autónoma de Aguascalientes",
+      logo: "uaa.png",
+      descripcion: "Institución pública con programas académicos de excelencia.",
+      carreras: ["Medicina", "Derecho", "Ingeniería Civil", "Psicología"]
+    },
+    {
+      id: 2,
+      nombre: "Instituto Tecnológico de Aguascalientes",
+      logo: "ita.png",
+      descripcion: "Enfoque en ingeniería, tecnología y ciencias aplicadas.",
+      carreras: ["Ingeniería Mecánica", "Sistemas Computacionales", "Industrial", "Electrónica"]
+    }
+  ];
+
+  const universidadesCarrusel = [
+    {
+      id: 3,
+      nombre: "Universidad Panamericana Campus Bonaterra",
+      logo: "up.png",
+      descripcion: "Universidad privada con programas de calidad internacional.",
+      carreras: ["Ingeniería en Sistemas", "Administración", "Derecho", "Arquitectura"]
+    },
+    {
+      id: 4,
+      nombre: "Universidad del Valle de México",
+      logo: "uvm.png",
+      descripcion: "Educación privada con enfoque tecnológico y empresarial.",
+      carreras: ["Ingeniería Industrial", "Negocios Internacionales", "Comunicación", "Psicología"]
+    },
+    {
+      id: 5,
+      nombre: "Universidad Tecnológica de Aguascalientes",
+      logo: "uta.png",
+      descripcion: "Formación técnica y tecnológica para el sector productivo.",
+      carreras: ["TI", "Mecatrónica", "Electrónica", "Diseño Industrial"]
+    },
+    {
+      id: 6,
+      nombre: "Universidad del Centro de México Campus Aguascalientes",
+      logo: "ucm.png",
+      descripcion: "Universidad privada con oferta académica diversa y moderna.",
+      carreras: ["Administración", "Contaduría", "Derecho", "Arquitectura"]
+    },
+    {
+      id: 7,
+      nombre: "Universidad TecMilenio Aguascalientes",
+      logo: "tecmilenio.png",
+      descripcion: "Universidad privada con enfoque en innovación y tecnología.",
+      carreras: ["Ingeniería en Software", "Negocios", "Marketing", "Psicología"]
+    }
+  ];
+
+  // Render destacadas
+  const gridDestacadas = document.getElementById('universidadesDestacadas');
+  universidadesDestacadas.forEach(uni => {
+    const card = document.createElement('div');
+    card.className = 'universidad-card';
+    card.innerHTML = `
+      <img src="/media/universidades/${uni.logo}" alt="${uni.nombre}">
+      <h3>${uni.nombre}</h3>
+      <p>${uni.descripcion}</p>
+      <button onclick="location.href='/examen-admision/${uni.id}'">Presentar examen</button>
+    `;
+    card.addEventListener('click', e => {
+      if (!e.target.closest('button')) showModal(uni);
+    });
+    gridDestacadas.appendChild(card);
+  });
+
+  // Carrusel
+  const carousel = document.getElementById('carousel');
+  const cardCount = universidadesCarrusel.length;
+  const theta = 360 / cardCount;
+  const radius = 300;
+  let currIndex = 0;
+
+  universidadesCarrusel.forEach((uni, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <img src="/media/universidades/${uni.logo}" alt="${uni.nombre}">
+      <div>${uni.nombre}</div>
+    `;
+    const angle = theta * i;
+    card.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
+    card.addEventListener('click', () => showModal(uni));
+    carousel.appendChild(card);
+  });
+
+  function rotateCarousel() {
+    const angle = currIndex * -theta;
+    carousel.style.transform = `translateZ(-${radius}px) rotateY(${angle}deg)`;
+  }
+
+  document.getElementById('prevBtn').onclick = () => {
+    currIndex = (currIndex - 1 + cardCount) % cardCount;
+    rotateCarousel();
+  };
+  document.getElementById('nextBtn').onclick = () => {
+    currIndex = (currIndex + 1) % cardCount;
+    rotateCarousel();
+  };
+  document.getElementById('startExamBtn').onclick = () => {
+    const uni = universidadesCarrusel[currIndex];
+    location.href = `/examen-admision/${uni.id}`;
+  };
+
+  // Modal
+  const modal = document.getElementById('modalInfo');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalDescription = document.getElementById('modalDescription');
+  const modalCareers = document.getElementById('modalCareers');
+  document.querySelector('.close-btn').onclick = () => modal.style.display = 'none';
+  modal.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
+
+  function showModal(uni) {
+    modalTitle.textContent = uni.nombre;
+    modalDescription.textContent = uni.descripcion;
+    modalCareers.innerHTML = uni.carreras.map(c => `<li>${c}</li>`).join('');
+    modal.style.display = 'flex';
+  }
+
+  rotateCarousel();
+</script>
+</body>
+</html>
