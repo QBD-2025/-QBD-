@@ -127,19 +127,16 @@ router.post('/resultados', async (req, res) => {
 
 // Mostrar examen para una materia específica
 router.get('/examen-aleatorio', async (req, res) => {
-  const { id_materia } = req.params;
-
   try {
-
-    // Obtener preguntas para la materia
+    // Obtener preguntas aleatorias
     const [preguntas] = await db.query(`
       SELECT id_pregunta, pregunta, retroalimentacion
       FROM pregunta
-      GROUP BY RAND()
+      ORDER BY RAND()
       LIMIT 20
-    `, [id_materia]);
+    `);
 
-    // Por cada pregunta, obtener sus respuestas
+    // Obtener respuestas por cada pregunta
     for (let pregunta of preguntas) {
       const [respuestas] = await db.query(`
         SELECT id_respuesta, respuesta, correcta, puntos
@@ -150,50 +147,35 @@ router.get('/examen-aleatorio', async (req, res) => {
       pregunta.respuestas = respuestas;
     }
 
-    // Renderizar vista examen, pasando id_materia para el formulario
+    // Guardamos en la sesión
+    req.session.preguntasAleatorias = preguntas;
+
     res.render('pregunta_aleatoria', {
       preguntas,
-      id_materia,
       layout: false
     });
 
   } catch (error) {
-    console.error('Error cargando preguntas del examen:', error);
+    console.error('Error cargando preguntas aleatorias:', error);
     res.status(500).send('Error cargando el examen');
   }
 });
 
-router.post('/resultados', async (req, res) => {
+
+router.post('/resultados-aleatorio', async (req, res) => {
   try {
     let respuestasUsuario = req.body.respuestas;
-    const id_materia = req.body.id_materia;
 
     if (typeof respuestasUsuario === 'string') {
       respuestasUsuario = JSON.parse(respuestasUsuario);
     }
 
-    const [[materiaRow]] = await db.query(
-      'SELECT descripcion FROM materias WHERE id_materia = ?',
-      [id_materia]
-    );
+    const preguntas = req.session.preguntasAleatorias || [];
 
-    const [preguntas] = await db.query(`
-      SELECT id_pregunta, pregunta
-      FROM pregunta
-      WHERE id_materia = ?
-      LIMIT 20
-    `, [id_materia]);
-
-    let puntosTotales = 0; // Inicializamos la suma
+    let puntosTotales = 0;
 
     for (let i = 0; i < preguntas.length; i++) {
-      const [respuestasBD] = await db.query(`
-        SELECT respuesta, correcta
-        FROM respuesta
-        WHERE id_pregunta = ?
-      `, [preguntas[i].id_pregunta]);
-
-      preguntas[i].respuestas = respuestasBD;
+      const respuestasBD = preguntas[i].respuestas;
 
       const seleccionadaIdx = respuestasUsuario[i];
       preguntas[i].seleccionada = seleccionadaIdx;
@@ -201,21 +183,22 @@ router.post('/resultados', async (req, res) => {
       preguntas[i].esCorrecta = respuestasBD[seleccionadaIdx]?.correcta === 1;
 
       if (preguntas[i].esCorrecta) {
-        puntosTotales += 1; // Sumamos 1 punto si es correcta
+        puntosTotales += 1;
       }
     }
 
     res.render('resultados', {
-      materia: materiaRow?.descripcion || 'Materia desconocida',
+      materia: "Examen Aleatorio",
       preguntas,
       puntosTotales,
       layout: false
     });
 
   } catch (error) {
-    console.error('Error generando resultados:', error);
+    console.error('Error generando resultados del examen aleatorio:', error);
     res.status(500).send('Error mostrando resultados');
   }
 });
+
   
 module.exports = router;
