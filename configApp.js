@@ -38,6 +38,8 @@ app.engine('.hbs', exphbs.engine({
     }
 }));
 
+
+
 app.set('view engine', '.hbs');
 app.set('views', path.join(__dirname, 'src', 'views'));
 
@@ -83,6 +85,7 @@ app.use((req, res, next) => {
 
 
 // Configuración de routers
+const examenAdmisionR = require('./src/router/examen-admision.js');
 const simuladorR = require('./src/router/simuladorR');
 const editorR = require('./src/router/editorR');
 const usuarioR = require('./src/router/usuarioR');
@@ -102,6 +105,7 @@ const examenR = require('./src/router/examenR');
 
 // 7. Uso de routers (ORDEN RECOMENDADO)
 
+app.use('/', examenAdmisionR);
 app.use('/', simuladorR);
 app.use('/', examenR);
 app.use('/', datoR);

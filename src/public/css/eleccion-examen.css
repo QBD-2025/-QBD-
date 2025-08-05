@@ -91,3 +91,27 @@ button:hover {
 .carousel {
   cursor: grab;
 }
+
+
+.zone-click {
+  position: fixed;
+  top: 0;
+  width: 33.33%;
+  height: 100vh;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.izquierda {
+  left: 0;
+}
+
+.derecha {
+  right: 0;
+}
+
+/* Opcional para pruebas: pon color temporal para visualizar zonas
+.izquierda { background-color: rgba(255, 0, 0, 0.1); }
+.derecha { background-color: rgba(0, 255, 0, 0.1); }
+*/
+

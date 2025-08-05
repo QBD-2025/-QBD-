@@ -232,3 +232,47 @@ footer {
   color: #0815c5;
   cursor: pointer;
 }
+
+.recursos-extra {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  color: #0c0264;
+}
+
+.recursos-extra h3 {
+  font-size: 1.2rem;
+  color: #0815c5;
+  margin-bottom: 0.8rem;
+}
+
+.recursos-extra ul {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 1.5rem;
+}
+
+.recursos-extra li {
+  margin-bottom: 0.5rem;
+}
+
+.recursos-extra a {
+  color: #0c0264;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s;
+}
+
+.recursos-extra a:hover {
+  color: #facc15;
+}
+
+.universidades-extra {
+  display: none;
+}
+
+.universidades-extra.mostrar {
+  display: block;
+}

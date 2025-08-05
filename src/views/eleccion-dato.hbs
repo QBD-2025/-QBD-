@@ -34,13 +34,15 @@
     <div class="carousel" id="carousel"></div>
   
     <div class="controls">
-      <button id="prevBtn">◀ Anterior</button>
-      <button id="nextBtn">Siguiente ▶</button>
       <div><button onclick="location.href='/perfil2'">Regresar</button></div>
     </div>  
   </div>
 
+    <div id="leftZone" class="zone-click izquierda"></div>
+  <div id="rightZone" class="zone-click derecha"></div>
+
   <script>
+    let currentRotation = 0;
       const materias = {{{materias}}};
       console.log("Materias:", materias);
 
@@ -84,19 +86,22 @@
     function rotateCarousel() {
       const angle = currIndex * -theta;
       carousel.style.transition = 'transform 1.5s ease-in-out';
-      carousel.style.transform = `translateZ(-${radius}px) rotateY(${angle}deg)`;
+      carousel.style.transform = `translateZ(-${radius}px) rotateY(${currentRotation}deg)`;
     }
 
-    document.getElementById('prevBtn').addEventListener('click', () => {
-      currIndex = (currIndex - 1 + cardCount) % cardCount;
+    document.getElementById('leftZone').addEventListener('click', () => {
+      currIndex = Math.max(currIndex - 1, 0); // No baja de 0
+      currentRotation += theta; // girar a la izquierda
       rotateCarousel();
     });
 
-    document.getElementById('nextBtn').addEventListener('click', () => {
-      currIndex = (currIndex + 1) % cardCount;
+    document.getElementById('rightZone').addEventListener('click', () => {
+      currIndex = Math.min(currIndex + 1, cardCount - 1); // No sube del último
+      currentRotation -= theta; // girar a la derecha
       rotateCarousel();
     });
-    
+
+
   </script>
 </body>
 </html>

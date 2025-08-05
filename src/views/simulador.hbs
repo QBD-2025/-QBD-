@@ -21,14 +21,13 @@
 
     <section class="orientacion">
       <h2>🏫 Ligas de orientación y universidades de Aguascalientes</h2>
-      
-      <!-- Lista principal -->
+
+      <!-- Universidades principales -->
       <div class="universidades-lista" id="listaUniversidades"></div>
 
-      <!-- Lista extra oculta -->
+      <!-- Universidades extra + recursos -->
       <div class="universidades-extra" id="listaExtra"></div>
 
-      <!-- Botón Más/Menos -->
       <button class="toggle-btn" id="toggleBtn">Más</button>
     </section>
 
@@ -52,7 +51,7 @@
     const universidadesPrincipales = [
       {
         nombre: "Universidad Autónoma de Aguascalientes",
-        logo: "/media/universidades/uaa.png",
+        logo: "/media/images/uaa.png",
         descripcion: "Institución pública con programas de excelencia académica.",
         nivel: "Licenciatura y Posgrado",
         carreras: "Medicina, Derecho, Ingeniería Civil, Psicología",
@@ -61,7 +60,7 @@
       },
       {
         nombre: "Instituto Tecnológico de Aguascalientes",
-        logo: "/media/universidades/ita.png",
+        logo: "/media/images/ita.jpeg",
         descripcion: "Enfoque en ingeniería, tecnología y ciencias aplicadas.",
         nivel: "Licenciatura y Maestría",
         carreras: "Ingeniería Mecánica, Sistemas Computacionales, Industrial, Electrónica",
@@ -70,7 +69,7 @@
       },
       {
         nombre: "Universidad Panamericana Campus Bonaterra",
-        logo: "/media/universidades/up.png",
+        logo: "/media/images/panamericana.png",
         descripcion: "Educación privada con calidad internacional.",
         nivel: "Licenciatura y Posgrado",
         carreras: "Administración, Derecho, Ingeniería, Comunicación",
@@ -82,7 +81,7 @@
     const universidadesExtra = [
       {
         nombre: "Universidad del Valle de México",
-        logo: "/media/universidades/uvm.png",
+        logo: "/media/images/uvm.jpeg",
         descripcion: "Educación privada con enfoque tecnológico y empresarial.",
         nivel: "Licenciatura y Maestría",
         carreras: "Negocios, Ingeniería, Salud",
@@ -91,7 +90,7 @@
       },
       {
         nombre: "Universidad Tecnológica de Aguascalientes",
-        logo: "/media/universidades/uta.png",
+        logo: "/media/images/uta.jpeg",
         descripcion: "Formación técnica y tecnológica para el sector productivo.",
         nivel: "TSU y Licenciatura",
         carreras: "Mecatrónica, Procesos Industriales, TIC",
@@ -100,7 +99,7 @@
       },
       {
         nombre: "Universidad TecMilenio",
-        logo: "/media/universidades/tecmilenio.png",
+        logo: "/media/images/tecmilenio.jpeg",
         descripcion: "Enfoque en innovación y aprendizaje personalizado.",
         nivel: "Licenciatura y Maestría",
         carreras: "Negocios, Ingeniería, Psicología",
@@ -128,8 +127,28 @@
       return card;
     }
 
+    // Mostrar 3 principales
     universidadesPrincipales.forEach(u => lista.appendChild(crearCard(u)));
+
+    // Mostrar extra (inicialmente oculto)
     universidadesExtra.forEach(u => listaExtra.appendChild(crearCard(u)));
+
+    // Recursos adicionales
+    const recursos = document.createElement("div");
+    recursos.className = "recursos-extra";
+    recursos.innerHTML = `
+      <h3>📺 Podría interesarte</h3>
+      <ul>
+        <li><a href="https://www.youtube.com/watch?v=pDtINc8-bbk" target="_blank">¿Cómo prepararte para el EXANI?</a></li>
+        <li><a href="https://www.youtube.com/watch?v=CsQiXZPkl_s" target="_blank">Consejos para el examen EXANI</a></li>
+      </ul>
+      <h3>📚 O esto</h3>
+      <ul>
+        <li><a href="https://online.flippingbook.com/view/278435445/" target="_blank">Guía oficial del EXANI</a></li>
+        <li><a href="http://evaluacion.iea.edu.mx/exani-ii/" target="_blank">Sitio de evaluación IEA - EXANI II</a></li>
+      </ul>
+    `;
+    listaExtra.appendChild(recursos);
 
     // Botón más/menos
     const toggleBtn = document.getElementById("toggleBtn");
@@ -157,5 +176,6 @@
     document.querySelector(".close-btn").onclick = () => modal.style.display = "none";
     modal.onclick = e => { if (e.target === modal) modal.style.display = "none"; };
   </script>
+
 </body>
 </html>
