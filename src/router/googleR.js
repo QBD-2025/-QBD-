@@ -9,8 +9,8 @@ router.get('/auth/google',
 );
 
 router.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login' }),
-  (req, res) => {
+  passport.authenticate('google', { failureRedirect: '/login' }
+  ), async (req, res) => { 
     // ✨ 1. Guardamos el usuario COMPLETO en la sesión, incluyendo su rol
     req.session.user = {
       id_usuario: req.user.id_usuario,
@@ -21,16 +21,32 @@ router.get('/auth/google/callback',
 
     // ✨ 2. Usamos la misma lógica de redirección que en tu loginR.js
     //    Usamos los IDs numéricos (3 para Admin, 2 para Editor).
-    console.log('Usuario autenticado con Google:', req.session.user);
-    switch (req.user.id_tp_usuario) {
-      case 3: // ID para 'ADMINISTRADOR'
-        return res.redirect('/admin');
-      case 2: // ID para 'EDITOR'
-        return res.redirect('/editor/panel');
-      default: // ID 1 para 'USUARIO'
-        return res.redirect('/perfil2');
+        console.log('Usuario autenticado con Google:', req.session.user);
+
+    try {
+      // Usamos el objeto de sesión, no una variable inexistente
+      switch (req.session.user.id_tp_usuario) {
+        case 3:
+          return res.redirect('/admin');
+        case 2:
+          return res.redirect('/editor');
+        default: {
+          const [datos] = await req.pool.query('SELECT dato, imagen FROM dato_curioso ORDER BY RAND() LIMIT 1');
+          const datoCurioso = datos[0];
+
+          return res.render('dato-sesion', {
+            layout: false,
+            dato: datoCurioso.dato,
+            imagen: datoCurioso.imagen ? datoCurioso.imagen.toString('base64') : null,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error al obtener dato curioso:', error);
+      return res.redirect('/perfil2');
     }
   }
 );
+
 
 module.exports = router;

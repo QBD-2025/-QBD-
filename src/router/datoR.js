@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db/conexion'); // Asegúrate de importar tu pool de conexión MySQL configurado
 
+
+
 // Ruta base que muestra un mensaje o una vista simple
 router.get('/eleccion-dato', async (req, res) => {
   
@@ -53,4 +55,20 @@ router.get('/dato-curioso/:idMateria', async (req, res) => {
     res.status(500).send('Error al obtener los datos curiosos');
   }
 });
+
+router.get('/dato-sesion', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT dato, imagen FROM dato_curioso ORDER BY RAND() LIMIT 1');
+    const dato = rows[0];
+
+    res.render('dato-sesion', {
+      dato: dato?.dato || 'No se encontró ningún dato.',
+      imagen: dato?.imagen || null
+    });
+  } catch (err) {
+    console.error('Error al obtener el dato:', err);
+    res.status(500).send('Error al obtener el dato curioso.');
+  }
+});
+
 module.exports = router;

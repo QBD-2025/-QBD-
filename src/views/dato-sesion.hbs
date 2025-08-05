@@ -1,3 +1,4 @@
+<!-- views/dato-sesion.hbs -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,11 +6,6 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title> QueBuenDato.com </title>           
     <link rel="stylesheet" href="/css/dato-sesion.css">
-  <script>
-    setTimeout(() => {
-      window.location.href = "/perfil2";
-    }, 6000); // Redirección en 5 segundos
-  </script>
 </head>
 <body>
   <div class="dato-container">
@@ -20,7 +16,7 @@
     {{/if}}
     <p style="margin-top: 1.5em; color: #888;">Redirigiendo a tu perfil...</p>
   </div>
-  <audio id="sonidoCurioso" src="/audio/curioso.mp3" preload="auto"></audio>
+  <audio id="sonidoCurioso" src="/audio/curioso.mp3" preload="auto" autoplay></audio>
 
   <script>
     window.addEventListener('DOMContentLoaded', () => {
@@ -28,7 +24,12 @@
       sonido.play().catch(err => {
         console.warn("El sonido no se pudo reproducir automáticamente:", err);
       });
+
+      // Redirigir al hacer clic en cualquier parte del documento
+      document.body.addEventListener('click', () => {
+        window.location.href = "/perfil2";
+      });
     });
-  </script>
+  </script> 
 </body>
 </html>

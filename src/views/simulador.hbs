@@ -3,43 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Portal de Admisiones</title>
+  <title>Prueba de Examen de Admisión EXANI</title>
   <link rel="stylesheet" href="/css/simulador.css" />
- 
 </head>
 <body>
   <div class="container">
     <header>
-  <div class="inner-container">
-    <h1>Portal de Admisiones</h1>
-    <p>Practica y presenta tu examen de admisión para las universidades de Aguascalientes.</p>
-  </div>
-</header>
+      <h1>Prueba de Examen de Admisión EXANI</h1>
+      <p>Simula y practica tu examen de admisión con preguntas reales del EXANI.</p>
+    </header>
 
-
-    <!-- Universidades destacadas -->
-    <section class="universidades">
-      <h2>🏫 Universidades por su alta demanda</h2>
-      <div class="universidades-grid" id="universidadesDestacadas"></div>
+    <section class="practica">
+      <h2>📝 Inicia tu simulador</h2>
+      <p>Esta es una versión de prueba del examen EXANI. Al presionar el botón, comenzarás el simulador con preguntas seleccionadas.</p>
+      <button onclick="location.href='/examen-exani'">Comenzar examen</button>
     </section>
 
-    <!-- Carrusel -->
-    <section class="carrusel-universidades">
-      <h2>🔍 Otras universidades que pueden interesarte</h2>
-      <div class="wrapper">
-        <div class="carousel-container">
-          <div class="carousel" id="carousel"></div>
-        </div>
-      </div>
-      <div class="controls">
-        <button id="prevBtn">◀</button>
-        <button id="startExamBtn" class="boton-aleatorio">Comenzar examen</button>
-        <button id="nextBtn">▶</button>
-      </div>
+    <section class="orientacion">
+      <h2>🏫 Ligas de orientación y universidades de Aguascalientes</h2>
+      
+      <!-- Lista principal -->
+      <div class="universidades-lista" id="listaUniversidades"></div>
+
+      <!-- Lista extra oculta -->
+      <div class="universidades-extra" id="listaExtra"></div>
+
+      <!-- Botón Más/Menos -->
+      <button class="toggle-btn" id="toggleBtn">Más</button>
     </section>
 
     <footer>
-      <p>© 2025 Portal de Admisiones Aguascalientes. Todos los derechos reservados.</p>
+      <p>© 2025 Portal EXANI Aguascalientes. Todos los derechos reservados.</p>
     </footer>
   </div>
 
@@ -48,139 +42,120 @@
     <div class="modal-content">
       <button class="close-btn">&times;</button>
       <h3 id="modalTitle"></h3>
-      <p id="modalDescription"></p>
-      <h4>Carreras disponibles:</h4>
-      <ul id="modalCareers"></ul>
+      <p id="modalNivel"></p>
+      <p id="modalCarreras"></p>
+      <p id="modalRecomendacion"></p>
     </div>
   </div>
 
-<script>
-  const universidadesDestacadas = [
-    {
-      id: 1,
-      nombre: "Universidad Autónoma de Aguascalientes",
-      logo: "uaa.png",
-      descripcion: "Institución pública con programas académicos de excelencia.",
-      carreras: ["Medicina", "Derecho", "Ingeniería Civil", "Psicología"]
-    },
-    {
-      id: 2,
-      nombre: "Instituto Tecnológico de Aguascalientes",
-      logo: "ita.png",
-      descripcion: "Enfoque en ingeniería, tecnología y ciencias aplicadas.",
-      carreras: ["Ingeniería Mecánica", "Sistemas Computacionales", "Industrial", "Electrónica"]
+  <script>
+    const universidadesPrincipales = [
+      {
+        nombre: "Universidad Autónoma de Aguascalientes",
+        logo: "/media/universidades/uaa.png",
+        descripcion: "Institución pública con programas de excelencia académica.",
+        nivel: "Licenciatura y Posgrado",
+        carreras: "Medicina, Derecho, Ingeniería Civil, Psicología",
+        recomendacion: "Ideal para quienes buscan una formación integral en una universidad pública.",
+        link: "https://www.uaa.mx"
+      },
+      {
+        nombre: "Instituto Tecnológico de Aguascalientes",
+        logo: "/media/universidades/ita.png",
+        descripcion: "Enfoque en ingeniería, tecnología y ciencias aplicadas.",
+        nivel: "Licenciatura y Maestría",
+        carreras: "Ingeniería Mecánica, Sistemas Computacionales, Industrial, Electrónica",
+        recomendacion: "Perfecta para estudiantes con vocación tecnológica.",
+        link: "https://www.ita.mx"
+      },
+      {
+        nombre: "Universidad Panamericana Campus Bonaterra",
+        logo: "/media/universidades/up.png",
+        descripcion: "Educación privada con calidad internacional.",
+        nivel: "Licenciatura y Posgrado",
+        carreras: "Administración, Derecho, Ingeniería, Comunicación",
+        recomendacion: "Enfocada en formación integral y valores.",
+        link: "https://www.up.edu.mx/es/campus-aguascalientes"
+      }
+    ];
+
+    const universidadesExtra = [
+      {
+        nombre: "Universidad del Valle de México",
+        logo: "/media/universidades/uvm.png",
+        descripcion: "Educación privada con enfoque tecnológico y empresarial.",
+        nivel: "Licenciatura y Maestría",
+        carreras: "Negocios, Ingeniería, Salud",
+        recomendacion: "Flexible y con amplia oferta educativa.",
+        link: "https://www.universidaduvm.mx/campus-aguascalientes"
+      },
+      {
+        nombre: "Universidad Tecnológica de Aguascalientes",
+        logo: "/media/universidades/uta.png",
+        descripcion: "Formación técnica y tecnológica para el sector productivo.",
+        nivel: "TSU y Licenciatura",
+        carreras: "Mecatrónica, Procesos Industriales, TIC",
+        recomendacion: "Especializada en formación técnica de alta empleabilidad.",
+        link: "https://www.utags.edu.mx/"
+      },
+      {
+        nombre: "Universidad TecMilenio",
+        logo: "/media/universidades/tecmilenio.png",
+        descripcion: "Enfoque en innovación y aprendizaje personalizado.",
+        nivel: "Licenciatura y Maestría",
+        carreras: "Negocios, Ingeniería, Psicología",
+        recomendacion: "Ideal para quienes buscan flexibilidad y formación empresarial.",
+        link: "https://www.tecmilenio.mx"
+      }
+    ];
+
+    const lista = document.getElementById("listaUniversidades");
+    const listaExtra = document.getElementById("listaExtra");
+
+    function crearCard(u) {
+      const card = document.createElement("a");
+      card.href = u.link;
+      card.target = "_blank";
+      card.className = "uni-card";
+      card.innerHTML = `
+        <img src="${u.logo}" alt="${u.nombre}">
+        <div>
+          <h3>${u.nombre}</h3>
+          <p>${u.descripcion}</p>
+        </div>
+        <button class="info-btn" onclick="mostrarInfo(event, '${u.nombre}', '${u.nivel}', '${u.carreras}', '${u.recomendacion}')">?</button>
+      `;
+      return card;
     }
-  ];
 
-  const universidadesCarrusel = [
-    {
-      id: 3,
-      nombre: "Universidad Panamericana Campus Bonaterra",
-      logo: "up.png",
-      descripcion: "Universidad privada con programas de calidad internacional.",
-      carreras: ["Ingeniería en Sistemas", "Administración", "Derecho", "Arquitectura"]
-    },
-    {
-      id: 4,
-      nombre: "Universidad del Valle de México",
-      logo: "uvm.png",
-      descripcion: "Educación privada con enfoque tecnológico y empresarial.",
-      carreras: ["Ingeniería Industrial", "Negocios Internacionales", "Comunicación", "Psicología"]
-    },
-    {
-      id: 5,
-      nombre: "Universidad Tecnológica de Aguascalientes",
-      logo: "uta.png",
-      descripcion: "Formación técnica y tecnológica para el sector productivo.",
-      carreras: ["TI", "Mecatrónica", "Electrónica", "Diseño Industrial"]
-    },
-    {
-      id: 6,
-      nombre: "Universidad del Centro de México Campus Aguascalientes",
-      logo: "ucm.png",
-      descripcion: "Universidad privada con oferta académica diversa y moderna.",
-      carreras: ["Administración", "Contaduría", "Derecho", "Arquitectura"]
-    },
-    {
-      id: 7,
-      nombre: "Universidad TecMilenio Aguascalientes",
-      logo: "tecmilenio.png",
-      descripcion: "Universidad privada con enfoque en innovación y tecnología.",
-      carreras: ["Ingeniería en Software", "Negocios", "Marketing", "Psicología"]
+    universidadesPrincipales.forEach(u => lista.appendChild(crearCard(u)));
+    universidadesExtra.forEach(u => listaExtra.appendChild(crearCard(u)));
+
+    // Botón más/menos
+    const toggleBtn = document.getElementById("toggleBtn");
+    toggleBtn.onclick = () => {
+      listaExtra.classList.toggle("mostrar");
+      toggleBtn.textContent = listaExtra.classList.contains("mostrar") ? "Menos" : "Más";
+    };
+
+    // Modal
+    const modal = document.getElementById("modalInfo");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalNivel = document.getElementById("modalNivel");
+    const modalCarreras = document.getElementById("modalCarreras");
+    const modalRecomendacion = document.getElementById("modalRecomendacion");
+
+    function mostrarInfo(e, nombre, nivel, carreras, recomendacion) {
+      e.preventDefault();
+      modalTitle.textContent = nombre;
+      modalNivel.textContent = "Nivel de estudio: " + nivel;
+      modalCarreras.textContent = "Carreras: " + carreras;
+      modalRecomendacion.textContent = "Recomendación: " + recomendacion;
+      modal.style.display = "flex";
     }
-  ];
 
-  // Render destacadas
-  const gridDestacadas = document.getElementById('universidadesDestacadas');
-  universidadesDestacadas.forEach(uni => {
-    const card = document.createElement('div');
-    card.className = 'universidad-card';
-    card.innerHTML = `
-      <img src="/media/universidades/${uni.logo}" alt="${uni.nombre}">
-      <h3>${uni.nombre}</h3>
-      <p>${uni.descripcion}</p>
-      <button onclick="location.href='/examen-admision/${uni.id}'">Presentar examen</button>
-    `;
-    card.addEventListener('click', e => {
-      if (!e.target.closest('button')) showModal(uni);
-    });
-    gridDestacadas.appendChild(card);
-  });
-
-  // Carrusel
-  const carousel = document.getElementById('carousel');
-  const cardCount = universidadesCarrusel.length;
-  const theta = 360 / cardCount;
-  const radius = 300;
-  let currIndex = 0;
-
-  universidadesCarrusel.forEach((uni, i) => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-      <img src="/media/universidades/${uni.logo}" alt="${uni.nombre}">
-      <div>${uni.nombre}</div>
-    `;
-    const angle = theta * i;
-    card.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
-    card.addEventListener('click', () => showModal(uni));
-    carousel.appendChild(card);
-  });
-
-  function rotateCarousel() {
-    const angle = currIndex * -theta;
-    carousel.style.transform = `translateZ(-${radius}px) rotateY(${angle}deg)`;
-  }
-
-  document.getElementById('prevBtn').onclick = () => {
-    currIndex = (currIndex - 1 + cardCount) % cardCount;
-    rotateCarousel();
-  };
-  document.getElementById('nextBtn').onclick = () => {
-    currIndex = (currIndex + 1) % cardCount;
-    rotateCarousel();
-  };
-  document.getElementById('startExamBtn').onclick = () => {
-    const uni = universidadesCarrusel[currIndex];
-    location.href = `/examen-admision/${uni.id}`;
-  };
-
-  // Modal
-  const modal = document.getElementById('modalInfo');
-  const modalTitle = document.getElementById('modalTitle');
-  const modalDescription = document.getElementById('modalDescription');
-  const modalCareers = document.getElementById('modalCareers');
-  document.querySelector('.close-btn').onclick = () => modal.style.display = 'none';
-  modal.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
-
-  function showModal(uni) {
-    modalTitle.textContent = uni.nombre;
-    modalDescription.textContent = uni.descripcion;
-    modalCareers.innerHTML = uni.carreras.map(c => `<li>${c}</li>`).join('');
-    modal.style.display = 'flex';
-  }
-
-  rotateCarousel();
-</script>
+    document.querySelector(".close-btn").onclick = () => modal.style.display = "none";
+    modal.onclick = e => { if (e.target === modal) modal.style.display = "none"; };
+  </script>
 </body>
 </html>

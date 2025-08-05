@@ -25,6 +25,45 @@
       <p class="sin-datos">No hay datos curiosos para esta materia.</p>
     {{/if}}
 
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const cards = document.querySelectorAll(".card");
+    const carousel = document.querySelector(".carousel");
+    const total = cards.length;
+    const angleStep = 360 / total;
+    const radius = 350;
+    let currentIndex = 0;
+
+    // Distribuye las cartas en círculo 3D
+    cards.forEach((card, i) => {
+      const angle = i * angleStep;
+      card.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
+    });
+
+    function rotateCarousel() {
+      const angle = currentIndex * -angleStep;
+      carousel.style.transform = `translateZ(-${radius}px) rotateY(${angle}deg)`;
+
+      cards.forEach(card => card.classList.remove('highlight'));
+      cards[currentIndex].classList.add('highlight');
+    }
+
+    document.getElementById("next").addEventListener("click", () => {
+      currentIndex = (currentIndex + 1) % total;
+      rotateCarousel();
+    });
+
+    document.getElementById("prev").addEventListener("click", () => {
+      currentIndex = (currentIndex - 1 + total) % total;
+      rotateCarousel();
+    });
+
+    rotateCarousel(); // inicial
+  });
+</script>
+
   </div>
 </body>
 </html>
