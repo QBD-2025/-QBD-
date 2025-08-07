@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Editor</title>
+  <link rel="stylesheet" href="/css/editor.css" />
+</head>
+<body>
+  <header class="editor-header">
+    <div class="header-left">
+      <a href="/">
+        <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image-header">
+      </a>
+    </div>
+    <div class="header-center">
+      <h1 class="editor-title">Panel de Edición</h1>
+      <p class="editor-welcome">Bienvenido {{user.username}} (EDITOR)</p>
+    </div>
+    <div class="header-right">
+      <a href="/perfil2" class="volver-button">Volver</a>
+    </div>
+  </header>
+
+  <img src="/images/stuart_recargado.png" alt="Personaje Editor" class="character-image">
+
+  <div class="editor-container container mt-4">
+    <h2 class="editor-subtitle mb-4">Gestión de Encuesta</h2>
+    <a href="/editor/datos" class="editor-btn">Gestión de Datos</a>
+    <a href="/editor" class="editor-btn">Gestión de Encuestas</a>
+
+    
+
+    <form method="POST" action="/editor/actualizar-examen" class="editor-form">
+    <table class="editor-table">
+
+  <thead>
+    <tr>
+      <th>ID Materia</th>
+      <th>Pregunta</th>
+      <th>Opciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each preguntas}}
+    <tr>
+
+        <input type="hidden" name="id_pregunta" value="{{id_pregunta}}">
+
+      <td>{{id_materia}}</td>
+      <td>
+        <strong>{{pregunta}}</strong><br>
+        <button type="button" onclick="editarPregunta({{id_pregunta}}, '{{pregunta}}')">✏️ Editar</button>
+        <button type="button" onclick="eliminarPregunta({{id_pregunta}})">🗑️ Eliminar</button>
+        
+      </td>
+      <td>
+        <ul>
+            {{#each respuestas}}
+            <li>
+            <input type="radio" name="correcta-{{../id_pregunta}}" 
+                    onclick="establecerCorrecta({{@index}}, {{../id_pregunta}})" 
+                    {{#if correcta}}checked{{/if}} />
+
+            <span>{{respuesta}}</span>
+
+            <input type="number" value="{{puntos}}" min="0" 
+                    onchange="establecerPuntos({{@index}}, {{../id_pregunta}}, this.value)" 
+                    style="width: 60px;" />
+
+            <button type="button" onclick="editarRespuesta('{{respuesta}}', {{@index}}, {{../id_pregunta}})">✏️</button>
+            <button type="button" onclick="eliminarRespuestas({{@index}}, {{../id_pregunta}})">🗑️</button>
+            </li>
+            {{/each}}
+        </ul>
+        <button type="button" onclick="agregarRespuesta({{id_pregunta}})">➕ Agregar respuesta</button>
+      </td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>
+<td><button type="button" onclick="agregarPregunta()">➕ Agregar pregunta</button></td>
+  <button type="submit" class="editor-btn">Guardar Cambios</button>
+</form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+function eliminarPregunta(id) {
+  if (confirm("¿Seguro que deseas eliminar esta pregunta?")) {
+    fetch(`/editor/eliminar-preguntas/${id}`, { method: "DELETE" })
+      .then(res => {
+        if (res.ok) location.reload();
+        else alert("Error al eliminar pregunta");
+      });
+  }
+}
+
+function eliminarRespuestas(index, idPregunta) {
+  if (confirm("¿Eliminar esta opción?")) {
+    fetch(`/editor/eliminar-opciones`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ index, idPregunta })
+    })
+      .then(res => {
+        if (res.ok) location.reload();
+        else alert("Error al eliminar opción");
+      });
+  }
+}
+
+function editarPregunta(id, textoActual) {
+  const nuevoTexto = prompt("Editar pregunta:", textoActual);
+  if (nuevoTexto && nuevoTexto !== textoActual) {
+    fetch(`/editor/editar-preguntas`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, nuevoTexto })
+    })
+    .then(res => {
+      if (res.ok) location.reload();
+      else alert("Error al editar la pregunta");
+    });
+  }
+}
+
+function editarRespuesta(opcionTexto, index, idPregunta) {
+  const nuevoTexto = prompt("Editar opción:", opcionTexto);
+  if (nuevoTexto && nuevoTexto !== opcionTexto) {
+    fetch(`/editor/editar-opciones`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ index, idPregunta, nuevoTexto })
+    })
+    .then(res => {
+      if (res.ok) location.reload();
+      else alert("Error al editar la opción");
+    });
+  }
+}
+
+function agregarRespuesta(idPregunta) {
+  const nuevaOpcion = prompt("Nueva opción:");
+  if (nuevaOpcion) {
+    fetch(`/editor/agregar-opciones`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ idPregunta, nuevaOpcion })
+    })
+    .then(res => {
+      if (res.ok) location.reload();
+      else alert("Error al agregar opción");
+    });
+  }
+}
+function agregarPregunta() {
+  const texto = prompt("Ingrese el texto de la nueva pregunta:");
+  if (!texto) return;
+
+  const idEncuesta = prompt("Ingrese el ID de la encuesta a la que pertenece:");
+  if (!idEncuesta || isNaN(idEncuesta)) {
+    alert("ID de encuesta inválido.");
+    return;
+  }
+
+  fetch(`/editor/agregar-preguntas`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id_encuesta: idEncuesta, texto_pregunta: texto })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (!data.id_pregunta) {
+      alert("Error al agregar la pregunta");
+      return;
+    }
+
+    // Crear nueva fila <tr>
+    const tbody = document.querySelector(".editor-table tbody");
+    const nuevaFila = document.createElement("tr");
+
+    nuevaFila.innerHTML = `
+      <td>${idEncuesta}</td>
+      <td>
+        <strong>${texto}</strong><br>
+        <button type="button" onclick="editarPregunta(${data.id_pregunta}, '${texto}')">✏️ Editar</button>
+        <button type="button" onclick="eliminarPregunta(${data.id_pregunta})">🗑️ Eliminar</button>
+      </td>
+      <td>
+        <ul></ul>
+        <button type="button" onclick="agregarOpcion(${data.id_pregunta})">➕ Agregar opción</button>
+      </td>
+    `;
+
+    tbody.appendChild(nuevaFila);
+  })
+  .catch(err => {
+    console.error("Error:", err);
+    alert("Error al agregar la pregunta");
+  });
+}
+
+function establecerCorrecta(index, idPregunta) {
+  fetch(`/editor/establecer-correcta`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ index, idPregunta })
+  })
+  .then(res => {
+    if (!res.ok) alert("Error al marcar opción como correcta");
+  });
+}
+
+function establecerPuntos(index, idPregunta, puntos) {
+  fetch(`/editor/actualizar-puntos`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ index, idPregunta, puntos })
+  })
+  .then(res => {
+    if (!res.ok) {
+      alert("Error al actualizar puntos");
+    } else {
+      mostrarMensaje("Puntos actualizados correctamente");
+    }
+  });
+}
+
+function mostrarMensaje(msg) {
+  const div = document.createElement("div");
+  div.textContent = msg;
+  div.className = "mensaje-flotante";
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 2000);
+}
+
+
+
+</script>
+
+</body>
+</html>
+
+

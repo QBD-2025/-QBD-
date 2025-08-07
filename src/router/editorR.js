@@ -247,5 +247,212 @@ router.delete('/eliminar-dato/:id', isAuthenticated, async (req, res) => {
 });
 
 
+// Editor de examenes
+
+router.get('/examenes', isAuthenticated, async (req, res) => {
+  try {
+    const [filas] = await req.pool.query(`
+      SELECT 
+        p.id_pregunta, p.id_materia, p.pregunta, r.respuesta, p.retroalimentacion
+      FROM pregunta p
+      LEFT JOIN respuesta r ON p.id_pregunta = r.id_pregunta
+      ORDER BY p.id_materia, p.id_pregunta;
+    `);
+
+    const preguntasAgrupadas = {};
+    filas.forEach(fila => {
+      const id = fila.id_pregunta;
+      if (!preguntasAgrupadas[id]) {
+        preguntasAgrupadas[id] = {
+          id_pregunta: id,
+          id_materia: fila.id_materia,
+          pregunta: fila.pregunta,
+          respuestas: [],
+          retroalimentacion: fila.retroalimentacion || ''
+        };
+      }
+      if (fila.respuesta) {
+        preguntasAgrupadas[id].respuestas.push({
+          respuesta: fila.respuesta,
+          correcta: fila.correcta,
+          puntos: fila.puntos
+        });
+      }
+    });
+
+    const preguntas = Object.values(preguntasAgrupadas);
+
+    res.render('editor_examen', {
+      layout: false,
+      user: req.session.user,
+      preguntas,
+    });
+  } catch (error) {
+    console.error("Error cargando panel de editor:", error);
+    res.status(500).send("Error interno al cargar el panel.");
+  }
+});
+
+// ✅ Actualizar estatus de preguntas
+router.post('/actualizar-examen', isAuthenticated, async (req, res) => {
+  const { id_pregunta, estatus } = req.body;
+
+  if (!Array.isArray(id_pregunta) || !Array.isArray(estatus) || id_pregunta.length !== estatus.length) {
+    return res.status(400).send('Datos incompletos o inválidos');
+  }
+
+  try {
+    for (let i = 0; i < id_pregunta.length; i++) {
+      await req.pool.query(
+        'UPDATE pregunta SET id_status = ? WHERE id_pregunta = ?',
+        [estatus[i], id_pregunta[i]]
+      );
+    }
+    res.sendStatus(200);
+  } catch (error) {
+    console.error("Error actualizando estatus:", error);
+    res.status(500).send("Error actualizando estatus");
+  }
+});
+
+// ✅ Eliminar pregunta
+router.delete('/eliminar-preguntas/:id', isAuthenticated, async (req, res) => {
+  try {
+    const { id } = req.params;
+    await req.pool.query('DELETE FROM respuesta WHERE id_pregunta = ?', [id]);
+    await req.pool.query('DELETE FROM pregunta WHERE id_pregunta = ?', [id]);
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('Error eliminando pregunta:', error);
+    res.status(500).send('Error eliminando pregunta');
+  }
+});
+
+// ✅ Editar pregunta
+router.post('/editar-preguntas', isAuthenticated, async (req, res) => {
+  const { id, nuevoTexto } = req.body;
+  if (!id || !nuevoTexto) return res.status(400).send('Datos incompletos');
+
+  try {
+    await req.pool.query('UPDATE pregunta SET pregunta = ? WHERE id_pregunta = ?', [nuevoTexto, id]);
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('Error actualizando pregunta:', error);
+    res.status(500).send('Error actualizando pregunta');
+  }
+});
+
+// ✅ Eliminar opción de respuesta
+router.post('/eliminar-opciones', isAuthenticated, async (req, res) => {
+  const { index, idPregunta } = req.body;
+  try {
+    const [opciones] = await req.pool.query('SELECT id_respuesta FROM respuesta WHERE id_pregunta = ? ORDER BY id_respuesta ASC', [idPregunta]);
+    const id_opcion = opciones[index]?.id_respuesta;
+    if (!id_opcion) return res.status(400).send('Opción no encontrada');
+    await req.pool.query('DELETE FROM respuesta WHERE id_respuesta = ?', [id_opcion]);
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('Error eliminando opción:', error);
+    res.status(500).send('Error eliminando opción');
+  }
+});
+
+// ✅ Editar opción de respuesta
+router.post('/editar-opciones', isAuthenticated, async (req, res) => {
+  const { index, idPregunta, nuevoTexto } = req.body;
+  try {
+    const [opciones] = await req.pool.query('SELECT id_respuesta FROM respuesta WHERE id_pregunta = ? ORDER BY id_respuesta ASC', [idPregunta]);
+    const id_respuesta = opciones[index]?.id_respuesta;
+    if (!id_respuesta) return res.status(400).send('Opción no encontrada');
+    await req.pool.query('UPDATE respuesta SET respuesta = ? WHERE id_respuesta = ?', [nuevoTexto, id_respuesta]);
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('Error editando opción:', error);
+    res.status(500).send('Error editando opción');
+  }
+});
+
+// ✅ Agregar nueva opción
+router.post('/agregar-opciones', isAuthenticated, async (req, res) => {
+  const { idPregunta, nuevaOpcion } = req.body;
+  if (!idPregunta || !nuevaOpcion) return res.status(400).send('Datos incompletos');
+
+  try {
+    await req.pool.query('INSERT INTO respuesta (id_pregunta, respuesta) VALUES (?, ?)', [idPregunta, nuevaOpcion]);
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('Error agregando opción:', error);
+    res.status(500).send('Error agregando opción');
+  }
+});
+
+// ✅ Agregar nueva pregunta
+router.post('/agregar-preguntas', isAuthenticated, async (req, res) => {
+  const { id_encuesta, texto_pregunta } = req.body;
+  if (!id_encuesta || !texto_pregunta) return res.status(400).send('Datos incompletos');
+
+  try {
+    const [result] = await req.pool.query('INSERT INTO pregunta (id_materia, pregunta) VALUES (?, ?)', [id_encuesta, texto_pregunta]);
+    res.status(201).json({ id_pregunta: result.insertId });
+  } catch (error) {
+    console.error('Error agregando pregunta:', error);
+    res.status(500).send('Error agregando pregunta');
+  }
+});
+
+router.post('/establecer-correcta', isAuthenticated, async (req, res) => {
+  const { index, idPregunta } = req.body;
+
+  try {
+    const [opciones] = await req.pool.query(
+      'SELECT id_respuesta FROM respuesta WHERE id_pregunta = ? ORDER BY id_respuesta ASC',
+      [idPregunta]
+    );
+
+    const id_correcta = opciones[index]?.id_respuesta;
+    if (!id_correcta) return res.status(400).send('Opción no encontrada');
+
+    // Primero marcamos todas como incorrectas
+    await req.pool.query(
+      'UPDATE respuesta SET correcta = 0 WHERE id_pregunta = ?',
+      [idPregunta]
+    );
+
+    // Luego marcamos solo una como correcta
+    await req.pool.query(
+      'UPDATE respuesta SET correcta = 1 WHERE id_respuesta = ?',
+      [id_correcta]
+    );
+
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('Error estableciendo opción correcta:', error);
+    res.status(500).send('Error actualizando opción correcta');
+  }
+});
+
+router.post('/actualizar-puntos', isAuthenticated, async (req, res) => {
+  const { index, idPregunta, puntos } = req.body;
+
+  try {
+    const [opciones] = await req.pool.query(
+      'SELECT id_respuesta FROM respuesta WHERE id_pregunta = ? ORDER BY id_respuesta ASC',
+      [idPregunta]
+    );
+
+    const id_respuesta = opciones[index]?.id_respuesta;
+    if (!id_respuesta) return res.status(400).send('Opción no encontrada');
+
+    await req.pool.query(
+      'UPDATE respuesta SET puntos = ? WHERE id_respuesta = ?',
+      [puntos, id_respuesta]
+    );
+
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('Error actualizando puntos:', error);
+    res.status(500).send('Error actualizando puntos');
+  }
+});
 
 module.exports = router;

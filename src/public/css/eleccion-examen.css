@@ -88,10 +88,6 @@ button:hover {
   background-color: rgb(216, 7, 7);
   box-shadow: 0 0 10px rgba(255, 72, 0, 0.6);
 }
-.carousel {
-  cursor: grab;
-}
-
 
 .zone-click {
   position: fixed;
@@ -99,7 +95,7 @@ button:hover {
   width: 33.33%;
   height: 100vh;
   z-index: 10;
-  cursor: pointer;
+  cursor: pointer !important;
 }
 
 .izquierda {

@@ -260,3 +260,15 @@ body {
 #formulario-edicion.visible {
   display: block;
 }
+
+.mensaje-flotante {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #4caf50;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #333;
+  z-index: 1000;
+}

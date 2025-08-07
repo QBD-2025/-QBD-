@@ -42,8 +42,16 @@
             <td>{{user.username}}</td>
           </tr>
           <tr>
+            <th>Apodo</th>
+            <td>{{user.apodo}}</td>
+          </tr>
+          <tr>
             <th>Tipo de cuenta</th>
             <td>{{user.role}}</td>
+          </tr>
+          <tr>
+            <th>Descripcion</th>
+            <td>{{user.descripcion}}</td>
           </tr>
         </table>
 
@@ -54,10 +62,7 @@
               <a href="/buscar-correo" class="action-link">Cambiar mi contraseña</a>
             </li>
             <li class="action-item">
-              <a href="/editar-perfil" class="action-link">Editar mi perfil</a>
-            </li>
-            <li class="action-item">
-              <a href="/mis-actividades" class="action-link">Ver mis actividades</a>
+              <a href="/usuario/editar  " class="action-link">Editar mi perfil</a>
             </li>
           </ul>
         </div>
@@ -69,7 +74,7 @@
               background-color: var(--azul-medio);
               color: white;
               border: none;
-              border-radius: 8px;
+              border-radius: 8px;             
               font-weight: 600;
               cursor: pointer;
               box-shadow: 0 4px 8px rgba(0,0,0,0.2);
