@@ -151,11 +151,9 @@ router.post('/editar-usuario', isAuthenticated, isAdmin, async (req, res) => {
 });
 
 
-// Agregar nuevo usuario
 router.post('/agregar-usuario', isAuthenticated, isAdmin, async (req, res) => {
     const { username, email, password, verificado } = req.body;
 
-    // Validar que password no esté vacío o undefined
     if (!password || password.trim() === "") {
         return res.status(400).send("La contraseña es obligatoria.");
     }

@@ -4,11 +4,15 @@ const db = require('../db/conexion'); // promisificado
 
 router.get('/examen-exani', async (req, res) => {
   try {
-    const totalPreguntas = 100;
+    const preguntasPorMateria = 20;
 
-    const [materias] = await db.query('SELECT * FROM materias ORDER BY id_materia ASC');
-    const numMaterias = materias.length;
-    const preguntasPorMateria = Math.floor(totalPreguntas / numMaterias);
+    // Solo 5 materias específicas, puedes cambiar los IDs
+    const [materias] = await db.query(`
+      SELECT * FROM materias 
+      WHERE id_materia IN (1, 2, 3, 4, 5)
+      ORDER BY id_materia ASC
+    `);
+
     const preguntasFinales = [];
 
     for (const materia of materias) {
@@ -31,42 +35,12 @@ router.get('/examen-exani', async (req, res) => {
       }
     }
 
-    // Completar faltantes si es necesario
-    const actuales = preguntasFinales.length;
-    if (actuales < totalPreguntas) {
-      const idsTomados = preguntasFinales.map(p => p.id_pregunta);
-      const placeholders = idsTomados.length ? idsTomados : [0];
-
-      const [extras] = await db.query(
-        `SELECT p.*, m.descripcion AS materia 
-         FROM pregunta p
-         JOIN materias m ON p.id_materia = m.id_materia
-         WHERE p.id_pregunta NOT IN (?)
-         ORDER BY p.id_materia ASC, RAND()
-         LIMIT ?`,
-        [placeholders, totalPreguntas - actuales]
-      );
-
-      for (const p of extras) {
-        const [respuestas] = await db.query(
-          `SELECT id_respuesta, respuesta FROM respuesta WHERE id_pregunta = ?`,
-          [p.id_pregunta]
-        );
-
-        preguntasFinales.push({
-          ...p,
-          respuestas
-        });
-      }
-    }
-
     preguntasFinales.sort((a, b) => a.id_materia - b.id_materia);
 
     res.render('examen-admision', {
       title: 'Examen de Admisión',
       preguntas: preguntasFinales,
       layout: false,
-      // Pasamos también el array de ids para poner en input oculto con el helper json
       preguntasIds: preguntasFinales.map(p => p.id_pregunta)
     });
 
