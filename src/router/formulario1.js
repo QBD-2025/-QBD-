@@ -54,7 +54,7 @@ router.post('/procesar-formulario', async (req, res) => {
       }
     }
 
-    res.redirect('/perfil2');
+    res.redirect('/register');
   } catch (err) {
     console.error('Error al guardar respuestas:', err.sqlMessage || err.message || err);
     res.status(500).send('Error al procesar el formulario');
