@@ -58,15 +58,17 @@ body {
 /* --- Estilos para el nuevo enlace "Conócenos" en la cabecera --- */
 .header-link, .header-button {
     text-decoration: none;
-    color: #555;
+    color: #fffcfc;
     font-weight: bold;
     padding: 8px 15px;
+    font-size: 1.2em;
     border-radius: 20px;
     transition: background-color 0.3s ease;
 }
 
 .header-link:hover, .header-button:hover {
     background-color:#ffb300;
+    color: #878787;
 }
 
 .top-right-nav {
