@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel de Administración</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <header class="admin-header">
+    <div class="header-left">
+      <a href="/perfil2">
+        <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image-header">
+      </a>
+    </div>
+    <div class="header-center">
+      <h1 class="admin-title">Panel de Administración</h1>
+      <p class="admin-welcome">Bienvenido {{user.username}} (ADMIN)</p>
+    </div>
+    <div class="header-right">
+      <a href="/perfil2" class="volver-button">Volver</a>
+    </div>
+  </header>
+
+  <img src="/images/stuart_recargado.png" alt="Personaje Administrador" class="character-image">
+
+  <div class="admin-container container mt-4">
+    <h2 class="admin-subtitle mb-4">Usuarios del Sistema</h2>
+    <form method="POST" action="/admin/actualizar-usuarios" class="admin-form">
+      <table class="admin-table table table-striped table-hover">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Email</th>
+            <th>Nombre</th>
+            <th>Rol</th>
+            <th>Cambiar Rol</th>
+            <th>Estatus</th>
+            <th>Cambiar Estatus</th>
+          </tr>
+        </thead>
+        <tbody id="usuarios-tbody">
+          {{#each usuarios}}
+          <tr>
+            <td>{{this.id_usuario}}</td>
+            <td>{{this.email}} 
+                <button type="button" onclick="editarUsuario({{this.id_usuario}}, '{{this.username}}')">✏️ Editar</button>
+            </td>
+            <td>
+              {{this.username}} <br>
+            </td>
+            <td>
+              {{#if (eq this.id_tp_usuario 3)}}
+                <span class="badge bg-danger">ADMIN</span>
+              {{else if (eq this.id_tp_usuario 2)}}
+                <span class="badge bg-warning text-dark">EDITOR</span>
+              {{else}}
+                <span class="badge bg-primary">USUARIO</span>
+              {{/if}}
+            </td>
+            <td>
+              <input type="hidden" name="usuario_ids" value="{{this.id_usuario}}">
+              <select name="nuevos_roles" class="form-select role-select">
+                <option value="1" {{#if (eq this.id_tp_usuario 1)}}selected{{/if}}>USUARIO</option>
+                <option value="2" {{#if (eq this.id_tp_usuario 2)}}selected{{/if}}>EDITOR</option>
+                <option value="3" {{#if (eq this.id_tp_usuario 3)}}selected{{/if}}>ADMIN</option>
+              </select>
+            </td>
+            <td>
+              <span class="badge status-{{this.descripcion}}">{{this.descripcion}}</span>
+            </td>
+            <td>
+              <select name="nuevos_status" class="form-select role-select">
+                {{#each ../lista_status}}
+                <option value="{{this.id_status}}" {{#if (eq this.id_status ../../this.id_status)}}selected{{/if}}>
+                  {{this.descripcion}}
+                </option>
+                {{/each}}
+              </select>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+
+      <button type="button" class="admin-btn btn btn-primary mt-3" onclick="agregarUsuario()">➕ Agregar usuario</button>
+      <button type="submit" class="admin-btn btn btn-primary mt-3">Guardar Cambios</button>
+    </form> 
+  </div>
+
+  <script>
+      function editarUsuario(id, nombreActual) {
+        const nuevoNombre = prompt("Editar nombre del usuario:", nombreActual);
+        if (!nuevoNombre || nuevoNombre === nombreActual) return;
+
+        // Puedes pedir más campos si lo deseas
+        const nuevoEmail = prompt("Editar email del usuario:");
+        const nuevaPassword = prompt("Nueva contraseña (opcional):");
+
+        const payload = {
+          id_usuario: id,
+          username: nuevoNombre
+        };
+
+        if (nuevoEmail && nuevoEmail.trim() !== "") {
+          payload.email = nuevoEmail;
+        }
+
+        if (nuevaPassword && nuevaPassword.trim() !== "") {
+          payload.password = nuevaPassword;
+        }
+
+        fetch('/admin/editar-usuario', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        .then(res => {
+          if (res.ok) {
+            alert("Usuario editado correctamente.");
+            location.reload();
+          } else {
+            alert("Error al editar el usuario.");
+          }
+        })
+        .catch(err => {
+          console.error("Error al hacer fetch:", err);
+          alert("Error de red.");
+        });
+      }
+
+
+    function agregarUsuario() {
+      const nombre = prompt("Nombre del nuevo usuario:");
+      const email = prompt("Email del nuevo usuario:");
+      const password = prompt("Contraseña del nuevo usuario:");
+
+      if (!nombre || !email || !password) {
+        alert("Todos los campos son obligatorios.");
+        return;
+      }
+
+      fetch('/admin/agregar-usuario', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: nombre, email, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.id_usuario) {
+          alert("Error al agregar el usuario");
+          return;
+        }
+
+        const tbody = document.getElementById("usuarios-tbody");
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${data.id_usuario}</td>
+          <td>${data.email}</td>
+          <td>
+            ${data.username}<br>
+            <button type="button" onclick="editarUsuario(${data.id_usuario}, '${data.username}')">✏️ Editar</button>
+          </td>
+          <td><span class="badge bg-primary">USUARIO</span></td>
+          <td>
+            <input type="hidden" name="usuario_ids" value="${data.id_usuario}">
+            <select name="nuevos_roles" class="form-select role-select">
+              <option value="1" selected>USUARIO</option>
+              <option value="2">EDITOR</option>
+              <option value="3">ADMIN</option>
+            </select>
+          </td>
+          <td><span class="badge status-activo">Activo</span></td>
+          <td>
+            <select name="nuevos_status" class="form-select role-select">
+              <option value="1" selected>Activo</option>
+              <option value="2">Inactivo</option>
+            </select>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      })
+      .catch(err => {
+        console.error("Error:", err);
+        alert("Error al agregar el usuario.");
+      });
+    }
+  </script>
+</body>
+</html>

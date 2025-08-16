@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestión de Datos</title>
+  <link rel="stylesheet" href="/css/editor.css" />
+  <style>
+    #formEditarDato {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      display: none;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+<body>
+  <header class="editor-header">
+    <div class="header-left">
+      <a href="/">
+        <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image-header">
+      </a>
+    </div>
+    <div class="header-center">
+      <h1 class="editor-title">Panel de Edición</h1>
+      <p class="editor-welcome">Bienvenido {{user.username}} (EDITOR)</p>
+    </div>
+    <div class="header-right">
+      <a href="/perfil2" class="volver-button">Volver</a>
+    </div>
+  </header>
+
+  <img src="/images/stuart_recargado.png" alt="Personaje Editor" class="character-image">
+
+  <div class="editor-container container mt-4">
+    <h2 class="editor-subtitle mb-4">Gestión de Datos</h2>
+    <a href="/editor" class="editor-btn">Gestión de Encuesta</a>
+    <a href="/editor/examenes" class="editor-btn">Gestión de Examenes</a>
+
+    <table class="editor-table mt-3">
+      <thead>
+        <tr>
+          <th>ID Materia</th>
+          <th>Dato</th>
+          <th>Fuente</th>
+          <th>Imagen</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each datos}}
+        <tr>
+          <td>{{id_materia}} - {{nombre_materia}}</td>
+          <td>{{dato}}</td>
+          <td>{{fuente}}</td>
+          <td>
+            {{#if imagen}}
+              <img src="/datos/imagen/{{id_dato}}" alt="Imagen del dato" style="max-width: 100px;" />
+            {{else}}  
+              Sin imagen
+            {{/if}}
+          </td>
+          <td>
+            <button class="editor-action-btn"
+              data-id="{{id_dato}}"
+              data-dato="{{dato}}"
+              data-fuente="{{fuente}}"
+              onclick="editarDatoDesdeAtributos(this)">
+              ✏️ Editar
+            </button>
+            <button class="editor-action-btn" onclick="eliminarDato({{id_dato}})">🗑️ Eliminar</button>
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <button class="editor-btn mt-3" onclick="agregarDato()">➕ Agregar dato</button>
+  </div>
+
+  <!-- Formulario oculto para editar -->
+  <form id="formEditarDato" action="/editor/editar-dato-binario" method="POST" enctype="multipart/form-data">
+    <h3>Editar Dato</h3>
+    <input type="hidden" name="id" id="editar-id">
+
+    <label for="editar-dato">Nuevo Dato:</label><br>
+    <input type="text" name="nuevoDato" id="editar-dato" required><br><br>
+
+    <label for="editar-fuente">Fuente:</label><br>
+    <input type="text" name="fuente" id="editar-fuente" required><br><br>
+
+    <label for="editar-imagen">Imagen (opcional):</label><br>
+    <input type="file" name="imagen" id="editar-imagen" accept="image/*"><br><br>
+
+    <button type="submit" class="editor-btn">Guardar cambios</button>
+  </form>
+
+  <script>
+    function eliminarDato(id) {
+      if (confirm("¿Eliminar este dato?")) {
+        fetch(`/editor/eliminar-dato/${id}`, { method: "DELETE" })
+          .then(res => res.ok ? location.reload() : alert("Error eliminando"));
+      }
+    }
+
+    function editarDato(id, texto, fuente) {
+      document.getElementById('editar-id').value = id;
+      document.getElementById('editar-dato').value = texto;
+      document.getElementById('editar-fuente').value = fuente || "";
+      document.getElementById('formEditarDato').style.display = 'block';
+    }
+
+    function agregarDato() {
+      const dato = prompt("Nuevo dato:");
+      if (!dato) return;
+
+      const id_materia = prompt("ID de materia:");
+      if (!id_materia) return;
+
+      const fuente = prompt("Fuente del dato (URL, autor, etc.):");
+      if (!fuente) return;
+
+      fetch(`/editor/agregar-dato`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dato, id_materia, fuente })
+      }).then(res => res.ok ? location.reload() : alert("Error agregando"));
+    }
+
+    function editarDatoDesdeAtributos(btn) {
+      const id = btn.dataset.id;
+      const texto = btn.dataset.dato;
+      const fuente = btn.dataset.fuente;
+
+      editarDato(id, texto, fuente);
+    }
+  </script>
+</body>
+</html>

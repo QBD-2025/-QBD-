@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serpientes y Escaleras Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Fredoka+One&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3366FF;
+            --primary-dark: #212B36;
+            --secondary: #FFD737;
+            --accent: #FF5252;
+            --light: #FCEFD3;
+            --dark: #4B5056;
+            --success: #00E676;
+            --danger: #FF5252;
+            --warning: #FFD737;
+            --info: #40C4FF;
+            --board-bg: #FFFFFF;
+            --cell-bg: #F1F5FD;
+            --cell-hover: #E1E8F7;
+            --snake: #FF5252;
+            --snake2: #4CAF50;
+            --ladder: #00B894;
+            --ladder2: #795548;
+            --player1: #3366FF;
+            --player2: #FF5252;
+            --player3: #00CEFF;
+            --player4: #FFD737;
+            --shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.15);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            --border-radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0515a8, #09012c);
+            color: var(--primary-dark);
+            min-height: 100vh;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            line-height: 1.6;
+        }
+
+        .game-container {
+            max-width: 1200px;
+            width: 100%;
+            background: var(--light);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+            padding: 2.5rem;
+            transition: var(--transition);
+        }
+        .game-container:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        .board-container {
+            position: relative;
+            background: var(--board-bg);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+            gap: 6px;
+            width: 100%;
+            aspect-ratio: 1/1;
+            position: relative;
+        }
+
+        .cell {
+            background: var(--cell-bg);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            font-weight: 600;
+            transition: var(--transition);
+            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .cell:hover {
+            background: var(--cell-hover);
+            transform: translateY(-3px);
+        }
+
+        .cell-number {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 0.7rem;
+            color: rgba(0, 0, 0, 0.5);
+            font-weight: 700;
+        }
+
+        .cell-special {
+            position: absolute;
+            font-size: 1.5rem;
+            bottom: 5px;
+            left: 5px;
+            transition: var(--transition);
+        }
+
+        .snake-1 .cell-special {
+            color: var(--snake);
+        }
+
+        .snake-2 .cell-special {
+            color: var(--snake2);
+        }
+
+        .ladder-1 .cell-special {
+            color: var(--ladder);
+        }
+
+        .ladder-2 .cell-special {
+            color: var(--ladder2);
+        }
+
+        .player {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            position: absolute;
+            transition: var(--transition);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.9rem;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            border: 2px solid white;
+        }
+
+        .player-1 {
+            background: var(--player1);
+        }
+
+        .player-2 {
+            background: var(--player2);
+        }
+
+        .player-3 {
+            background: var(--player3);
+        }
+
+        .player-4 {
+            background: var(--player4);
+        }
+
+        .game-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+        }
+
+        .panel {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.8rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .panel:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .panel-title {
+            font-size: 1.3rem;
+            margin-bottom: 1.2rem;
+            color: var(--primary);
+            font-weight: 700;
+            font-family: 'Fredoka One', cursive;
+            letter-spacing: 0.5px;
+        }
+
+        .dice-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+            
+        .dice {
+            width: 90px;
+            height: 90px;
+            background: #FFD737;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: var(--transition);
+            user-select: none;
+            font-family: 'Fredoka One', cursive;
+            color: var(--dark);
+            border: 4px solid #F0C800;
+        }
+        .dice:hover {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .dice:active {
+            transform: scale(0.95);
+        }
+
+        .dice.rolling {
+            animation: shake 0.5s infinite;
+        }
+
+        @keyframes shake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(5deg); }
+            50% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        .btn {
+            padding: 1rem 1.8rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn i {
+            font-size: 1.2rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(51, 102, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #2952CC;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(51, 102, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--light);
+            color: var(--dark);
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #F0E6D0;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .players-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.03);
+            transition: var(--transition);
+        }
+
+        .player-info:hover {
+            transform: translateX(5px);
+        }
+
+        .player-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .player-name {
+            flex: 1;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .player-position {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.1rem;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .current-turn {
+            background: rgba(51, 102, 255, 0.1);
+            border: 2px solid var(--primary);
+            box-shadow: 0 4px 12px rgba(51, 102, 255, 0.2);
+        }
+
+        .snakes-ladders-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .special-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 0.95rem;
+            padding: 0.8rem;
+            border-radius: 10px;
+            transition: var(--transition);
+        }
+
+        .special-item:hover {
+            background: rgba(0, 0, 0, 0.03);
+            transform: translateX(5px);
+        }
+
+        .special-icon {
+            font-size: 1.5rem;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        .snake-icon {
+            background: rgba(255, 82, 82, 0.1);
+            color: var(--snake);
+        }
+
+        .snake2-icon {
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--snake2);
+        }
+
+        .ladder-icon {
+            background: rgba(0, 184, 148, 0.1);
+            color: var(--ladder);
+        }
+
+        .ladder2-icon {
+            background: rgba(121, 85, 72, 0.1);
+            color: var(--ladder2);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            transform: translateY(-20px);
+            transition: var(--transition);
+            box-shadow: var(--shadow-hover);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            font-family: 'Fredoka One', cursive;
+        }
+
+        .modal-message {
+            margin-bottom: 2rem;
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1.2rem;
+            justify-content: center;
+        }
+
+        .modal-buttons .btn {
+            width: auto;
+            padding: 0.8rem 1.5rem;
+        }
+
+        .settings-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--dark);
+        }
+
+        .form-input {
+            padding: 0.9rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(51, 102, 255, 0.2);
+        }
+
+        .form-select {
+            padding: 0.9rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: inherit;
+            background: white;
+            transition: var(--transition);
+        }
+
+        .form-select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(51, 102, 255, 0.2);
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--dark);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            box-shadow: var(--shadow-hover);
+            font-weight: 600;
+            z-index: 1000;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                grid-template-columns: 1fr;
+                padding: 1.5rem;
+            }
+            
+            .board-container {
+                padding: 1rem;
+            }
+            
+            .modal-buttons {
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+            
+            .modal-buttons .btn {
+                width: 100%;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="board-container">
+            <div class="board" id="board">
+                <!-- Cells will be generated by JavaScript -->
+            </div>
+        </div>
+        
+        <div class="game-controls">
+            <div class="panel dice-container">
+                <h3 class="panel-title"><i class="fas fa-dice"></i> Dado</h3>
+                <div class="dice" id="dice">?</div>
+                <button class="btn btn-primary" id="roll-btn">
+                    <i class="fas fa-redo"></i> Lanzar Dado
+                </button>
+            </div>
+            
+            <div class="panel players-info">
+                <h3 class="panel-title"><i class="fas fa-users"></i> Jugadores</h3>
+                <div id="players-list">
+                    <!-- Player info will be generated by JavaScript -->
+                </div>
+            </div>
+            
+            <div class="panel snakes-ladders-info">
+                <!-- Info will be generated by JavaScript -->
+            </div>
+            
+            <button class="btn btn-secondary" id="settings-btn">
+                <i class="fas fa-cog"></i> Ajustes
+            </button>
+            <button class="btn btn-secondary" id="help-btn">
+                <i class="fas fa-question-circle"></i> Cómo Jugar
+            </button>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification"></div>
+    
+    <div class="modal" id="winner-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">¡Felicidades! 🎉</h2>
+            <p class="modal-message" id="winner-message">Jugador 1 ha ganado el juego!</p>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" id="play-again-btn">
+                    <i class="fas fa-play"></i> Jugar de Nuevo
+                </button>
+                <button class="btn btn-secondary" id="close-modal-btn">
+                    <i class="fas fa-times"></i> Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Ajustes del Juego <i class="fas fa-cog"></i></h2>
+            <form class="settings-form" id="settings-form">
+                <div class="form-group">
+                    <label class="form-label" for="player-count">Número de Jugadores</label>
+                    <select class="form-select" id="player-count">
+                        <option value="2">2 Jugadores</option>
+                        <option value="3">3 Jugadores</option>
+                        <option value="4">4 Jugadores</option>
+                    </select>
+                </div>
+                
+                <div id="player-names-container">
+                    <!-- Player name inputs will be generated by JavaScript -->
+                </div>
+                
+                <div class="modal-buttons">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="cancel-settings-btn">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="modal" id="help-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Cómo Jugar <i class="fas fa-question-circle"></i></h2>
+            <div class="settings-form">
+                <p><strong>Serpientes y Escaleras</strong> es un juego clásico de mesa para 2-4 jugadores.</p>
+                
+                <h3 style="margin: 1.5rem 0 0.8rem; font-size: 1.2rem; color: var(--primary);">
+                    <i class="fas fa-info-circle"></i> Instrucciones:
+                </h3>
+                <ul style="text-align: left; margin-left: 1.5rem; margin-bottom: 2rem; list-style-type: none;">
+                    <li style="margin-bottom: 0.8rem; display: flex; gap: 0.8rem;">
+                        <span style="color: var(--primary);"><i class="fas fa-dice"></i></span>
+                        <span>Los jugadores se turnan para lanzar el dado y avanzar.</span>
+                    </li>
+                    <li style="margin-bottom: 0.8rem; display: flex; gap: 0.8rem;">
+                        <span style="color: var(--ladder);"><i class="fas fa-arrow-up"></i></span>
+                        <span>Escalera normal (🪜): Sube 2 plantas</span>
+                    </li>
+                    <li style="margin-bottom: 0.8rem; display: flex; gap: 0.8rem;">
+                        <span style="color: var(--ladder2);"><i class="fas fa-arrow-up"></i></span>
+                        <span> especial (🛩️): Sube 3 plantas</span>
+                    </li>
+                    <li style="margin-bottom: 0.8rem; display: flex; gap: 0.8rem;">
+                        <span style="color: var(--snake);"><i class="fas fa-arrow-down"></i></span>
+                        <span>Serpiente normal (🐍): Baja 2 plantas</span>
+                    </li>
+                    <li style="margin-bottom: 0.8rem; display: flex; gap: 0.8rem;">
+                        <span style="color: var(--snake2);"><i class="fas fa-arrow-down"></i></span>
+                        <span> especial (🦎): Baja 3 plantas</span>
+                    </li>
+                    <li style="margin-bottom: 0.8rem; display: flex; gap: 0.8rem;">
+                        <span style="color: var(--success);"><i class="fas fa-trophy"></i></span>
+                        <span>El primer jugador en llegar exactamente a la casilla 100 gana.</span>
+                    </li>
+                </ul>
+                
+                <div class="modal-buttons">
+                    <button class="btn btn-primary" id="close-help-btn">
+                        <i class="fas fa-check"></i> Entendido
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game Configuration
+        const config = {
+            playerCount: 2,
+            playerNames: ['Jugador 1', 'Jugador 2', 'Jugador 3', 'Jugador 4'],
+            playerColors: ['player-1', 'player-2', 'player-3', 'player-4'],
+            playerIcons: ['👨', '👩', '🧑', '🧒'],
+            
+            // Serpientes normales (rojas) - bajan 2 plantas
+            snakes1: {
+                98: 78,
+                95: 75,
+                73: 53,
+                55: 35,
+                44: 24,
+                30: 10
+            },
+            
+            // Serpientes especiales (verdes) - bajan 3 plantas
+            snakes2: {
+                92: 62,
+                64: 34,
+                48: 18,
+                36: 6,
+                25: 5
+            },
+            
+            // Escaleras normales (verdes) - suben 2 plantas
+            ladders1: {
+                2: 22,
+                7: 27,
+                15: 35,
+                28: 48,
+                51: 71,
+                60: 80
+            },
+            
+            // Escaleras especiales (café) - suben 3 plantas
+            ladders2: {
+                5: 35,
+                12: 42,
+                21: 51,
+                37: 67,
+                45: 75,
+                68: 98
+            },
+            
+            winPosition: 100,
+            diceFaces: 6,
+            animationDuration: 500
+        };
+
+        // Game State
+        let state = {
+            players: [],
+            currentPlayer: 0,
+            gameStarted: false,
+            diceValue: 0,
+            rolling: false,
+            winner: null,
+            moving: false
+        };
+
+        // DOM Elements
+        const elements = {
+            board: document.getElementById('board'),
+            dice: document.getElementById('dice'),
+            rollBtn: document.getElementById('roll-btn'),
+            playersList: document.getElementById('players-list'),
+            winnerModal: document.getElementById('winner-modal'),
+            winnerMessage: document.getElementById('winner-message'),
+            playAgainBtn: document.getElementById('play-again-btn'),
+            closeModalBtn: document.getElementById('close-modal-btn'),
+            settingsModal: document.getElementById('settings-modal'),
+            settingsForm: document.getElementById('settings-form'),
+            playerCountSelect: document.getElementById('player-count'),
+            playerNamesContainer: document.getElementById('player-names-container'),
+            settingsBtn: document.getElementById('settings-btn'),
+            cancelSettingsBtn: document.getElementById('cancel-settings-btn'),
+            helpModal: document.getElementById('help-modal'),
+            helpBtn: document.getElementById('help-btn'),
+            closeHelpBtn: document.getElementById('close-help-btn'),
+            notification: document.getElementById('notification')
+        };
+
+        // Initialize the game
+        function initGame() {
+            createBoard();
+            setupPlayers();
+            renderPlayers();
+            updateInfoPanel();
+            updateUI();
+            loadSettings();
+            attachEventListeners();
+        }
+
+        // Create the game board
+        function createBoard() {
+            elements.board.innerHTML = '';
+            
+            // Create cells in reverse order for snake and ladders board
+            for (let row = 9; row >= 0; row--) {
+                for (let col = 0; col < 10; col++) {
+                    const cellNum = row % 2 === 0 ? 
+                        (row * 10) + col + 1 : 
+                        (row * 10) + (10 - col);
+                    
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.number = cellNum;
+                    
+                    const cellNumber = document.createElement('div');
+                    cellNumber.className = 'cell-number';
+                    cellNumber.textContent = cellNum;
+                    cell.appendChild(cellNumber);
+                    
+                    // Add special icons for snakes and ladders
+                    if (config.snakes1[cellNum]) {
+                        cell.classList.add('snake-1');
+                        const specialIcon = document.createElement('div');
+                        specialIcon.className = 'cell-special';
+                        specialIcon.textContent = '🐍';
+                        cell.appendChild(specialIcon);
+                    } else if (config.snakes2[cellNum]) {
+                        cell.classList.add('snake-2');
+                        const specialIcon = document.createElement('div');
+                        specialIcon.className = 'cell-special';
+                        specialIcon.textContent = '🦎';
+                        cell.appendChild(specialIcon);
+                    } else if (config.ladders1[cellNum]) {
+                        cell.classList.add('ladder-1');
+                        const specialIcon = document.createElement('div');
+                        specialIcon.className = 'cell-special';
+                        specialIcon.textContent = '🪜';
+                        cell.appendChild(specialIcon);
+                    } else if (config.ladders2[cellNum]) {
+                        cell.classList.add('ladder-2');
+                        const specialIcon = document.createElement('div');
+                        specialIcon.className = 'cell-special';
+                        specialIcon.textContent = '🛩️';
+                        cell.appendChild(specialIcon);
+                    }
+                    
+                    elements.board.appendChild(cell);
+                }
+            }
+        }
+
+        // Update info panel with different types
+        function updateInfoPanel() {
+            const infoPanel = document.querySelector('.snakes-ladders-info');
+            infoPanel.innerHTML = `
+                <h3 class="panel-title"><i class="fas fa-info-circle"></i> Serpientes y Escaleras</h3>
+                <div class="special-item">
+                    <span class="special-icon ladder-icon">🪜</span>
+                    <span>Escalera normal: Sube 2 plantas</span>
+                </div>
+                <div class="special-item">
+                    <span class="special-icon ladder2-icon">🛩️</span>
+                    <span> especial: Sube 3 plantas</span>
+                </div>
+                <div class="special-item">
+                    <span class="special-icon snake-icon">🐍</span>
+                    <span>Serpiente normal: Baja 2 plantas</span>
+                </div>
+                <div class="special-item">
+                    <span class="special-icon snake2-icon">🦎</span>
+                    <span> especial: Baja 3 plantas</span>
+                </div>
+            `;
+        }
+
+        // Setup players based on configuration
+        function setupPlayers() {
+            state.players = [];
+            for (let i = 0; i < config.playerCount; i++) {
+                state.players.push({
+                    id: i,
+                    name: config.playerNames[i],
+                    position: 1,
+                    color: config.playerColors[i],
+                    icon: config.playerIcons[i]
+                });
+            }
+            state.currentPlayer = 0;
+            state.gameStarted = true;
+            state.winner = null;
+            state.moving = false;
+        }
+
+        // Render players on the board
+        function renderPlayers() {
+            // Remove existing player elements
+            document.querySelectorAll('.player').forEach(el => el.remove());
+            
+            // Create new player elements
+            state.players.forEach(player => {
+                const playerEl = document.createElement('div');
+                playerEl.className = `player ${player.color}`;
+                playerEl.textContent = player.icon;
+                playerEl.dataset.playerId = player.id;
+                playerEl.style.zIndex = 10 + player.id;
+                elements.board.appendChild(playerEl);
+                
+                // Position the player
+                movePlayerToPosition(player.id, player.position, false);
+            });
+        }
+
+        // Move player to a specific position on the board
+        function movePlayerToPosition(playerId, newPosition, animate = true) {
+            const player = state.players.find(p => p.id === playerId);
+            if (!player) return;
+            
+            const oldPosition = player.position;
+            player.position = newPosition;
+            
+            const playerEl = document.querySelector(`.player[data-player-id="${playerId}"]`);
+            if (!playerEl) return;
+            
+            const cell = document.querySelector(`.cell[data-number="${newPosition}"]`);
+            if (!cell) return;
+            
+            const cellRect = cell.getBoundingClientRect();
+            const boardRect = elements.board.getBoundingClientRect();
+            
+            // Calculate position within the cell (with some offset for multiple players)
+            const offsetX = (playerId % 2) * 15;
+            const offsetY = Math.floor(playerId / 2) * 15;
+            
+            if (animate) {
+                playerEl.style.transition = 'all 0.6s cubic-bezier(0.68, -0.6, 0.32, 1.6)';
+                setTimeout(() => {
+                    playerEl.style.transition = 'var(--transition)';
+                }, 600);
+            }
+            
+            playerEl.style.left = `${cellRect.left - boardRect.left + offsetX}px`;
+            playerEl.style.top = `${cellRect.top - boardRect.top + offsetY}px`;
+            
+            // Check for snakes or ladders
+            checkSpecialPosition(playerId, newPosition, oldPosition);
+        }
+
+        // Check if new position is a snake or ladder
+        function checkSpecialPosition(playerId, newPosition, oldPosition) {
+            const player = state.players[playerId];
+            
+            // Serpientes normales (bajan 2 plantas)
+            if (config.snakes1[newPosition]) {
+                setTimeout(() => {
+                    showNotification(`${player.name} cayó en una serpiente normal! Baja 2 plantas 🐍`);
+                    movePlayerToPosition(playerId, config.snakes1[newPosition]);
+                }, 600);
+            } 
+            // Serpientes especiales (bajan 3 plantas)
+            else if (config.snakes2[newPosition]) {
+                setTimeout(() => {
+                    showNotification(`${player.name} cayó en una serpiente especial! Baja 3 plantas -`);
+                    movePlayerToPosition(playerId, config.snakes2[newPosition]);
+                }, 600);
+            } 
+            // Escaleras normales (suben 2 plantas)
+            else if (config.ladders1[newPosition]) {
+                setTimeout(() => {
+                    showNotification(`${player.name} encontró una escalera normal! Sube 2 plantas 🪜`);
+                    movePlayerToPosition(playerId, config.ladders1[newPosition]);
+                }, 600);
+            } 
+            // Escaleras especiales (suben 3 plantas)
+            else if (config.ladders2[newPosition]) {
+                setTimeout(() => {
+                    showNotification(`${player.name} encontró una escalera especial! Sube 3 plantas 🛩️`);
+                    movePlayerToPosition(playerId, config.ladders2[newPosition]);
+                }, 600);
+            }
+        }
+
+        // Show notification message
+        function showNotification(message, duration = 3000) {
+            elements.notification.textContent = message;
+            elements.notification.classList.add('show');
+            
+            setTimeout(() => {
+                elements.notification.classList.remove('show');
+            }, duration);
+        }
+
+        // Roll the dice
+        function rollDice() {
+            if (state.rolling || state.winner || state.moving) return;
+            
+            state.rolling = true;
+            elements.rollBtn.disabled = true;
+            elements.dice.classList.add('rolling');
+            
+            // Animate dice roll
+            let rolls = 0;
+            const maxRolls = 10;
+            const rollInterval = setInterval(() => {
+                state.diceValue = Math.floor(Math.random() * config.diceFaces) + 1;
+                elements.dice.textContent = state.diceValue;
+                rolls++;
+                
+                if (rolls >= maxRolls) {
+                    clearInterval(rollInterval);
+                    elements.dice.classList.remove('rolling');
+                    state.rolling = false;
+                    elements.rollBtn.disabled = false;
+                    showNotification(`${state.players[state.currentPlayer].name} obtuvo un ${state.diceValue}!`);
+                    moveCurrentPlayer(state.diceValue);
+                }
+            }, 100);
+        }
+
+        // Move current player based on dice value
+        function moveCurrentPlayer(steps) {
+            const player = state.players[state.currentPlayer];
+            const newPosition = player.position + steps;
+            
+            if (newPosition > config.winPosition) {
+                // Player can't move beyond the winning position
+                showNotification(`${player.name} necesita un número exacto para ganar!`);
+                nextPlayer();
+                return;
+            }
+            
+            if (newPosition === config.winPosition) {
+                // Player wins
+                player.position = newPosition;
+                state.winner = player;
+                showWinner();
+                return;
+            }
+            
+            // Move player to new position
+            movePlayerToPosition(player.id, newPosition);
+            
+            // Check if player gets another turn (if rolled a 6)
+            if (steps === 6) {
+                showNotification(`${player.name} obtuvo un 6! Juega de nuevo.`);
+                updateUI();
+            } else {
+                setTimeout(() => {
+                    nextPlayer();
+                }, 1000);
+            }
+        }
+
+        // Move to next player
+        function nextPlayer() {
+            state.currentPlayer = (state.currentPlayer + 1) % config.playerCount;
+            updateUI();
+            showNotification(`Turno de ${state.players[state.currentPlayer].name}`);
+        }
+
+        // Show winner modal
+        function showWinner() {
+            elements.winnerMessage.textContent = `¡${state.winner.name} ha ganado el juego! 🎉`;
+            elements.winnerModal.classList.add('active');
+            updateUI();
+            
+            // Confetti effect
+            if (window.confetti) {
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        // Reset the game
+        function resetGame() {
+            setupPlayers();
+            renderPlayers();
+            state.diceValue = 0;
+            elements.dice.textContent = '?';
+            elements.winnerModal.classList.remove('active');
+            updateUI();
+        }
+
+        // Update UI based on game state
+        function updateUI() {
+            // Update players list
+            elements.playersList.innerHTML = '';
+            state.players.forEach((player, index) => {
+                const playerEl = document.createElement('div');
+                playerEl.className = `player-info ${index === state.currentPlayer && !state.winner ? 'current-turn' : ''}`;
+                
+                const colorEl = document.createElement('div');
+                colorEl.className = `player-color ${player.color}`;
+                
+                const nameEl = document.createElement('div');
+                nameEl.className = 'player-name';
+                nameEl.textContent = player.name;
+                
+                const positionEl = document.createElement('div');
+                positionEl.className = 'player-position';
+                positionEl.textContent = player.position;
+                
+                playerEl.appendChild(colorEl);
+                playerEl.appendChild(nameEl);
+                playerEl.appendChild(positionEl);
+                elements.playersList.appendChild(playerEl);
+            });
+            
+            // Update dice and roll button
+            elements.rollBtn.disabled = state.rolling || state.winner || state.moving;
+        }
+
+        // Load settings from localStorage
+        function loadSettings() {
+            const savedSettings = localStorage.getItem('snakesAndLaddersSettings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                config.playerCount = settings.playerCount || 2;
+                config.playerNames = settings.playerNames || ['Jugador 1', 'Jugador 2', 'Jugador 3', 'Jugador 4'];
+                
+                elements.playerCountSelect.value = config.playerCount;
+                updatePlayerNamesInputs();
+            }
+        }
+
+        // Save settings to localStorage
+        function saveSettings() {
+            const settings = {
+                playerCount: parseInt(elements.playerCountSelect.value),
+                playerNames: []
+            };
+            
+            for (let i = 0; i < 4; i++) {
+                const input = document.getElementById(`player-name-${i}`);
+                if (input) {
+                    settings.playerNames[i] = input.value || `Jugador ${i+1}`;
+                }
+            }
+            
+            localStorage.setItem('snakesAndLaddersSettings', JSON.stringify(settings));
+            
+            // Update game config
+            config.playerCount = settings.playerCount;
+            config.playerNames = settings.playerNames;
+            
+            // Reset game with new settings
+            resetGame();
+        }
+
+        // Update player name inputs based on selected player count
+        function updatePlayerNamesInputs() {
+            elements.playerNamesContainer.innerHTML = '';
+            
+            for (let i = 0; i < 4; i++) {
+                const formGroup = document.createElement('div');
+                formGroup.className = 'form-group';
+                
+                const label = document.createElement('label');
+                label.className = 'form-label';
+                label.textContent = `Nombre Jugador ${i+1}`;
+                label.htmlFor = `player-name-${i}`;
+                
+                const input = document.createElement('input');
+                input.className = 'form-input';
+                input.type = 'text';
+                input.id = `player-name-${i}`;
+                input.value = config.playerNames[i] || `Jugador ${i+1}`;
+                input.disabled = i >= parseInt(elements.playerCountSelect.value);
+                
+                formGroup.appendChild(label);
+                formGroup.appendChild(input);
+                elements.playerNamesContainer.appendChild(formGroup);
+            }
+        }
+
+        // Attach event listeners
+        function attachEventListeners() {
+            elements.rollBtn.addEventListener('click', rollDice);
+            elements.playAgainBtn.addEventListener('click', resetGame);
+            elements.closeModalBtn.addEventListener('click', () => {
+                elements.winnerModal.classList.remove('active');
+            });
+            
+            elements.settingsBtn.addEventListener('click', () => {
+                elements.settingsModal.classList.add('active');
+            });
+            
+            elements.cancelSettingsBtn.addEventListener('click', () => {
+                elements.settingsModal.classList.remove('active');
+            });
+            
+            elements.helpBtn.addEventListener('click', () => {
+                elements.helpModal.classList.add('active');
+            });
+            
+            elements.closeHelpBtn.addEventListener('click', () => {
+                elements.helpModal.classList.remove('active');
+            });
+            
+            elements.playerCountSelect.addEventListener('change', updatePlayerNamesInputs);
+            
+            elements.settingsForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveSettings();
+                elements.settingsModal.classList.remove('active');
+            });
+        }
+
+        // Initialize the game
+        initGame();
+
+        // Load confetti library if not already loaded
+        if (!window.confetti) {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js';
+            document.head.appendChild(script);
+        }
+    </script>
+</body>
+</html>

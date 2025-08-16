@@ -1,0 +1,443 @@
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="/css/ahorcado.css">
+{{!-- Estilos nuevos para el modo enfrentamiento --}}
+<style>
+    /* Estilos para el nuevo layout de enfrentamiento */
+    #vista-enfrentamiento {
+        display: none; /* Oculto por defecto */
+        grid-template-columns: 1fr 400px 1fr; /* Izquierda, Centro, Derecha */
+        gap: 20px;
+        align-items: flex-start;
+    }
+    .game-enfrentamiento {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        background-color: #f9f9f9;
+        text-align: center;
+    }
+    .game-enfrentamiento .canvas-wrap {
+        margin: 10px auto;
+        max-width: 300px;
+    }
+    .game-enfrentamiento canvas {
+        width: 100%;
+        height: auto;
+    }
+    .timer-container {
+        grid-column: 1 / -1; /* Ocupa todo el ancho */
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    #timer {
+        background-color: #ffc107;
+        color: #333;
+        padding: 5px 15px;
+        border-radius: 20px;
+    }
+
+    /* Pequeños ajustes al CSS original */
+    .layout {
+      width: 100%;
+      max-width: 1600px; /* Aumentar el ancho máximo para el nuevo layout */
+    }
+    .jug-item .actions {
+      display: flex;
+      gap: 5px;
+    }
+    .btn-action {
+      padding: 3px 8px;
+      font-size: 0.8em;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
+    }
+    .btn-invite { background-color: #17a2b8; }
+    .btn-challenge { background-color: #dc3545; }
+</style>
+<title>Juego del Ahorcado</title>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div class="title">🎯 Juego del Ahorcado</div>
+      <div class="pill">
+        Jugador: <strong>{{#if user}}{{user.username}}{{else}}Invitado{{/if}}</strong>
+      </div>
+        <button onclick="location.href='/minijuegos'" style="margin-left: 20px;"> ← Regresar</button>
+    </div>
+
+    {{!-- El layout principal ahora es un contenedor de vistas --}}
+    <div class="layout" id="main-layout">
+        
+        {{!-- VISTA 1: MODO COOPERATIVO (tu vista original) --}}
+        <div id="vista-cooperativo">
+            <section class="game card">
+                <div class="controls">
+                    <label for="categoria-coop">Categoría:</label>
+                    <select id="categoria-coop">
+                        <option value="programacion">Programación</option>
+                        <option value="basededatos">Base de Datos</option>
+                    </select>
+                    <button id="reiniciar-coop">🔄 Reiniciar</button>
+                </div>
+                <div class="canvas-wrap">
+                    <canvas id="canvas-coop" width="300" height="350"></canvas>
+                </div>
+                <div class="word" id="palabra-coop"></div>
+                <div class="wrong" id="incorrectas-coop"></div>
+                <div id="teclado-coop"></div>
+            </section>
+            <aside class="side">
+                <div class="panel card" id="panel-central-coop">
+                    {{!-- El panel de jugadores y chat se moverá aquí con JS --}}
+                </div>
+            </aside>
+        </div>
+
+        {{!-- VISTA 2: MODO ENFRENTAMIENTO --}}
+        <div id="vista-enfrentamiento">
+            {{!-- Panel del Jugador Local (Izquierda) --}}
+            <section class="game-enfrentamiento card">
+                <h2 id="nombre-local">{{user.username}}</h2>
+                <div class="canvas-wrap">
+                    <canvas id="canvas-local" width="300" height="350"></canvas>
+                </div>
+                <div class="word" id="palabra-local"></div>
+                <div class="wrong" id="incorrectas-local"></div>
+            </section>
+            
+            {{!-- Panel Central (Jugadores y Chat) --}}
+            <aside class="side" id="panel-central-enfrentamiento">
+                {{!-- El panel de jugadores y chat se moverá aquí con JS --}}
+            </aside>
+
+            {{!-- Panel del Oponente (Derecha) --}}
+            <section class="game-enfrentamiento card">
+                <h2 id="nombre-oponente">Esperando...</h2>
+                <div class="canvas-wrap">
+                    <canvas id="canvas-oponente" width="300" height="350"></canvas>
+                </div>
+                <div class="word" id="palabra-oponente"></div>
+                <div class="wrong" id="incorrectas-oponente"></div>
+            </section>
+
+            {{!-- Timer y Teclado --}}
+            <div class="timer-container">
+                Tiempo: <span id="timer">02:00</span>
+            </div>
+             <div id="teclado-enfrentamiento" style="grid-column: 1 / -1;"></div>
+        </div>
+
+        {{!-- Elementos Comunes (se moverán con JS a su lugar) --}}
+        <div id="elementos-comunes" style="display: none;">
+            <div class="panel card" id="jugadores-panel">
+                <h3>🟢 Jugadores activos</h3>
+                <ul id="lista-jugadores"></ul>
+            </div>
+            <div class="panel card" id="chat-panel">
+                <h3>💬 Chat</h3>
+                <div id="chatBox"></div>
+                <div class="chat-input">
+                    <input id="chatInput" type="text" placeholder="Escribe un mensaje…">
+                    <button id="chatBtn" class="chat-send">Enviar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // ================== DATOS Y CONFIGURACIÓN INICIAL ==================
+    const socket = io();
+    const salaId = "{{salaId}}";
+    const usuario = {{{json user}}}; // Objeto de usuario completo
+    // ================== LISTENER GLOBAL PARA REDIRECCIONES ==================
+// Este código escucha si el servidor nos ordena movernos a otra sala.
+// Es la pieza clave para que el jugador INVITADO se mueva a la partida.
+    socket.on('redirigirASala', (data) => {
+        // Verificamos que sea para el juego del ahorcado
+        if (data.juego === 'ahorcado') {
+            alert(`¡Te unes a la partida de ${data.remitente}! Redirigiendo...`);
+
+            let urlDestino = `/ahorcado/${data.salaId}`;
+
+            // Si el modo es 'enfrentamiento', lo añadimos a la URL
+            if (data.modo === 'enfrentamiento') {
+                urlDestino += '?modo=enfrentamiento';
+            }
+
+            // Redirigimos al navegador a la nueva URL
+            window.location.href = urlDestino;
+        }
+    });
+    // --- Detección de Modo de Juego ---
+    const urlParams = new URLSearchParams(window.location.search);
+    const modo = urlParams.get('modo') === 'enfrentamiento' ? 'enfrentamiento' : 'cooperativo';
+
+    // ================== ELEMENTOS DEL DOM (GENERAL) ==================
+    const mainLayout = document.getElementById('main-layout');
+    const vistaCooperativo = document.getElementById('vista-cooperativo');
+    const vistaEnfrentamiento = document.getElementById('vista-enfrentamiento');
+    
+    // Paneles comunes que se moverán de lugar
+    const jugadoresPanel = document.getElementById('jugadores-panel');
+    const chatPanel = document.getElementById('chat-panel');
+
+    // Elementos del Chat y Jugadores (comunes)
+    const chatBox = document.getElementById('chatBox');
+    const chatInput = document.getElementById('chatInput');
+    const chatBtn = document.getElementById('chatBtn');
+    const listaJugadoresEl = document.getElementById('lista-jugadores');
+
+    // ================== LÓGICA DE SELECCIÓN DE VISTA ==================
+    if (modo === 'enfrentamiento') {
+        mainLayout.classList.remove('layout'); // Quitar la clase que limita el ancho
+        vistaEnfrentamiento.style.display = 'grid';
+        vistaCooperativo.style.display = 'none';
+        // Mover paneles de chat y jugadores al centro
+        document.getElementById('panel-central-enfrentamiento').append(jugadoresPanel, chatPanel);
+    } else {
+        vistaCooperativo.style.display = 'grid'; // Grid para que la 'aside' funcione
+        vistaEnfrentamiento.style.display = 'none';
+        // Mover paneles a la vista cooperativa
+        document.getElementById('panel-central-coop').append(jugadoresPanel, chatPanel);
+    }
+    
+    // ================== VARIABLES Y ELEMENTOS POR MODO ==================
+    // --- Modo Cooperativo ---
+    const palabraCoopDiv = document.getElementById("palabra-coop");
+    const incorrectasCoopDiv = document.getElementById("incorrectas-coop");
+    const tecladoCoopDiv = document.getElementById("teclado-coop");
+    const reiniciarCoopBtn = document.getElementById("reiniciar-coop");
+    const categoriaCoopSelect = document.getElementById("categoria-coop");
+    const canvasCoop = document.getElementById("canvas-coop");
+    const ctxCoop = canvasCoop.getContext("2d");
+
+    // --- Modo Enfrentamiento ---
+    const timerEl = document.getElementById('timer');
+    const tecladoEnfrentamientoDiv = document.getElementById("teclado-enfrentamiento");
+    // Jugador Local
+    const nombreLocalEl = document.getElementById('nombre-local');
+    const palabraLocalDiv = document.getElementById("palabra-local");
+    const incorrectasLocalDiv = document.getElementById("incorrectas-local");
+    const canvasLocal = document.getElementById("canvas-local");
+    const ctxLocal = canvasLocal.getContext("2d");
+    // Oponente
+    const nombreOponenteEl = document.getElementById('nombre-oponente');
+    const palabraOponenteDiv = document.getElementById("palabra-oponente");
+    const incorrectasOponenteDiv = document.getElementById("incorrectas-oponente");
+    const canvasOponente = document.getElementById("canvas-oponente");
+    const ctxOponente = canvasOponente.getContext("2d");
+
+    // ================== UNIÓN A LA SALA (SOCKET.IO) ==================
+    if (!salaId) {
+        console.error("No se encontró un ID de sala.");
+        mostrarMensaje('Sistema', 'Error: No se pudo conectar a una sala.');
+    } else {
+        if (modo === 'enfrentamiento') {
+            socket.emit('joinConfrontation', { salaId, usuario: usuario.username, userId: usuario.id_usuario, categoria: 'programacion' });
+        } else { // Cooperativo
+            socket.emit('unirseSala', { salaId, usuario: usuario.username, categoria: categoriaCoopSelect.value });
+        }
+    }
+    
+    // ================== FUNCIONES DE RENDERIZADO ==================
+    function crearTeclado(container, onLetraClick) {
+        container.innerHTML = "";
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(letra => {
+            let btn = document.createElement("button");
+            btn.textContent = letra;
+            btn.onclick = () => onLetraClick(letra, btn);
+            container.appendChild(btn);
+        });
+    }
+
+    function actualizarTeclado(container, letrasUsadas) {
+        const botones = container.querySelectorAll('button');
+        botones.forEach(btn => {
+            btn.disabled = letrasUsadas.includes(btn.textContent);
+        });
+    }
+
+    function mostrarPalabra(div, palabraSecreta, letrasCorrectas) {
+        div.textContent = palabraSecreta
+            .split('')
+            .map(letra => (letrasCorrectas.includes(letra) ? letra : '_'))
+            .join(' ');
+    }
+
+    function dibujarAhorcado(ctx, pasos) {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 4;
+        // Base
+        ctx.beginPath(); ctx.moveTo(10, 340); ctx.lineTo(290, 340); ctx.stroke();
+        if (pasos >= 1) { ctx.beginPath(); ctx.moveTo(50, 340); ctx.lineTo(50, 20); ctx.stroke();}
+        if (pasos >= 2) { ctx.beginPath(); ctx.moveTo(48, 20); ctx.lineTo(250, 20); ctx.stroke(); }
+        if (pasos >= 3) { ctx.beginPath(); ctx.moveTo(250, 20); ctx.lineTo(250, 60); ctx.stroke(); }
+        if (pasos >= 4) { ctx.beginPath(); ctx.arc(250, 90, 30, 0, Math.PI * 2); ctx.stroke(); } // Cabeza
+        if (pasos >= 5) { ctx.beginPath(); ctx.moveTo(250, 120); ctx.lineTo(250, 220); ctx.stroke(); } // Cuerpo
+        if (pasos >= 6) { ctx.beginPath(); ctx.moveTo(250, 150); ctx.lineTo(200, 190); ctx.stroke(); } // Brazo Izq
+        if (pasos >= 7) { ctx.beginPath(); ctx.moveTo(250, 150); ctx.lineTo(300, 190); ctx.stroke(); } // Brazo Der
+        if (pasos >= 8) { ctx.beginPath(); ctx.moveTo(250, 220); ctx.lineTo(200, 280); ctx.stroke(); } // Pierna Izq
+        if (pasos >= 9) { ctx.beginPath(); ctx.moveTo(250, 220); ctx.lineTo(300, 280); ctx.stroke(); } // Pierna Der
+    }
+
+    // ================== LÓGICA DEL MODO COOPERATIVO ==================
+    if (modo === 'cooperativo') {
+        crearTeclado(tecladoCoopDiv, (letra, btn) => {
+            socket.emit('intentarLetra', { salaId, letra });
+            btn.disabled = true;
+        });
+        reiniciarCoopBtn.onclick = () => {
+            socket.emit('reiniciarJuego', { salaId, categoria: categoriaCoopSelect.value });
+        };
+        socket.on('estadoPartida', (estado) => {
+            dibujarAhorcado(ctxCoop, estado.letrasIncorrectas.length);
+            mostrarPalabra(palabraCoopDiv, estado.palabraSecreta, estado.letrasCorrectas);
+            incorrectasCoopDiv.textContent = `Incorrectas: ${estado.letrasIncorrectas.join(' ')}`;
+            actualizarTeclado(tecladoCoopDiv, [...estado.letrasCorrectas, ...estado.letrasIncorrectas]);
+        });
+        socket.on('juegoTerminado', (resultado) => {
+            tecladoCoopDiv.innerHTML = "<h3>Juego Terminado</h3>";
+            setTimeout(() => {
+                const mensaje = resultado.ganador ? `¡Ganaron! 🎉 La palabra era: ${resultado.palabra}` : `Perdieron 😢 La palabra era: ${resultado.palabra}`;
+                alert(mensaje);
+            }, 200);
+        });
+    }
+
+    // ================== LÓGICA DEL MODO ENFRENTAMIENTO ==================
+    if (modo === 'enfrentamiento') {
+        crearTeclado(tecladoEnfrentamientoDiv, (letra, btn) => {
+            socket.emit('intentarLetra', { salaId, letra });
+            btn.disabled = true;
+        });
+        socket.on('confrontationUpdate', ({ gameState, gameStarted, opponent }) => {
+            if (!gameState || !gameStarted) return;
+            
+            if (opponent && nombreOponenteEl.textContent === 'Esperando...') {
+                nombreOponenteEl.textContent = opponent.username;
+            }
+
+            const localPlayer = gameState.player1.id === usuario.id_usuario ? gameState.player1 : gameState.player2;
+            const opponentPlayer = gameState.player1.id === usuario.id_usuario ? gameState.player2 : gameState.player1;
+            
+            // Renderizar jugador local
+            dibujarAhorcado(ctxLocal, localPlayer.letrasIncorrectas.length);
+            mostrarPalabra(palabraLocalDiv, localPlayer.palabraSecreta, localPlayer.letrasCorrectas);
+            incorrectasLocalDiv.textContent = `Incorrectas: ${localPlayer.letrasIncorrectas.length}`;
+
+            // Renderizar oponente
+            dibujarAhorcado(ctxOponente, opponentPlayer.letrasIncorrectas.length);
+            mostrarPalabra(palabraOponenteDiv, opponentPlayer.palabraSecreta, opponentPlayer.letrasCorrectas);
+            incorrectasOponenteDiv.textContent = `Incorrectas: ${opponentPlayer.letrasIncorrectas.length}`;
+            
+            // Actualizar teclado y timer
+            actualizarTeclado(tecladoEnfrentamientoDiv, [...localPlayer.letrasCorrectas, ...localPlayer.letrasIncorrectas]);
+            const minutes = Math.floor(gameState.gameTime / 60).toString().padStart(2, '0');
+            const seconds = (gameState.gameTime % 60).toString().padStart(2, '0');
+            timerEl.textContent = `${minutes}:${seconds}`;
+        });
+        socket.on('gameOver', ({ winner }) => {
+            tecladoEnfrentamientoDiv.innerHTML = "<h3>Partida Terminada</h3>";
+            let mensaje = "¡Ha sido un empate! 🤝";
+            if (winner) {
+                mensaje = winner === usuario.id_usuario ? '¡Ganaste la partida! 🏆' : '¡Perdiste la partida! 😔';
+            }
+            setTimeout(() => alert(mensaje), 500);
+        });
+    }
+
+    // ================== LÓGICA COMÚN (CHAT Y JUGADORES) ==================
+    function mostrarMensaje(user, msg) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'msg';
+        msgDiv.innerHTML = `<span class="u">${user}:</span> <span>${msg}</span>`;
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function enviarMensaje() {
+        const mensaje = chatInput.value.trim();
+        if (mensaje && salaId) {
+            socket.emit('mensajeChat', { salaId, mensaje, usuario: usuario.username });
+            chatInput.value = '';
+        }
+    }
+    chatBtn.addEventListener('click', enviarMensaje);
+    chatInput.addEventListener('keypress', (e) => e.key === 'Enter' && enviarMensaje());
+    socket.on('nuevoMensaje', (data) => {
+        if (data.usuario && data.mensaje) mostrarMensaje(data.usuario, data.mensaje);
+    });
+
+    async function cargarJugadoresActivos() {
+        try {
+            const res = await fetch('/competitivo');
+            const jugadores = await res.json();
+            listaJugadoresEl.innerHTML = '';
+            
+            jugadores.forEach(jugador => {
+                if (jugador.id === usuario.id_usuario) return; // No mostrarse a uno mismo
+                
+                const item = document.createElement('li');
+                item.className = 'jug-item';
+                item.innerHTML = `
+                    <span class="name"><span class="dot"></span>${jugador.username}</span>
+                    <div class="actions">
+                        <button class="btn-action btn-invite" data-id="${jugador.id}">Invitar 🤝</button>
+                        <button class="btn-action btn-challenge" data-id="${jugador.id}">Enfrentar ⚔️</button>
+                    </div>`;
+                listaJugadoresEl.appendChild(item);
+            });
+        } catch (error) { console.error('Error al cargar jugadores:', error); }
+    }
+
+    listaJugadoresEl.addEventListener('click', async (e) => {
+        const target = e.target;
+        const idJugador = target.dataset.id;
+        if (!idJugador) return;
+
+        try {
+            if (target.classList.contains('btn-invite')) {
+                // Lógica de invitación cooperativa
+                const response = await fetch(`/invitar/${idJugador}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ salaId: salaId })
+                });
+                const data = await response.json();
+                alert(data.message || 'Error');
+            } else if (target.classList.contains('btn-challenge')) {
+                // Lógica de desafío (Enfrentamiento)
+                const response = await fetch(`/enfrentar/${idJugador}`, { method: 'POST' });
+                const data = await response.json();
+                if (data.salaId && data.modo === 'enfrentamiento') {
+                    alert('¡Desafío enviado! Esperando que acepte...');
+                    // Redirigir al retador a la nueva sala de enfrentamiento
+                    window.location.href = `/ahorcado/${data.salaId}?modo=enfrentamiento`;
+                } else {
+                    alert(data.message || 'Error al desafiar');
+                }
+            }
+        } catch (error) {
+            console.error('Error en acción de jugador:', error);
+            alert('Ocurrió un error.');
+        }
+    });
+
+    cargarJugadoresActivos();
+    setInterval(cargarJugadoresActivos, 15000); // Actualiza cada 15 seg
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Examen</title>
+  <link rel="stylesheet" href="/css/examen.css">
+</head>
+<body>
+
+  <header>
+    Examen practica exani
+    <div><button  onclick="location.href='/simulador'" class="btn-volver">Regresar</button></div>
+  </header>
+
+  {{#each preguntas}}
+  <div class="contenedor-pregunta {{#if @first}}activa{{/if}}" data-index="{{@index}}">
+    <div class="encabezado">
+      <div>Pregunta {{sum @index 1}} de {{../preguntas.length}}</div>
+      <div class="cronometro">60:00</div>
+    </div>
+
+    <h2 class="pregunta">{{pregunta}}</h2>
+
+    <div class="opciones">
+      {{#each respuestas}}
+        <button type="button">{{respuesta}}</button>
+      {{/each}}
+    </div>
+
+    <div class="navegacion">
+      {{#unless @first}}
+        <button type="button" class="btn-volver">← Volver</button>
+      {{/unless}}
+
+      {{#if @last}}
+        <button type="button" class="btn-finalizar">Finalizar</button>
+      {{else}}
+        <button type="button" class="btn-siguiente">Siguiente →</button>
+      {{/if}}
+    </div>
+
+    <div class="pulpo-container">
+      <img src="../media/images/pulpo.png" alt="Pulpo" class="pulpo">
+    </div>
+  </div>
+  {{/each}}
+
+    <form id="formResultados" method="POST" action="/resultados_admision" style="display:none;">
+    <input type="hidden" name="respuestas" id="inputRespuestas" value="[]">
+    <input type="hidden" name="idsPreguntas" id="inputIdsPreguntas" value='{{json preguntasIds}}'>
+    </form>
+
+
+  <script>
+    const preguntas = document.querySelectorAll('.contenedor-pregunta');
+    let actual = 0;
+
+    function mostrarPregunta(index) {
+      if (index < 0 || index >= preguntas.length) return;
+      preguntas.forEach(p => p.classList.remove('activa'));
+      preguntas[index].classList.add('activa');
+      actual = index;
+    }
+
+    // Botón Siguiente
+    document.querySelectorAll('.btn-siguiente').forEach(btn => {
+      btn.addEventListener('click', () => {
+        mostrarPregunta(actual + 1);
+      });
+    });
+
+    // Botón Volver
+    document.querySelectorAll('.btn-volver').forEach(btn => {
+      btn.addEventListener('click', () => {
+        mostrarPregunta(actual - 1);
+      });
+    });
+
+    // Selección de respuestas
+    let respuestasUsuario = [];
+
+    document.querySelectorAll('.opciones').forEach((opcionesDiv, preguntaIndex) => {
+      const botones = opcionesDiv.querySelectorAll('button');
+      botones.forEach((btn, respuestaIndex) => {
+        btn.addEventListener('click', () => {
+          // Deseleccionar otros botones de la misma pregunta
+          botones.forEach(b => b.classList.remove('seleccionada'));
+          // Seleccionar el actual
+          btn.classList.add('seleccionada');
+          // Guardar la respuesta seleccionada para esta pregunta
+          respuestasUsuario[preguntaIndex] = respuestaIndex;
+        });
+      });
+    });
+
+    // Botón Finalizar - envía respuestas al backend
+    document.querySelectorAll('.btn-finalizar').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (respuestasUsuario.length !== preguntas.length) {
+          alert('Por favor responde todas las preguntas antes de finalizar');
+          return;
+        }
+
+        // Serializar las respuestas a JSON para enviar
+        const inputRespuestas = document.getElementById('inputRespuestas');
+        inputRespuestas.value = JSON.stringify(respuestasUsuario);
+
+        // Enviar formulario
+        document.getElementById('formResultados').submit();
+      });
+    });
+
+    // Cronómetro global
+    let tiempoRestante = 60 * 60; // 10 minutos
+
+    function actualizarCronometro() {
+      const minutos = Math.floor(tiempoRestante / 60);
+      const segundos = tiempoRestante % 60;
+      const texto = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+
+      document.querySelectorAll('.cronometro').forEach(c => {
+        c.textContent = texto;
+      });
+
+      if (tiempoRestante > 0) {
+        tiempoRestante--;
+      } else {
+        clearInterval(intervalo);
+        alert('¡Tiempo terminado!');
+        window.location.href = '/perfil2';
+      }
+    }
+
+    const intervalo = setInterval(actualizarCronometro, 1000);
+
+    // Mostrar la primera pregunta al cargar
+    mostrarPregunta(0);
+  </script>
+</body>
+</html>

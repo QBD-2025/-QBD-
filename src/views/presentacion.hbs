@@ -1,0 +1,22 @@
+        
+    <link rel="stylesheet" href="/css/video-bienvenida.css">
+    
+    {{!-- Contenedor principal de la animación --}}
+    <div class="full-screen-animation-container">
+        <img id="duolingoAnimation" src="/animacion_frames_p/video-bienvenida_000001.jpg" alt="Animación de bienvenida a Que Buen Dato">
+        
+        {{!-- Contenedor para el botón "¡Hagámoslo!" --}}
+        <div id="startButtonContainer" class="start-button-container">
+            <button id="startButton" class="start-button">¡Hagámoslo!</button>
+        </div>
+    </div>
+
+    {{!-- Opcional: Otro contenido de la página que puede ir debajo o superpuesto --}}
+
+    {{!-- Cargar GSAP desde un CDN --}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    {{!-- Cargar tu script de animación personalizado --}}
+    <script src="/utils/animacion.js"></script>
+
+</body>
+</html>

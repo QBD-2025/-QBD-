@@ -1,0 +1,61 @@
+.competitivo-container {
+    display: flex;
+    justify-content: flex-end;
+    padding: 20px;
+}
+
+.jugadores-activos {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    width: 250px;
+    padding: 15px;
+    position: fixed;
+    right: 20px;
+    top: 80px; /* Ajusta según tu top bar */
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.jugadores-activos h3 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+#lista-jugadores {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.jugador-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.jugador-nombre {
+    font-weight: bold;
+    color: #333;
+}
+
+.btn-invitar {
+    background: #4cafef;
+    border: none;
+    color: white;
+    padding: 5px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: background 0.2s ease;
+}
+
+.btn-invitar:hover {
+    background: #3399dd;
+}
+.btn-invitar:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}

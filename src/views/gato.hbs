@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gato Culto</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Fredoka+One&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3366FF;
+            --primary-dark: #212B36;
+            --secondary: #FFD737;
+            --accent: #FF5252;
+            --light: #FCEFD3;
+            --dark: #4B5056;
+            --success: #00E676;
+            --danger: #FF5252;
+            --warning: #FFD737;
+            --info: #40C4FF;
+            --board-bg: #FFFFFF;
+            --cell-bg: #F1F5FD;
+            --cell-hover: #E1E8F7;
+            --player1: #3366FF;
+            --player2: #FF5252;
+            --shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.15);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            --border-radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0515a8, #09012c);
+            color: var(--primary-dark);
+            min-height: 100vh;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            line-height: 1.6;
+        }
+
+        .game-container {
+            max-width: 800px;
+            width: 100%;
+            background: var(--light);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 2rem;
+            padding: 2rem;
+            transition: var(--transition);
+        }
+
+        .board-container {
+            position: relative;
+            background: var(--board-bg);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 10px;
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 1/1;
+        }
+
+        .cell {
+            background: var(--cell-bg);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .cell:hover {
+            background: var(--cell-hover);
+            transform: translateY(-3px);
+        }
+
+        .cell.x {
+            color: var(--player1);
+        }
+
+        .cell.o {
+            color: var(--player2);
+        }
+
+        .game-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+        }
+
+        .panel {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .panel-title {
+            font-size: 1.3rem;
+            margin-bottom: 1.2rem;
+            color: var(--primary);
+            font-weight: 700;
+            font-family: 'Fredoka One', cursive;
+            letter-spacing: 0.5px;
+        }
+
+        .players-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.03);
+            transition: var(--transition);
+        }
+
+        .player-info.current-turn {
+            background: rgba(51, 102, 255, 0.1);
+            border: 2px solid var(--primary);
+            box-shadow: 0 4px 12px rgba(51, 102, 255, 0.2);
+        }
+
+        .player-symbol {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .player-1 .player-symbol {
+            background: var(--player1);
+            color: white;
+        }
+
+        .player-2 .player-symbol {
+            background: var(--player2);
+            color: white;
+        }
+
+        .player-name {
+            flex: 1;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .player-score {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.1rem;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .btn {
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(51, 102, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #2952CC;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(51, 102, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--light);
+            color: var(--dark);
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #F0E6D0;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            transform: translateY(-20px);
+            transition: var(--transition);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            font-family: 'Fredoka One', cursive;
+        }
+
+        .modal-message {
+            margin-bottom: 2rem;
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+        }
+
+        .option-btn {
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        .option-btn:hover {
+            background: #f5f5f5;
+            border-color: var(--primary);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .modal-buttons .btn {
+            width: auto;
+            padding: 0.8rem 1.5rem;
+        }
+
+        .settings-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--dark);
+        }
+
+        .form-input {
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(51, 102, 255, 0.2);
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--dark);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            box-shadow: var(--shadow-hover);
+            font-weight: 600;
+            z-index: 1000;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                grid-template-columns: 1fr;
+                padding: 1.5rem;
+            }
+            
+            .board-container {
+                padding: 1rem;
+            }
+            
+            .modal-buttons {
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+            
+            .modal-buttons .btn {
+                width: 100%;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="board-container">
+            <div class="board" id="board">
+                <!-- Cells will be generated by JavaScript -->
+            </div>
+        </div>
+        
+        <div class="game-controls">
+            <div class="panel players-info">
+                <h3 class="panel-title"><i class="fas fa-users"></i> Jugadores</h3>
+                <div id="players-list">
+                    <!-- Player info will be generated by JavaScript -->
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" id="new-game-btn">
+                <i class="fas fa-plus"></i> Nuevo Juego
+            </button>
+            <button class="btn btn-secondary" id="settings-btn">
+                <i class="fas fa-cog"></i> Ajustes
+            </button>
+            <button class="btn btn-secondary" id="help-btn">
+                <i class="fas fa-question-circle"></i> Cómo Jugar
+            </button>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification"></div>
+    
+    <div class="modal" id="winner-modal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="winner-title">¡Felicidades! 🎉</h2>
+            <p class="modal-message" id="winner-message">Jugador 1 ha ganado el juego!</p>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" id="play-again-btn">
+                    <i class="fas fa-play"></i> Jugar de Nuevo
+                </button>
+                <button class="btn btn-secondary" id="close-modal-btn">
+                    <i class="fas fa-times"></i> Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="question-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Pregunta de Cultura General</h2>
+            <p class="question-text" id="question-text">¿Cuál es la capital de Francia?</p>
+            <div class="options-container" id="options-container">
+                <!-- Options will be generated by JavaScript -->
+            </div>
+            <div class="modal-message" id="question-result"></div>
+        </div>
+    </div>
+    
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Ajustes del Juego <i class="fas fa-cog"></i></h2>
+            <form class="settings-form" id="settings-form">
+                <div class="form-group">
+                    <label class="form-label" for="player1-name">Nombre Jugador 1 (X)</label>
+                    <input class="form-input" type="text" id="player1-name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="player2-name">Nombre Jugador 2 (O)</label>
+                    <input class="form-input" type="text" id="player2-name" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="cancel-settings-btn">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="modal" id="help-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Cómo Jugar <i class="fas fa-question-circle"></i></h2>
+            <div class="settings-form">
+                <p><strong>Gato Culto</strong> es un juego para 2 jugadores que combina el clásico Gato con preguntas de cultura general.</p>
+                
+                <h3 style="margin: 1.5rem 0 0.8rem; font-size: 1.2rem; color: var(--primary);">
+                    <i class="fas fa-info-circle"></i> Instrucciones:
+                </h3>
+                <ul style="text-align: left; margin-left: 1.5rem; margin-bottom: 2rem; list-style-type: none;">
+                    <li style="margin-bottom: 0.8rem; display: flex; gap: 0.8rem;">
+                        <span style="color: var(--primary);"><i class="fas fa-user"></i></span>
+                        <span>Los jugadores se turnan para colocar sus símbolos (X y O)</span>
+                    </li>
+                    <li style="margin-bottom: 0.8rem; display: flex; gap: 0.8rem;">
+                        <span style="color: var(--player1);"><i class="fas fa-times"></i></span>
+                        <span>Jugador 1 usa X (azul)</span>
+                    </li>
+                    <li style="margin-bottom: 0.8rem; display: flex; gap: 0.8rem;">
+                        <span style="color: var(--player2);"><i class="fas fa-circle"></i></span>
+                        <span>Jugador 2 usa O (rojo)</span>
+                    </li>
+                    <li style="margin-bottom: 0.8rem; display: flex; gap: 0.8rem;">
+                        <span style="color: var(--info);"><i class="fas fa-question"></i></span>
+                        <span>Antes de cada turno, el jugador debe responder una pregunta de cultura general</span>
+                    </li>
+                    <li style="margin-bottom: 0.8rem; display: flex; gap: 0.8rem;">
+                        <span style="color: var(--success);"><i class="fas fa-check"></i></span>
+                        <span>Si responde correctamente, puede hacer su movimiento</span>
+                    </li>
+                    <li style="margin-bottom: 0.8rem; display: flex; gap: 0.8rem;">
+                        <span style="color: var(--danger);"><i class="fas fa-times"></i></span>
+                        <span>Si falla, pierde su turno</span>
+                    </li>
+                    <li style="margin-bottom: 0.8rem; display: flex; gap: 0.8rem;">
+                        <span style="color: var(--success);"><i class="fas fa-trophy"></i></span>
+                        <span>Gana el primero que complete 3 símbolos en línea (horizontal, vertical o diagonal)</span>
+                    </li>
+                </ul>
+                
+                <div class="modal-buttons">
+                    <button class="btn btn-primary" id="close-help-btn">
+                        <i class="fas fa-check"></i> Entendido
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game Configuration
+        const config = {
+            player1Name: 'Jugador 1',
+            player2Name: 'Jugador 2',
+            player1Symbol: 'X',
+            player2Symbol: 'O',
+            player1Color: 'player-1',
+            player2Color: 'player-2',
+            questions: [
+                {
+                    question: "¿Cuál es la capital de Francia?",
+                    options: ["Londres", "París", "Madrid", "Berlín"],
+                    answer: 1
+                },
+                {
+                    question: "¿Quién pintó la Mona Lisa?",
+                    options: ["Pablo Picasso", "Vincent van Gogh", "Leonardo da Vinci", "Claude Monet"],
+                    answer: 2
+                },
+                {
+                    question: "¿Cuál es el río más largo del mundo?",
+                    options: ["Nilo", "Amazonas", "Yangtsé", "Misisipi"],
+                    answer: 1
+                },
+                {
+                    question: "¿En qué año llegó el hombre a la Luna?",
+                    options: ["1965", "1969", "1972", "1958"],
+                    answer: 1
+                },
+                {
+                    question: "¿Cuál es el metal más abundante en la corteza terrestre?",
+                    options: ["Hierro", "Aluminio", "Oro", "Cobre"],
+                    answer: 1
+                },
+                {
+                    question: "¿Qué planeta es conocido como el 'planeta rojo'?",
+                    options: ["Venus", "Júpiter", "Marte", "Saturno"],
+                    answer: 2
+                },
+                {
+                    question: "¿Quién escribió 'Cien años de soledad'?",
+                    options: ["Pablo Neruda", "Gabriel García Márquez", "Mario Vargas Llosa", "Julio Cortázar"],
+                    answer: 1
+                },
+                {
+                    question: "¿Cuál es el océano más grande del mundo?",
+                    options: ["Atlántico", "Índico", "Pacífico", "Ártico"],
+                    answer: 2
+                },
+                {
+                    question: "¿En qué continente se encuentra Egipto?",
+                    options: ["Asia", "África", "Europa", "América"],
+                    answer: 1
+                },
+                {
+                    question: "¿Cuál es el hueso más largo del cuerpo humano?",
+                    options: ["Húmero", "Tibia", "Fémur", "Peroné"],
+                    answer: 2
+                }
+            ]
+        };
+
+        // Game State
+        let state = {
+            board: ['', '', '', '', '', '', '', '', ''],
+            currentPlayer: 0,
+            gameOver: false,
+            winner: null,
+            scores: {
+                player1: 0,
+                player2: 0
+            },
+            currentQuestion: null,
+            waitingForAnswer: false,
+            selectedCellIndex: null // <-- Nueva variable para guardar la celda seleccionada
+        };
+
+        // DOM Elements
+        const elements = {
+            board: document.getElementById('board'),
+            playersList: document.getElementById('players-list'),
+            winnerModal: document.getElementById('winner-modal'),
+            winnerTitle: document.getElementById('winner-title'),
+            winnerMessage: document.getElementById('winner-message'),
+            playAgainBtn: document.getElementById('play-again-btn'),
+            closeModalBtn: document.getElementById('close-modal-btn'),
+            newGameBtn: document.getElementById('new-game-btn'),
+            settingsModal: document.getElementById('settings-modal'),
+            settingsForm: document.getElementById('settings-form'),
+            player1NameInput: document.getElementById('player1-name'),
+            player2NameInput: document.getElementById('player2-name'),
+            settingsBtn: document.getElementById('settings-btn'),
+            cancelSettingsBtn: document.getElementById('cancel-settings-btn'),
+            helpModal: document.getElementById('help-modal'),
+            helpBtn: document.getElementById('help-btn'),
+            closeHelpBtn: document.getElementById('close-help-btn'),
+            notification: document.getElementById('notification'),
+            questionModal: document.getElementById('question-modal'),
+            questionText: document.getElementById('question-text'),
+            optionsContainer: document.getElementById('options-container'),
+            questionResult: document.getElementById('question-result')
+        };
+
+        // Initialize the game
+        function initGame() {
+            createBoard();
+            setupPlayers();
+            updateUI();
+            loadSettings();
+            attachEventListeners();
+            startNewGame();
+        }
+
+        // Create the game board
+        function createBoard() {
+            elements.board.innerHTML = '';
+            
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.index = i;
+                cell.addEventListener('click', () => handleCellClick(i));
+                elements.board.appendChild(cell);
+            }
+        }
+
+        // Setup players
+        function setupPlayers() {
+            updatePlayersList();
+        }
+
+        // Update players list
+        function updatePlayersList() {
+            elements.playersList.innerHTML = `
+                <div class="player-info ${state.currentPlayer === 0 ? 'current-turn' : ''}">
+                    <div class="player-symbol ${config.player1Color}">${config.player1Symbol}</div>
+                    <div class="player-name">${config.player1Name}</div>
+                    <div class="player-score">${state.scores.player1}</div>
+                </div>
+                <div class="player-info ${state.currentPlayer === 1 ? 'current-turn' : ''}">
+                    <div class="player-symbol ${config.player2Color}">${config.player2Symbol}</div>
+                    <div class="player-name">${config.player2Name}</div>
+                    <div class="player-score">${state.scores.player2}</div>
+                </div>
+            `;
+        }
+
+        // Handle cell click
+        function handleCellClick(index) {
+            if (state.gameOver || state.board[index] !== '' || state.waitingForAnswer) return;
+            
+            // Guarda la celda seleccionada antes de mostrar la pregunta
+            state.selectedCellIndex = index;
+            
+            // Muestra la pregunta antes de permitir el movimiento
+            showQuestionForPlayer();
+        }
+
+        // Show question for current player
+        function showQuestionForPlayer() {
+            state.waitingForAnswer = true;
+            
+            // Select random question
+            const randomIndex = Math.floor(Math.random() * config.questions.length);
+            state.currentQuestion = config.questions[randomIndex];
+            
+            // Display question
+            elements.questionText.textContent = state.currentQuestion.question;
+            elements.questionResult.textContent = '';
+            
+            // Display options
+            elements.optionsContainer.innerHTML = '';
+            state.currentQuestion.options.forEach((option, index) => {
+                const optionBtn = document.createElement('button');
+                optionBtn.className = 'option-btn';
+                optionBtn.textContent = option;
+                optionBtn.addEventListener('click', () => handleAnswer(index));
+                elements.optionsContainer.appendChild(optionBtn);
+            });
+            
+            // Show modal
+            elements.questionModal.classList.add('active');
+        }
+
+        // Handle answer selection
+        function handleAnswer(selectedIndex) {
+            const isCorrect = selectedIndex === state.currentQuestion.answer;
+            const currentPlayerName = state.currentPlayer === 0 ? config.player1Name : config.player2Name;
+            
+            if (isCorrect) {
+                elements.questionResult.textContent = "¡Correcto! Tu movimiento se ha registrado.";
+                elements.questionResult.style.color = "var(--success)";
+                
+                // Cierra el modal de pregunta
+                setTimeout(() => {
+                    elements.questionModal.classList.remove('active');
+                    state.waitingForAnswer = false;
+                    
+                    // Realiza el movimiento en la celda previamente seleccionada
+                    const symbol = state.currentPlayer === 0 ? config.player1Symbol : config.player2Symbol;
+                    const colorClass = state.currentPlayer === 0 ? 'x' : 'o';
+                    
+                    state.board[state.selectedCellIndex] = symbol;
+                    const cell = elements.board.children[state.selectedCellIndex];
+                    cell.textContent = symbol;
+                    cell.classList.add(colorClass);
+                    
+                    // Verifica si hay un ganador
+                    checkWinner();
+                    
+                    // Cambia de turno solo si el juego no ha terminado
+                    if (!state.gameOver) {
+                        switchPlayer();
+                    }
+                }, 1500);
+            } else {
+                elements.questionResult.textContent = "Incorrecto. Pierdes tu turno.";
+                elements.questionResult.style.color = "var(--danger)";
+                
+                // Pierde el turno
+                setTimeout(() => {
+                    elements.questionModal.classList.remove('active');
+                    state.waitingForAnswer = false;
+                    switchPlayer();
+                    showNotification(`${currentPlayerName} falló la pregunta. Turno del otro jugador.`);
+                }, 1500);
+            }
+        }
+
+        // Switch to next player
+        function switchPlayer() {
+            state.currentPlayer = state.currentPlayer === 0 ? 1 : 0;
+            updateUI();
+        }
+
+        // Check for winner
+        function checkWinner() {
+            const winningCombinations = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+                [0, 4, 8], [2, 4, 6]             // diagonals
+            ];
+            
+            // Check for winner
+            for (const combo of winningCombinations) {
+                const [a, b, c] = combo;
+                if (state.board[a] && state.board[a] === state.board[b] && state.board[a] === state.board[c]) {
+                    state.gameOver = true;
+                    state.winner = state.board[a] === config.player1Symbol ? 0 : 1;
+                    
+                    // Update scores
+                    if (state.winner === 0) {
+                        state.scores.player1++;
+                    } else {
+                        state.scores.player2++;
+                    }
+                    
+                    showWinner();
+                    return;
+                }
+            }
+            
+            // Check for tie
+            if (!state.board.includes('')) {
+                state.gameOver = true;
+                showWinner(true);
+            }
+        }
+
+        // Show winner
+        function showWinner(isTie = false) {
+            if (isTie) {
+                elements.winnerTitle.textContent = '¡Empate! 🤝';
+                elements.winnerMessage.textContent = 'El juego ha terminado en empate.';
+            } else {
+                const winnerName = state.winner === 0 ? config.player1Name : config.player2Name;
+                elements.winnerTitle.textContent = '¡Felicidades! 🎉';
+                elements.winnerMessage.textContent = `${winnerName} ha ganado el juego!`;
+            }
+            
+            elements.winnerModal.classList.add('active');
+            updateUI();
+            
+            // Confetti effect for winner
+            if (!isTie && window.confetti) {
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        // Start new game
+        function startNewGame() {
+            state.board = ['', '', '', '', '', '', '', '', ''];
+            state.currentPlayer = 0;
+            state.gameOver = false;
+            state.winner = null;
+            state.waitingForAnswer = false;
+            state.selectedCellIndex = null;
+            
+            // Clear board UI
+            const cells = elements.board.children;
+            for (let i = 0; i < cells.length; i++) {
+                cells[i].textContent = '';
+                cells[i].className = 'cell';
+            }
+            
+            updateUI();
+            showNotification(`Comienza ${config.player1Name}`);
+        }
+
+        // Show notification message
+        function showNotification(message, duration = 3000) {
+            elements.notification.textContent = message;
+            elements.notification.classList.add('show');
+            
+            setTimeout(() => {
+                elements.notification.classList.remove('show');
+            }, duration);
+        }
+
+        // Update UI
+        function updateUI() {
+            updatePlayersList();
+        }
+
+        // Load settings from localStorage
+        function loadSettings() {
+            const savedSettings = localStorage.getItem('gatoCultoSettings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                config.player1Name = settings.player1Name || 'Jugador 1';
+                config.player2Name = settings.player2Name || 'Jugador 2';
+                
+                elements.player1NameInput.value = config.player1Name;
+                elements.player2NameInput.value = config.player2Name;
+            }
+        }
+
+        // Save settings to localStorage
+        function saveSettings() {
+            const settings = {
+                player1Name: elements.player1NameInput.value || 'Jugador 1',
+                player2Name: elements.player2NameInput.value || 'Jugador 2'
+            };
+            
+            localStorage.setItem('gatoCultoSettings', JSON.stringify(settings));
+            
+            // Update game config
+            config.player1Name = settings.player1Name;
+            config.player2Name = settings.player2Name;
+            
+            // Reset UI
+            updateUI();
+            showNotification('Ajustes guardados correctamente');
+        }
+
+        // Attach event listeners
+        function attachEventListeners() {
+            elements.playAgainBtn.addEventListener('click', () => {
+                elements.winnerModal.classList.remove('active');
+                startNewGame();
+            });
+            
+            elements.closeModalBtn.addEventListener('click', () => {
+                elements.winnerModal.classList.remove('active');
+            });
+            
+            elements.newGameBtn.addEventListener('click', startNewGame);
+            
+            elements.settingsBtn.addEventListener('click', () => {
+                elements.settingsModal.classList.add('active');
+            });
+            
+            elements.cancelSettingsBtn.addEventListener('click', () => {
+                elements.settingsModal.classList.remove('active');
+            });
+            
+            elements.helpBtn.addEventListener('click', () => {
+                elements.helpModal.classList.add('active');
+            });
+            
+            elements.closeHelpBtn.addEventListener('click', () => {
+                elements.helpModal.classList.remove('active');
+            });
+            
+            elements.settingsForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveSettings();
+                elements.settingsModal.classList.remove('active');
+                startNewGame();
+            });
+        }
+
+        // Initialize the game
+        initGame();
+
+        // Load confetti library if not already loaded
+        if (!window.confetti) {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js';
+            document.head.appendChild(script);
+        }
+    </script>
+</body>
+</html>

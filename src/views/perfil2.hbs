@@ -1,0 +1,93 @@
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>QueBuenDato.com</title>           
+    <link rel="stylesheet" href="/css/perfil.css">
+    
+    {{!-- GOOGLE FONTS --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+<div class="duo-style-wrapper">
+
+    {{!-- ========= SECCIÓN 1: Texto a la izquierda, Animación a la derecha ========= --}}
+    <section class="info-section">
+        <div class="text-content">
+            <h2 class="info-headline yellow-text">Divertido, efectivo y retador.</h2>
+            <button type="button" class="duo-button" onclick="location.href='/minijuegos'">Minijuegos</button>    
+        </div>
+        <div class="image-content">
+            <div id="animationContainer2" class="animacion-duolingo">
+                <img id="duolingoAnimation2" src="/media/video_stuart_octavio/Video_stuart_octavio_000001.jpg" alt="Animación Duolingo">
+            </div>
+        </div>
+    </section>
+
+    {{!-- ========= SECCIÓN 2: Imagen a la izquierda, Texto a la derecha ========= --}}
+    <section class="info-section reverse">
+        <div class="text-content">
+            <h2 class="info-headline yellow-text">Refuerza tu conocimiento con examenes de práctica.</h2>
+            <button class="duo-button" onclick="location.href='/materias'" >empezar</button>
+        </div>
+        <div class="image-content">
+            <div id="animationContainer" class="animacion-duolingo">
+                <img id="duolingoAnimation" src="/media/stuart_octavio_libro/stuart_octavio_libro_000001.jpg" alt="Animación Duolingo2">
+            </div>
+        </div>
+    </section>
+
+    <section class="info-section">
+        <div class="text-content">
+            <h2 class="info-headline yellow-text">¡Sorprende a tu intelecto con nuevos desafios!</h2>
+            <button type="button" class="duo-button" onclick="location.href='/simulador'">Simulador</button>
+        </div>
+        <div class="image-content reverse">
+            <div id="animationContainer5" class="animacion-duolingo">
+                <img id="duolingoAnimation5" src="media/video_admision_000/video_admision_001.jpg" alt="Animación Duolingo5">
+            </div>
+        </div>
+    </section>
+
+
+    {{!-- ========= SECCIÓN 3: Texto a la izquierda, Imagen a la derecha ========= --}}
+    <section class="info-section reverse">
+        <div class="text-content">
+            <h2 class="info-headline yellow-text">Datos que te hacen sobresalir.</h2>
+            <button type="button" class="duo-button" onclick="location.href='/eleccion-dato'">Datos</button>
+        </div>
+        <div class="image-content">
+            <div id="animationContainer3" class="animacion-duolingo">
+                <img id="duolingoAnimation3" src="/media/caminando_stuart_octavio/caminando_stuart_octavio_001.jpg" alt="Animación Duolingo3">
+            </div>
+        </div>
+    </section>
+
+    <section class="info-section">
+        <div class="text-content">
+            <h2 class="info-headline yellow-text">¡Sorprende a tu intelecto con nuevos desafios!</h2>
+            <button type="button" class="duo-button" onclick="location.href='/competitivo'">Modo competitivo</button>
+        </div>
+        <div class="image-content reverse">
+            <!-- Por esto: -->
+            <div id="animationContainer6" class="animacion-duolingo">
+                <img id="duolingoAnimation6" src="/media/batalla-sin-cuartel_000/batalla-sin-cuartel_001.jpg" at="Animación Batalla">
+            </div>
+        </div>
+    </section>
+
+
+
+</div>
+
+{{!-- ENLAZA TU ARCHIVO DE ANIMACIÓN --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="/utils/animacion2.js"></script>
+<script src="/utils/animacion3.js"></script>
+<script src="/utils/animacion4.js"></script>
+<script src="/utils/animacion5.js"></script>
+<script src="/utils/animacion6.js"></script>
+</body>
+</html>
