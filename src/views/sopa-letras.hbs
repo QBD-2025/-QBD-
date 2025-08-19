@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sopa de Letras Multijugador</title>
+  <style>
+    /* [Mantengo todo tu CSS existente sin cambios] */
+    :root{
+      --bg:#0f172a;
+      --panel:#111827;
+      --card:#1f2937;
+      --acc:#3b82f6;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --border:#374151;
+    }
+
+    body{
+      margin:0;
+      background:linear-gradient(120deg,#0b132b,#1c2541);
+      color:var(--text);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Helvetica Neue",Arial;
+    }
+
+    .page{
+      max-width:1100px;
+      margin:24px auto;
+      padding:0 16px;
+    }
+
+    .header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:16px;
+    }
+    .title{
+      font-size:clamp(20px,2.5vw,28px);
+      font-weight:800;
+      letter-spacing:.3px;
+    }
+    .pill{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns: 1fr 320px;
+      gap:16px;
+    }
+
+    .card{
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+      backdrop-filter: blur(6px);
+      border-radius:16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+
+    /* Estilos específicos de la sopa de letras */
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .game {
+      display: grid;
+      grid-template-columns: 1fr 250px;
+      gap: 16px;
+    }
+    
+    .panel {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+    
+    .status.panel {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    
+    .badge {
+      background: #e5e7eb;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #111827;
+    }
+    
+    #board {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+    
+    .cell {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    .cell:hover {
+      background: rgba(59, 130, 246, 0.1);
+    }
+    
+    .cell.selected {
+      background: rgba(59, 130, 246, 0.3);
+    }
+    
+    .cell.found {
+      background: rgba(34, 197, 94, 0.2);
+      border-color: rgba(34, 197, 94, 0.5);
+    }
+    
+    .controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    button {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    
+    button.primary {
+      background: linear-gradient(180deg,#2563eb,#1d4ed8);
+      border-color: #1d4ed8;
+      font-weight: 700;
+    }
+    
+    .message {
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      text-align: center;
+      font-weight: 600;
+    }
+    
+    .message.win {
+      background: rgba(34, 197, 94, 0.1);
+      color: #86efac;
+    }
+    
+    .message.lose {
+      background: rgba(239, 68, 68, 0.1);
+      color: #fca5a5;
+    }
+    
+    .clues {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .clues li {
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    
+    .clues li.done {
+      opacity: 0.6;
+      text-decoration: line-through;
+    }
+    
+    .clues .word {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    
+    .clues .hint {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* Estilos del chat */
+    #chatBox {
+      height: 220px;
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      background: #0b1023;
+      margin-bottom: 10px;
+    }
+    
+    .msg {
+      margin-bottom: 6px;
+      line-height: 1.25;
+    }
+    
+    .msg .u {
+      color: #93c5fd;
+      font-weight: 700;
+      margin-right: 6px;
+    }
+    
+    .chat-input {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .chat-input input {
+      flex: 1;
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      outline: none;
+    }
+    
+    .chat-input input:focus {
+      border-color: var(--acc);
+    }
+    
+    .chat-send {
+      background: #3b82f6;
+      border-color: #2563eb;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      
+      .game {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div class="title">🧩 Sopa de Letras Multijugador</div>
+      <div class="pill">
+        Jugador: <strong>{{#if user}}{{user.username}}{{else}}Invitado{{/if}}</strong>
+      </div>
+      <button onclick="location.href='/minijuegos'" style="margin-left: 20px;"> ← Regresar</button>
+    </div>
+
+    <div class="layout">
+      <section class="game card">
+        <div>
+          <div class="status panel">
+            <div>
+              <div class="small">Progreso</div>
+              <div id="progressText"><strong>0</strong>/<strong id="totalWords">0</strong> palabras</div>
+            </div>
+            <div class="badge" id="errorsBadge">0 / 4</div>
+          </div>
+          
+          <div class="controls">
+            <label for="categoria-select">Categoría:</label>
+            <select id="categoria-select">
+              <option>Cargando categorías...</option>
+            </select>
+            <button id="btnClear">Limpiar selección</button>
+            <button id="btnRestart" class="primary">Reiniciar</button>
+          </div>
+          
+          <div id="board" class="board" aria-label="Tablero de sopa de letras"></div>
+          <div id="gameMessage" class="message" role="status" aria-live="polite"></div>
+        </div>
+
+        <aside>
+          <div class="panel">
+            <h3>Palabras a encontrar</h3>
+            <ul id="clues" class="clues"></ul>
+          </div>
+          <div class="panel">
+            <h3>Instrucciones</h3>
+            <div class="small">
+              • Arrastra el mouse en recta horizontal o vertical.<br>
+              • Si no coincide con ninguna palabra, cuenta como error.<br>
+              • Con <strong>4 errores</strong> pierdes y el juego se reinicia.
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <aside class="side">
+        <div class="panel card" id="jugadores-panel">
+          <h3>🟢 Jugadores activos</h3>
+          <ul id="lista-jugadores"></ul>
+        </div>
+
+        <div class="panel card" id="chat-panel">
+          <h3>💬 Chat</h3>
+          <div id="chatBox"></div>
+          <div class="chat-input">
+            <input id="chatInput" type="text" placeholder="Escribe un mensaje…">
+            <button id="chatBtn" class="chat-send">Enviar</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // ================== CONFIGURACIÓN INICIAL ==================
+    const ROWS = 10;
+    const COLS = 10;
+    const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const MAX_ERRORS = 4;
+    let WORDS = []; // Se cargarán dinámicamente según categoría
+
+    // Variables de estado del juego
+    let grid = [];
+    let cellEls = [];
+    let foundWords = new Set();
+    let errors = 0;
+    let isDragging = false;
+    let start = null;
+    let dir = null;
+    let dragPath = [];
+
+    // Elementos del DOM
+    const boardEl = document.getElementById('board');
+    const cluesEl = document.getElementById('clues');
+    const errorsBadge = document.getElementById('errorsBadge');
+    const gameMessage = document.getElementById('gameMessage');
+    const btnClear = document.getElementById('btnClear');
+    const btnRestart = document.getElementById('btnRestart');
+    const totalWords = document.getElementById('totalWords');
+    const progressText = document.getElementById('progressText');
+    const categoriaSelect = document.getElementById('categoria-select');
+
+    // ================== SISTEMA DE CHAT Y SALA ==================
+    const socket = io();
+    const salaId = "{{salaId}}";
+    const usuario = {{{json user}}};
+    const chatBox = document.getElementById('chatBox');
+    const chatInput = document.getElementById('chatInput');
+    const chatBtn = document.getElementById('chatBtn');
+    const listaJugadoresEl = document.getElementById('lista-jugadores');
+
+    // Función para mostrar mensajes en el chat
+    function mostrarMensaje(user, msg) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'msg';
+      msgDiv.innerHTML = `<span class="u">${user}:</span> <span>${msg}</span>`;
+      chatBox.appendChild(msgDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Función para enviar mensajes
+    function enviarMensaje() {
+      const mensaje = chatInput.value.trim();
+      if (mensaje && salaId) {
+        socket.emit('mensajeChat', { salaId, mensaje, usuario: usuario.username });
+        chatInput.value = '';
+      }
+    }
+
+    // Event listeners para el chat
+    chatBtn.addEventListener('click', enviarMensaje);
+    chatInput.addEventListener('keypress', (e) => e.key === 'Enter' && enviarMensaje());
+
+    // Manejo de mensajes entrantes del socket
+    socket.on('nuevoMensaje', (data) => {
+      if (data.usuario && data.mensaje) mostrarMensaje(data.usuario, data.mensaje);
+    });
+
+    // ================== SISTEMA DE INVITACIONES ==================
+    async function cargarJugadoresActivos() {
+      try {
+        const res = await fetch('/competitivo');
+        const jugadores = await res.json();
+        listaJugadoresEl.innerHTML = '';
+        
+        jugadores.forEach(jugador => {
+          if (jugador.id === usuario.id_usuario) return;
+          const item = document.createElement('li');
+          item.innerHTML = `
+            <span>${jugador.username}</span>
+            <div class="actions">
+              <button class="btn-invite" data-id="${jugador.id}">Invitar 🤝</button>
+              <button class="btn-challenge" data-id="${jugador.id}">Enfrentar ⚔️</button>
+            </div>
+          `;
+          listaJugadoresEl.appendChild(item);
+        });
+      } catch (error) { 
+        console.error('Error al cargar jugadores:', error);
+        mostrarMensaje('Sistema', 'Error al cargar lista de jugadores');
+      }
+    }
+
+    // Manejo de clics en botones de invitación
+    listaJugadoresEl.addEventListener('click', async (e) => {
+      const target = e.target;
+      const idJugador = target.dataset.id;
+      if (!idJugador) return;
+      
+      try {
+        if (target.classList.contains('btn-invite')) {
+          const response = await fetch(`/invitar/${idJugador}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ salaId: salaId, juego: 'sopa' })
+          });
+          const data = await response.json();
+          mostrarMensaje('Sistema', data.message || 'Invitación enviada');
+        } else if (target.classList.contains('btn-challenge')) {
+          const response = await fetch(`/enfrentar/${idJugador}`, { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ juego: 'sopa' })
+          });
+          const data = await response.json();
+          if (data.salaId) {
+            mostrarMensaje('Sistema', '¡Desafío enviado! Redirigiendo...');
+            setTimeout(() => {
+              window.location.href = `/sopa/${data.salaId}`;
+            }, 1500);
+          } else {
+            mostrarMensaje('Sistema', data.message || 'Error al desafiar');
+          }
+        }
+      } catch (error) {
+        console.error('Error en acción de jugador:', error);
+        mostrarMensaje('Sistema', 'Error al procesar la solicitud');
+      }
+    });
+
+    // ================== LÓGICA DEL JUEGO ==================
+    // Funciones utilitarias
+    const inBounds = (r,c) => r>=0 && c>=0 && r<ROWS && c<COLS;
+    const randInt = n => Math.floor(Math.random()*n);
+    
+    const directions = [
+      { dr: 0,  dc: 1 },    // →
+      { dr: 0,  dc: -1 },   // ←
+      { dr: 1,  dc: 0 },    // ↓
+      { dr: -1, dc: 0 },    // ↑
+      { dr: 1,  dc: 1 },    // diagonal ↓→
+      { dr: 1,  dc: -1 },   // diagonal ↓←
+      { dr: -1, dc: 1 },    // diagonal ↑→
+      { dr: -1, dc: -1 },   // diagonal ↑←
+    ];
+
+    function emptyGrid() {
+      grid = Array.from({length: ROWS}, () => Array(COLS).fill(""));
+    }
+
+    function canPlace(word, r, c, dr, dc) {
+      for (let i=0; i<word.length; i++){
+        const rr = r + dr*i, cc = c + dc*i;
+        if (!inBounds(rr,cc)) return false;
+        const cell = grid[rr][cc];
+        if (cell !== "" && cell !== word[i]) return false;
+      }
+      return true;
+    }
+
+    function placeWord(word) {
+      const tries = 300;
+      for (let t=0; t<tries; t++){
+        const {dr,dc} = directions[randInt(directions.length)];
+        const startR = randInt(ROWS);
+        const startC = randInt(COLS);
+        if (canPlace(word, startR, startC, dr, dc)) {
+          for (let i=0; i<word.length; i++){
+            grid[startR + dr*i][startC + dc*i] = word[i];
+          }
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function fillRandom() {
+      for (let r=0; r<ROWS; r++){
+        for (let c=0; c<COLS; c++){
+          if (grid[r][c]==="") grid[r][c] = ALPHABET[randInt(ALPHABET.length)];
+        }
+      }
+    }
+
+    function renderBoard() {
+      boardEl.innerHTML = "";
+      cellEls = Array.from({length: ROWS}, () => Array(COLS));
+      for (let r=0; r<ROWS; r++){
+        for (let c=0; c<COLS; c++){
+          const d = document.createElement('button');
+          d.className = 'cell'; d.type = 'button';
+          d.textContent = grid[r][c];
+          d.dataset.r = r; d.dataset.c = c;
+
+          // Selección por arrastre
+          d.addEventListener('mousedown', (e) => {
+            if (d.classList.contains('found')) return;
+            e.preventDefault();
+            startDrag(r, c);
+          });
+          d.addEventListener('mouseenter', () => {
+            if (!isDragging) return;
+            continueDrag(r, c);
+          });
+
+          boardEl.appendChild(d);
+          cellEls[r][c] = d;
+        }
+      }
+
+      // Global: terminar al soltar
+      document.addEventListener('mouseup', endDrag);
+      // Evitar que el navegador arrastre textos
+      boardEl.addEventListener('dragstart', e => e.preventDefault());
+    }
+
+    function renderClues() {
+      cluesEl.innerHTML = "";
+      WORDS.forEach(({word, hint}) => {
+        const li = document.createElement('li');
+        li.id = `clue-${word}`;
+        li.innerHTML = `<div class="word">${word}</div><div class="hint">${hint}</div>`;
+        cluesEl.appendChild(li);
+      });
+      updateClues();
+    }
+
+    function updateClues() {
+      WORDS.forEach(({word}) => {
+        const li = document.getElementById(`clue-${word}`);
+        if (li) li.classList.toggle('done', foundWords.has(word));
+      });
+      progressText.innerHTML = `<strong>${foundWords.size}</strong>/<strong>${WORDS.length}</strong> palabras`;
+    }
+
+    function setErrors(n) {
+      errors = n;
+      errorsBadge.textContent = `${errors} / ${MAX_ERRORS}`;
+      errorsBadge.style.background = errors ? '#fee2e2' : '#e5e7eb';
+    }
+
+    function message(text, kind='') {
+      gameMessage.className = `message ${kind}`;
+      gameMessage.textContent = text;
+    }
+
+    // Manejo de selección por arrastre
+    function clearPathVisual() {
+      dragPath.forEach(p => p.el.classList.remove('selected'));
+    }
+
+    function startDrag(r, c) {
+      isDragging = true;
+      start = { r, c };
+      dir = null;
+      clearPathVisual();
+      dragPath = [];
+
+      const el = cellEls[r][c];
+      if (el.classList.contains('found')) return;
+      el.classList.add('selected');
+      dragPath.push({ r, c, el, letter: el.textContent });
+      message(""); // limpiar mensajes temporales
+    }
+
+    function continueDrag(r, c) {
+      if (!isDragging || !start) return;
+
+      const drRaw = r - start.r;
+      const dcRaw = c - start.c;
+
+      // Si no hay movimiento, salir
+      if (drRaw === 0 && dcRaw === 0) return;
+
+      // fijar dirección (dr, dc) como el paso unitario de la línea recta
+      if (!dir) {
+          const stepR = drRaw === 0 ? 0 : drRaw / Math.abs(drRaw);
+          const stepC = dcRaw === 0 ? 0 : dcRaw / Math.abs(dcRaw);
+          dir = { dr: stepR, dc: stepC };
+      }
+
+      // comprobar que la celda está en la misma línea recta según dir
+      const expectedSteps = Math.max(
+          dir.dr !== 0 ? (r - start.r)/dir.dr : 0,
+          dir.dc !== 0 ? (c - start.c)/dir.dc : 0
+      );
+      if (!Number.isInteger(expectedSteps) || expectedSteps < 0) return;
+
+      // construir el camino desde start hasta (r,c)
+      const length = expectedSteps + 1;
+      const maxLen = Math.max(...WORDS.map(w => w.word.length));
+      const cappedLen = Math.min(length, maxLen);
+
+      const newPath = [];
+      for (let i = 0; i < cappedLen; i++) {
+          const rr = start.r + dir.dr * i;
+          const cc = start.c + dir.dc * i;
+          if (!inBounds(rr, cc)) break;
+          const el = cellEls[rr][cc];
+          if (el.classList.contains('found')) break;
+          newPath.push({ r: rr, c: cc, el, letter: el.textContent });
+      }
+
+      clearPathVisual();
+      dragPath = newPath;
+      dragPath.forEach(p => p.el.classList.add('selected'));
+    }
+
+    function endDrag() {
+      if (!isDragging) return;
+      isDragging = false;
+      validateDrag();
+      start = null;
+      dir = null;
+    }
+
+    function validateDrag() {
+      const text = dragPath.map(p => p.letter).join("");
+      clearPathVisual();
+
+      if (!text) return;
+
+      const remaining = WORDS.filter(w => !foundWords.has(w.word));
+      const exact = remaining.find(w => w.word === text || w.word === [...text].reverse().join(""));
+
+      if (exact) {
+        // fijar como encontrada
+        dragPath.forEach(p => p.el.classList.add('found'));
+        foundWords.add(exact.word);
+        updateClues();
+        message(`¡Encontraste "${exact.word}"! 🎉`, 'win');
+
+        if (foundWords.size === WORDS.length) {
+          message("🥳 ¡Ganaste! Has encontrado todas las palabras.", 'win');
+        }
+      } else {
+        setErrors(errors + 1);
+        message(`❌ Selección incorrecta. Te quedan ${MAX_ERRORS - errors} intentos.`, 'lose');
+        if (errors >= MAX_ERRORS) {
+          message("💥 ¡Perdiste! Reiniciando la sopa…", 'lose');
+          setTimeout(initGame, 1100);
+        }
+      }
+
+      dragPath = [];
+    }
+
+    // ================== CONTROL DEL JUEGO ==================
+    async function cargarCategorias() {
+      try {
+        const response = await fetch('/sopa/materias');
+        if (!response.ok) throw new Error('No se pudieron cargar categorías');
+        const materias = await response.json();
+        
+        categoriaSelect.innerHTML = '';
+        materias.forEach(materia => {
+          const option = document.createElement('option');
+          option.value = materia.id_materia;
+          option.textContent = materia.descripcion;
+          categoriaSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error("Error al cargar categorías:", error);
+        categoriaSelect.innerHTML = '<option>Error al cargar categorías</option>';
+      }
+    }
+
+    async function cargarPalabrasPorCategoria(idMateria) {
+      try {
+        const response = await fetch(`/sopa/palabras/${idMateria}`);
+        if (!response.ok) throw new Error('Error al cargar palabras');
+        return await response.json();
+      } catch (error) {
+        console.error("Error al cargar palabras:", error);
+        return [];
+      }
+    }
+
+    async function initGame() {
+      const idMateria = categoriaSelect.value || 1;
+      WORDS = await cargarPalabrasPorCategoria(idMateria);
+      
+      if (WORDS.length === 0) {
+        WORDS = [
+          { word: "ERROR", hint: "No se pudieron cargar palabras" },
+          { word: "CARGA", hint: "Intenta recargar la página" }
+        ];
+      }
+
+      message("");
+      setErrors(0);
+      foundWords.clear();
+      dragPath = [];
+      start = null; dir = null;
+      totalWords.textContent = WORDS.length;
+
+      // Generar tablero
+      for (let safety=0; safety<60; safety++){
+        emptyGrid();
+        let ok = true;
+        for (const {word} of WORDS) {
+          if (!placeWord(word)) { ok = false; break; }
+        }
+        if (ok) break;
+      }
+      fillRandom();
+      renderBoard();
+      renderClues();
+    }
+
+    // ================== EVENT LISTENERS ==================
+    btnClear.addEventListener('click', () => {
+      clearPathVisual();
+      dragPath = [];
+      start = null; dir = null;
+      message("");
+    });
+
+    btnRestart.addEventListener('click', initGame);
+    categoriaSelect.addEventListener('change', initGame);
+
+    // ================== INICIALIZACIÓN ==================
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Configurar chat
+      socket.emit('unirseSala', { salaId, usuario: usuario.username });
+      mostrarMensaje('Sistema', `Bienvenido a la sala ${salaId}`);
+      
+      // Cargar datos iniciales
+      await cargarCategorias();
+      await initGame();
+      await cargarJugadoresActivos();
+      
+      // Actualizar lista de jugadores periódicamente
+      setInterval(cargarJugadoresActivos, 15000);
+    });
+  </script>
+</body>
+</html>

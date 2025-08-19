@@ -1,0 +1,264 @@
+/* ======================================= */
+/* Estilos Globales y Reset Básico         */
+/* ======================================= */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%; /* Asegura que html/body tengan altura para vh */
+    overflow-x: hidden; /* Evita el scroll horizontal no deseado */
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+/* ======================================= */
+/* Estilos del Header Global               */
+/* ======================================= */
+.global-header-elements {
+    position: fixed; /* Mantiene la top bar fija arriba */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50px; /* Altura de tu top bar */
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    box-sizing: border-box;
+    z-index: 10000; /* ¡MUY ALTO! Asegura que esté SIEMPRE por encima de todo. */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Estilos de elementos dentro del header, pueden estar en styles.css si son globales */
+.top-left-logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo-image {
+    height: 40px;
+    width: auto;
+}
+
+.header-link, .header-button {
+    text-decoration: none;
+    color: #555;
+    font-weight: bold;
+    padding: 8px 15px;
+    border-radius: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.header-link:hover, .header-button:hover {
+    background-color: #eee;
+}
+
+.top-right-nav {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.nav-username {
+    font-weight: bold;
+    color: #007bff;
+}
+
+
+/* ======================================= */
+/* Contenedor de la Animación (YA NO FIXED PARA PERMITIR SCROLL) */
+/* ======================================= */
+.full-screen-animation-container {
+    position: relative; /* Cambiado de fixed a relative para que sea parte del flujo */
+    margin-top: 50px; /* Desplazado hacia abajo por la altura de la top bar */
+    width: 100%;
+    height: calc(100vh - 50px); /* Ocupa el 100% de la altura visible restante */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Oculta cualquier parte de la imagen que se salga */
+    z-index: 1; /* Un z-index bajo porque ya no es fixed y debe fluir normalmente */
+}
+
+/* ======================================= */
+/* Estilos del Botón "¡Hagámoslo!"          */
+/* ======================================= */
+.start-button-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(0%, -50%); /* ¡CORREGIDO! Este es el centrado horizontal */
+    z-index: 1001; /* Todavía por encima de la imagen de animación, pero debajo del header principal */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+}
+
+.start-button-container.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.start-button {
+    padding: 18px 30px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #333;
+    background-color: #FFDA20;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.25);
+    transition: all 0.2s ease-out; 
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    /* Aseguramos la transformación inicial para que no se pierda en el hover/active */
+    transform: translate(-50%, -50%); /* Asegura el centrado inicial */
+}
+
+.start-button:hover {
+    background-color: #FFEC80;
+    /* Mantén el centrado original y aplica solo la escala */
+    transform: translate(-50%, -50%) scale(1.07); /* Agrandar un 7% */
+    box-shadow: 0 9px 0 rgba(0,0,0,0.25);
+}
+
+.start-button:active {
+    background-color: #FFDA20; /* Vuelve al color original al presionar */
+    /* Mantén el centrado original y aplica solo el desplazamiento vertical */
+    transform: translate(-50%, -50%) translateY(3px); /* Efecto de "presionar" */
+    box-shadow: 0 3px 0 rgba(0,0,0,0.25);
+}
+
+/* ======================================= */
+/* Contenido debajo de la animación        */
+/* ======================================= */
+/* Ahora este contenido estará justo después de la animación en el flujo normal */
+.content-below-animation {
+    position: relative; /* Para que su flujo sea normal */
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    text-align: center;
+    background-color: #fff;
+    z-index: 1; /* Opcional, para asegurar su posición si hay otros elementos */
+}
+
+.formulario-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    justify-content: flex-start; /* Alineación a la izquierda */
+    align-items: center;
+    background-color: transparent; /* Fondo completamente transparente */
+    z-index: 1000;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+
+/* Asegúrate que la animación y el botón tengan z-index adecuados */
+.full-screen-animation-container {
+    position: relative;
+}
+
+/* Eliminamos la clase .last-frame-background y usamos la imagen existente */
+#duolingoAnimation {
+    position: fixed; /* Fija la imagen como fondo */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1; /* Detrás de todo */
+}
+
+.start-button-container {
+    position: absolute;
+    z-index: 2;
+    /* ... otros estilos existentes ... */
+}
+
+/* ======================================= */
+/* Estilos para el Formulario Overlay       */
+/* ======================================= */
+.formulario-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0); /* Fondo semitransparente */
+    z-index: 10;
+    padding: 20px;
+
+}
+
+.formulario-container {
+    width: 600px; /* Ancho reducido */
+    max-width: 90%;
+    height: 80vh;
+    background-color: transparent; /* Contenedor transparente */
+    border-radius: 0 15px 15px 0; /* Bordes redondeados solo a la derecha */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    margin-left: 0; /* Pegado a la izquierda */
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2); /* Sombra solo a la derecha */
+}
+
+.formulario-header {
+    padding: 20px;
+    background-color: #FFDA20;
+    color: #333;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.formulario-content {
+    flex: 1; /* Ocupa todo el espacio disponible */
+    padding: 20px;
+    -webkit-overflow-scrolling: touch; /* Mejor scroll en móviles */
+}
+
+/* Estilos para la barra de scroll */
+.formulario-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.formulario-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.formulario-content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.formulario-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+@media (max-width: 768px) {
+    .formulario-container {
+        width: 85%;
+        height: 90vh;
+    }
+    
+    .formulario-header {
+        padding: 12px;
+        font-size: 18px;
+    }
+}

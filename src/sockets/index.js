@@ -1,0 +1,32 @@
+const baseSocket = require('./base-socket');
+const ahorcadoSocket = require('./ahorcado-socket');
+const serpientesSocket = require('./serpientes-socket');
+const chatSocket = require('./chat-socket');
+// Importar otros handlers...
+
+module.exports = (io, pool) => {
+  // Inicializar base
+  const base = baseSocket(io, pool);
+  
+  // Inicializar todos los handlers
+  const handlers = {
+    ahorcado: ahorcadoSocket(base),
+    serpientes: serpientesSocket(base),
+    chat: chatSocket(base)
+    // Agregar otros handlers aquí...
+  };
+
+  io.on('connection', (socket) => {
+    console.log('Jugador conectado', socket.id);
+    
+    // Inicializar todos los handlers
+    Object.values(handlers).forEach(handler => handler.init(socket));
+    
+    socket.on('disconnect', () => {
+      console.log('Jugador desconectado', socket.id);
+      
+      // Limpiar todos los handlers
+      Object.values(handlers).forEach(handler => handler.cleanup(socket));
+    });
+  });
+};

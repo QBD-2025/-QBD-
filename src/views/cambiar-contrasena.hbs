@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>QueBuenDato.com</title>
+    <link rel="stylesheet" href="/css/verification.css">
+    <style>
+        .password-wrapper {
+            position: relative;
+        }
+
+        .form-control {
+            width: 100%;
+            padding-right: 40px; /* espacio para el icono */
+        }
+
+        .password-toggle-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="verification-main-wrapper">
+        <div class="verification-visuals-container">
+            <div class="stuart-figure">
+                <img src="/media/videos/stuart_pensando2.gif" alt="Stuart pensando" class="stuart-character">
+            </div>
+        </div>
+
+        <div class="verification-text-content">
+            <h1 class="verification-headline">Restablecer Contraseña</h1>
+            <p class="verification-message">Crea una nueva contraseña segura.</p>
+
+            {{#if error}}
+                <p class="verification-error-message" style="display: block; color: #dc3545; margin-top: 15px;">
+                    {{error}}
+                </p>
+            {{/if}}
+
+            <form id="reset-form" action="/restablecer-contrasena" method="POST" style="margin-top: 20px;">
+                <input type="hidden" name="token" value="{{token}}">
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="password">Nueva Contraseña</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" name="password" class="form-control" required>
+                        <span onclick="togglePassword('password', this)" class="password-toggle-icon">👁</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirmar Nueva Contraseña</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" required>
+                        <span onclick="togglePassword('confirmPassword', this)" class="password-toggle-icon">👁</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary verification-button-resend" style="display: block; width: 100%; margin-top: 20px;">Cambiar Contraseña</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('reset-form').addEventListener('submit', function(event) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                alert('Las contraseñas no coinciden.');
+                event.preventDefault();
+            }
+        });
+
+        function togglePassword(idCampo, iconElement) {
+            let input = document.getElementById(idCampo);
+            if (input.type === "password") {
+                input.type = "text";
+                iconElement.textContent = "🔒";
+            } else {
+                input.type = "password";
+                iconElement.textContent = "👁";
+            }
+        }
+    </script>
+</body>
+</html>

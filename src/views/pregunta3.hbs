@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/css/formulario.css" />
+  <title>Pregunta 2 - QueBuenDato</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background: #ffffff; /* Fondo blanco */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Contenedor central de la pregunta */
+    .main-form-container {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      width: 80%;
+      max-width: 600px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    .pregunta {
+      margin-bottom: 20px;
+    }
+
+    .pregunta p {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    label {
+      display: block;
+      margin: 5px 0;
+      cursor: pointer;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    /* Contenedor para la animación de fondo */
+    .background-animation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      background-size: cover;
+      background-position: center;
+    }
+  </style>
+</head>
+<body>
+  <!-- Contenedor para animación de fondo -->
+  <div class="background-animation" id="background-animation" style="background-image: url('/ruta/de/tu/animacion.gif');"></div>
+
+  <!-- Contenedor central de la pregunta -->
+  <div class="main-form-container">
+    <form action="/procesar-formulario" method="POST">
+    {{#each preguntas}}
+        <div class="pregunta">
+        <p><strong>{{pregunta}}</strong></p>
+        {{#each opciones}}
+            <label>
+            <input type="radio" name="respuesta_{{../id_pregunta}}" value="{{id_opcion}}" required/>
+            {{texto_opcion}}
+            </label>
+        {{/each}}
+        </div>
+    {{/each}}
+
+    <!-- Campo oculto con la ruta de la siguiente pregunta -->
+    <input type="hidden" name="siguiente" value="/pregunta4">
+
+    <button type="submit">Siguiente</button>
+    </form>
+  </div>
+
+  <script>
+    // Aquí puedes agregar lógica para animación adicional si es necesario
+    // Por ejemplo, animar partículas o efectos adicionales
+  </script>
+</body>
+</html>

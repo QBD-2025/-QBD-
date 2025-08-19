@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prueba de Examen de Admisión EXANI</title>
+  <link rel="stylesheet" href="/css/simulador.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Prueba de Examen de Admisión EXANI</h1>
+      <p>Simula y practica tu examen de admisión con preguntas reales del EXANI.</p>
+    </header>
+
+    <section class="practica">
+      <h2>📝 Inicia tu simulador</h2>
+      <p>Esta es una versión de prueba del examen EXANI. Al presionar el botón, comenzarás el simulador con preguntas seleccionadas.</p>
+      <button onclick="location.href='/examen-exani'">Comenzar examen</button>
+    </section>
+
+    <section class="orientacion">
+      <h2>🏫 Ligas de orientación y universidades de Aguascalientes</h2>
+
+      <!-- Universidades principales -->
+      <div class="universidades-lista" id="listaUniversidades"></div>
+
+      <!-- Universidades extra + recursos -->
+      <div class="universidades-extra" id="listaExtra"></div>
+
+      <button class="toggle-btn" id="toggleBtn">Más</button>
+    </section>
+
+    <footer>
+      <p>© 2025 Portal EXANI Aguascalientes. Todos los derechos reservados.</p>
+    </footer>
+  </div>
+
+  <!-- Modal -->
+  <div id="modalInfo">
+    <div class="modal-content">
+      <button class="close-btn">&times;</button>
+      <h3 id="modalTitle"></h3>
+      <p id="modalNivel"></p>
+      <p id="modalCarreras"></p>
+      <p id="modalRecomendacion"></p>
+    </div>
+  </div>
+
+  <script>
+    const universidadesPrincipales = [
+      {
+        nombre: "Universidad Autónoma de Aguascalientes",
+        logo: "/media/images/uaa.png",
+        descripcion: "Institución pública con programas de excelencia académica.",
+        nivel: "Licenciatura y Posgrado",
+        carreras: "Medicina, Derecho, Ingeniería Civil, Psicología",
+        recomendacion: "Ideal para quienes buscan una formación integral en una universidad pública.",
+        link: "https://www.uaa.mx"
+      },
+      {
+        nombre: "Instituto Tecnológico de Aguascalientes",
+        logo: "/media/images/ita.jpeg",
+        descripcion: "Enfoque en ingeniería, tecnología y ciencias aplicadas.",
+        nivel: "Licenciatura y Maestría",
+        carreras: "Ingeniería Mecánica, Sistemas Computacionales, Industrial, Electrónica",
+        recomendacion: "Perfecta para estudiantes con vocación tecnológica.",
+        link: "https://www.ita.mx"
+      },
+      {
+        nombre: "Universidad Panamericana Campus Bonaterra",
+        logo: "/media/images/panamericana.png",
+        descripcion: "Educación privada con calidad internacional.",
+        nivel: "Licenciatura y Posgrado",
+        carreras: "Administración, Derecho, Ingeniería, Comunicación",
+        recomendacion: "Enfocada en formación integral y valores.",
+        link: "https://www.up.edu.mx/es/campus-aguascalientes"
+      }
+    ];
+
+    const universidadesExtra = [
+      {
+        nombre: "Universidad del Valle de México",
+        logo: "/media/images/uvm.jpeg",
+        descripcion: "Educación privada con enfoque tecnológico y empresarial.",
+        nivel: "Licenciatura y Maestría",
+        carreras: "Negocios, Ingeniería, Salud",
+        recomendacion: "Flexible y con amplia oferta educativa.",
+        link: "https://www.universidaduvm.mx/campus-aguascalientes"
+      },
+      {
+        nombre: "Universidad Tecnológica de Aguascalientes",
+        logo: "/media/images/uta.jpeg",
+        descripcion: "Formación técnica y tecnológica para el sector productivo.",
+        nivel: "TSU y Licenciatura",
+        carreras: "Mecatrónica, Procesos Industriales, TIC",
+        recomendacion: "Especializada en formación técnica de alta empleabilidad.",
+        link: "https://www.utags.edu.mx/"
+      },
+      {
+        nombre: "Universidad TecMilenio",
+        logo: "/media/images/tecmilenio.jpeg",
+        descripcion: "Enfoque en innovación y aprendizaje personalizado.",
+        nivel: "Licenciatura y Maestría",
+        carreras: "Negocios, Ingeniería, Psicología",
+        recomendacion: "Ideal para quienes buscan flexibilidad y formación empresarial.",
+        link: "https://www.tecmilenio.mx"
+      }
+    ];
+
+    const lista = document.getElementById("listaUniversidades");
+    const listaExtra = document.getElementById("listaExtra");
+
+    function crearCard(u) {
+      const card = document.createElement("a");
+      card.href = u.link;
+      card.target = "_blank";
+      card.className = "uni-card";
+      card.innerHTML = `
+        <img src="${u.logo}" alt="${u.nombre}">
+        <div>
+          <h3>${u.nombre}</h3>
+          <p>${u.descripcion}</p>
+        </div>
+        <button class="info-btn" onclick="mostrarInfo(event, '${u.nombre}', '${u.nivel}', '${u.carreras}', '${u.recomendacion}')">?</button>
+      `;
+      return card;
+    }
+
+    // Mostrar 3 principales
+    universidadesPrincipales.forEach(u => lista.appendChild(crearCard(u)));
+
+    // Mostrar extra (inicialmente oculto)
+    universidadesExtra.forEach(u => listaExtra.appendChild(crearCard(u)));
+
+    // Recursos adicionales
+    const recursos = document.createElement("div");
+    recursos.className = "recursos-extra";
+    recursos.innerHTML = `
+      <h3>📺 Podría interesarte</h3>
+      <ul>
+        <li><a href="https://www.youtube.com/watch?v=pDtINc8-bbk" target="_blank">¿Cómo prepararte para el EXANI?</a></li>
+        <li><a href="https://www.youtube.com/watch?v=CsQiXZPkl_s" target="_blank">Consejos para el examen EXANI</a></li>
+      </ul>
+      <h3>📚 O esto</h3>
+      <ul>
+        <li><a href="https://online.flippingbook.com/view/278435445/" target="_blank">Guía oficial del EXANI</a></li>
+        <li><a href="http://evaluacion.iea.edu.mx/exani-ii/" target="_blank">Sitio de evaluación IEA - EXANI II</a></li>
+      </ul>
+    `;
+    listaExtra.appendChild(recursos);
+
+    // Botón más/menos
+    const toggleBtn = document.getElementById("toggleBtn");
+    toggleBtn.onclick = () => {
+      listaExtra.classList.toggle("mostrar");
+      toggleBtn.textContent = listaExtra.classList.contains("mostrar") ? "Menos" : "Más";
+    };
+
+    // Modal
+    const modal = document.getElementById("modalInfo");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalNivel = document.getElementById("modalNivel");
+    const modalCarreras = document.getElementById("modalCarreras");
+    const modalRecomendacion = document.getElementById("modalRecomendacion");
+
+    function mostrarInfo(e, nombre, nivel, carreras, recomendacion) {
+      e.preventDefault();
+      modalTitle.textContent = nombre;
+      modalNivel.textContent = "Nivel de estudio: " + nivel;
+      modalCarreras.textContent = "Carreras: " + carreras;
+      modalRecomendacion.textContent = "Recomendación: " + recomendacion;
+      modal.style.display = "flex";
+    }
+
+    document.querySelector(".close-btn").onclick = () => modal.style.display = "none";
+    modal.onclick = e => { if (e.target === modal) modal.style.display = "none"; };
+  </script>
+
+</body>
+</html>

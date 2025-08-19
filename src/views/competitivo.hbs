@@ -1,0 +1,40 @@
+<link rel="stylesheet" href="/css/competitivo.css">
+    
+<div class="competitivo-container">
+    <h2>Modo Competitivo</h2>
+
+    <div class="jugadores-activos">
+        <h3>🎮 Jugadores activos ahora</h3>
+        <ul id="lista-jugadores">
+            {{#each jugadores}}
+                <li class="jugador-item">
+                    <span class="jugador-nombre">{{username}}</span>
+                    <button class="btn-invitar" onclick="invitar('{{id_usuario}}')">Invitar</button>
+                </li>
+            {{/each}}
+        </ul>
+    </div>
+</div>
+
+<script>
+    // Recarga automática cada 5 segundos
+    setInterval(() => {
+        fetch('/competitivo')
+            .then(res => res.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                document.getElementById('lista-jugadores').innerHTML =
+                    doc.getElementById('lista-jugadores').innerHTML;
+            });
+    }, 5000);
+
+    // Función para invitar
+    function invitar(idJugador) {
+        fetch(`/invitar/${idJugador}`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+            });
+    }
+</script>

@@ -1,0 +1,48 @@
+{{!-- Vista para solicitar el enlace de recuperación de contraseña --}}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title> QueBuenDato.com </title>           
+    <link rel="stylesheet" href="/css/verification.css">
+    
+<div class="verification-main-wrapper">
+    <div class="verification-visuals-container">    
+        {{!-- Reutilizamos los mismos elementos visuales para mantener la consistencia --}}
+        <div class="verification-figure2">
+            <img src="/media/videos/stuart_dance.gif" alt="Stuart bailando" class="verification-character">
+        </div>
+        <div class="verification-figure">
+            <video src="/media/videos/octavio_dance.mp4" autoplay loop muted class="verification-character"></video>
+        </div>
+    </div>
+
+    <div class="verification-text-content">
+        <h1 class="verification-headline">Recuperar Contraseña</h1>
+        <p class="verification-message">Ingresa tu correo electrónico y te enviaremos un enlace para que puedas restablecer tu contraseña.</p>
+
+        {{!-- Mensajes de éxito o error que renderizará el servidor --}}
+        {{#if mensaje}}
+            <div class="verification-success-message" style="display: block; background-color: #28a745; color: white; padding: 10px; border-radius: 5px; margin-top: 15px;">
+                {{mensaje}}
+            </div>
+        {{/if}}
+        {{#if error}}
+            <p class="verification-error-message" style="display: block; color: #dc3545; margin-top: 15px;">
+                {{error}}
+            </p>
+        {{/if}}
+
+        <form action="/solicitar-recuperacion" method="POST" style="margin-top: 20px;">
+            <div class="form-group">
+                <label for="correo" style="display: block; margin-bottom: 5px;">Correo Electrónico</label>
+                <input type="email" id="correo" name="correo" class="form-control" placeholder="tu-correo@ejemplo.com" required>
+            </div>
+            <button type="submit" class="btn-primary verification-button-resend" style="display: block; width: 100%; margin-top: 15px;">Enviar enlace de recuperación</button>
+        </form>
+        <div class="login-links" style="text-align: center; margin-top: 20px;">
+            <a href="/login">Volver a Iniciar Sesión</a>
+        </div>
+    </div>
+</div>
