@@ -7,7 +7,7 @@ router.get('/formulario1', async (req, res) => {
       SELECT p.id_pregunta, p.texto AS pregunta, o.id_opcion, o.texto_opcion
       FROM pregunta_encuesta p
       JOIN opcion_pregunta o ON p.id_pregunta = o.id_pregunta
-      WHERE p.id_encuesta = 1 and p.id_estatus_p = 1
+      WHERE p.id_encuesta = 1 and p.id_estatus_p = 1 and p.id_pregunta=2
       ORDER BY p.id_pregunta, o.id_opcion
     `, [1]);
 
@@ -66,5 +66,136 @@ router.post('/procesar-formulario', async (req, res) => {
   }
 });
 
+router.get('/pregunta2', async (req, res) => {
+  try {
+    const [preguntas] = await req.pool.query(`
+      SELECT p.id_pregunta, p.texto AS pregunta, o.id_opcion, o.texto_opcion
+      FROM pregunta_encuesta p
+      JOIN opcion_pregunta o ON p.id_pregunta = o.id_pregunta
+      WHERE p.id_encuesta = 1 and p.id_estatus_p = 1 and p.id_pregunta=3
+      ORDER BY p.id_pregunta, o.id_opcion
+    `);
+
+    const preguntasFormateadas = [];
+    let currentPregunta = null;
+
+    for (const row of preguntas) {
+      if (!currentPregunta || currentPregunta.id_pregunta !== row.id_pregunta) {
+        currentPregunta = {
+          id_pregunta: row.id_pregunta,
+          pregunta: row.pregunta,
+          opciones: [],
+        };
+        preguntasFormateadas.push(currentPregunta);
+      }
+      currentPregunta.opciones.push({
+        id_opcion: row.id_opcion,
+        texto_opcion: row.texto_opcion,
+      });
+    }
+
+    res.render('pregunta2', { preguntas: preguntasFormateadas, layout: false });
+  } catch (error) {
+    console.error('Error al cargar preguntas:', error);
+    res.status(500).send('Error al cargar la pregunta');
+  }
+});
+
+
+router.get('/pregunta3', async (req, res) => {
+  try {
+    const [preguntas] = await req.pool.query(`
+      SELECT p.id_pregunta, p.texto AS pregunta, o.id_opcion, o.texto_opcion
+      FROM pregunta_encuesta p
+      JOIN opcion_pregunta o ON p.id_pregunta = o.id_pregunta
+      WHERE p.id_encuesta = 1 and p.id_estatus_p = 1 and p.id_pregunta=4
+      ORDER BY p.id_pregunta, o.id_opcion
+    `);
+    const preguntasFormateadas = [];
+    let currentPregunta = null; 
+    for (const row of preguntas) {
+      if (!currentPregunta || currentPregunta.id_pregunta !== row.id_pregunta) {
+        currentPregunta = {
+          id_pregunta: row.id_pregunta,
+          pregunta: row.pregunta,
+          opciones: [],
+        };
+        preguntasFormateadas.push(currentPregunta);
+      }
+      currentPregunta.opciones.push({
+        id_opcion: row.id_opcion,
+        texto_opcion: row.texto_opcion,
+      });
+    }
+    res.render('pregunta3', { preguntas: preguntasFormateadas, layout: false });
+  } catch (error) {
+    console.error('Error al cargar preguntas:', error);
+    res.status(500).send('Error al cargar la pregunta');
+  }
+});
+
+router.get('/pregunta4', async (req, res) => {
+  try {
+    const [preguntas] = await req.pool.query(`
+      SELECT p.id_pregunta, p.texto AS pregunta, o.id_opcion, o.texto_opcion
+      FROM pregunta_encuesta p
+      JOIN opcion_pregunta o ON p.id_pregunta = o.id_pregunta
+      WHERE p.id_encuesta = 1 and p.id_estatus_p = 1 and p.id_pregunta=5
+      ORDER BY p.id_pregunta, o.id_opcion
+    `);
+    const preguntasFormateadas = [];
+    let currentPregunta = null;
+    for (const row of preguntas) {
+      if (!currentPregunta || currentPregunta.id_pregunta !== row.id_pregunta) {
+        currentPregunta = {
+          id_pregunta: row.id_pregunta,
+          pregunta: row.pregunta,
+          opciones: [],
+        };
+        preguntasFormateadas.push(currentPregunta);
+      }
+      currentPregunta.opciones.push({
+        id_opcion: row.id_opcion,
+        texto_opcion: row.texto_opcion,
+      });
+    }
+    res.render('pregunta4', { preguntas: preguntasFormateadas, layout: false });
+  } catch (error) {
+    console.error('Error al cargar preguntas:', error);
+    res.status(500).send('Error al cargar la pregunta');
+  }
+});
+
+router.get('/pregunta5', async (req, res) => {
+  try {
+    const [preguntas] = await req.pool.query(`
+      SELECT p.id_pregunta, p.texto AS pregunta, o.id_opcion, o.texto_opcion
+      FROM pregunta_encuesta p
+      JOIN opcion_pregunta o ON p.id_pregunta = o.id_pregunta
+      WHERE p.id_encuesta = 1 and p.id_estatus_p = 1 and p.id_pregunta=15
+      ORDER BY p.id_pregunta, o.id_opcion
+    `);
+    const preguntasFormateadas = [];
+    let currentPregunta = null;
+    for (const row of preguntas) {
+      if (!currentPregunta || currentPregunta.id_pregunta !== row.id_pregunta) {
+        currentPregunta = {
+          id_pregunta: row.id_pregunta,
+          pregunta: row.pregunta,
+          opciones: [],
+        };
+        preguntasFormateadas.push(currentPregunta);
+      }
+      currentPregunta.opciones.push({
+        id_opcion: row.id_opcion,
+        texto_opcion: row.texto_opcion,
+      });
+    }
+    res.render('pregunta5', { preguntas: preguntasFormateadas, layout: false });
+  } catch (error) {
+    console.error('Error al cargar preguntas:', error);
+    res.status(500).send('Error al cargar la pregunta');
+  }
+});
 
 module.exports = router;
