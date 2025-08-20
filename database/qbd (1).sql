@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 14-08-2025 a las 20:27:58
+-- Tiempo de generación: 20-08-2025 a las 23:24:00
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: `quebuendato`
+-- Base de datos: `qbd`
 --
 
 -- --------------------------------------------------------
@@ -360,12 +360,12 @@ INSERT INTO `materias` (`id_materia`, `descripcion`) VALUES
 (11, 'CULTURA GENERAL'),
 (12, 'ARTES'),
 (13, 'TECNOLOGÍA'),
-(16, 'Historia'),
-(17, 'Biologia'),
-(18, 'fisica'),
-(19, 'astronomia'),
-(20, 'psicologia'),
-(21, 'arqueologia');
+(16, 'HISTORIA'),
+(17, 'BIOLOGÍA'),
+(18, 'FÍSICA'),
+(19, 'ASTRONOMÍA'),
+(20, 'PSICOLOGÍA'),
+(21, 'ARQUEOLOGÍA');
 
 -- --------------------------------------------------------
 
@@ -1359,6 +1359,19 @@ INSERT INTO `pregunta_encuesta` (`id_pregunta`, `id_encuesta`, `texto`, `id_esta
 CREATE TABLE `pregunta_examen` (
   `id_examen` int(11) NOT NULL,
   `id_pregunta` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `ranking`
+--
+
+CREATE TABLE `ranking` (
+  `id_usuario` int(11) NOT NULL,
+  `posicion` int(11) DEFAULT NULL,
+  `puntos` int(11) DEFAULT NULL,
+  `fecha_actualizacion` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -3666,6 +3679,12 @@ ALTER TABLE `pregunta_examen`
   ADD KEY `id_pregunta` (`id_pregunta`);
 
 --
+-- Indices de la tabla `ranking`
+--
+ALTER TABLE `ranking`
+  ADD PRIMARY KEY (`id_usuario`);
+
+--
 -- Indices de la tabla `respuesta`
 --
 ALTER TABLE `respuesta`
@@ -3903,6 +3922,12 @@ ALTER TABLE `pregunta_encuesta`
 ALTER TABLE `pregunta_examen`
   ADD CONSTRAINT `pregunta_examen_ibfk_1` FOREIGN KEY (`id_examen`) REFERENCES `examen` (`id_examen`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `pregunta_examen_ibfk_2` FOREIGN KEY (`id_pregunta`) REFERENCES `pregunta` (`id_pregunta`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Filtros para la tabla `ranking`
+--
+ALTER TABLE `ranking`
+  ADD CONSTRAINT `ranking_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`);
 
 --
 -- Filtros para la tabla `respuesta`

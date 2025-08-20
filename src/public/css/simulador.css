@@ -1,278 +1,162 @@
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f9f9f9;
-  color: #0c0264;
-  margin: 0;
-  padding: 0;
-}
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9f9f9;
+      color: #0c0264;
+      margin: 0;
+      padding: 0;
+    }
 
-/* Contenedor principal */
-.container {
-  max-width: 1200px; /* Más ancho para escritorio */
-  margin: 0 auto;
-  padding: 1rem 2rem 3rem 2rem;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  box-sizing: border-box;
-}
+    /* Contenedor principal */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 2rem 3rem 2rem;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
 
-/* Encabezado */
-header {
-  width: 100%;
-  text-align: center;
-  background-color: #ededed;
-  padding: 2rem;
-  border-bottom: 4px solid #facc15;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  margin-bottom: 3rem;
-  box-sizing: border-box;
-}
+    /* Encabezado */
+    header {
+      width: 100%;
+      text-align: center;
+      background-color: #ededed;
+      padding: 2rem;
+      border-bottom: 4px solid #facc15;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-bottom: 3rem;
+      box-sizing: border-box;
+    }
 
-header h1 {
-  font-size: 2.5rem;
-  color: #0815c5;
-  margin-bottom: 0.5rem;
-}
+    header h1 {
+      font-size: 2.5rem;
+      color: #0815c5;
+      margin-bottom: 0.5rem;
+    }
 
-header p {
-  font-size: 1.1rem;
-  color: #0c0264;
-  margin: 0;
-}
+    header p {
+      font-size: 1.1rem;
+      color: #0c0264;
+      margin: 0;
+    }
 
-/* Sección de práctica */
-.practica {
-  text-align: center;
-  background-color: #ededed;
-  margin-bottom: 4rem;
-  padding: 2.5rem 2rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
-}
+    /* Sección de práctica */
+    .practica {
+      text-align: center;
+      background-color: #ededed;
+      margin-bottom: 4rem;
+      padding: 2.5rem 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    }
 
-.practica h2 {
-  color: #0815c5;
-  margin-bottom: 1rem;
-  font-size: 2rem;
-}
+    .practica h2 {
+      color: #0815c5;
+      margin-bottom: 1rem;
+      font-size: 2rem;
+    }
 
-.practica p {
-  margin-bottom: 2rem;
-  font-size: 1.1rem;
-  color: #333;
-  max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
-}
+    .practica p {
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+      color: #333;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
 
-/* Botón */
-.practica button {
-  background-color: #facc15;
-  border: none;
-  color: #0c0264;
-  font-weight: 700;
-  padding: 1rem 2rem;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1.2rem;
-  transition: background-color 0.3s, box-shadow 0.3s;
-  box-shadow: 0 4px 8px rgba(250, 204, 21, 0.5);
-}
+    /* Botón */
+    .practica button {
+      background-color: #facc15;
+      border: none;
+      color: #0c0264;
+      font-weight: 700;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: background-color 0.3s, box-shadow 0.3s;
+      box-shadow: 0 4px 8px rgba(250, 204, 21, 0.5);
+    }
 
-.practica button:hover {
-  background-color: #ffd84d;
-  box-shadow: 0 6px 12px rgba(250, 204, 21, 0.7);
-}
+    .practica button:hover {
+      background-color: #ffd84d;
+      box-shadow: 0 6px 12px rgba(250, 204, 21, 0.7);
+    }
 
-/* Footer */
-footer {
-  text-align: center;
-  padding: 2rem 1rem;
-  font-size: 0.9rem;
-  color: #888;
-  border-top: 1px solid #ddd;
-  margin-top: auto;
-}
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.9rem;
+      color: #888;
+      border-top: 1px solid #ddd;
+      margin-top: auto;
+    }
 
-/* ===== Sección orientación ===== */
-.orientacion {
-  margin-bottom: 4rem;
-  padding: 2rem;
-  background-color: #ededed;
-  border-radius: 10px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
-}
+    /* Botón flotante */
+    .floating-button {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background-color: #FFC107;
+      color: #333;
+      border: none;
+      border-bottom: 4px solid #e0a800;
+      font-size: 28px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: pulse 2s infinite;
+    }
 
-.orientacion h2 {
-  text-align: center;
-  color: #0815c5;
-  font-size: 1.8rem;
-  margin-bottom: 2rem;
-}
+    .floating-button:hover {
+      background-color: #ffd44f;
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
 
-/* Lista de universidades */
-.universidades-lista,
-.universidades-extra.mostrar {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 columnas fijas para escritorio */
-  gap: 2rem;
-}
+    .floating-button:active {
+      transform: translateY(2px);
+      border-bottom: 2px solid #e0a800;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+    }
 
-.uni-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background-color: white;
-  border-radius: 10px;
-  text-decoration: none;
-  color: #0c0264;
-  padding: 1.2rem;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
-  position: relative;
-}
+    /* Animación de latido */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
 
-.uni-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-}
-
-.uni-card img {
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
-.uni-card h3 {
-  margin: 0;
-  font-size: 1.1rem;
-  color: #0815c5;
-}
-
-.uni-card p {
-  margin: 0;
-  font-size: 0.9rem;
-  color: #555;
-}
-
-/* Botón info (?) */
-.info-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: #0815c5;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 26px;
-  height: 26px;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 1rem;
-  line-height: 26px;
-  text-align: center;
-}
-
-.info-btn:hover {
-  background: #0c0264;
-}
-
-/* Botón más/menos */
-.toggle-btn {
-  display: block;
-  margin: 2rem auto 0 auto;
-  padding: 0.8rem 1.5rem;
-  background-color: #0815c5;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 700;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s;
-}
-
-.toggle-btn:hover {
-  background-color: #0c0264;
-}
-
-/* Modal */
-#modalInfo {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-
-#modalInfo .modal-content {
-  background: #fff;
-  color: #0c0264;
-  border-radius: 12px;
-  padding: 1.5rem 2rem;
-  max-width: 400px;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-  text-align: left;
-  position: relative;
-}
-
-#modalInfo .close-btn {
-  position: absolute;
-  top: 10px; right: 15px;
-  background: none;
-  border: none;
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #0815c5;
-  cursor: pointer;
-}
-
-.recursos-extra {
-  margin-top: 2rem;
-  padding: 1.5rem;
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-  color: #0c0264;
-}
-
-.recursos-extra h3 {
-  font-size: 1.2rem;
-  color: #0815c5;
-  margin-bottom: 0.8rem;
-}
-
-.recursos-extra ul {
-  list-style: none;
-  padding-left: 0;
-  margin-bottom: 1.5rem;
-}
-
-.recursos-extra li {
-  margin-bottom: 0.5rem;
-}
-
-.recursos-extra a {
-  color: #0c0264;
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.3s;
-}
-
-.recursos-extra a:hover {
-  color: #facc15;
-}
-
-.universidades-extra {
-  display: none;
-}
-
-.universidades-extra.mostrar {
-  display: block;
-}
+    /* Responsive para móviles */
+    @media (max-width: 768px) {
+      .floating-button {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        bottom: 20px;
+        right: 20px;
+      }
+      
+      header h1 {
+        font-size: 2rem;
+      }
+      
+      .practica h2 {
+        font-size: 1.6rem;
+      }
+      
+      .practica button {
+        font-size: 1rem;
+        padding: 0.8rem 1.5rem;
+      }
+    }

@@ -8,13 +8,16 @@ const pool = require('../db/conexion'); // Asegúrate de tener la conexión
 // ===================================================================
 // ¡NUEVA RUTA API PARA OBTENER LAS MATERIAS DEL AHORCADO!
 // ===================================================================
+// En ahorcadoR.js
+
+// ...
 router.get('/ahorcado/materias', async (req, res) => {
     try {
-        // Asumimos que tu tabla de materias se llama 'materias'
-        const [materias] = await pool.query(
+        // En lugar de usar el 'pool' importado, usa el del request
+        const [materias] = await req.pool.query(
             `SELECT DISTINCT m.id_materia, m.descripcion
-            FROM materias m
-            INNER JOIN palabras p ON m.id_materia = p.id_materia;`
+             FROM materias m
+             INNER JOIN palabras p ON m.id_materia = p.id_materia;`
         );
         res.json(materias);
     } catch (error) {
@@ -22,6 +25,7 @@ router.get('/ahorcado/materias', async (req, res) => {
         res.status(500).json([]);
     }
 });
+// ...
 
 
 // ... (El resto de tus rutas /ahorcado y /ahorcado/:salaId se quedan igual) ...

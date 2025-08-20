@@ -84,6 +84,7 @@ app.use((req, res, next) => {
 });
 
 // Rutas
+const ligasR = require('./src/router/ligasR.js');
 const sopaR = require('./src/router/sopaR.js');
 const gatoR = require('./src/router/gatoR.js');
 const serpEscalerasR = require("./src/router/Escaleras_serpientes.js");
@@ -109,7 +110,9 @@ const datoR = require('./src/router/datoR.js');
 const examenR = require('./src/router/examenR');
 const competitivoR = require('./src/router/competitivoR.js');
 const notificacionesR = require('./src/router/notificacionesR.js');
+const rankingR = require('./src/router/rankingR.js');
 
+app.use('/', rankingR);
 app.use('/', sopaR);
 app.use('/', gatoR);
 app.use('/', serpEscalerasR);
@@ -135,6 +138,9 @@ app.use('/', profileR);
 app.use('/', generalR);
 app.use('/', materiasR);
 app.use('/', minijuegosR);
+app.use('/', ligasR);
+
+
 
 // Ruta para vista cooperativa
 app.get('/ahorcado_cooperativo', (req, res) => {
@@ -142,7 +148,7 @@ app.get('/ahorcado_cooperativo', (req, res) => {
 });
 
 // Configuración de Socket.io
-require('./src/sockets/socket-server.js')(io, pool);
+require('./src/sockets/index.js')(io, pool); // <--- ¡CORREGIDO!
 
 // Iniciar servidor
 const PORT = process.env.PORT || 3005;

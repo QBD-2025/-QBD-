@@ -3,732 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Serpientes y Escaleras Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Fredoka+One&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Serpientes y Escaleras</title>
     <link rel="stylesheet" href="/css/serpientes-escaleras.css">
 </head>
 <body>
-    <div class="header">
-        <h1>Serpientes y Escaleras Pro</h1>
-        <p>El clásico juego de mesa ahora en una versión digital moderna y emocionante. ¡Lanza el dado y llega primero a la meta!</p>
-    </div>
-    
-    <div class="game-container">
-        <div class="main-content">
-            <div class="board-container">
-                <div class="board" id="board">
-                    <!-- El tablero se generará con JavaScript -->
-                </div>
+    <div class="page">
+        <div class="header">
+            <div class="title">🐍 Serpientes y Escaleras</div>
+            <div class="pill">
+                Jugador: <strong>{{#if user}}{{user.username}}{{else}}Invitado{{/if}}</strong>
             </div>
-            
-            <!-- Chat Section -->
-            <div class="chat-container">
-                <div class="chat-header">
-                    <i class="fas fa-comments"></i>
-                    <span>Chat del Juego</span>
-                </div>
-                <div class="chat-box" id="chat-box">
-                    <!-- Mensajes del chat aparecerán aquí -->
-                </div>
-                <div class="chat-input-container">
-                    <input type="text" class="chat-input" id="chat-input" placeholder="Escribe un mensaje...">
-                    <button class="chat-btn" id="chat-btn">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </div>
-            </div>
+            <button onclick="location.href='/minijuegos'">← Regresar</button>
         </div>
-        
-        <div class="game-controls">
-            <div class="panel dice-container">
-                <h3 class="panel-title"><i class="fas fa-dice"></i> Dado</h3>
-                <div class="dice" id="dice">?</div>
-                <button class="btn btn-primary" id="roll-btn">
-                    <i class="fas fa-redo"></i> Lanzar Dado
-                </button>
-            </div>
-            
-            <div class="panel players-info">
-                <h3 class="panel-title"><i class="fas fa-users"></i> Jugadores</h3>
-                <div id="players-list">
-                    <!-- La lista de jugadores se generará con JavaScript -->
-                </div>
-            </div>
-            
-            <div class="panel snakes-ladders-info">
-                <h3 class="panel-title"><i class="fas fa-info-circle"></i> Serpientes y Escaleras</h3>
-                <div class="special-item">
-                    <span class="special-icon ladder-icon">🪜</span>
-                    <span>Escalera normal: Sube 2 plantas</span>
-                </div>
-                <div class="special-item">
-                    <span class="special-icon ladder2-icon">🛩️</span>
-                    <span>Escalera especial: Sube 3 plantas</span>
-                </div>
-                <div class="special-item">
-                    <span class="special-icon snake-icon">🐍</span>
-                    <span>Serpiente normal: Baja 2 plantas</span>
-                </div>
-                <div class="special-item">
-                    <span class="special-icon snake2-icon">🦎</span>
-                    <span>Serpiente especial: Baja 3 plantas</span>
-                </div>
-            </div>
-            
-            <!-- Active Players List -->
-            <div class="players-list-container">
-                <h3 class="players-list-title">
-                    <i class="fas fa-user-friends"></i> Jugadores Activos
-                </h3>
-                <ul class="players-list" id="lista-jugadores">
-                    <!-- Lista de jugadores activos se generará con JavaScript -->
-                </ul>
-            </div>
-            
-            <div class="panel">
-                <button class="btn btn-secondary" id="settings-btn">
-                    <i class="fas fa-cog"></i> Ajustes del Juego
-                </button>
-                <button class="btn btn-secondary" id="help-btn">
-                    <i class="fas fa-question-circle"></i> Cómo Jugar
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <div class="notification" id="notification"></div>
-    
-    <div class="modal" id="winner-modal">
-        <div class="modal-content">
-            <h2 class="modal-title"><i class="fas fa-trophy"></i> ¡Felicidades! 🎉</h2>
-            <p class="modal-message" id="winner-message">Jugador 1 ha ganado el juego!</p>
-            <div class="modal-buttons">
-                <button class="btn btn-primary" id="play-again-btn">
-                    <i class="fas fa-play"></i> Jugar de Nuevo
-                </button>
-                <button class="btn btn-secondary" id="close-modal-btn">
-                    <i class="fas fa-times"></i> Cerrar
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <div class="modal" id="settings-modal">
-        <div class="modal-content">
-            <h2 class="modal-title"><i class="fas fa-cog"></i> Ajustes del Juego</h2>
-            <form class="settings-form" id="settings-form">
-                <div class="form-group">
-                    <label class="form-label" for="player-count">Número de Jugadores</label>
-                    <select class="form-select" id="player-count">
-                        <option value="2">2 Jugadores</option>
-                        <option value="3">3 Jugadores</option>
-                        <option value="4">4 Jugadores</option>
-                    </select>
-                </div>
-                
-                <div id="player-names-container">
-                    <!-- Los campos de nombre de jugador se generarán con JavaScript -->
-                </div>
-                
-                <div class="modal-buttons">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Guardar Ajustes
-                    </button>
-                    <button type="button" class="btn btn-secondary" id="cancel-settings-btn">
-                        <i class="fas fa-times"></i> Cancelar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
-    <div class="modal" id="help-modal">
-        <div class="modal-content">
-            <h2 class="modal-title"><i class="fas fa-question-circle"></i> Cómo Jugar</h2>
-            <div class="settings-form">
-                <p><strong>Serpientes y Escaleras</strong> es un juego clásico de mesa para 2-4 jugadores.</p>
-                
-                <h3 style="margin: 1.5rem 0 0.8rem; font-size: 1.2rem; color: var(--primary);">
-                    <i class="fas fa-info-circle"></i> Instrucciones:
-                </h3>
-                <ul style="text-align: left; margin-left: 1.5rem; margin-bottom: 2rem; list-style-type: none;">
-                    <li style="margin-bottom: 0.8rem; display: flex; gap: 0.8rem;">
-                        <span style="color: var(--primary); font-size: 1.2rem;"><i class="fas fa-dice"></i></span>
-                        <span>Los jugadores se turnan para lanzar el dado y avanzar.</span>
-                    </li>
-                    <li style="margin-bottom: 0.8rem; display: flex; gap: 0.8rem;">
-                        <span style="color: var(--ladder); font-size: 1.2rem;"><i class="fas fa-arrow-up"></i></span>
-                        <span>Escalera normal (🪜): Sube 2 plantas</span>
-                    </li>
-                    <li style="margin-bottom: 0.8rem; display: flex; gap: 0.8rem;">
-                        <span style="color: var(--ladder2); font-size: 1.2rem;"><i class="fas fa-arrow-up"></i></span>
-                        <span>Escalera especial (🛩️): Sube 3 plantas</span>
-                    </li>
-                    <li style="margin-bottom: 0.8rem; display: flex; gap: 0.8rem;">
-                        <span style="color: var(--snake); font-size: 1.2rem;"><i class="fas fa-arrow-down"></i></span>
-                        <span>Serpiente normal (🐍): Baja 2 plantas</span>
-                    </li>
-                    <li style="margin-bottom: 0.8rem; display: flex; gap: 0.8rem;">
-                        <span style="color: var(--snake2); font-size: 1.2rem;"><i class="fas fa-arrow-down"></i></span>
-                        <span>Serpiente especial (🦎): Baja 3 plantas</span>
-                    </li>
-                    <li style="margin-bottom: 0.8rem; display: flex; gap: 0.8rem;">
-                        <span style="color: var(--success); font-size: 1.2rem;"><i class="fas fa-trophy"></i></span>
-                        <span>El primer jugador en llegar exactamente a la casilla 100 gana.</span>
-                    </li>
-                </ul>
-                
-                <div class="modal-buttons">
-                    <button class="btn btn-primary" id="close-help-btn">
-                        <i class="fas fa-check"></i> Entendido
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <script>
-        // Game Configuration
-        const config = {
-            playerCount: 2,
-            playerNames: ['Jugador 1', 'Jugador 2', 'Jugador 3', 'Jugador 4'],
-            playerColors: ['player-1', 'player-2', 'player-3', 'player-4'],
-            playerPositions: [1, 1, 1, 1],
-            currentPlayer: 0,
-            gameStarted: false,
-            gameOver: false,
-            usuario: { id_usuario: 1, username: 'Jugador1' }, // Datos de usuario simulados
-            salaId: 'sala123', // ID de sala simulado
-            
-            // Special cells: snakes and ladders
-            specialCells: {
-                // Ladders
-                5: 25,   // Normal ladder
-                14: 34,  // Normal ladder
-                22: 42,  // Normal ladder
-                30: 50,  // Special ladder
-                41: 61,  // Normal ladder
-                49: 69,  // Normal ladder
-                63: 83,  // Special ladder
-                70: 90,  // Normal ladder
+        <div class="game-container">
+            <section class="game card">
+                {{!-- El tablero se generará aquí con JavaScript --}}
+                <div id="tablero"></div>
                 
-                // Snakes
-                17: 4,   // Normal snake
-                27: 7,   // Special snake
-                35: 15,  // Normal snake
-                47: 27,  // Normal snake
-                58: 38,  // Special snake
-                65: 45,  // Normal snake
-                76: 56,  // Normal snake
-                88: 68,  // Special snake
-                94: 74,  // Normal snake
-                99: 79   // Special snake
-            },
-            
-            // Cell types for visualization
-            cellTypes: {
-                5: 'ladder-1',
-                14: 'ladder-1',
-                22: 'ladder-1',
-                30: 'ladder-2',
-                41: 'ladder-1',
-                49: 'ladder-1',
-                63: 'ladder-2',
-                70: 'ladder-1',
-                17: 'snake-1',
-                27: 'snake-2',
-                35: 'snake-1',
-                47: 'snake-1',
-                58: 'snake-2',
-                65: 'snake-1',
-                76: 'snake-1',
-                88: 'snake-2',
-                94: 'snake-1',
-                99: 'snake-2'
-            }
-        };
-
-        // DOM Elements
-        const board = document.getElementById('board');
-        const dice = document.getElementById('dice');
-        const rollBtn = document.getElementById('roll-btn');
-        const playersList = document.getElementById('players-list');
-        const notification = document.getElementById('notification');
-        const winnerModal = document.getElementById('winner-modal');
-        const winnerMessage = document.getElementById('winner-message');
-        const playAgainBtn = document.getElementById('play-again-btn');
-        const closeModalBtn = document.getElementById('close-modal-btn');
-        const settingsModal = document.getElementById('settings-modal');
-        const helpModal = document.getElementById('help-modal');
-        const settingsBtn = document.getElementById('settings-btn');
-        const helpBtn = document.getElementById('help-btn');
-        const cancelSettingsBtn = document.getElementById('cancel-settings-btn');
-        const closeHelpBtn = document.getElementById('close-help-btn');
-        const settingsForm = document.getElementById('settings-form');
-        const playerCountSelect = document.getElementById('player-count');
-        const playerNamesContainer = document.getElementById('player-names-container');
-        
-        // Chat Elements
-        const chatBox = document.getElementById('chat-box');
-        const chatInput = document.getElementById('chat-input');
-        const chatBtn = document.getElementById('chat-btn');
-        
-        // Players List Elements
-        const listaJugadoresEl = document.getElementById('lista-jugadores');
-        
-        // Initialize the game
-        function initGame() {
-            createBoard();
-            updatePlayersList();
-            setupEventListeners();
-            showNotification('¡Bienvenido a Serpientes y Escaleras Pro!');
-            
-            // Cargar jugadores activos
-            cargarJugadoresActivos();
-        }
-        
-        // ================== CHAT FUNCTIONS ==================
-        function mostrarMensaje(user, msg) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'chat-message';
-            msgDiv.innerHTML = `<span class="u">${user}:</span> <span>${msg}</span>`;
-            
-            // Estilo diferente para mensajes del usuario actual
-            if (user === config.usuario.username) {
-                msgDiv.style.background = 'var(--chat-msg-user)';
-                msgDiv.style.alignSelf = 'flex-end';
-            } else {
-                msgDiv.style.background = 'var(--chat-msg-other)';
-                msgDiv.style.alignSelf = 'flex-start';
-            }
-            
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        function enviarMensaje() {
-            const mensaje = chatInput.value.trim();
-            if (mensaje && config.salaId) {
-                // En un entorno real, esto emitiría el mensaje al servidor
-                // socket.emit('mensajeChat', { salaId: config.salaId, mensaje, usuario: config.usuario.username });
-                
-                // Mostrar mensaje localmente
-                mostrarMensaje(config.usuario.username, mensaje);
-                chatInput.value = '';
-            }
-        }
-        
-        // ================== ACTIVE PLAYERS FUNCTIONS ==================
-        async function cargarJugadoresActivos() {
-            try {
-                // En un entorno real, esto haría una petición al servidor
-                // const res = await fetch('/competitivo');
-                // const jugadores = await res.json();
-                
-                // Simulamos una respuesta del servidor
-                const jugadores = [
-                    { id: 2, username: 'Jugador2' },
-                    { id: 3, username: 'Jugador3' },
-                    { id: 4, username: 'Jugador4' },
-                    { id: 5, username: 'Jugador5' },
-                    { id: 6, username: 'Jugador6' }
-                ];
-                
-                listaJugadoresEl.innerHTML = '';
-                
-                jugadores.forEach(jugador => {
-                    if (jugador.id === config.usuario.id_usuario) return;
-                    const item = document.createElement('li');
-                    item.innerHTML = `
-                        <span>${jugador.username}</span>
-                        <div class="player-actions">
-                            <button class="btn-invite" data-id="${jugador.id}">Invitar 🤝</button>
-                            <button class="btn-challenge" data-id="${jugador.id}">Enfrentar ⚔️</button>
+                <div class="controles-juego">
+                    <div id="info-turno">Esperando jugadores...</div>
+                    <div id="dado-container">
+                        <div id="dado" class="dado-animado">
+                            <div class="cara cara-1">1</div>
+                            <div class="cara cara-2">2</div>
+                            <div class="cara cara-3">3</div>
+                            <div class="cara cara-4">4</div>
+                            <div class="cara cara-5">5</div>
+                            <div class="cara cara-6">6</div>
                         </div>
-                    `;
-                    listaJugadoresEl.appendChild(item);
-                });
-            } catch (error) { 
-                console.error('Error al cargar jugadores:', error);
-                mostrarMensaje('Sistema', 'No se pudieron cargar los jugadores activos');
+                        <button id="lanzar-dado-btn" disabled>Lanzar Dado 🎲</button>
+                    </div>
+                </div>
+            </section>
+
+            <aside class="side">
+                <div class="panel card" id="jugadores-panel">
+                    <h3>🟢 Jugadores en la sala</h3>
+                    <ul id="lista-jugadores-sala"></ul>
+                </div>
+                <div class="panel card" id="log-panel">
+                    <h3>📜 Historial de la Partida</h3>
+                    <div id="logBox"></div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // ================== 1. INICIALIZACIÓN Y VARIABLES ==================
+        const socket = io();
+        const salaId = "{{salaId}}";
+        const usuario = {{{json user}}};
+
+        // --- Elementos del DOM ---
+        const tableroDiv = document.getElementById('tablero');
+        const lanzarDadoBtn = document.getElementById('lanzar-dado-btn');
+        const dadoDiv = document.getElementById('dado');
+        const infoTurnoDiv = document.getElementById('info-turno');
+        const listaJugadoresSalaEl = document.getElementById('lista-jugadores-sala');
+        const logBox = document.getElementById('logBox');
+        
+        // --- Estado del cliente ---
+        const fichasJugadores = {}; // Guarda los elementos DIV de las fichas
+        const colores = ['#E74C3C', '#3498DB', '#2ECC71', '#F1C40F', '#9B59B6']; // Colores para fichas
+
+        // ================== 2. FUNCIONES DE RENDERIZADO (UI) ==================
+
+        /**
+         * Genera el tablero de 10x10. Se ejecuta una sola vez.
+         */
+        function crearTablero() {
+            tableroDiv.innerHTML = '';
+            for (let i = 1; i <= 100; i++) {
+                const casilla = document.createElement('div');
+                casilla.classList.add('casilla');
+                casilla.id = `casilla-${i}`;
+                
+                const numeroCasilla = document.createElement('span');
+                numeroCasilla.textContent = i;
+                casilla.appendChild(numeroCasilla);
+
+                tableroDiv.appendChild(casilla);
             }
         }
         
-        // ================== GAME FUNCTIONS ==================
-        // Create the game board
-        function createBoard() {
-            board.innerHTML = '';
+        /**
+         * Actualiza el tablero completo, moviendo fichas y actualizando la lista de jugadores.
+         */
+        function actualizarTableroUI(jugadores) {
+            // Limpiar todas las fichas existentes para redibujar
+            Object.values(fichasJugadores).forEach(ficha => ficha.remove());
+
+            listaJugadoresSalaEl.innerHTML = '';
             
-            // Create 100 cells in zig-zag pattern
-            for (let row = 9; row >= 0; row--) {
-                const isReverse = row % 2 === 1;
-                
-                for (let col = 0; col < 10; col++) {
-                    const cellIndex = isReverse ? (row * 10) + (9 - col) : (row * 10) + col;
-                    const cellNumber = cellIndex + 1;
-                    
-                    const cell = document.createElement('div');
-                    cell.className = 'cell';
-                    cell.dataset.index = cellIndex;
-                    cell.dataset.number = cellNumber;
-                    
-                    // Add special class if needed
-                    if (config.cellTypes[cellNumber]) {
-                        cell.classList.add(config.cellTypes[cellNumber]);
-                    }
-                    
-                    const numberSpan = document.createElement('span');
-                    numberSpan.className = 'cell-number';
-                    numberSpan.textContent = cellNumber;
-                    
-                    const specialSpan = document.createElement('span');
-                    specialSpan.className = 'cell-special';
-                    
-                    // Add icons for special cells
-                    if (config.cellTypes[cellNumber]) {
-                        if (config.cellTypes[cellNumber].includes('ladder')) {
-                            specialSpan.textContent = cellNumber === 30 || cellNumber === 63 ? '🛩️' : '🪜';
-                        } else {
-                            specialSpan.textContent = cellNumber === 27 || cellNumber === 58 || 
-                                                    cellNumber === 88 || cellNumber === 99 ? '🦎' : '🐍';
-                        }
-                    }
-                    
-                    cell.appendChild(numberSpan);
-                    cell.appendChild(specialSpan);
-                    board.appendChild(cell);
-                }
-            }
-            
-            // Position players
-            positionPlayers();
-        }
-        
-        // Position players on the board
-        function positionPlayers() {
-            // Remove existing players
-            document.querySelectorAll('.player').forEach(player => player.remove());
-            
-            // Add players to the board
-            for (let i = 0; i < config.playerCount; i++) {
-                const position = config.playerPositions[i] - 1;
-                const cell = document.querySelector(`.cell[data-index="${position}"]`);
-                
-                if (cell) {
-                    const player = document.createElement('div');
-                    player.className = `player ${config.playerColors[i]}`;
-                    player.dataset.player = i;
-                    player.textContent = i + 1;
-                    
-                    // Position player in cell (offset for multiple players)
-                    const cellRect = cell.getBoundingClientRect();
-                    const boardRect = board.getBoundingClientRect();
-                    
-                    const offsetX = (i % 2) * 20;
-                    const offsetY = Math.floor(i / 2) * 20;
-                    
-                    player.style.left = `${(cellRect.left - boardRect.left) + offsetX}px`;
-                    player.style.top = `${(cellRect.top - boardRect.top) + offsetY}px`;
-                    
-                    board.appendChild(player);
-                }
-            }
-        }
-        
-        // Update players list
-        function updatePlayersList() {
-            playersList.innerHTML = '';
-            
-            for (let i = 0; i < config.playerCount; i++) {
-                const playerInfo = document.createElement('div');
-                playerInfo.className = 'player-info';
-                
-                if (i === config.currentPlayer && config.gameStarted) {
-                    playerInfo.classList.add('current-turn');
+            jugadores.forEach((jugador, index) => {
+                // Crear ficha si no existe
+                if (!fichasJugadores[jugador.id]) {
+                    const ficha = document.createElement('div');
+                    ficha.classList.add('ficha');
+                    ficha.textContent = jugador.username.charAt(0).toUpperCase();
+                    ficha.style.backgroundColor = colores[index % colores.length];
+                    fichasJugadores[jugador.id] = ficha;
                 }
                 
-                playerInfo.innerHTML = `
-                    <div class="player-color ${config.playerColors[i]}"></div>
-                    <div class="player-name">${config.playerNames[i]}</div>
-                    <div class="player-position">${config.playerPositions[i]}</div>
-                `;
-                
-                playersList.appendChild(playerInfo);
-            }
-        }
-        
-        // Roll the dice
-        function rollDice() {
-            if (config.gameOver) return;
-            
-            // Disable button while rolling
-            rollBtn.disabled = true;
-            dice.classList.add('rolling');
-            
-            // Simulate dice rolling
-            let rolls = 0;
-            const rollInterval = setInterval(() => {
-                const value = Math.floor(Math.random() * 6) + 1;
-                dice.textContent = value;
-                rolls++;
-                
-                if (rolls > 10) {
-                    clearInterval(rollInterval);
-                    dice.classList.remove('rolling');
-                    
-                    // Final dice value
-                    const finalValue = Math.floor(Math.random() * 6) + 1;
-                    dice.textContent = finalValue;
-                    
-                    // Move player after a short delay
-                    setTimeout(() => movePlayer(finalValue), 500);
+                // Mover la ficha a su nueva casilla
+                const fichaEl = fichasJugadores[jugador.id];
+                const casillaDestino = document.getElementById(`casilla-${jugador.posicion}`);
+                if (casillaDestino) {
+                    casillaDestino.appendChild(fichaEl);
                 }
-            }, 100);
+
+                // Actualizar lista lateral
+                const li = document.createElement('li');
+                li.innerHTML = `<span class="ficha-indicador" style="background-color: ${colores[index % colores.length]}"></span> ${jugador.username} (Casilla: ${jugador.posicion})`;
+                listaJugadoresSalaEl.appendChild(li);
+            });
         }
-        
-        // Move player based on dice value
-        function movePlayer(steps) {
-            const currentPosition = config.playerPositions[config.currentPlayer];
-            let newPosition = currentPosition + steps;
-            
-            // Check if player wins
-            if (newPosition === 100) {
-                config.gameOver = true;
-                showWinner(config.currentPlayer);
-                return;
-            }
-            
-            // Don't move beyond 100
-            if (newPosition > 100) {
-                newPosition = 100 - (newPosition - 100);
-            }
-            
-            // Check for special cells (snakes or ladders)
-            if (config.specialCells[newPosition]) {
-                const specialPosition = config.specialCells[newPosition];
-                const isLadder = specialPosition > newPosition;
-                
-                newPosition = specialPosition;
-                
-                showNotification(
-                    `${config.playerNames[config.currentPlayer]} encontró una ${isLadder ? 'escalera' : 'serpiente'}! ` +
-                    `(${isLadder ? 'Sube' : 'Baja'} a la casilla ${newPosition})`
-                );
-            }
-            
-            // Update position
-            config.playerPositions[config.currentPlayer] = newPosition;
-            
-            // Reposition players on board
-            positionPlayers();
-            updatePlayersList();
-            
-            // Move to next player
-            config.currentPlayer = (config.currentPlayer + 1) % config.playerCount;
-            
-            // Re-enable roll button
-            rollBtn.disabled = false;
-            config.gameStarted = true;
-            
-            // Show whose turn it is
-            showNotification(`Turno de ${config.playerNames[config.currentPlayer]}`);
-            updatePlayersList();
+
+        /**
+         * Muestra los mensajes del log del juego en el panel lateral.
+         */
+        function actualizarLog(log = []) {
+            logBox.innerHTML = '';
+            log.forEach(mensaje => {
+                const p = document.createElement('p');
+                p.textContent = `> ${mensaje}`;
+                logBox.appendChild(p);
+            });
+            logBox.scrollTop = logBox.scrollHeight; // Auto-scroll hacia abajo
         }
-        
-        // Show winner
-        function showWinner(playerIndex) {
-            winnerMessage.textContent = `${config.playerNames[playerIndex]} ha ganado el juego!`;
-            winnerModal.classList.add('active');
-            
-            // Add confetti effect
-            confettiEffect();
-        }
-        
-        // Show notification
-        function showNotification(message) {
-            notification.textContent = message;
-            notification.classList.add('show');
-            
+
+        /**
+         * Anima el dado y muestra el resultado final.
+         */
+        function animarDado(resultadoFinal) {
+            dadoDiv.classList.add('girando'); // Inicia animación CSS
             setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-        
-        // Setup event listeners
-        function setupEventListeners() {
-            // Game controls
-            rollBtn.addEventListener('click', rollDice);
-            playAgainBtn.addEventListener('click', resetGame);
-            closeModalBtn.addEventListener('click', () => winnerModal.classList.remove('active'));
-            settingsBtn.addEventListener('click', () => settingsModal.classList.add('active'));
-            helpBtn.addEventListener('click', () => helpModal.classList.add('active'));
-            cancelSettingsBtn.addEventListener('click', () => settingsModal.classList.remove('active'));
-            closeHelpBtn.addEventListener('click', () => helpModal.classList.remove('active'));
-            
-            // Chat controls
-            chatBtn.addEventListener('click', enviarMensaje);
-            chatInput.addEventListener('keypress', (e) => e.key === 'Enter' && enviarMensaje());
-            
-            // Active players controls
-            listaJugadoresEl.addEventListener('click', async (e) => {
-                const target = e.target;
-                const idJugador = target.dataset.id;
-                if (!idJugador) return;
-                
-                try {
-                    if (target.classList.contains('btn-invite')) {
-                        // En un entorno real, esto haría una petición al servidor
-                        // const response = await fetch(`/invitar/${idJugador}`, {
-                        //     method: 'POST',
-                        //     headers: { 'Content-Type': 'application/json' },
-                        //     body: JSON.stringify({ salaId: config.salaId })
-                        // });
-                        // const data = await response.json();
-                        
-                        // Simulamos una respuesta
-                        const data = { message: `Invitación enviada al jugador ${idJugador}` };
-                        alert(data.message || 'Error');
-                    } else if (target.classList.contains('btn-challenge')) {
-                        // En un entorno real, esto haría una petición al servidor
-                        // const response = await fetch(`/enfrentar/${idJugador}`, { method: 'POST' });
-                        // const data = await response.json();
-                        
-                        // Simulamos una respuesta
-                        const data = { 
-                            message: 'Desafío enviado con éxito',
-                            salaId: 'nueva-sala-123',
-                            modo: 'enfrentamiento'
-                        };
-                        
-                        if (data.salaId && data.modo === 'enfrentamiento') {
-                            alert('¡Desafío enviado! Serás redirigido a la sala de enfrentamiento.');
-                            // window.location.href = `/ahorcado/${data.salaId}?modo=enfrentamiento`;
-                        } else {
-                            alert(data.message || 'Error al desafiar');
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error en acción de jugador:', error);
-                    mostrarMensaje('Sistema', 'Error al procesar la acción');
+                dadoDiv.classList.remove('girando'); // Detiene animación
+                // Muestra la cara correcta del dado
+                dadoDiv.style.transform = `rotateX(0deg) rotateY(0deg)`; // Resetea
+                switch (resultadoFinal) {
+                    case 1: dadoDiv.style.transform = 'rotateY(0deg)'; break;
+                    case 2: dadoDiv.style.transform = 'rotateX(-90deg)'; break;
+                    case 3: dadoDiv.style.transform = 'rotateY(90deg)'; break;
+                    case 4: dadoDiv.style.transform = 'rotateY(-90deg)'; break;
+                    case 5: dadoDiv.style.transform = 'rotateX(90deg)'; break;
+                    case 6: dadoDiv.style.transform = 'rotateY(180deg)'; break;
                 }
-            });
-            
-            // Player count change handler
-            playerCountSelect.addEventListener('change', () => {
-                const count = parseInt(playerCountSelect.value);
-                updatePlayerNamesInputs(count);
-            });
-            
-            // Settings form submit
-            settingsForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                saveSettings();
-            });
+            }, 1000); // Duración de la animación
         }
-        
-        // Update player names inputs
-        function updatePlayerNamesInputs(count) {
-            playerNamesContainer.innerHTML = '';
-            
-            for (let i = 0; i < count; i++) {
-                const formGroup = document.createElement('div');
-                formGroup.className = 'form-group';
-                
-                formGroup.innerHTML = `
-                    <label class="form-label" for="player-name-${i}">Nombre Jugador ${i + 1}</label>
-                    <input type="text" class="form-input" id="player-name-${i}" 
-                           value="${config.playerNames[i] || `Jugador ${i + 1}`}" required>
-                `;
-                
-                playerNamesContainer.appendChild(formGroup);
+
+
+        // ================== 3. LÓGICA DEL JUEGO Y SOCKETS ==================
+
+        // Unirse a la sala al cargar la página
+        socket.emit('serpientes:unirse', { salaId, usuario });
+
+        // Listener principal para el estado del juego
+        socket.on('serpientes:estado', (sala) => {
+            console.log("Estado actualizado:", sala); // Para depurar
+
+            actualizarTableroUI(sala.jugadores);
+            actualizarLog(sala.log);
+
+            // Animar el dado si hubo un lanzamiento
+            if (sala.dado > 0) {
+                animarDado(sala.dado);
             }
-        }
-        
-        // Save game settings
-        function saveSettings() {
-            const count = parseInt(playerCountSelect.value);
-            config.playerCount = count;
-            
-            // Update player names
-            for (let i = 0; i < count; i++) {
-                const nameInput = document.getElementById(`player-name-${i}`);
-                config.playerNames[i] = nameInput.value || `Jugador ${i + 1}`;
+
+            // Actualizar información del turno y estado del juego
+            if (sala.ganador) {
+                infoTurnoDiv.innerHTML = `🏆 <strong>¡Juego Terminado!</strong> 🏆<br/>Ganador: ${sala.ganador.username}`;
+                lanzarDadoBtn.disabled = true;
+                lanzarDadoBtn.textContent = "Partida Finalizada";
+            } else if (sala.jugadores.length > 0) {
+                const jugadorDeTurno = sala.jugadores[sala.turnoActualIndex];
+                infoTurnoDiv.innerHTML = `Turno de: <strong>${jugadorDeTurno.username}</strong>`;
+                
+                // Habilitar el botón solo si es mi turno
+                lanzarDadoBtn.disabled = (jugadorDeTurno.id !== usuario.id_usuario);
+            } else {
+                infoTurnoDiv.textContent = 'Esperando más jugadores...';
             }
-            
-            // Reset game state
-            resetGame();
-            
-            // Close settings modal
-            settingsModal.classList.remove('active');
-            
-            showNotification('Ajustes guardados. ¡Que comience el juego!');
-        }
-        
-        // Reset the game
-        function resetGame() {
-            // Reset player positions
-            config.playerPositions = [1, 1, 1, 1];
-            config.currentPlayer = 0;
-            config.gameStarted = false;
-            config.gameOver = false;
-            
-            // Update UI
-            positionPlayers();
-            updatePlayersList();
-            
-            // Close modals
-            winnerModal.classList.remove('active');
-            
-            // Reset dice
-            dice.textContent = '?';
-            rollBtn.disabled = false;
-            
-            showNotification('¡Juego reiniciado!');
-        }
-        
-        // Simple confetti effect
-        function confettiEffect() {
-            const colors = ['#ff9a9e', '#fad0c4', '#a18cd1', '#fbc2eb', '#8ec5fc', '#e0c3fc'];
-            const confettiCount = 150;
-            const duration = 3000;
-            
-            for (let i = 0; i < confettiCount; i++) {
-                const confetti = document.createElement('div');
-                confetti.style.position = 'fixed';
-                confetti.style.width = '10px';
-                confetti.style.height = '10px';
-                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.borderRadius = '50%';
-                confetti.style.zIndex = '1000';
-                
-                // Random starting position
-                const startX = Math.random() * window.innerWidth;
-                const startY = -10;
-                confetti.style.left = `${startX}px`;
-                confetti.style.top = `${startY}px`;
-                
-                document.body.appendChild(confetti);
-                
-                // Animate confetti
-                const animation = confetti.animate([
-                    { transform: `translate(0, 0) rotate(0deg)`, opacity: 1 },
-                    { transform: `translate(${(Math.random() - 0.5) * 200}px, ${window.innerHeight}px) rotate(${Math.random() * 360}deg)`, opacity: 0 }
-                ], {
-                    duration: duration,
-                    easing: 'cubic-bezier(0,0.9,0.57,1)'
-                });
-                
-                // Remove confetti after animation
-                animation.onfinish = () => confetti.remove();
-            }
-        }
-        
-        // Initialize the game when DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            initGame();
-            updatePlayerNamesInputs(config.playerCount);
         });
+
+        // Listener para errores (ej. sala llena)
+        socket.on('serpientes:error', (error) => {
+            alert(error.mensaje);
+            window.location.href = '/minijuegos'; // Redirigir si hay un error
+        });
+
+        // Evento para lanzar el dado al hacer click
+        lanzarDadoBtn.addEventListener('click', () => {
+            lanzarDadoBtn.disabled = true; // Prevenir doble click
+            socket.emit('serpientes:lanzarDado', { salaId, userId: usuario.id_usuario });
+        });
+        
+
+        // ================== 4. EJECUCIÓN INICIAL ==================
+        crearTablero();
+    });
     </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
-const baseSocket = require('./base-socket');
-const ahorcadoSocket = require('./ahorcado-socket');
-const serpientesSocket = require('./serpientes-socket');
-const chatSocket = require('./chat-socket');
+const baseSocket = require('./socket-server.js'); // <--- ¡CORREGIDO!
+const ahorcadoSocket = require('./socket-ahorcado.js');
+const serpientesSocket = require('./serpientes.js');
+const chatSocket = require('./socket-chat.js');
 // Importar otros handlers...
 
 module.exports = (io, pool) => {

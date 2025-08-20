@@ -17,7 +17,6 @@
 
     <!-- Columna del formulario -->
     <div class="form-column">
-      <form action="/procesar-formulario" method="POST">
         {{#each preguntas}}
           <div class="pregunta">
             <p><strong>{{pregunta}}</strong></p>
@@ -31,8 +30,7 @@
           <hr>
         {{/each}}
 
-        <button type="submit">Siguiente</button>
-      </form>
+        <button onclick="location.href='/pregunta2'", class="button">Siguiente</button>
     </div>
   </div>
 

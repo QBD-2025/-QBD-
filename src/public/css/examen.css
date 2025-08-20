@@ -140,3 +140,16 @@ header {
   bottom: 32px;
   right: 220px;
 }
+
+
+.pendientes-container {
+  height: 100%;
+  color: red; 
+  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  background-color: #ffffff;
+  position: absolute;
+  left: 30px;
+  top: 120px;
+  height: 100%;}
+
+  

@@ -337,3 +337,48 @@ duo-button {
         font-size: 0.9em;
     }
 }
+
+/* Botón flotante circular */
+.floating-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #FFC107;
+    color: #333;
+    border: none;
+    border-bottom: 4px solid #e0a800;
+    font-size: 1.5em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.floating-button:hover {
+    background-color: #ffd44f;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+}
+
+.floating-button:active {
+    transform: translateY(1px);
+    border-bottom: 2px solid #e0a800;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .floating-button {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2em;
+        bottom: 15px;
+        right: 15px;
+    }
+}

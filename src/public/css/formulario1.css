@@ -239,6 +239,24 @@
       box-shadow: 0 0 25px rgba(0, 255, 157, 0.6);
     }
 
+        /* Botón de envío con estilo de aurora */
+    .button {
+      display: block;
+      background: linear-gradient(45deg, var(--verde-fosforescente), var(--azul-aurora));
+      color: var(--texto-oscuro);
+      font-size: 1.2rem;
+      font-weight: 700;
+      padding: 1rem 2.5rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin: 3rem auto 1.5rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 20px rgba(0, 255, 157, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
     /* Botón de envío con estilo de aurora */
     button[type="submit"] {
       display: block;

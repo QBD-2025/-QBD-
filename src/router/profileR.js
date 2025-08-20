@@ -8,7 +8,7 @@ router.get('/presentacion', (req, res) => {
   }
 
   res.render('presentacion', {
-    layout: false,             
+    layout: 'main',             
     user: req.session.user
   });
 });
