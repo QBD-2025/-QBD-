@@ -228,6 +228,7 @@ async function cargarNotificaciones() {
   }
 }
 
+// ...
 // Manejo de aceptar invitación
 document.getElementById('notifications-ul')?.addEventListener('click', async (event) => {
   if (event.target.classList.contains('btn-aceptar')) {
@@ -236,8 +237,13 @@ document.getElementById('notifications-ul')?.addEventListener('click', async (ev
       const response = await fetch(`/aceptar/${notifId}`, { method: 'POST' });
       const data = await response.json();
 
-      if (data.success) {
-        window.location.href = `/ahorcado/${data.salaId}`;
+      // 👇 ¡AQUÍ ESTÁ LA MODIFICACIÓN! 👇
+      if (data.success && data.juego && data.salaId) {
+        // Ahora construimos la URL usando el nombre del juego que nos llega del backend
+        const urlDestino = `/${data.juego}/${data.salaId}`;
+        
+        // ¡Y redirigimos!
+        window.location.href = urlDestino;
       } else {
         alert(data.message || 'No se pudo aceptar la invitación.');
       }
@@ -247,7 +253,7 @@ document.getElementById('notifications-ul')?.addEventListener('click', async (ev
     }
   }
 });
-
+// ...
 // Cargar notificaciones al inicio y cada 5 segundos
 document.addEventListener("DOMContentLoaded", cargarNotificaciones);
 setInterval(cargarNotificaciones, 5000);

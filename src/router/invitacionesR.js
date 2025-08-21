@@ -229,13 +229,13 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
                 // No fallar la operación solo por error de socket
             }
         }
-
         res.json({ 
             success: true, 
             salaId: extraData.salaId,
+            // 👇 ¡AQUÍ ESTÁ LA LÍNEA CLAVE! 👇
+            juego: extraData.juego, // Agregamos el nombre del juego a la respuesta
             message: 'Invitación aceptada con éxito'
         });
-
     } catch (err) {
         console.error('Error en aceptar notificación:', err);
         res.status(500).json({ 
