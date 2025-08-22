@@ -1,0 +1,288 @@
+
+:root{
+  --bg:#0f172a;
+  --panel:#111827;
+  --card:#1f2937;
+  --acc:#3b82f6;
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+  --border:#374151;
+}
+
+body{
+  margin:0;
+  background:linear-gradient(120deg,#0b132b,#1c2541);
+  color:var(--text);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Helvetica Neue",Arial;
+}
+
+.page{
+  max-width:1100px;
+  margin:24px auto;
+  padding:0 16px;
+}
+
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:16px;
+}
+.title{
+  font-size:clamp(20px,2.5vw,28px);
+  font-weight:800;
+  letter-spacing:.3px;
+}
+.pill{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.08);
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  color:var(--muted);
+}
+
+.layout{
+  display:grid;
+  grid-template-columns: 1fr 320px;
+  gap:16px;
+}
+
+.card{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  backdrop-filter: blur(6px);
+  border-radius:16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+}
+
+.game{
+  padding:18px;
+}
+.controls{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-bottom:10px;
+  flex-wrap:wrap;
+}
+select, button, input[type="text"]{
+  background:var(--card);
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:8px 10px;
+  outline:none;
+}
+select:focus, input:focus{ border-color:var(--acc); }
+
+.canvas-wrap{
+  display:flex;
+  justify-content:center;
+  margin:8px 0 4px;
+}
+#canvas{
+  background:#0b1023;
+  border:1px solid var(--border);
+  border-radius:14px;
+}
+
+.word, .wrong{
+  padding:10px 12px;
+  border:1px dashed var(--border);
+  border-radius:12px;
+  margin:10px 0;
+  font-weight:700;
+  letter-spacing:4px;
+  min-height:28px;
+  text-align:center;
+  background:rgba(255,255,255,.03);
+}
+.wrong{
+  letter-spacing:2px;
+  color:#fca5a5;
+}
+
+#teclado{
+  display:grid;
+  grid-template-columns: repeat(7, minmax(0,1fr));
+  gap:15px;
+  margin-top:12px;
+}
+#teclado button{
+  padding:10px 0;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:linear-gradient(180deg,#1f2937,#111827);
+  cursor:pointer;
+  font-weight:700;
+  transition:transform .06s ease, border-color .15s ease;
+}
+#teclado button:hover{ transform: translateY(-1px); border-color:var(--acc); }
+#teclado button:disabled{ opacity:.45; cursor:not-allowed; }
+
+#reiniciar{
+  margin-top:12px;
+  background:linear-gradient(180deg,#2563eb,#1d4ed8);
+  border-color:#1d4ed8;
+  font-weight:800;
+}
+
+.side{
+  display:flex;
+  flex-direction:column;  
+  gap:16px;
+}
+
+.panel{
+  padding:14px;
+}
+.panel h3{
+  margin:0 0 10px;
+  font-size:15px;
+  letter-spacing:.2px;
+  color:#cfe1ff;
+}
+
+#lista-jugadores{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  max-height:180px;
+  overflow:auto;
+}
+.jug-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:8px 10px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:rgba(255,255,255,.03);
+}
+.jug-item .name{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-weight:700;
+}
+.dot{
+  width:8px; height:8px; border-radius:50%; background:#22c55e;
+  box-shadow:0 0 0 2px rgba(34,197,94,.2);
+}
+.btn-invite{
+  font-size:12px;
+  padding:6px 10px;
+  background:#16a34a;
+  border-color:#15803d;
+  cursor:pointer;
+}
+.btn-match{
+  font-size:12px;
+  padding:6px 10px;
+  background:#facc15;
+  border-color:#d4af37;
+  cursor:pointer;
+  font-weight:800;
+  color:#000;
+}
+
+#chatBox{
+  height:220px;
+  overflow:auto;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:10px;
+  background:#0b1023;
+}
+.msg{
+  margin-bottom:6px;
+  line-height:1.25;
+}
+.msg .u{ color:#93c5fd; font-weight:700; margin-right:6px; }
+.chat-input{
+  display:flex; gap:8px; margin-top:10px;
+}
+.chat-input input{ flex:1; }
+.chat-send{
+  background:#3b82f6; border-color:#2563eb; font-weight:800; cursor:pointer;
+}
+
+@media (max-width: 900px){
+  .layout{ grid-template-columns: 1fr; }
+}
+
+/*------------------------------------------------*/
+#vista-enfrentamiento {
+        display: none; /* Oculto por defecto */
+        grid-template-columns: 1fr 400px 1fr; /* Izquierda, Centro, Derecha */
+        gap: 20px;
+        align-items: flex-start;
+    }
+    .game-enfrentamiento {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        background-color: #f9f9f9;
+        text-align: center;
+    }
+    .game-enfrentamiento .canvas-wrap {
+        margin: 10px auto;
+        max-width: 300px;
+    }
+    .game-enfrentamiento canvas {
+        width: 100%;
+        height: auto;
+    }
+    .timer-container {
+        grid-column: 1 / -1; /* Ocupa todo el ancho */
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    #timer {
+        background-color: #ffc107;
+        color: #333;
+        padding: 5px 15px;
+        border-radius: 20px;
+    }
+
+    /* Pequeños ajustes al CSS original */
+    .layout {
+      width: 100%;
+      max-width: 1600px; /* Aumentar el ancho máximo para el nuevo layout */
+    }
+    .jug-item .actions {
+      display: flex;
+      gap: 5px;
+    }
+    .btn-action {
+      padding: 3px 8px;
+      font-size: 0.8em;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
+    }
+    .btn-invite { background-color: #17a2b8; }
+    .btn-challenge { background-color: #dc3545; }
+/*------------------------------------------------*/
+/* En ahorcado.css */
+.dificultad-1 { color: #22c55e; font-weight: bold; } /* Verde - Fácil */
+.dificultad-2 { color: #facc15; font-weight: bold; } /* Amarillo - Medio */
+.dificultad-3 { color: #ef4444; font-weight: bold; } /* Rojo - Difícil */
+
+.pista {
+    text-align: center;
+    padding: 8px;
+    margin: 5px 0;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    font-style: italic;
+    color: var(--muted);
+}

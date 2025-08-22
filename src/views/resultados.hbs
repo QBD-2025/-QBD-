@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Resultados del Examen</title>
+  <link rel="stylesheet" href="/css/resultados.css" />
+</head>
+<body>
+  <div class="resultados-contenedor">
+    <h1>Resultados del Examen - {{materia}}</h1>
+
+    <!-- 🔹 Ahora se muestra el porcentaje -->
+    <h2>Resultado: {{porcentaje}}% ({{puntosTotales}} / {{preguntas.length}})</h2>
+
+    {{#each preguntas}}
+      <div class="resultado">
+        <h3>{{pregunta}}</h3>  
+        {{#if esCorrecta}}
+          <p>✅ Tu respuesta: <strong>{{textoSeleccionado}}</strong> (Correcta)</p>
+        {{else}}
+          <p>❌ Tu respuesta: <strong>{{textoSeleccionado}}</strong> (Incorrecta)</p>
+          <p>✅ Respuesta correcta:
+            {{#each respuestas}}
+              {{#if correcta}}
+                <strong>{{respuesta}}</strong>
+              {{/if}}
+            {{/each}}
+          </p>
+        {{/if}}
+      </div>
+    {{/each}}
+
+    <div style="margin-top: 40px;">
+      <a href="/materias">
+        <button style="padding: 10px 20px; font-size: 16px;">Volver al menú</button>
+      </a>
+    </div>
+  </div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

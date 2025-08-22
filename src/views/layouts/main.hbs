@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>QueBuenDato.com.mx</title>           
+  <link rel="stylesheet" href="/css/styles.css">
+  
+  {{!-- GSAP para animaciones --}}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+
+  {{!-- GOOGLE FONTS --}}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  {{!-- TOPBAR: Cabecera Global --}}
+  <div class="global-header-elements">
+    <div class="top-left-logo">
+      {{!-- Redirección del logo según tipo de usuario --}}
+      {{#if user}}
+        {{#if (eq user.id_tp_usuario 1)}}
+          <a href="/menu_principal">
+            <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image">
+          </a>
+        {{else if (eq user.id_tp_usuario 2)}}
+          <a href="/editor">
+            <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image">
+          </a>
+        {{else if (eq user.id_tp_usuario 3)}}
+          <a href="/admin">
+            <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image">
+          </a>
+        {{else}}
+          <a href="/">
+            <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image">
+          </a>
+        {{/if}}
+      {{else}}
+        <a href="/">
+          <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image">
+        </a>
+      {{/if}}
+        <a href="/conocenos" class="header-button">Conócenos</a>
+    </div>
+    <div class="top-right-nav">
+
+      {{#if user}}
+        <span class="nav-username">Hola, {{user.username}}</span>
+
+        <!-- Icono de notificaciones -->
+        <div class="notification-container" onclick="toggleNotifications(event)">
+          🔔 <span id="notification-count" style="display:none;"></span>
+        </div>
+
+        <div class="notification-dropdown" id="notification-list" style="display:none;">
+          <ul id="notifications-ul">
+              <li>Cargando...</li>
+          </ul>
+        </div>
+
+        {{!-- Botón de tres puntos CON ANIMACIÓN GSAP --}}
+        <div class="kebab-menu">
+          <button class="kebab-button">&#8942;</button>
+          <ul class="kebab-dropdown">
+            <li><a href="/menu_principal">Menu Principal</a></li>
+            <li><a href="/usuario">Mi cuenta</a></li>
+            {{#if (eq user.id_tp_usuario 3)}}
+              <li><a href="/admin">Permisos</a></li>
+              <li><a href="/editor">Editor</a></li>
+            {{/if}}
+            {{#if (eq user.id_tp_usuario 2)}}
+              <li><a href="/editor">Editor</a></li>
+            {{/if}}
+            <li><a href="/logout" class="cerrar-sesion">Cerrar sesión</a></li>
+          </ul>
+        </div>
+
+      {{else}}
+        <a href="/login" class="header-link">Iniciar Sesión</a>
+        <a href="/register" class="header-link">Registrarse</a>
+      {{/if}}
+
+    </div>
+  </div>
+
+  {{!-- Aquí se renderiza el contenido de cada vista --}}
+  {{{body}}}
+
+  <div class="bottom-left-dot"></div>
+
+  <button id="playMusic" style="display: none;">Reproducir Música</button>
+  <audio id="musica" loop>
+    <source src="/Audio/bby_no.mp3" type="audio/mpeg">
+  </audio>
+
+<script>
+// ============================================
+// ANIMACIONES GSAP PARA EL MENÚ DE TRES PUNTOS
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
+  // Configuración inicial
+  gsap.set('.kebab-dropdown li', {
+    opacity: 0,
+    y: -15
+  });
+
+  // Animación al abrir/cerrar el menú
+  const kebabButton = document.querySelector('.kebab-button');
+  if (kebabButton) {
+    kebabButton.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const menu = this.parentElement;
+      const isActive = menu.classList.toggle('active');
+      
+      if (isActive) {
+        // Animación de apertura
+        gsap.to('.kebab-dropdown', {
+          opacity: 1,
+          duration: 0.2,
+          ease: "power2.out"
+        });
+        
+        gsap.to('.kebab-dropdown li', {
+          opacity: 1,
+          y: 0,
+          stagger: 0.1,
+          duration: 0.3,
+          ease: "back.out(1.7)"
+        });
+      } else {
+        // Animación de cierre
+        gsap.to('.kebab-dropdown li', {
+          opacity: 0,
+          y: -15,
+          stagger: -0.05,
+          duration: 0.2,
+          ease: "power1.in"
+        });
+        
+        gsap.to('.kebab-dropdown', {
+          opacity: 0,
+          duration: 0.2,
+          delay: 0.15
+        });
+      }
+      
+      // Cerrar notificaciones si están abiertas
+      document.getElementById('notification-list').style.display = 'none';
+    });
+  }
+
+  // Cerrar menús al hacer click fuera
+  document.addEventListener('click', function() {
+    const activeMenu = document.querySelector('.kebab-menu.active');
+    if (activeMenu) {
+      gsap.to('.kebab-dropdown li', {
+        opacity: 0,
+        y: -15,
+        stagger: -0.05,
+        duration: 0.2,
+        ease: "power1.in"
+      });
+      
+      gsap.to('.kebab-dropdown', {
+        opacity: 0,
+        duration: 0.2,
+        onComplete: () => {
+          activeMenu.classList.remove('active');
+        }
+      });
+    }
+    document.getElementById('notification-list').style.display = 'none';
+  });
+
+  // Evitar que el menú se cierre al hacer click dentro
+  document.querySelector('.kebab-dropdown')?.addEventListener('click', function(e) {
+    e.stopPropagation();
+  });
+});
+
+// ============================================
+// FUNCIONES EXISTENTES (se mantienen igual)
+// ============================================
+function toggleNotifications(event) {
+  event.stopPropagation();
+  const list = document.getElementById("notification-list");
+  const menu = document.querySelector('.kebab-menu');
+  
+  menu?.classList.remove('active');
+  list.style.display = (list.style.display === "block") ? "none" : "block";
+}
+
+async function cargarNotificaciones() {
+  try {
+    const response = await fetch('/notificaciones');
+    const data = await response.json();
+    
+    const ul = document.getElementById("notifications-ul");
+    ul.innerHTML = "";
+
+    if (data.length === 0) {
+      ul.innerHTML = "<li>No tienes notificaciones</li>";
+    } else {
+      data.forEach(notif => {
+        const li = document.createElement('li');
+        if (notif.tipo === 'invitacion' || notif.tipo === 'alerta') {
+          li.innerHTML = `
+            <span>${notif.mensaje}</span>
+            <button class="btn-aceptar" data-id="${notif.id_notificacion}">
+              Aceptar
+            </button>
+          `;
+        } else {
+          li.innerHTML = `<span>${notif.mensaje}</span>`;
+        }
+        ul.appendChild(li);
+      });
+    }
+
+    const countEl = document.getElementById("notification-count");
+    countEl.style.display = data.length > 0 ? "inline" : "none";
+    countEl.innerText = data.length;
+  } catch (error) {
+    console.error("Error al cargar notificaciones:", error);
+  }
+}
+
+// ...
+// Manejo de aceptar invitación
+document.getElementById('notifications-ul')?.addEventListener('click', async (event) => {
+  if (event.target.classList.contains('btn-aceptar')) {
+    const notifId = event.target.dataset.id;
+    try {
+      const response = await fetch(`/aceptar/${notifId}`, { method: 'POST' });
+      const data = await response.json();
+
+      // 👇 ¡AQUÍ ESTÁ LA MODIFICACIÓN! 👇
+      if (data.success && data.juego && data.salaId) {
+        // Ahora construimos la URL usando el nombre del juego que nos llega del backend
+        const urlDestino = `/${data.juego}/${data.salaId}`;
+        
+        // ¡Y redirigimos!
+        window.location.href = urlDestino;
+      } else {
+        alert(data.message || 'No se pudo aceptar la invitación.');
+      }
+    } catch (error) {
+      console.error("Error al aceptar la invitación:", error);
+      alert('Hubo un error al procesar la solicitud.');
+    }
+  }
+});
+// ...
+// Cargar notificaciones al inicio y cada 5 segundos
+document.addEventListener("DOMContentLoaded", cargarNotificaciones);
+setInterval(cargarNotificaciones, 5000);
+</script>
+
+</body>
+</html>

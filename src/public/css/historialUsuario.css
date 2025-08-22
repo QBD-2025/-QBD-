@@ -1,0 +1,116 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  background-color: #f0f4f8;
+  color: #333;
+  line-height: 1.5;
+
+  /* Centramos vertical y horizontal */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* HEADER */
+.header {
+  background: linear-gradient(90deg, #1976d2, #1e88e5);
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+/* BOTÓN VOLVER */
+.btn-volver {
+  background-color: white;
+  color: #1e88e5;
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.btn-volver:hover {
+  background-color: #e3f2fd;
+  transform: translateY(-2px);
+}
+
+/* CONTENEDOR PRINCIPAL CENTRADO */
+.main-content {
+  margin-top: 4rem; /* Baja el contenido debajo del header */
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* TABLA */
+.tabla-historial {
+  width: 80%;
+  border-collapse: collapse;
+  background-color: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.tabla-historial th, 
+.tabla-historial td {
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.tabla-historial thead {
+  background: linear-gradient(90deg, #2196f3, #42a5f5);
+  color: white;
+  font-weight: 600;
+}
+
+.tabla-historial tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.tabla-historial tbody tr:hover {
+  background-color: #f1f8ff;
+}
+
+.tabla-historial tbody tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+/* BOTÓN VER */
+.btn-ver {
+  background-color: #4caf50;
+  color: white;
+  padding: 0.45rem 0.9rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-ver:hover {
+  background-color: #43a047;
+  transform: translateY(-2px);
+}
+
+/* MENSAJE SIN DATOS */
+.no-datos {
+  text-align: center;
+  padding: 2rem;
+  color: #777;
+  font-style: italic;
+  font-size: 1rem;
+}

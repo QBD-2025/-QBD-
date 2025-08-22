@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
+  <link rel="stylesheet" href="/css/login.css" />
+  <style>
+    .password-container {
+      position: relative;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 5px;
+      top: 44px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-size: 1.2em;
+    }
+
+    input[type="password"],
+    input[type="text"] {
+      padding-right: 37px;
+      width: calc(100% - 43px);
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <!-- Sección del logo -->
+    <div class="logo-section">
+      <img src="/media/images/logo.png" class="logo" />
+    </div>
+
+    <!-- Sección del formulario -->
+    <div class="form-section">
+      <h2>Iniciar Sesión</h2>
+
+      <!-- ✅ Agregamos method y action -->
+      <form id="loginForm" method="POST" action="/login" novalidate>
+        <label for="email">Correo electrónico:</label>
+        <input type="email" id="email" name="email" />
+
+        <div class="password-container">
+          <label for="password">Contraseña:</label>
+          <input type="password" id="password" name="password" />
+          <button type="button" class="toggle-password" onclick="togglePassword('password', this)">👁</button>
+        </div>
+
+        <p class="login-link">
+          <a href="/buscar-correo">¿Olvidaste tu contraseña?</a>
+        </p>
+
+        <span id="login-error" style="color: red;"></span>
+
+        {{#if error}}
+          <p style="color:red;">{{error}}</p>
+        {{/if}}
+
+        <button type="submit">Ingresar</button>
+
+        <p class="login-link">
+          ¿No tienes cuenta? <a href="/register">Regístrate</a>
+        </p>
+        <a href="/auth/google" style="text-decoration: none;">
+            <button type="button" style="background-color: white; color: #444; border: 1px solid #ccc; padding: 10px 15px; font-size: 16px; display: flex; align-items: center; margin-bottom: 15px; width: 70%;">
+                <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo" style="width: 20px; height: 20px; margin-right: 10px;">
+                Continua con Google
+            </button>
+        </a>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", function (event) {
+      const email = document.getElementById("email");
+      const password = document.getElementById("password");
+      const errorSpan = document.getElementById("login-error");
+
+      // Limpiar errores anteriores
+      errorSpan.textContent = "";
+      email.style.border = "";
+      password.style.border = "";
+
+      let hasError = false;
+
+      if (!email.value || !password.value) {
+        errorSpan.textContent = "Todos los campos son obligatorios";
+        email.style.border = "2px solid red";
+        password.style.border = "2px solid red";
+        event.preventDefault();
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.(com|mx)$/i;
+      if (!emailRegex.test(email.value)) {
+        errorSpan.textContent = "El correo no es válido";
+        email.style.border = "2px solid red";
+        event.preventDefault();
+        return;
+      }
+    });
+
+    function togglePassword(inputId, buttonElement) {
+      const input = document.getElementById(inputId);
+      if (input.type === "password") {
+        input.type = "text";
+        buttonElement.textContent = "🔒";
+      } else {
+        input.type = "password";
+        buttonElement.textContent = "👁";
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/css/ahorcado.css">
+    <title>Modo Confrontación - Ahorcado</title>
+</head>
+<body>
+    <div class="page confrontation-mode">
+        <div class="header">
+            <div class="title">⚔️ Modo Confrontación</div>
+            <div class="pill">
+                Jugador: <strong>{{#if user}}{{user.username}}{{else}}Invitado{{/if}}</strong>
+                <span class="vs">VS</span>
+                <strong id="opponentName">Esperando oponente...</strong>
+            </div>
+            <div class="timer" id="gameTimer">03:00</div>
+        </div>
+        
+        <div class="confrontation-layout">
+            <!-- Player 1 (Current User) -->
+            <section class="player-area">
+                <div class="player-header">
+                    <h3>Tú ({{#if user}}{{user.username}}{{else}}Invitado{{/if}})</h3>
+                    <div class="player-score">Puntos: <span id="playerScore">0</span></div>
+                </div>
+                <div class="canvas-wrap">
+                    <canvas id="playerCanvas" width="250" height="300"></canvas>
+                </div>
+                <div class="word" id="playerWord"></div>
+                <div class="wrong" id="playerIncorrect"></div>
+                <div class="clue">Pista: <span id="playerClue"></span></div>
+            </section>
+            
+            <!-- Game Controls -->
+            <div class="game-controls">
+                <div id="teclado"></div>
+                <div class="controls">
+                    <label for="categoria">Categoría:</label>
+                    <select id="categoria">
+                        <option value="programacion">Programación</option>
+                        <option value="basededatos">Base de Datos</option>
+                    </select>
+                    <button id="reiniciar">🔄 Reiniciar</button>
+                </div>
+                <div class="game-status" id="gameStatus"></div>
+            </div>
+            
+            <!-- Player 2 (Opponent) -->
+            <section class="player-area opponent-area">
+                <div class="player-header">
+                    <h3 id="opponentHeader">Oponente</h3>
+                    <div class="player-score">Puntos: <span id="opponentScore">0</span></div>
+                </div>
+                <div class="canvas-wrap">
+                    <canvas id="opponentCanvas" width="250" height="300"></canvas>
+                </div>
+                <div class="word" id="opponentWord"></div>
+                <div class="wrong" id="opponentIncorrect"></div>
+                <div class="clue">Pista: <span id="opponentClue"></span></div>
+            </section>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Game configuration
+        const palabrasPorCategoria = {
+            programacion: ["VARIABLE", "FUNCION", "JAVASCRIPT", "PYTHON", "HTML", "CSS", "ALGORITMO"],
+            basededatos: ["TABLA", "COLUMNA", "SQL", "PRIMARYKEY", "FOREIGNKEY", "RELACION", "INDEX"]
+        };
+        
+        const pistasPorCategoria = {
+            programacion: {
+                "VARIABLE": "Almacena datos en un programa",
+                "FUNCION": "Bloque de código reutilizable",
+                "JAVASCRIPT": "Lenguaje de programación para la web",
+                "PYTHON": "Lenguaje conocido por su sintaxis clara",
+                "HTML": "Lenguaje de marcado para páginas web",
+                "CSS": "Estilos para páginas web",
+                "ALGORITMO": "Conjunto ordenado de operaciones"
+            },
+            basededatos: {
+                "TABLA": "Estructura que almacena datos en filas y columnas",
+                "COLUMNA": "Atributo de una tabla",
+                "SQL": "Lenguaje para gestionar bases de datos",
+                "PRIMARYKEY": "Identificador único en una tabla",
+                "FOREIGNKEY": "Referencia a una clave primaria en otra tabla",
+                "RELACION": "Conexión entre tablas",
+                "INDEX": "Estructura que mejora la velocidad de búsqueda"
+            }
+        };
+
+        // Game state
+        let gameState = {
+            player: {
+                palabraSecreta: "",
+                letrasCorrectas: [],
+                letrasIncorrectas: [],
+                intentos: 0,
+                score: 0,
+                completed: false
+            },
+            opponent: {
+                palabraSecreta: "",
+                letrasCorrectas: [],
+                letrasIncorrectas: [],
+                intentos: 0,
+                score: 0,
+                completed: false
+            },
+            gameTime: 180, // 3 minutes in seconds
+            timerInterval: null,
+            gameStarted: false,
+            gameOver: false
+        };
+
+        // DOM elements
+        const playerCanvas = document.getElementById('playerCanvas');
+        const playerCtx = playerCanvas.getContext('2d');
+        const opponentCanvas = document.getElementById('opponentCanvas');
+        const opponentCtx = opponentCanvas.getContext('2d');
+        const playerWordDiv = document.getElementById('playerWord');
+        const opponentWordDiv = document.getElementById('opponentWord');
+        const playerIncorrectDiv = document.getElementById('playerIncorrect');
+        const opponentIncorrectDiv = document.getElementById('opponentIncorrect');
+        const playerScoreSpan = document.getElementById('playerScore');
+        const opponentScoreSpan = document.getElementById('opponentScore');
+        const gameTimerSpan = document.getElementById('gameTimer');
+        const tecladoDiv = document.getElementById('teclado');
+        const categoriaSelect = document.getElementById('categoria');
+        const reiniciarBtn = document.getElementById('reiniciar');
+        const opponentNameSpan = document.getElementById('opponentName');
+        const opponentHeader = document.getElementById('opponentHeader');
+        const gameStatusDiv = document.getElementById('gameStatus');
+        const playerClueSpan = document.getElementById('playerClue');
+        const opponentClueSpan = document.getElementById('opponentClue');
+
+        // Socket.io connection
+        const socket = io();
+        const usuario = {{#if user}}{{{json user.username}}}{{else}}"Invitado"{{/if}};
+        const userId = {{#if user}}{{{json user.id_usuario}}}{{else}}null{{/if}};
+        const salaId = "{{salaId}}";
+        let opponentId = null;
+        let opponentUsername = "Oponente";
+
+        // Initialize the game
+        function initGame() {
+            // Join the confrontation room
+            socket.emit('joinConfrontation', { 
+                salaId, 
+                usuario, 
+                userId,
+                categoria: categoriaSelect.value 
+            });
+            
+            // Draw initial hangman bases
+            dibujarBase(playerCtx, playerCanvas);
+            dibujarBase(opponentCtx, opponentCanvas);
+            
+            // Create keyboard
+            mostrarTeclado();
+            
+            // Start the timer if not already started by opponent
+            if (!gameState.timerInterval) {
+                startTimer();
+            }
+        }
+
+        // Socket event handlers
+        socket.on('confrontationUpdate', (data) => {
+            // Update opponent information if available
+            if (data.opponent && data.opponent.id !== userId) {
+                opponentId = data.opponent.id;
+                opponentUsername = data.opponent.username;
+                opponentNameSpan.textContent = opponentUsername;
+                opponentHeader.textContent = opponentUsername;
+            }
+            
+            // Update game state
+            if (data.gameState) {
+                updateGameState(data.gameState);
+            }
+            
+            // If both players are ready, start the game
+            if (data.gameStarted && !gameState.gameStarted) {
+                gameState.gameStarted = true;
+                gameStatusDiv.textContent = "¡La partida ha comenzado!";
+            }
+        });
+
+        socket.on('opponentMove', (move) => {
+            // Update opponent's game state
+            if (move.type === 'letter') {
+                const correct = gameState.opponent.palabraSecreta.includes(move.letter);
+                
+                if (correct) {
+                    if (!gameState.opponent.letrasCorrectas.includes(move.letter)) {
+                        gameState.opponent.letrasCorrectas.push(move.letter);
+                        updateOpponentDisplay();
+                        
+                        // Check if opponent completed the word
+                        if (checkWordCompletion(gameState.opponent)) {
+                            gameState.opponent.completed = true;
+                            gameState.opponent.score += calculateScore(gameState.opponent);
+                            opponentScoreSpan.textContent = gameState.opponent.score;
+                            checkGameEnd();
+                        }
+                    }
+                } else {
+                    if (!gameState.opponent.letrasIncorrectas.includes(move.letter)) {
+                        gameState.opponent.letrasIncorrectas.push(move.letter);
+                        gameState.opponent.intentos++;
+                        dibujarAhorcado(opponentCtx, gameState.opponent.intentos);
+                        opponentIncorrectDiv.textContent = gameState.opponent.letrasIncorrectas.join(" ");
+                        
+                        // Check if opponent lost
+                        if (gameState.opponent.intentos >= 6) {
+                            checkGameEnd();
+                        }
+                    }
+                }
+            }
+        });
+
+        socket.on('gameOver', (result) => {
+            clearInterval(gameState.timerInterval);
+            gameState.gameOver = true;
+            
+            if (result.winner === userId) {
+                gameStatusDiv.textContent = "¡Has ganado la partida! 🎉";
+            } else if (result.winner === opponentId) {
+                gameStatusDiv.textContent = `${opponentUsername} ha ganado la partida. 😢`;
+            } else {
+                gameStatusDiv.textContent = "La partida ha terminado en empate.";
+            }
+            
+            // Disable keyboard
+            const buttons = tecladoDiv.querySelectorAll('button');
+            buttons.forEach(btn => btn.disabled = true);
+        });
+
+        // Game functions
+        function startGame() {
+            const categoria = categoriaSelect.value;
+            
+            // Select words and clues for both players
+            gameState.player.palabraSecreta = selectRandomWord(categoria);
+            gameState.opponent.palabraSecreta = selectRandomWord(categoria);
+            
+            // Set clues
+            playerClueSpan.textContent = pistasPorCategoria[categoria][gameState.player.palabraSecreta] || "Sin pista disponible";
+            opponentClueSpan.textContent = pistasPorCategoria[categoria][gameState.opponent.palabraSecreta] || "Sin pista disponible";
+            
+            // Reset game state
+            gameState.player.letrasCorrectas = [];
+            gameState.player.letrasIncorrectas = [];
+            gameState.player.intentos = 0;
+            gameState.player.completed = false;
+            
+            gameState.opponent.letrasCorrectas = [];
+            gameState.opponent.letrasIncorrectas = [];
+            gameState.opponent.intentos = 0;
+            gameState.opponent.completed = false;
+            
+            gameState.gameStarted = true;
+            gameState.gameOver = false;
+            
+            // Update displays
+            updatePlayerDisplay();
+            updateOpponentDisplay();
+            
+            // Draw bases
+            dibujarBase(playerCtx, playerCanvas);
+            dibujarBase(opponentCtx, opponentCanvas);
+            
+            // Notify server game has started
+            socket.emit('confrontationStart', { 
+                salaId, 
+                gameState: {
+                    player: gameState.player,
+                    opponent: gameState.opponent
+                }
+            });
+        }
+
+        function selectRandomWord(categoria) {
+            const palabras = palabrasPorCategoria[categoria] || palabrasPorCategoria.programacion;
+            return palabras[Math.floor(Math.random() * palabras.length)];
+        }
+
+        function updatePlayerDisplay() {
+            playerWordDiv.textContent = gameState.player.palabraSecreta
+                .split("")
+                .map(letra => gameState.player.letrasCorrectas.includes(letra) ? letra : "_")
+                .join(" ");
+                
+            playerIncorrectDiv.textContent = gameState.player.letrasIncorrectas.join(" ");
+        }
+
+        function updateOpponentDisplay() {
+            opponentWordDiv.textContent = gameState.opponent.palabraSecreta
+                .split("")
+                .map(letra => gameState.opponent.letrasCorrectas.includes(letra) ? letra : "_")
+                .join(" ");
+                
+            opponentIncorrectDiv.textContent = gameState.opponent.letrasIncorrectas.join(" ");
+        }
+
+        function checkWordCompletion(playerState) {
+            return playerState.palabraSecreta.split("").every(l => playerState.letrasCorrectas.includes(l));
+        }
+
+        function calculateScore(playerState) {
+            const lettersLeft = playerState.palabraSecreta.split("")
+                .filter(l => !playerState.letrasCorrectas.includes(l)).length;
+                
+            const timeBonus = Math.floor(gameState.gameTime / 10); // Bonus based on remaining time
+            const attemptsPenalty = playerState.letrasIncorrectas.length * 5;
+            
+            return 100 - lettersLeft * 5 + timeBonus - attemptsPenalty;
+        }
+
+        function checkGameEnd() {
+            // Check if both players have finished
+            const playerFinished = gameState.player.completed || gameState.player.intentos >= 6;
+            const opponentFinished = gameState.opponent.completed || gameState.opponent.intentos >= 6;
+            
+            if (playerFinished && opponentFinished) {
+                // Determine winner
+                let winner = null;
+                
+                if (gameState.player.score > gameState.opponent.score) {
+                    winner = userId;
+                } else if (gameState.opponent.score > gameState.player.score) {
+                    winner = opponentId;
+                }
+                
+                // Notify server
+                socket.emit('gameEnded', { 
+                    salaId, 
+                    winner,
+                    playerScore: gameState.player.score,
+                    opponentScore: gameState.opponent.score
+                });
+            }
+        }
+
+        function startTimer() {
+            clearInterval(gameState.timerInterval);
+            
+            gameState.timerInterval = setInterval(() => {
+                gameState.gameTime--;
+                
+                const minutes = Math.floor(gameState.gameTime / 60);
+                const seconds = gameState.gameTime % 60;
+                
+                gameTimerSpan.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (gameState.gameTime <= 0) {
+                    clearInterval(gameState.timerInterval);
+                    // Force end the game
+                    checkGameEnd();
+                }
+            }, 1000);
+        }
+
+        // Hangman drawing functions (similar to your existing ones, but modified for the context parameter)
+        function dibujarBase(ctx, canvas) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.moveTo(10, canvas.height - 10);
+            ctx.lineTo(canvas.width - 10, canvas.height - 10);
+            ctx.moveTo(30, canvas.height - 10);
+            ctx.lineTo(30, 20);
+            ctx.lineTo(canvas.width / 2, 20);
+            ctx.lineTo(canvas.width / 2, 40);
+            ctx.stroke();
+        }
+
+        function dibujarAhorcado(ctx, paso) {
+            switch(paso) {
+                case 1: // Head
+                    ctx.beginPath();
+                    ctx.arc(ctx.canvas.width / 2, 70, 30, 0, Math.PI * 2);
+                    ctx.stroke();
+                    break;
+                case 2: // Body
+                    ctx.moveTo(ctx.canvas.width / 2, 100);
+                    ctx.lineTo(ctx.canvas.width / 2, 180);
+                    ctx.stroke();
+                    break;
+                case 3: // Left arm
+                    ctx.moveTo(ctx.canvas.width / 2, 120);
+                    ctx.lineTo(ctx.canvas.width / 2 - 40, 150);
+                    ctx.stroke();
+                    break;
+                case 4: // Right arm
+                    ctx.moveTo(ctx.canvas.width / 2, 120);
+                    ctx.lineTo(ctx.canvas.width / 2 + 40, 150);
+                    ctx.stroke();
+                    break;
+                case 5: // Left leg
+                    ctx.moveTo(ctx.canvas.width / 2, 180);
+                    ctx.lineTo(ctx.canvas.width / 2 - 40, 230);
+                    ctx.stroke();
+                    break;
+                case 6: // Right leg
+                    ctx.moveTo(ctx.canvas.width / 2, 180);
+                    ctx.lineTo(ctx.canvas.width / 2 + 40, 230);
+                    ctx.stroke();
+                    break;
+            }
+        }
+
+        function mostrarTeclado() {
+            tecladoDiv.innerHTML = "";
+            const letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+            
+            letras.forEach(letra => {
+                const btn = document.createElement("button");
+                btn.textContent = letra;
+                btn.onclick = () => verificarLetra(letra, btn);
+                tecladoDiv.appendChild(btn);
+            });
+        }
+
+        function verificarLetra(letra, boton) {
+            if (!gameState.gameStarted || gameState.gameOver) return;
+            
+            boton.disabled = true;
+            letra = letra.toUpperCase();
+            
+            // Check if letter is in player's word
+            if (gameState.player.palabraSecreta.includes(letra)) {
+                if (!gameState.player.letrasCorrectas.includes(letra)) {
+                    gameState.player.letrasCorrectas.push(letra);
+                    updatePlayerDisplay();
+                    
+                    // Check if player completed the word
+                    if (checkWordCompletion(gameState.player)) {
+                        gameState.player.completed = true;
+                        gameState.player.score += calculateScore(gameState.player);
+                        playerScoreSpan.textContent = gameState.player.score;
+                        checkGameEnd();
+                    }
+                }
+            } else {
+                if (!gameState.player.letrasIncorrectas.includes(letra)) {
+                    gameState.player.letrasIncorrectas.push(letra);
+                    gameState.player.intentos++;
+                    dibujarAhorcado(playerCtx, gameState.player.intentos);
+                    playerIncorrectDiv.textContent = gameState.player.letrasIncorrectas.join(" ");
+                    
+                    // Check if player lost
+                    if (gameState.player.intentos >= 6) {
+                        checkGameEnd();
+                    }
+                }
+            }
+            
+            // Notify opponent of the move
+            socket.emit('playerMove', { 
+                salaId, 
+                type: 'letter', 
+                letter: letra 
+            });
+        }
+
+        // Event listeners
+        reiniciarBtn.addEventListener('click', () => {
+            if (gameState.gameStarted && !gameState.gameOver) {
+                if (confirm("¿Estás seguro de que quieres reiniciar la partida?")) {
+                    startGame();
+                }
+            } else {
+                startGame();
+            }
+        });
+
+        categoriaSelect.addEventListener('change', () => {
+            if (!gameState.gameStarted) {
+                initGame();
+            }
+        });
+
+        // Initialize the game when page loads
+        window.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>

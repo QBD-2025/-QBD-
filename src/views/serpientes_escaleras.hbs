@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Serpientes y Escaleras - Multijugador</title>
+    <link rel="stylesheet" href="/css/serpientes-escaleras.css">
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <div class="title">🐍 Serpientes y Escaleras - Multijugador</div>
+            <div class="pill">
+                Jugador: <strong id="username">{{#if user}}{{user.username}}{{else}}Invitado{{/if}}</strong>
+            </div>
+            <button onclick="location.href='/minijuegos'"> ← Regresar</button>
+        </div>
+
+        <div class="game-container">
+            
+            <aside class="side-panel">
+                <div class="panel" id="chat-panel">
+                    <h3>💬 Chat de la Sala</h3>
+                    <div id="chatBox"></div>
+                    <div class="chat-input">
+                        <input id="chatInput" type="text" placeholder="Escribe un mensaje…">
+                        <button id="chatBtn" class="chat-send">Enviar</button>
+                    </div>
+                </div>
+                <div class="panel" id="jugadores-panel">
+                    <h3>🟢 Jugadores activos</h3>
+                    <ul id="lista-jugadores"></ul>
+                </div>
+            </aside>
+
+            <main class="game-board">
+                <h1>Tablero de Serpientes y Escaleras</h1>
+                
+                <div class="board-container">
+                    <div class="board" id="board">
+                        <!-- El tablero se generará con JavaScript -->
+                    </div>
+                    <!-- SVG para dibujar las serpientes y escaleras -->
+                    <svg id="paths-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></svg>
+                </div>
+                
+                <div class="game-controls">
+                    <div class="dice-container">
+                        <div class="dice" id="dice">?</div>
+                        <button id="lanzar-dado" disabled>Lanzar Dado 🎲</button>
+                    </div>
+                    <button id="reiniciar-juego" style="display:none;">Reiniciar Partida 🔄</button>
+                    <div id="info-turno">Esperando jugadores...</div>
+                </div>
+                
+                <div class="waiting-state" id="waiting-state">
+                    <p>💤 Esperando a que se unan más jugadores...</p>
+                    <div class="player-list" id="waiting-players"></div>
+                    <button id="start-game" style="display:none;">Iniciar Juego</button>
+                </div>
+            </main>
+
+            <aside class="side-panel">
+                <div class="panel" id="rules-panel">
+                    <h3>📜 Reglas y Símbolos</h3>
+                    <ul class="rules-list">
+                         <li><strong>Lanzar Dado 🎲:</strong> Tira el dado en tu turno para avanzar. Si sacas un 6, ¡tiras de nuevo!</li>
+                         <li><strong>Escalera 🪜:</strong> Si caes en una escalera, subes a la casilla superior.</li>
+                         <li><strong>Avión 🛩️:</strong> ¡Una súper escalera! Te lleva mucho más alto.</li>
+                         <li><strong>Serpiente 🐍:</strong> Cuidado, si caes en una serpiente, te deslizarás a la casilla inferior.</li>
+                         <li><strong>Lagarto 🦎:</strong> ¡Una súper serpiente! Bajarás muchas más casillas.</li>
+                         <li><strong>Ganador 🏆:</strong> El primer jugador en llegar exactamente a la casilla 100 gana la partida.</li>
+                    </ul>
+                </div>
+            </aside>
+
+        </div>
+        
+        <div class="notification" id="notification"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // ================== 1. INICIALIZACIÓN Y VARIABLES GLOBALES ==================
+            const socket = io();
+            const salaId = "{{salaId}}";
+            const usuario = {{{json user}}};
+            
+            // Referencias a elementos DOM
+            const board = document.getElementById('board');
+            const dice = document.getElementById('dice');
+            const lanzarDadoBtn = document.getElementById('lanzar-dado');
+            const reiniciarJuegoBtn = document.getElementById('reiniciar-juego');
+            const infoTurno = document.getElementById('info-turno');
+            const chatBox = document.getElementById('chatBox');
+            const chatInput = document.getElementById('chatInput');
+            const chatBtn = document.getElementById('chatBtn');
+            const listaJugadoresEl = document.getElementById('lista-jugadores');
+            const notification = document.getElementById('notification');
+            const waitingState = document.getElementById('waiting-state');
+            const waitingPlayers = document.getElementById('waiting-players');
+            const startGameBtn = document.getElementById('start-game');
+            const pathsSvg = document.getElementById('paths-svg');
+            
+            // Estado del juego y votación
+            let votacionEnProgreso = false;
+            let tipoDeVotacionActual = null;
+            const gameState = {
+                jugadores: [],
+                turnoActual: 0,
+                dado: 0,
+                ganador: null,
+                gameStarted: false,
+                playerColors: ['player-1', 'player-2', 'player-3', 'player-4']
+            };
+            
+            // Definición mejorada de celdas especiales
+            const specialCells = {
+                // Escaleras normales (suben 2-3 filas)
+                5: 25,   // +20 posiciones
+                14: 34,  // +20 posiciones
+                22: 42,  // +20 posiciones
+                41: 61,  // +20 posiciones
+                49: 69,  // +20 posiciones
+                70: 90,  // +20 posiciones
+                
+                // Escaleras especiales (avión - suben más)
+                30: 50,  // +20 posiciones (pero visualmente diferente)
+                63: 83,  // +20 posiciones (pero visualmente diferente)
+                
+                // Serpientes normales (bajan 2-3 filas)
+                17: 4,   // -13 posiciones
+                35: 15,  // -20 posiciones
+                47: 27,  // -20 posiciones
+                65: 45,  // -20 posiciones
+                76: 56,  // -20 posiciones
+                94: 74,  // -20 posiciones
+                
+                // Serpientes especiales (lagarto - bajan más)
+                27: 7,   // -20 posiciones (pero visualmente diferente)
+                58: 38,  // -20 posiciones (pero visualmente diferente)
+                88: 68,  // -20 posiciones (pero visualmente diferente)
+                99: 79   // -20 posiciones (pero visualmente diferente)
+            };
+            
+            const cellTypes = {
+                5: 'ladder-1', 14: 'ladder-1', 22: 'ladder-1', 30: 'ladder-2', 
+                41: 'ladder-1', 49: 'ladder-1', 63: 'ladder-2', 70: 'ladder-1',
+                17: 'snake-1', 27: 'snake-2', 35: 'snake-1', 47: 'snake-1', 
+                58: 'snake-2', 65: 'snake-1', 76: 'snake-1', 88: 'snake-2', 
+                94: 'snake-1', 99: 'snake-2'
+            };
+
+            // ================== 2. INICIALIZACIÓN DEL JUEGO ==================
+            crearTablero();
+            socket.emit('serpientes:unirse', { salaId, usuario });
+            
+            // ================== 3. FUNCIONES DEL JUEGO ==================
+            function crearTablero() {
+                board.innerHTML = '';
+                
+                // Crear 100 celdas en patrón zig-zag
+                for (let row = 9; row >= 0; row--) {
+                    const isReverse = row % 2 === 1;
+                    
+                    for (let col = 0; col < 10; col++) {
+                        const cellIndex = isReverse ? (row * 10) + (9 - col) : (row * 10) + col;
+                        const cellNumber = cellIndex + 1;
+                        
+                        const cell = document.createElement('div');
+                        cell.className = 'cell';
+                        cell.dataset.index = cellIndex;
+                        cell.dataset.number = cellNumber;
+                        
+                        // Añadir clase especial si es necesario
+                        if (cellTypes[cellNumber]) {
+                            cell.classList.add(cellTypes[cellNumber]);
+                        }
+                        
+                        const numberSpan = document.createElement('span');
+                        numberSpan.className = 'cell-number';
+                        numberSpan.textContent = cellNumber;
+                        
+                        const specialSpan = document.createElement('span');
+                        specialSpan.className = 'cell-special';
+                        
+                        // Añadir iconos para celdas especiales
+                        if (cellTypes[cellNumber]) {
+                            if (cellTypes[cellNumber].includes('ladder')) {
+                                specialSpan.textContent = cellNumber === 30 || cellNumber === 63 ? '🛩️' : '🪜';
+                            } else {
+                                specialSpan.textContent = [27, 58, 88, 99].includes(cellNumber) ? '🦎' : '🐍';
+                            }
+                        }
+                        
+                        cell.appendChild(numberSpan);
+                        cell.appendChild(specialSpan);
+                        board.appendChild(cell);
+                    }
+                }
+                
+                // Dibujar caminos de serpientes y escaleras
+                dibujarCaminos();
+            }
+            
+            function dibujarCaminos() {
+                pathsSvg.innerHTML = '';
+                
+                // Dibujar caminos para serpientes y escaleras
+                for (const [start, end] of Object.entries(specialCells)) {
+                    const startCell = document.querySelector(`.cell[data-number="${start}"]`);
+                    const endCell = document.querySelector(`.cell[data-number="${end}"]`);
+                    
+                    if (!startCell || !endCell) continue;
+                    
+                    const startRect = startCell.getBoundingClientRect();
+                    const endRect = endCell.getBoundingClientRect();
+                    const boardRect = board.getBoundingClientRect();
+                    
+                    const startX = startRect.left + startRect.width/2 - boardRect.left;
+                    const startY = startRect.top + startRect.height/2 - boardRect.top;
+                    const endX = endRect.left + endRect.width/2 - boardRect.left;
+                    const endY = endRect.top + endRect.height/2 - boardRect.top;
+                    
+                    const isLadder = parseInt(end) > parseInt(start);
+                    
+                    // Crear camino
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    
+                    if (isLadder) {
+                        // Para escaleras: línea recta con "escalones"
+                        path.setAttribute('d', `M${startX},${startY} L${endX},${endY}`);
+                        path.setAttribute('class', 'ladder-path');
+                    } else {
+                        // Para serpientes: línea curva
+                        const midX = (startX + endX) / 2;
+                        const curveHeight = 50;
+                        const curveDirection = startX > endX ? 1 : -1;
+                        
+                        path.setAttribute('d', `M${startX},${startY} C${startX},${startY - curveHeight * curveDirection} ${endX},${endY + curveHeight * curveDirection} ${endX},${endY}`);
+                        path.setAttribute('class', 'snake-path');
+                    }
+                    
+                    pathsSvg.appendChild(path);
+                }
+            }
+            
+            function colocarJugadores() {
+                document.querySelectorAll('.player').forEach(p => p.classList.add('pending-removal'));
+                
+                gameState.jugadores.forEach((jugador, i) => {
+                    const position = (jugador.posicion || 1) - 1;
+                    const cell = document.querySelector(`.cell[data-index="${position}"]`);
+                    
+                    if (!cell) return;
+                    
+                    let playerEl = document.querySelector(`.player[data-player-id="${jugador.id}"]`);
+                    if (!playerEl) {
+                        playerEl = document.createElement('div');
+                        playerEl.className = `player ${gameState.playerColors[i]}`;
+                        playerEl.dataset.playerId = jugador.id;
+                        playerEl.textContent = i + 1;
+                        board.appendChild(playerEl);
+                    }
+                    
+                    playerEl.classList.remove('pending-removal');
+                    playerEl.dataset.playerIndex = i;
+                    
+                    const cellRect = cell.getBoundingClientRect();
+                    const boardRect = board.getBoundingClientRect();
+                    
+                    const offsetX = (i % 2) * 20;
+                    const offsetY = Math.floor(i / 2) * 20;
+                    
+                    playerEl.style.left = `${(cellRect.left - boardRect.left) + offsetX}px`;
+                    playerEl.style.top = `${(cellRect.top - boardRect.top) + offsetY}px`;
+                });
+                
+                document.querySelectorAll('.player.pending-removal').forEach(p => p.remove());
+            }
+            
+            function actualizarInterfaz() {
+                const jugadorActual = gameState.jugadores[gameState.turnoActual];
+                const esMiTurno = gameState.gameStarted && jugadorActual && (Number(jugadorActual.id) === Number(usuario.id_usuario));
+                
+                lanzarDadoBtn.disabled = !esMiTurno || gameState.ganador;
+                
+                const puedeProponerReinicio = (gameState.gameStarted || gameState.ganador) && !votacionEnProgreso;
+                reiniciarJuegoBtn.style.display = puedeProponerReinicio ? 'block' : 'none';
+                reiniciarJuegoBtn.disabled = votacionEnProgreso;
+                
+                if (!gameState.gameStarted) {
+                    infoTurno.textContent = "Esperando para iniciar...";
+                } else if (gameState.ganador) {
+                    infoTurno.textContent = `¡${gameState.ganador.username} ha ganado!`;
+                } else if (jugadorActual) {
+                    infoTurno.textContent = `Turno de: ${jugadorActual.username}`;
+                }
+
+                waitingPlayers.innerHTML = '';
+                gameState.jugadores.forEach(jugador => {
+                    const playerTag = document.createElement('div');
+                    playerTag.className = 'player-tag';
+                    playerTag.textContent = jugador.username;
+                    waitingPlayers.appendChild(playerTag);
+                });
+                
+                const esAnfitrion = gameState.jugadores.length > 0 && Number(usuario.id_usuario) === Number(gameState.jugadores[0].id);
+                const puedeProponerInicio = esAnfitrion && gameState.jugadores.length >= 2 && !gameState.gameStarted;
+
+                startGameBtn.textContent = 'Proponer Inicio 🚀';
+                startGameBtn.style.display = puedeProponerInicio ? 'block' : 'none';
+                startGameBtn.disabled = votacionEnProgreso;
+                
+                waitingState.style.display = gameState.gameStarted ? 'none' : 'block';
+            }
+            
+            function mostrarNotificacion(mensaje) {
+                notification.textContent = mensaje;
+                notification.classList.add('show');
+                setTimeout(() => notification.classList.remove('show'), 3000);
+            }
+
+            function mostrarVotacionEnChat({ proponente, tipo }) {
+                const voteDiv = document.createElement('div');
+                voteDiv.className = 'chat-message system-message';
+                voteDiv.id = 'vote-message';
+                
+                const textoAccion = tipo === 'reinicio' ? 'reiniciar el juego' : 'iniciar el juego';
+                
+                const mensaje = document.createElement('p');
+                mensaje.innerHTML = `<strong>${proponente}</strong> quiere ${textoAccion}. ¿Están de acuerdo?`;
+                
+                const buttonsDiv = document.createElement('div');
+                buttonsDiv.style.marginTop = '10px';
+
+                const siBtn = document.createElement('button');
+                siBtn.textContent = '✅ Sí';
+                siBtn.className = 'vote-btn';
+                
+                const noBtn = document.createElement('button');
+                noBtn.textContent = '❌ No';
+                noBtn.className = 'vote-btn';
+
+                buttonsDiv.appendChild(siBtn);
+                buttonsDiv.appendChild(noBtn);
+                voteDiv.appendChild(mensaje);
+                voteDiv.appendChild(buttonsDiv);
+                
+                const enviarVoto = (voto) => {
+                    socket.emit('serpientes:votar', { salaId, voto, tipoVotacion: tipo });
+                    siBtn.disabled = true;
+                    noBtn.disabled = true;
+                    mensaje.textContent = `Has votado ${voto ? 'SÍ' : 'NO'}.`;
+                };
+
+                siBtn.onclick = () => enviarVoto(true);
+                noBtn.onclick = () => enviarVoto(false);
+
+                chatBox.appendChild(voteDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+            
+            function animarDado(valorFinal) {
+                lanzarDadoBtn.disabled = true;
+                dice.classList.add('rolling');
+                let Sorteo;
+
+                const animacion = setInterval(() => {
+                    Sorteo = Math.floor(Math.random() * 6) + 1;
+                    dice.textContent = Sorteo;
+                }, 80);
+
+                setTimeout(() => {
+                    clearInterval(animacion);
+                    dice.classList.remove('rolling');
+                    dice.textContent = valorFinal;
+                }, 1000);
+            }
+
+            // ================== 4. MANEJO DE SOCKETS ==================
+            socket.on('serpientes:estado', (sala) => {
+                Object.assign(gameState, sala); 
+                colocarJugadores(); 
+                actualizarInterfaz();
+                dice.textContent = gameState.dado || '?';
+
+                if (gameState.gameStarted && !gameState.ganador && gameState.turnoActual === 0 && gameState.jugadores.every(j => j.posicion === 1)) {
+                     const voteMessage = document.getElementById('vote-message');
+                     if (voteMessage) voteMessage.remove();
+                }
+            });
+            
+            socket.on('serpientes:dado', ({ jugador, valor }) => {
+                animarDado(valor);
+                mostrarNotificacion(`${jugador} ha sacado un ${valor}!`);
+            });
+            
+            socket.on('serpientes:ganador', ({ ganador }) => {
+                mostrarNotificacion(`¡El ganador es ${ganador.username}! 🥳`);
+                gameState.ganador = ganador;
+                actualizarInterfaz();
+            });
+            
+            socket.on('serpientes:votacionInicio', ({ proponente }) => {
+                votacionEnProgreso = true;
+                tipoDeVotacionActual = 'inicio';
+                actualizarInterfaz();
+                mostrarVotacionEnChat({ proponente, tipo: 'inicio' });
+            });
+            
+            socket.on('serpientes:votacionReinicio', ({ proponente }) => {
+                votacionEnProgreso = true;
+                tipoDeVotacionActual = 'reinicio';
+                actualizarInterfaz();
+                mostrarVotacionEnChat({ proponente, tipo: 'reinicio' });
+            });
+
+            socket.on('serpientes:votacionCancelada', ({ motivo }) => {
+                votacionEnProgreso = false;
+                tipoDeVotacionActual = null;
+                actualizarInterfaz();
+                const voteMessage = document.getElementById('vote-message');
+                if (voteMessage) voteMessage.remove();
+                mostrarNotificacion(`Votación cancelada: ${motivo}`);
+            });
+            
+            socket.on('jugadorUnido', (data) => {
+                mostrarNotificacion(`${data.username} se unió a la sala`);
+                cargarJugadoresActivos();
+            });
+            
+            socket.on('jugadorAbandono', (data) => {
+                mostrarNotificacion(`${data.username} abandonó la sala`);
+                cargarJugadoresActivos();
+            });
+            
+            // ================== 5. EVENTOS DE INTERFAZ ==================
+            lanzarDadoBtn.addEventListener('click', () => {
+                lanzarDadoBtn.disabled = true;
+                socket.emit('serpientes:lanzarDado', { salaId, userId: usuario.id_usuario });
+            });
+            
+            startGameBtn.addEventListener('click', () => {
+                socket.emit('serpientes:proponerInicio', { salaId });
+            });
+
+            reiniciarJuegoBtn.addEventListener('click', () => {
+                socket.emit('serpientes:proponerReinicio', { salaId });
+            });
+            
+            // ================== 6. CHAT Y JUGADORES ==================
+            function mostrarMensaje(user, msg) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'chat-message';
+                msgDiv.innerHTML = `<span class="u">${user}:</span> <span>${msg}</span>`;
+                chatBox.appendChild(msgDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+            
+            function enviarMensaje() {
+                const mensaje = chatInput.value.trim();
+                if (mensaje && salaId) {
+                    socket.emit('mensajeChat', { salaId, mensaje, usuario: usuario.username });
+                    chatInput.value = '';
+                }
+            }
+            
+            chatBtn.addEventListener('click', enviarMensaje);
+            chatInput.addEventListener('keypress', (e) => e.key === 'Enter' && enviarMensaje());
+            
+            socket.on('nuevoMensaje', (data) => {
+                if (data.usuario && data.mensaje) {
+                    mostrarMensaje(data.usuario, data.mensaje);
+                }
+            });
+            
+            async function cargarJugadoresActivos() {
+                try {
+                    const res = await fetch('/competitivo');
+                    if (!res.ok) throw new Error('Error al obtener jugadores');
+                    const jugadores = await res.json();
+                    
+                    listaJugadoresEl.innerHTML = '';
+                    jugadores.forEach(jugador => {
+                        if (jugador.id === usuario.id_usuario) return;
+                        
+                        const item = document.createElement('li');
+                        item.innerHTML = `
+                            <span>${jugador.username}</span> 
+                            <div class="actions">
+                                <button class="btn-invite" data-id="${jugador.id}">Invitar 🤝</button>
+                            </div>
+                        `;
+                        
+                        listaJugadoresEl.appendChild(item);
+                    });
+                } catch (error) {
+                    console.error('Error al cargar jugadores:', error);
+                    listaJugadoresEl.innerHTML = '<li>Error al cargar jugadores.</li>';
+                }
+            }
+            
+            listaJugadoresEl.addEventListener('click', async (e) => {
+                const target = e.target;
+                if (!target.classList.contains('btn-invite')) return;
+                
+                const idJugador = target.dataset.id;
+                if (!idJugador) return;
+                
+                try {
+                    const res = await fetch(`/invitar_s/${idJugador}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ salaId: salaId, tipoJuego: 'Serpientes y Escaleras' })
+                    });
+                    
+                    const data = await res.json();
+                    mostrarNotificacion(data.message || 'Invitación enviada');
+                } catch (error) {
+                    console.error('Error en la invitación:', error);
+                    mostrarNotificacion('Hubo un problema al enviar la invitación.');
+                }
+            });
+            
+            // ================== 7. INICIALIZACIÓN FINAL ==================
+            cargarJugadoresActivos();
+            setInterval(cargarJugadoresActivos, 15000);
+            
+            // Redibujar caminos cuando la ventana cambie de tamaño
+            window.addEventListener('resize', dibujarCaminos);
+        });
+    </script>
+</body>
+</html>

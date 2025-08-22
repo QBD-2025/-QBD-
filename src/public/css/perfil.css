@@ -1,0 +1,384 @@
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    width: 100%;
+    height: 100%;
+}
+
+
+/* --- Presentation Page Specific Styles --- */
+.presentation-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    padding: 20px;
+    gap: 40px;
+}
+
+.headline-and-button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    width: 100%;
+}
+
+.presentation-headline{
+    font-size: 3.5em;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: -100px;
+    line-height: 1.5;
+    position: static;
+    z-index: auto;
+}
+
+.presentation-headline .blue-text {
+    color: #5926e4;
+}
+
+.presentation-headline .yellow-text {
+    color: #FFC107;
+}
+
+.btn-start {
+    position: relative;
+    padding: 15px 20px;
+    background-color: #FFC107;
+    color: #333;
+    border: none;
+    border-radius: 50px;
+    font-weight: bold;
+    font-size: 0.7em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    top: unset;
+    z-index: auto;
+    align-items: center;
+    justify-content: center;
+    left:30px;
+    display: flex;
+    margin-bottom:-1000px;
+}
+
+.btn-start:hover {
+    background-color: #e0a800;
+    transform: translateY(-4px);
+}
+
+.videos-and-cta-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    width: 100%;
+    gap: 500px;
+    position: static;
+    bottom: unset;
+    left: unset;
+    padding: 0 20px;
+    z-index: auto;
+}
+
+.videos-and-cta-containerv2 {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    width: 100%;
+    gap: -70px;
+    position: static;
+    bottom: unset;
+    left: unset;
+    padding: 0 20px;
+    z-index: auto;
+}
+
+.video-placeholder{
+    background-color: #ffffff;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+}
+
+.video-placeholder .big {
+    right: 100px;
+    width: 450px;
+    height: 500px;
+}
+
+.video-placeholder .small {
+    width: 300px;
+    height: 350px;
+}
+
+.video-placeholder .supersmall{
+    width: 150px;
+    height: 200px;
+}
+
+.video-placeholder iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    object-fit: cover;
+}
+
+/* Estilo Duolingo */
+.duo-style-wrapper {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.info-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 50px;
+  padding: 60px 10px;
+}
+
+.hero-section {
+    padding-top: 20px;
+    padding-bottom: 80px;
+    border-bottom: 2px solid #e5e5e5;
+}
+
+.info-section.reverse {
+  flex-direction: row-reverse;
+}
+
+.text-content, .image-content {
+  flex-basis: 48%;
+}
+
+.image-content img, .image-content video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.promo-video {
+    border-radius: 20px;
+    background-color: #f0f0f0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.hero-main-headline {
+    font-size: 2.4em;
+    font-weight: bold;
+    color: #333;
+    line-height: 1.3;
+    margin-bottom: 25px;
+}
+
+.cta-text {
+    text-align: center;
+}
+
+.info-headline {
+  font-size: 2.2em;
+  font-weight: bold;
+  line-height: 1.2;
+  margin-bottom: 15px;
+}
+
+.info-description {
+  font-size: 1.1em;
+  line-height: 1.6;
+  color: #555;
+}
+
+.btn-start-duo, .btn-secondary-duo {
+    width: 100%;
+    max-width: 320px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    font-size: 1em;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.btn-start-duo {
+    background-color: #FFC107;
+    color: #333;
+    border-bottom: 4px solid #e0a800;
+}
+
+.btn-start-duo:hover {
+    background-color: #ffd44f;
+}
+
+.btn-start-duo:active {
+    transform: translateY(2px);
+    border-bottom: 2px solid #e0a800;
+}
+
+.btn-secondary-duo {
+    background-color: #fff;
+    color: #FFC107;
+    border: 2px solid #e5e5e5;
+    border-bottom: 4px solid #e5e5e5;
+}
+
+.btn-secondary-duo:hover {
+    background-color: #f7f7f7;
+}
+
+.btn-secondary-duo:active {
+    transform: translateY(2px);
+    border-bottom: 2px solid #e5e5e5;
+}
+
+@media (max-width: 900px) {
+  .info-section, .info-section.reverse {
+    flex-direction: column;
+    text-align: center;
+    padding: 40px 10px;
+  }
+  
+  .info-section.reverse {
+      flex-direction: column-reverse;
+  }
+
+  .hero-main-headline, .info-headline {
+    font-size: 1.8em;
+  }    
+  
+duo-button {
+  width: 100%;
+  max-width: 320px;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 12px;
+  font-size: 1em;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+}
+
+/* Estilos para los botones "texto de prueba" */
+.duo-button {
+    width: 100%;
+    max-width: 320px;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 12px;
+    font-size: 1em;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    background-color: #FFC107;
+    color: #333;
+    border-bottom: 4px solid #e0a800;
+    text-align: center;
+    display: inline-block;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Estilos para los botones "texto de prueba" */
+.duo-button {
+    width: 100%;
+    max-width: 320px;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 12px;
+    font-size: 1em;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    background-color: #FFC107;
+    color: #333;
+    border-bottom: 4px solid #e0a800;
+    text-align: center;
+    display: inline-block;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.duo-button:hover {
+    background-color: #ffd44f;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.duo-button:active {
+    transform: translateY(1px);
+    border-bottom: 2px solid #e0a800;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Responsive para los botones */
+@media (max-width: 900px) {
+    .duo-button {
+        max-width: 280px;
+        padding: 12px;
+        font-size: 0.9em;
+    }
+}
+
+/* Botón flotante circular */
+.floating-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #FFC107;
+    color: #333;
+    border: none;
+    border-bottom: 4px solid #e0a800;
+    font-size: 1.5em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.floating-button:hover {
+    background-color: #ffd44f;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+}
+
+.floating-button:active {
+    transform: translateY(1px);
+    border-bottom: 2px solid #e0a800;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .floating-button {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2em;
+        bottom: 15px;
+        right: 15px;
+    }
+}

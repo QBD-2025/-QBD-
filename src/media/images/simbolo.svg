@@ -1,0 +1,14 @@
+<svg width="200" height="200" viewBox="0 0 200 200"
+     xmlns="http://www.w3.org/2000/svg">
+  <g fill="#FFC300">
+    <rect x="0" y="0" width="20" height="200" />
+    <rect x="0" y="0" width="200" height="20" />
+    <rect x="40" y="40" width="140" height="20" />
+    <rect x="40" y="40" width="20" height="120" />
+    <rect x="80" y="80" width="100" height="20" />
+    <rect x="80" y="80" width="20" height="80" />
+    <rect x="120" y="120" width="60" height="20" />
+    <rect x="120" y="120" width="20" height="40" />
+    <rect x="160" y="160" width="20" height="20" />
+  </g>
+</svg>

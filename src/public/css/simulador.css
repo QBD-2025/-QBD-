@@ -1,0 +1,162 @@
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9f9f9;
+      color: #0c0264;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Contenedor principal */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 2rem 3rem 2rem;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    /* Encabezado */
+    header {
+      width: 100%;
+      text-align: center;
+      background-color: #ededed;
+      padding: 2rem;
+      border-bottom: 4px solid #facc15;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-bottom: 3rem;
+      box-sizing: border-box;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      color: #0815c5;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      font-size: 1.1rem;
+      color: #0c0264;
+      margin: 0;
+    }
+
+    /* Sección de práctica */
+    .practica {
+      text-align: center;
+      background-color: #ededed;
+      margin-bottom: 4rem;
+      padding: 2.5rem 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    }
+
+    .practica h2 {
+      color: #0815c5;
+      margin-bottom: 1rem;
+      font-size: 2rem;
+    }
+
+    .practica p {
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+      color: #333;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Botón */
+    .practica button {
+      background-color: #facc15;
+      border: none;
+      color: #0c0264;
+      font-weight: 700;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: background-color 0.3s, box-shadow 0.3s;
+      box-shadow: 0 4px 8px rgba(250, 204, 21, 0.5);
+    }
+
+    .practica button:hover {
+      background-color: #ffd84d;
+      box-shadow: 0 6px 12px rgba(250, 204, 21, 0.7);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 0.9rem;
+      color: #888;
+      border-top: 1px solid #ddd;
+      margin-top: auto;
+    }
+
+    /* Botón flotante */
+    .floating-button {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background-color: #FFC107;
+      color: #333;
+      border: none;
+      border-bottom: 4px solid #e0a800;
+      font-size: 28px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: pulse 2s infinite;
+    }
+
+    .floating-button:hover {
+      background-color: #ffd44f;
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    .floating-button:active {
+      transform: translateY(2px);
+      border-bottom: 2px solid #e0a800;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+    }
+
+    /* Animación de latido */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    /* Responsive para móviles */
+    @media (max-width: 768px) {
+      .floating-button {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        bottom: 20px;
+        right: 20px;
+      }
+      
+      header h1 {
+        font-size: 2rem;
+      }
+      
+      .practica h2 {
+        font-size: 1.6rem;
+      }
+      
+      .practica button {
+        font-size: 1rem;
+        padding: 0.8rem 1.5rem;
+      }
+    }

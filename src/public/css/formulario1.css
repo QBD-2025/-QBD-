@@ -1,0 +1,341 @@
+    :root {
+      --verde-fosforescente: #00ff9d;
+      --verde-aurora: #00cc7a;
+      --azul-aurora: #0099ff;
+      --purpura-aurora: #bd00ff;
+      --fondo-oscuro: #0a1128;
+      --texto-claro: #f0f0f0;
+      --texto-oscuro: #1a1a2e;
+    }
+
+    /* Reset básico */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Personalización de la scrollbar */
+    ::-webkit-scrollbar {
+      width: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(10, 17, 40, 0.8);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(to bottom, var(--verde-fosforescente), var(--verde-aurora));
+      border-radius: 10px;
+      border: 2px solid rgba(10, 17, 40, 0.8);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(to bottom, var(--verde-aurora), var(--azul-aurora));
+      box-shadow: 0 0 10px rgba(0, 255, 157, 0.5);
+    }
+
+    /* Para Firefox */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--verde-fosforescente) rgba(10, 17, 40, 0.8);
+    }
+
+    /* Fondo con efecto de auroras boreales */
+    body.page-usuario {
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      background: 
+          radial-gradient(ellipse at 20% 20%, rgba(0, 255, 157, 0.15) 0%, transparent 50%),
+          radial-gradient(ellipse at 80% 20%, rgba(189, 0, 255, 0.1) 0%, transparent 50%),
+          radial-gradient(ellipse at 40% 80%, rgba(0, 153, 255, 0.1) 0%, transparent 50%),
+          linear-gradient(to right, var(--fondo-oscuro), #000000);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      color: var(--texto-claro);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Efectos de movimiento para simular auroras */
+    body.page-usuario::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+          linear-gradient(to bottom, transparent 0%, rgba(10, 17, 40, 0.1) 100%),
+          radial-gradient(ellipse at 30% 10%, rgba(0, 255, 157, 0.1) 0%, transparent 40%),
+          radial-gradient(ellipse at 70% 10%, rgba(189, 0, 255, 0.1) 0%, transparent 40%);
+      pointer-events: none;
+      z-index: -1;
+      animation: auroraMovement 15s infinite alternate;
+    }
+
+    @keyframes auroraMovement {
+      0% {
+          background-position: 0% 0%, 0% 0%, 0% 0%;
+          opacity: 0.5;
+      }
+      100% {
+          background-position: 0% 50%, 10% 30%, 20% 40%;
+          opacity: 0.8;
+      }
+    }
+
+    /* Contenedor principal con efecto aurora */
+    .main-form-container {
+      width: 100%;
+      max-width: 800px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 30px rgba(0, 255, 157, 0.25);
+      background-color: rgba(10, 17, 40, 0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--verde-fosforescente);
+      position: relative;
+    }
+
+    /* Columna del formulario (ocupa todo el espacio) */
+    .form-column {
+      width: 100%;
+      padding: 2.5rem;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    /* Personalización de la scrollbar para el contenedor del formulario */
+    .form-column::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .form-column::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+
+    .form-column::-webkit-scrollbar-thumb {
+      background: linear-gradient(to bottom, var(--verde-fosforescente), var(--azul-aurora));
+      border-radius: 4px;
+    }
+
+    .form-column::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(to bottom, var(--azul-aurora), var(--purpura-aurora));
+      box-shadow: 0 0 8px rgba(0, 255, 157, 0.5);
+    }
+
+    /* Formulario */
+    form {
+      width: 100%;
+    }
+
+    /* Título de la pregunta con efecto de aurora */
+    .pregunta {
+      margin-bottom: 2.5rem;
+    }
+
+    .pregunta p {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: var(--verde-fosforescente);
+      text-shadow: 0 0 10px rgba(0, 255, 157, 0.5);
+      position: relative;
+      display: inline-block;
+    }
+
+    .pregunta p::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(to right, transparent, var(--verde-fosforescente), transparent);
+    }
+
+    /* Opciones con estilo aurora */
+    .pregunta label {
+      display: block;
+      margin-bottom: 1rem;
+      padding: 0.8rem 1rem;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: var(--texto-claro);
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .pregunta label:hover {
+      background: rgba(0, 255, 157, 0.1);
+      border-color: rgba(0, 255, 157, 0.3);
+      transform: translateX(5px);
+    }
+
+    .pregunta input[type="radio"] {
+      margin-right: 0.8rem;
+      accent-color: var(--verde-fosforescente);
+      transform: scale(1.2);
+    }
+
+    /* Línea divisora entre preguntas */
+    hr {
+      border: none;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--verde-fosforescente), transparent);
+      margin: 2.5rem 0;
+      opacity: 0.5;
+    }
+
+    /* Botones de Iniciar Sesión y Registrarse */
+    .auth-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .auth-button {
+      padding: 0.8rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+    }
+
+    .auth-button.login {
+      background: transparent;
+      color: var(--verde-fosforescente);
+      border: 2px solid var(--verde-fosforescente);
+      box-shadow: 0 0 15px rgba(0, 255, 157, 0.3);
+    }
+
+    .auth-button.login:hover {
+      background: rgba(0, 255, 157, 0.1);
+      box-shadow: 0 0 20px rgba(0, 255, 157, 0.5);
+    }
+
+    .auth-button.register {
+      background: linear-gradient(45deg, var(--verde-fosforescente), var(--azul-aurora));
+      color: var(--texto-oscuro);
+      box-shadow: 0 0 15px rgba(0, 255, 157, 0.4);
+    }
+
+    .auth-button.register:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0 25px rgba(0, 255, 157, 0.6);
+    }
+
+        /* Botón de envío con estilo de aurora */
+    .button {
+      display: block;
+      background: linear-gradient(45deg, var(--verde-fosforescente), var(--azul-aurora));
+      color: var(--texto-oscuro);
+      font-size: 1.2rem;
+      font-weight: 700;
+      padding: 1rem 2.5rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin: 3rem auto 1.5rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 20px rgba(0, 255, 157, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Botón de envío con estilo de aurora */
+    button[type="submit"] {
+      display: block;
+      background: linear-gradient(45deg, var(--verde-fosforescente), var(--azul-aurora));
+      color: var(--texto-oscuro);
+      font-size: 1.2rem;
+      font-weight: 700;
+      padding: 1rem 2.5rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin: 3rem auto 1.5rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 20px rgba(0, 255, 157, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    button[type="submit"]:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0 30px rgba(0, 255, 157, 0.7);
+    }
+
+    button[type="submit"]::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+          to bottom right,
+          rgba(255, 255, 255, 0.3),
+          rgba(255, 255, 255, 0)
+      );
+      transform: rotate(30deg);
+      transition: all 0.5s ease;
+    }
+
+    button[type="submit"]:hover::before {
+      transform: translateX(100%) rotate(30deg);
+    }
+
+    /* Ocultar elementos globales si es necesario */
+    .page-usuario .global-header-elements {
+      display: none;
+    }
+
+    /* Ocultar la columna de imagen */
+    .image-column {
+      display: none;
+    }
+
+    /* Efecto de partículas para simular auroras */
+    .aurora-particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .particle {
+      position: absolute;
+      background: var(--verde-fosforescente);
+      border-radius: 50%;
+      opacity: 0.3;
+      animation: float 8s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0) translateX(0);
+        opacity: 0.2;
+      }
+      50% {
+        transform: translateY(-20px) translateX(10px);
+        opacity: 0.4;
+      }
+    }
