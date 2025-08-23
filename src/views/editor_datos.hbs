@@ -17,15 +17,25 @@
       border-radius: 10px;
       display: none;
       box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      max-width: 500px;
+      width: 90%;
+    }
+    #overlay {
+      position: fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      z-index: 9998;
     }
   </style>
 </head>
 <body>
   <header class="editor-header">
     <div class="header-left">
-      <a href="/">
-        <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image-header">
-      </a>
+      <a href="/"><img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image-header"></a>
     </div>
     <div class="header-center">
       <h1 class="editor-title">Panel de Edición</h1>
@@ -40,8 +50,8 @@
 
   <div class="editor-container container mt-4">
     <h2 class="editor-subtitle mb-4">Gestión de Datos</h2>
-    <a href="/editor" class="editor-btn">Gestión de Encuesta</a>
-    <a href="/editor/examenes" class="editor-btn">Gestión de Examenes</a>
+    <a href="/editor/encuesta" class="editor-btn">Gestión de Encuesta</a>
+    <a href="/editor" class="editor-btn">Gestión de Examenes</a>
 
     <table class="editor-table mt-3">
       <thead>
@@ -67,14 +77,12 @@
             {{/if}}
           </td>
           <td>
-            <button class="editor-action-btn"
+            <button class="editor-btn"
               data-id="{{id_dato}}"
               data-dato="{{dato}}"
               data-fuente="{{fuente}}"
-              onclick="editarDatoDesdeAtributos(this)">
-              ✏️ Editar
-            </button>
-            <button class="editor-action-btn" onclick="eliminarDato({{id_dato}})">🗑️ Eliminar</button>
+              onclick="editarDatoDesdeAtributos(this)">✏️ Editar</button>
+            <button class="editor-btn btn-danger" onclick="eliminarDato({{id_dato}})">🗑️ Eliminar</button>
           </td>
         </tr>
         {{/each}}
@@ -84,22 +92,30 @@
     <button class="editor-btn mt-3" onclick="agregarDato()">➕ Agregar dato</button>
   </div>
 
-  <!-- Formulario oculto para editar -->
-  <form id="formEditarDato" action="/editor/editar-dato-binario" method="POST" enctype="multipart/form-data">
-    <h3>Editar Dato</h3>
-    <input type="hidden" name="id" id="editar-id">
+  <!-- Overlay -->
+  <div id="overlay" onclick="cerrarForm()"></div>
 
-    <label for="editar-dato">Nuevo Dato:</label><br>
-    <input type="text" name="nuevoDato" id="editar-dato" required><br><br>
+  <!-- Formulario oculto para editar/agregar -->
+<form id="formEditarDato" action="/editor/agregar-dato" method="POST" enctype="multipart/form-data">
+  <h3 id="form-titulo">Agregar Dato</h3>
+  <input type="hidden" name="id" id="editar-id">
 
-    <label for="editar-fuente">Fuente:</label><br>
-    <input type="text" name="fuente" id="editar-fuente" required><br><br>
+  <label>Dato:</label>
+  <input type="text" name="dato" id="editar-dato" required>
 
-    <label for="editar-imagen">Imagen (opcional):</label><br>
-    <input type="file" name="imagen" id="editar-imagen" accept="image/*"><br><br>
+  <label>ID Materia:</label>
+  <input type="number" name="id_materia" id="editar-id-materia" required>
 
-    <button type="submit" class="editor-btn">Guardar cambios</button>
-  </form>
+  <label>Fuente:</label>
+  <input type="text" name="fuente" id="editar-fuente">
+
+  <label>Imagen (opcional):</label>
+  <input type="file" name="imagen" id="editar-imagen" accept="image/*">
+
+  <button type="submit" class="editor-btn">Guardar</button>
+  <button type="button" class="editor-btn" onclick="cerrarForm()">Cancelar</button>
+</form>
+
 
   <script>
     function eliminarDato(id) {
@@ -109,36 +125,40 @@
       }
     }
 
-    function editarDato(id, texto, fuente) {
+    function cerrarForm() {
+      document.getElementById('formEditarDato').style.display = 'none';
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('formEditarDato').reset();
+    }
+
+    function editarDato(id, texto, fuente, id_materia) {
+      document.getElementById('form-titulo').textContent = "Editar Dato";
       document.getElementById('editar-id').value = id;
       document.getElementById('editar-dato').value = texto;
       document.getElementById('editar-fuente').value = fuente || "";
+      document.getElementById('editar-id-materia').value = id_materia || "";
       document.getElementById('formEditarDato').style.display = 'block';
+      document.getElementById('overlay').style.display = 'block';
     }
 
     function agregarDato() {
-      const dato = prompt("Nuevo dato:");
-      if (!dato) return;
-
-      const id_materia = prompt("ID de materia:");
-      if (!id_materia) return;
-
-      const fuente = prompt("Fuente del dato (URL, autor, etc.):");
-      if (!fuente) return;
-
-      fetch(`/editor/agregar-dato`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dato, id_materia, fuente })
-      }).then(res => res.ok ? location.reload() : alert("Error agregando"));
+      document.getElementById('form-titulo').textContent = "Agregar Dato";
+      document.getElementById('editar-id').value = "";
+      document.getElementById('editar-dato').value = "";
+      document.getElementById('editar-fuente').value = "";
+      document.getElementById('editar-id-materia').value = "";
+      document.getElementById('formEditarDato').action = "/editor/agregar-dato";
+      document.getElementById('formEditarDato').style.display = 'block';
+      document.getElementById('overlay').style.display = 'block';
     }
 
     function editarDatoDesdeAtributos(btn) {
       const id = btn.dataset.id;
       const texto = btn.dataset.dato;
       const fuente = btn.dataset.fuente;
-
-      editarDato(id, texto, fuente);
+      const id_materia = btn.dataset.idMateria; // si agregas este atributo en el HBS
+      editarDato(id, texto, fuente, id_materia);
+      document.getElementById('formEditarDato').action = "/editor/editar-dato-binario";
     }
   </script>
 </body>

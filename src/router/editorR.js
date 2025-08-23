@@ -1,190 +1,148 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
+// Middleware de autenticación
 const isAuthenticated = (req, res, next) => {
   if (req.session.user) return next();
   return res.redirect('/login');
 };
 
-// --- PANEL PRINCIPAL DEL EDITOR (preguntas y opciones) ---
-router.get('/', isAuthenticated, async (req, res) => {
+// ------------------------- PANEL PRINCIPAL -------------------------
+// Redirige al panel de exámenes
+router.get('/', isAuthenticated, (req, res) => {
+  res.redirect('/editor/examenes');
+});
+
+// ------------------------- EXÁMENES -------------------------
+router.get('/examenes', isAuthenticated, async (req, res) => {
+  const page = parseInt(req.query.page) || 1; 
+  const limit = 10; 
+  const offset = (page - 1) * limit;
+
   try {
-    const [filas] = await req.pool.query(`
-      SELECT 
-        pe.id_pregunta, pe.id_encuesta, pe.texto AS texto_pregunta, op.texto_opcion, pe.id_estatus_p
-      FROM pregunta_encuesta pe
-      LEFT JOIN opcion_pregunta op ON pe.id_pregunta = op.id_pregunta
-      ORDER BY pe.id_encuesta ASC, pe.id_pregunta ASC;
-    `);
+    const [countResult] = await req.pool.query('SELECT COUNT(*) AS total FROM pregunta');
+    const totalPreguntas = countResult[0].total;
+    const totalPages = Math.ceil(totalPreguntas / limit);
 
-    const preguntasAgrupadas = {};
-    filas.forEach(fila => {
-      const id = fila.id_pregunta;
-      if (!preguntasAgrupadas[id]) {
-        preguntasAgrupadas[id] = {
-          id_pregunta: id,
-          id_encuesta: fila.id_encuesta,
-          texto_pregunta: fila.texto_pregunta,
-          id_estatus_p: fila.id_estatus_p,
-          opciones: []
-        };
-      }
-      if (fila.texto_opcion) preguntasAgrupadas[id].opciones.push(fila.texto_opcion);
-    });
+    const [preguntasPage] = await req.pool.query(
+      'SELECT id_pregunta, id_materia, pregunta, retroalimentacion FROM pregunta ORDER BY id_materia, id_pregunta LIMIT ? OFFSET ?',
+      [limit, offset]
+    );
 
-    const preguntas = Object.values(preguntasAgrupadas);
+    const idsPreguntas = preguntasPage.map(p => p.id_pregunta);
+    let filas = [];
+    if(idsPreguntas.length > 0){
+      [filas] = await req.pool.query(
+        'SELECT id_respuesta, id_pregunta, respuesta, correcta, puntos FROM respuesta WHERE id_pregunta IN (?) ORDER BY id_respuesta',
+        [idsPreguntas]
+      );
+    }
 
-    res.render('editor', {
+    const preguntasAgrupadas = preguntasPage.map(p => ({
+      ...p,
+      retroalimentacion: p.retroalimentacion || '',
+      respuestas: filas.filter(r => r.id_pregunta === p.id_pregunta)
+    }));
+
+    res.render('editor_examen', {
       layout: false,
       user: req.session.user,
-      preguntas,
+      preguntas: preguntasAgrupadas,
+      page,
+      totalPages
     });
-  } catch (error) {
-    console.error("Error cargando panel de editor:", error);
-    res.status(500).send("Error interno al cargar el panel.");
+  } catch (err) {
+    console.error('Error cargando exámenes:', err);
+    res.status(500).send('Error cargando exámenes');
   }
 });
 
-// Actualizar estatus de preguntas
-router.post('/actualizar-examenes', isAuthenticated, async (req, res) => {
-  const { id_pregunta, estatus } = req.body;
-  if (!id_pregunta || !estatus || id_pregunta.length !== estatus.length) {
-    return res.status(400).send('Datos incompletos o inválidos');
-  }
 
+// Agregar pregunta
+router.post('/agregar-pregunta', isAuthenticated, async (req, res) => {
+  const { id_materia, pregunta, retroalimentacion, respuestas_texto, puntos, correcta } = req.body;
   try {
-    const promesas = [];
-    for (let i = 0; i < id_pregunta.length; i++) {
-      const id = parseInt(id_pregunta[i], 10);
-      const est = parseInt(estatus[i], 10);
-      if (isNaN(id) || isNaN(est)) continue;
-      promesas.push(req.pool.query('UPDATE pregunta_encuesta SET id_estatus_p = ? WHERE id_pregunta = ?', [est, id]));
+    const [result] = await req.pool.query(
+      'INSERT INTO pregunta (id_materia, pregunta, retroalimentacion) VALUES (?, ?, ?)',
+      [id_materia, pregunta, retroalimentacion]
+    );
+    const idPregunta = result.insertId;
+
+    for (let i = 0; i < respuestas_texto.length; i++) {
+      await req.pool.query(
+        'INSERT INTO respuesta (id_pregunta, respuesta, puntos, correcta) VALUES (?, ?, ?, ?)',
+        [idPregunta, respuestas_texto[i], puntos[i], i == correcta ? 1 : 0]
+      );
     }
-    await Promise.all(promesas);
-    res.redirect('/editor');
-  } catch (error) {
-    console.error('Error actualizando estatus:', error);
-    res.status(500).send('Error al actualizar estatus');
-  }
-});
 
-// Eliminar pregunta
-router.delete('/eliminar-pregunta/:id', isAuthenticated, async (req, res) => {
-  try {
-    const { id } = req.params;
-    await req.pool.query('DELETE FROM opcion_pregunta WHERE id_pregunta = ?', [id]);
-    await req.pool.query('DELETE FROM pregunta_encuesta WHERE id_pregunta = ?', [id]);
     res.sendStatus(200);
-  } catch (error) {
-    console.error('Error eliminando pregunta:', error);
-    res.status(500).send('Error eliminando pregunta');
+  } catch (err) {
+    console.error('Error agregando pregunta:', err);
+    res.sendStatus(500);
   }
 });
 
 // Editar pregunta
-router.post('/editar-pregunta', isAuthenticated, async (req, res) => {
-  const { id, nuevoTexto } = req.body;
-  if (!id || !nuevoTexto) return res.status(400).send('Datos incompletos');
+router.post('/editar-pregunta/:id', isAuthenticated, async (req, res) => {
+  const idPregunta = req.params.id;
+  const { id_materia, pregunta, retroalimentacion, respuestas_id, respuestas_texto, puntos, correcta } = req.body;
 
   try {
-    await req.pool.query('UPDATE pregunta_encuesta SET texto = ? WHERE id_pregunta = ?', [nuevoTexto, id]);
+    // Actualizar tabla pregunta
+    await req.pool.query(
+      'UPDATE pregunta SET id_materia=?, pregunta=?, retroalimentacion=? WHERE id_pregunta=?',
+      [id_materia, pregunta, retroalimentacion, idPregunta]
+    );
+
+    // Actualizar respuestas
+    for (let i = 0; i < respuestas_texto.length; i++) {
+      await req.pool.query(
+        'UPDATE respuesta SET respuesta=?, puntos=?, correcta=? WHERE id_respuesta=?',
+        [respuestas_texto[i], puntos[i], i == parseInt(correcta) ? 1 : 0, respuestas_id[i]]
+      );
+    }
+
     res.sendStatus(200);
-  } catch (error) {
-    console.error('Error actualizando pregunta:', error);
-    res.status(500).send('Error actualizando pregunta');
+  } catch (err) {
+    console.error('Error editando pregunta:', err);
+    res.sendStatus(500);
   }
 });
 
-// Opciones: eliminar, editar, agregar (igual con validación y manejo de errores)
-
-router.post('/eliminar-opcion', isAuthenticated, async (req, res) => {
-  const { index, idPregunta } = req.body;
+// Eliminar pregunta
+router.delete('/eliminar-preguntas/:id', isAuthenticated, async (req, res) => {
   try {
-    const [opciones] = await req.pool.query('SELECT id_opcion FROM opcion_pregunta WHERE id_pregunta = ? ORDER BY id_opcion ASC', [idPregunta]);
-    const id_opcion = opciones[index]?.id_opcion;
-    if (!id_opcion) return res.status(400).send('Opción no encontrada');
-    await req.pool.query('DELETE FROM opcion_pregunta WHERE id_opcion = ?', [id_opcion]);
+    const { id } = req.params;
+    await req.pool.query('DELETE FROM respuesta WHERE id_pregunta = ?', [id]);
+    await req.pool.query('DELETE FROM pregunta WHERE id_pregunta = ?', [id]);
     res.sendStatus(200);
-  } catch (error) {
-    console.error('Error eliminando opción:', error);
-    res.status(500).send('Error eliminando opción');
+  } catch (err) {
+    console.error('Error eliminando pregunta:', err);
+    res.status(500).send('Error eliminando pregunta');
   }
 });
 
-router.post('/editar-opcion', isAuthenticated, async (req, res) => {
-  const { index, idPregunta, nuevoTexto } = req.body;
-  try {
-    const [opciones] = await req.pool.query('SELECT id_opcion FROM opcion_pregunta WHERE id_pregunta = ? ORDER BY id_opcion ASC', [idPregunta]);
-    const id_opcion = opciones[index]?.id_opcion;
-    if (!id_opcion) return res.status(400).send('Opción no encontrada');
-    await req.pool.query('UPDATE opcion_pregunta SET texto_opcion = ? WHERE id_opcion = ?', [nuevoTexto, id_opcion]);
-    res.sendStatus(200);
-  } catch (error) {
-    console.error('Error editando opción:', error);
-    res.status(500).send('Error editando opción');
-  }
-});
-
-router.post('/agregar-opcion', isAuthenticated, async (req, res) => {
-  const { idPregunta, nuevaOpcion } = req.body;
-  if (!idPregunta || !nuevaOpcion) return res.status(400).send('Datos incompletos');
-
-  try {
-    await req.pool.query('INSERT INTO opcion_pregunta (id_pregunta, texto_opcion) VALUES (?, ?)', [idPregunta, nuevaOpcion]);
-    res.sendStatus(200);
-  } catch (error) {
-    console.error('Error agregando opción:', error);
-    res.status(500).send('Error agregando opción');
-  }
-});
-
-// Agregar pregunta
-router.post('/agregar-pregunta', isAuthenticated, async (req, res) => {
-  const { id_encuesta, texto_pregunta } = req.body;
-  if (!id_encuesta || !texto_pregunta) return res.status(400).send('Datos incompletos');
-
-  try {
-    const [result] = await req.pool.query('INSERT INTO pregunta_encuesta (id_encuesta, texto, id_estatus_p) VALUES (?, ?, 4)', [id_encuesta, texto_pregunta]);
-    res.status(201).json({ id_pregunta: result.insertId });
-  } catch (error) {
-    console.error('Error agregando pregunta:', error);
-    res.status(500).send('Error agregando pregunta');
-  }
-});
-
-// --- DATOS CURIOSOS ---
-
-// Mostrar datos curiosos
-// Agregar campo "fuente" a las rutas de datos curiosos
-
-// Mostrar datos curiosos
+// ------------------------- DATOS CURIOSOS -------------------------
 router.get('/datos', isAuthenticated, async (req, res) => {
   try {
     const [datos] = await req.pool.query(`
-      SELECT d.id_dato, d.dato, d.imagen, d.id_materia, d.fuente
-      FROM dato_curioso d
-      ORDER BY d.id_materia
+      SELECT id_dato, dato, imagen, id_materia, fuente
+      FROM dato_curioso
+      ORDER BY id_materia
     `);
-    res.render('editor_datos', {
-      layout: false,
-      user: req.session.user,
-      datos
-    });
-  } catch (error) {
-    console.error('Error cargando datos:', error);
+    res.render('editor_datos', { layout: false, user: req.session.user, datos });
+  } catch (err) {
+    console.error('Error cargando datos:', err);
     res.status(500).send('Error cargando datos');
   }
 });
 
-// Agregar dato curioso con imagen y fuente
 router.post('/agregar-dato', isAuthenticated, upload.single('imagen'), async (req, res) => {
   try {
     const { dato, id_materia, fuente } = req.body;
     const imagenBuffer = req.file ? req.file.buffer : null;
-
     if (!dato || !id_materia) return res.status(400).send('Dato o materia faltante');
 
     await req.pool.query(
@@ -192,266 +150,234 @@ router.post('/agregar-dato', isAuthenticated, upload.single('imagen'), async (re
       [dato, imagenBuffer, id_materia, fuente || null]
     );
 
-    res.status(201).send('Dato agregado correctamente');
-  } catch (error) {
-    console.error('Error agregando dato:', error);
+    res.redirect("/editor/datos")
+  } catch (err) {
+    console.error('Error agregando dato:', err);
     res.status(500).send('Error agregando dato');
   }
 });
 
-// Editar dato curioso con imagen y fuente opcional
 router.post('/editar-dato-binario', isAuthenticated, upload.single('imagen'), async (req, res) => {
-  if (req.file) {
-    console.log('Tamaño del archivo (bytes):', req.file.size);
-    const maxSize = 64 * 1024 * 1024; // 64MB
-    if (req.file.size > maxSize) {
-      return res.status(400).send('Archivo demasiado grande');
-    }
-  }
-
   try {
     const { id, nuevoDato, fuente } = req.body;
     const imagenBuffer = req.file ? req.file.buffer : null;
-
     if (!id || !nuevoDato) return res.status(400).send('Datos incompletos');
 
     if (imagenBuffer) {
       await req.pool.query(
-        'UPDATE dato_curioso SET dato = ?, imagen = ?, fuente = ? WHERE id_dato = ?',
+        'UPDATE dato_curioso SET dato=?, imagen=?, fuente=? WHERE id_dato=?',
         [nuevoDato, imagenBuffer, fuente || null, id]
       );
     } else {
       await req.pool.query(
-        'UPDATE dato_curioso SET dato = ?, fuente = ? WHERE id_dato = ?',
+        'UPDATE dato_curioso SET dato=?, fuente=? WHERE id_dato=?',
         [nuevoDato, fuente || null, id]
       );
     }
 
     res.redirect('/editor/datos');
-  } catch (error) {
-    console.error('Error editando dato binario:', error);
-    res.status(500).send('Error editando dato binario');
+  } catch (err) {
+    console.error('Error editando dato:', err);
+    res.status(500).send('Error editando dato');
   }
 });
 
-// Eliminar dato curioso
 router.delete('/eliminar-dato/:id', isAuthenticated, async (req, res) => {
   try {
     const { id } = req.params;
-    await req.pool.query('DELETE FROM dato_curioso WHERE id_dato = ?', [id]);
+    await req.pool.query('DELETE FROM dato_curioso WHERE id_dato=?', [id]);
     res.sendStatus(200);
-  } catch (error) {
-    console.error('Error eliminando dato curioso:', error);
-    res.status(500).send('Error eliminando dato curioso');
+  } catch (err) {
+    console.error('Error eliminando dato:', err);
+    res.status(500).send('Error eliminando dato');
   }
 });
 
 
-// Editor de examenes
 
-router.get('/examenes', isAuthenticated, async (req, res) => {
+// ------------------------- PANEL ENCUESTA -------------------------
+router.get('/encuesta', isAuthenticated, async (req, res) => {
   try {
-    const [filas] = await req.pool.query(`
-      SELECT 
-        p.id_pregunta, p.id_materia, p.pregunta, r.respuesta, p.retroalimentacion
-      FROM pregunta p
-      LEFT JOIN respuesta r ON p.id_pregunta = r.id_pregunta
-      ORDER BY p.id_materia, p.id_pregunta;
+    const [preguntas] = await req.pool.query(`
+      SELECT p.id_pregunta, p.id_encuesta, p.texto as texto, p.id_estatus_p,
+             GROUP_CONCAT(o.texto_opcion ORDER BY o.id_opcion ASC) AS opciones
+      FROM pregunta_encuesta p
+      LEFT JOIN opcion_pregunta o ON p.id_pregunta = o.id_pregunta
+      GROUP BY p.id_pregunta
+      ORDER BY p.id_encuesta, p.id_pregunta
     `);
 
-    const preguntasAgrupadas = {};
-    filas.forEach(fila => {
-      const id = fila.id_pregunta;
-      if (!preguntasAgrupadas[id]) {
-        preguntasAgrupadas[id] = {
-          id_pregunta: id,
-          id_materia: fila.id_materia,
-          pregunta: fila.pregunta,
-          respuestas: [],
-          retroalimentacion: fila.retroalimentacion || ''
-        };
-      }
-      if (fila.respuesta) {
-        preguntasAgrupadas[id].respuestas.push({
-          respuesta: fila.respuesta,
-          correcta: fila.correcta,
-          puntos: fila.puntos
-        });
-      }
-    });
+    const preguntasFormateadas = preguntas.map(p => ({
+      ...p, 
+      opciones: p.opciones ? p.opciones.split(',') : []
+    }));
 
-    const preguntas = Object.values(preguntasAgrupadas);
-
-    res.render('editor_examen', {
+    res.render('editor', {
       layout: false,
       user: req.session.user,
-      preguntas,
+      preguntas: preguntasFormateadas
     });
-  } catch (error) {
-    console.error("Error cargando panel de editor:", error);
-    res.status(500).send("Error interno al cargar el panel.");
+  } catch (err) {
+    console.error('Error cargando encuesta:', err);
+    res.status(500).send('Error cargando encuesta');
   }
 });
 
-// ✅ Actualizar estatus de preguntas
-router.post('/actualizar-examen', isAuthenticated, async (req, res) => {
-  const { id_pregunta, estatus } = req.body;
+// ------------------------- PREGUNTAS -------------------------
 
-  if (!Array.isArray(id_pregunta) || !Array.isArray(estatus) || id_pregunta.length !== estatus.length) {
-    return res.status(400).send('Datos incompletos o inválidos');
+// AGREGAR PREGUNTA DE ENCUESTA
+router.post('/encuesta/agregar-pregunta', isAuthenticated, async (req, res) => {
+  const { id_encuesta, texto_pregunta, opciones } = req.body;
+
+  if (!id_encuesta || !texto_pregunta || !opciones || opciones.length < 2) {
+    return res.status(400).json({ ok: false, error: 'Datos incompletos' });
   }
 
   try {
-    for (let i = 0; i < id_pregunta.length; i++) {
+    // 1. Insertar pregunta
+    const [result] = await req.pool.query(
+      'INSERT INTO pregunta_encuesta (id_encuesta, texto) VALUES (?, ?)',
+      [id_encuesta, texto_pregunta]
+    );
+
+    const id_pregunta = result.insertId;
+
+    // 2. Insertar opciones
+    for (let op of opciones) {
       await req.pool.query(
-        'UPDATE pregunta SET id_status = ? WHERE id_pregunta = ?',
-        [estatus[i], id_pregunta[i]]
+        'INSERT INTO opcion_pregunta (id_pregunta, texto_opcion) VALUES (?, ?)',
+        [id_pregunta, op]
       );
     }
-    res.sendStatus(200);
-  } catch (error) {
-    console.error("Error actualizando estatus:", error);
-    res.status(500).send("Error actualizando estatus");
+
+    res.status(200).json({ ok: true, id_pregunta });
+  } catch (err) {
+    console.error('Error agregando pregunta:', err);
+    res.status(500).json({ ok: false, error: 'Error al agregar pregunta' });
   }
 });
 
-// ✅ Eliminar pregunta
-router.delete('/eliminar-preguntas/:id', isAuthenticated, async (req, res) => {
+// Editar pregunta
+router.post('/encuesta/editar-pregunta', isAuthenticated, async (req, res) => {
+  const { id, nuevoTexto, opciones } = req.body;
   try {
-    const { id } = req.params;
-    await req.pool.query('DELETE FROM respuesta WHERE id_pregunta = ?', [id]);
-    await req.pool.query('DELETE FROM pregunta WHERE id_pregunta = ?', [id]);
+    // 1. Actualizar texto de la pregunta
+    await req.pool.query(
+      'UPDATE pregunta_encuesta SET texto=? WHERE id_pregunta=?',
+      [nuevoTexto, id]
+    );
+
+    // 2. Obtener opciones actuales
+    const [actuales] = await req.pool.query(
+      'SELECT id_opcion FROM opcion_pregunta WHERE id_pregunta=? ORDER BY id_opcion ASC',
+      [id]
+    );
+
+    // 3. Actualizar / insertar / eliminar según sea necesario
+    for (let i = 0; i < opciones.length; i++) {
+      if (actuales[i]) {
+        // ya existe → actualizar
+        await req.pool.query(
+          'UPDATE opcion_pregunta SET texto_opcion=? WHERE id_opcion=?',
+          [opciones[i], actuales[i].id_opcion]
+        );
+      } else {
+        // no existe → insertar
+        await req.pool.query(
+          'INSERT INTO opcion_pregunta (id_pregunta, texto_opcion) VALUES (?, ?)',
+          [id, opciones[i]]
+        );
+      }
+    }
+
+    // 4. Si hay más opciones en BD que las nuevas → borrar las sobrantes
+    if (actuales.length > opciones.length) {
+      const idsAEliminar = actuales.slice(opciones.length).map(op => op.id_opcion);
+      await req.pool.query(
+        'DELETE FROM opcion_pregunta WHERE id_opcion IN (?)',
+        [idsAEliminar]
+      );
+    }
+
     res.sendStatus(200);
-  } catch (error) {
-    console.error('Error eliminando pregunta:', error);
+  } catch (err) {
+    console.error('Error editando pregunta + opciones de encuesta:', err);
+    res.status(500).send('Error editando pregunta');
+  }
+});
+
+// Eliminar pregunta
+router.delete('/encuesta/eliminar-pregunta/:id', isAuthenticated, async (req, res) => {
+  const { id } = req.params;
+  try {
+    await req.pool.query('DELETE FROM opcion_pregunta WHERE id_pregunta=?', [id]);
+    await req.pool.query('DELETE FROM pregunta_encuesta WHERE id_pregunta=?', [id]);
+    res.sendStatus(200);
+  } catch (err) {
+    console.error('Error eliminando pregunta de encuesta:', err);
     res.status(500).send('Error eliminando pregunta');
   }
 });
 
-// ✅ Editar pregunta
-router.post('/editar-preguntas', isAuthenticated, async (req, res) => {
-  const { id, nuevoTexto } = req.body;
-  if (!id || !nuevoTexto) return res.status(400).send('Datos incompletos');
+// ------------------------- OPCIONES -------------------------
 
-  try {
-    await req.pool.query('UPDATE pregunta SET pregunta = ? WHERE id_pregunta = ?', [nuevoTexto, id]);
-    res.sendStatus(200);
-  } catch (error) {
-    console.error('Error actualizando pregunta:', error);
-    res.status(500).send('Error actualizando pregunta');
-  }
-});
-
-// ✅ Eliminar opción de respuesta
-router.post('/eliminar-opciones', isAuthenticated, async (req, res) => {
-  const { index, idPregunta } = req.body;
-  try {
-    const [opciones] = await req.pool.query('SELECT id_respuesta FROM respuesta WHERE id_pregunta = ? ORDER BY id_respuesta ASC', [idPregunta]);
-    const id_opcion = opciones[index]?.id_respuesta;
-    if (!id_opcion) return res.status(400).send('Opción no encontrada');
-    await req.pool.query('DELETE FROM respuesta WHERE id_respuesta = ?', [id_opcion]);
-    res.sendStatus(200);
-  } catch (error) {
-    console.error('Error eliminando opción:', error);
-    res.status(500).send('Error eliminando opción');
-  }
-});
-
-// ✅ Editar opción de respuesta
-router.post('/editar-opciones', isAuthenticated, async (req, res) => {
-  const { index, idPregunta, nuevoTexto } = req.body;
-  try {
-    const [opciones] = await req.pool.query('SELECT id_respuesta FROM respuesta WHERE id_pregunta = ? ORDER BY id_respuesta ASC', [idPregunta]);
-    const id_respuesta = opciones[index]?.id_respuesta;
-    if (!id_respuesta) return res.status(400).send('Opción no encontrada');
-    await req.pool.query('UPDATE respuesta SET respuesta = ? WHERE id_respuesta = ?', [nuevoTexto, id_respuesta]);
-    res.sendStatus(200);
-  } catch (error) {
-    console.error('Error editando opción:', error);
-    res.status(500).send('Error editando opción');
-  }
-});
-
-// ✅ Agregar nueva opción
-router.post('/agregar-opciones', isAuthenticated, async (req, res) => {
+// Agregar opción
+router.post('/encuesta/agregar-opcion', isAuthenticated, async (req, res) => {
   const { idPregunta, nuevaOpcion } = req.body;
-  if (!idPregunta || !nuevaOpcion) return res.status(400).send('Datos incompletos');
-
   try {
-    await req.pool.query('INSERT INTO respuesta (id_pregunta, respuesta) VALUES (?, ?)', [idPregunta, nuevaOpcion]);
+    await req.pool.query(
+      'INSERT INTO opcion_pregunta (id_pregunta, texto_opcion) VALUES (?, ?)',
+      [idPregunta, nuevaOpcion]
+    );
     res.sendStatus(200);
-  } catch (error) {
-    console.error('Error agregando opción:', error);
+  } catch (err) {
+    console.error('Error agregando opción de encuesta:', err);
     res.status(500).send('Error agregando opción');
   }
 });
 
-// ✅ Agregar nueva pregunta
-router.post('/agregar-preguntas', isAuthenticated, async (req, res) => {
-  const { id_encuesta, texto_pregunta } = req.body;
-  if (!id_encuesta || !texto_pregunta) return res.status(400).send('Datos incompletos');
-
+// Editar opción
+router.post('/encuesta/editar-opcion', isAuthenticated, async (req, res) => {
+  const { index, idPregunta, nuevoTexto } = req.body;
   try {
-    const [result] = await req.pool.query('INSERT INTO pregunta (id_materia, pregunta) VALUES (?, ?)', [id_encuesta, texto_pregunta]);
-    res.status(201).json({ id_pregunta: result.insertId });
-  } catch (error) {
-    console.error('Error agregando pregunta:', error);
-    res.status(500).send('Error agregando pregunta');
+    const [opciones] = await req.pool.query(
+      'SELECT id_opcion FROM opcion_pregunta WHERE id_pregunta=? ORDER BY id_opcion ASC',
+      [idPregunta]
+    );
+
+    if (opciones[index]) {
+      await req.pool.query(
+        'UPDATE opcion_pregunta SET texto_opcion=? WHERE id_opcion=?',
+        [nuevoTexto, opciones[index].id_opcion]
+      );
+      res.sendStatus(200);
+    } else {
+      res.status(404).send('Opción no encontrada');
+    }
+  } catch (err) {
+    console.error('Error editando opción de encuesta:', err);
+    res.status(500).send('Error editando opción');
   }
 });
 
-router.post('/establecer-correcta', isAuthenticated, async (req, res) => {
+// Eliminar opción
+router.post('/encuesta/eliminar-opcion', isAuthenticated, async (req, res) => {
   const { index, idPregunta } = req.body;
-
   try {
     const [opciones] = await req.pool.query(
-      'SELECT id_respuesta FROM respuesta WHERE id_pregunta = ? ORDER BY id_respuesta ASC',
+      'SELECT id_opcion FROM opcion_pregunta WHERE id_pregunta=? ORDER BY id_opcion ASC',
       [idPregunta]
     );
 
-    const id_correcta = opciones[index]?.id_respuesta;
-    if (!id_correcta) return res.status(400).send('Opción no encontrada');
-
-    // Primero marcamos todas como incorrectas
-    await req.pool.query(
-      'UPDATE respuesta SET correcta = 0 WHERE id_pregunta = ?',
-      [idPregunta]
-    );
-
-    // Luego marcamos solo una como correcta
-    await req.pool.query(
-      'UPDATE respuesta SET correcta = 1 WHERE id_respuesta = ?',
-      [id_correcta]
-    );
-
-    res.sendStatus(200);
-  } catch (error) {
-    console.error('Error estableciendo opción correcta:', error);
-    res.status(500).send('Error actualizando opción correcta');
-  }
-});
-
-router.post('/actualizar-puntos', isAuthenticated, async (req, res) => {
-  const { index, idPregunta, puntos } = req.body;
-
-  try {
-    const [opciones] = await req.pool.query(
-      'SELECT id_respuesta FROM respuesta WHERE id_pregunta = ? ORDER BY id_respuesta ASC',
-      [idPregunta]
-    );
-
-    const id_respuesta = opciones[index]?.id_respuesta;
-    if (!id_respuesta) return res.status(400).send('Opción no encontrada');
-
-    await req.pool.query(
-      'UPDATE respuesta SET puntos = ? WHERE id_respuesta = ?',
-      [puntos, id_respuesta]
-    );
-
-    res.sendStatus(200);
-  } catch (error) {
-    console.error('Error actualizando puntos:', error);
-    res.status(500).send('Error actualizando puntos');
+    if (opciones[index]) {
+      await req.pool.query('DELETE FROM opcion_pregunta WHERE id_opcion=?', [opciones[index].id_opcion]);
+      res.sendStatus(200);
+    } else {
+      res.status(404).send('Opción no encontrada');
+    }
+  } catch (err) {
+    console.error('Error eliminando opción de encuesta:', err);
+    res.status(500).send('Error eliminando opción');
   }
 });
 

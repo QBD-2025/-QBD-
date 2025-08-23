@@ -9,9 +9,7 @@
 <body>
   <header class="editor-header">
     <div class="header-left">
-      <a href="/">
-        <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image-header">
-      </a>
+      <a href="/"><img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image-header"></a>
     </div>
     <div class="header-center">
       <h1 class="editor-title">Panel de Edición</h1>
@@ -27,191 +25,203 @@
   <div class="editor-container container mt-4">
     <h2 class="editor-subtitle mb-4">Gestión de Encuesta</h2>
     <a href="/editor/datos" class="editor-btn">Gestión de Datos</a>
-    <a href="/editor/examenes" class="editor-btn">Gestión de Examenes</a>
+    <a href="/editor" class="editor-btn">Gestión de Exámenes</a>
 
-    
-
-    <form method="POST" action="/editor/actualizar-examenes" class="editor-form">
-    <table class="editor-table">
-
-  <thead>
-    <tr>
-      <th>ID Encuesta</th>
-      <th>Pregunta</th>
-      <th>Opciones</th>
-      <th>Estatus</th>
-    </tr>
-  </thead>
-  <tbody>
-    {{#each preguntas}}
-    <tr>
-      <td>{{id_encuesta}}</td>
-      <td>
-        <strong>{{texto_pregunta}}</strong><br>
-        <button type="button" onclick="editarPregunta({{id_pregunta}}, '{{texto_pregunta}}')">✏️ Editar</button>
-        <button type="button" onclick="eliminarPregunta({{id_pregunta}})">🗑️ Eliminar</button>
-        
-      </td>
-      <td>
-        <ul>
-          {{#each opciones}}
-          <li>
-            {{this}}
-            <button type="button" onclick="editarOpcion('{{this}}', {{@index}}, {{../id_pregunta}})">✏️</button>
-            <button type="button" onclick="eliminarOpcion({{@index}}, {{../id_pregunta}})">🗑️</button>
-          </li>
+    <form class="editor-form">
+      <table class="editor-table">
+        <thead>
+          <tr>
+            <th>ID Encuesta</th>
+            <th>Pregunta</th>
+            <th>Opciones</th>
+            <th>Estatus</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each preguntas}}
+          <tr>
+            <td>{{id_encuesta}}</td>
+            <td><strong>{{texto_pregunta}}</strong></td>
+            <td>
+              <ul>
+                {{#each opciones}}
+                <li>{{this}}</li>
+                {{/each}}
+              </ul>
+            </td>
+            <td>
+              <input type="hidden" name="id_pregunta[]" value="{{id_pregunta}}">
+              <select name="estatus[]">
+                <option value="1" {{#if (eq id_estatus_p 1)}}selected{{/if}}>Publicado</option>
+                <option value="2" {{#if (eq id_estatus_p 2)}}selected{{/if}}>Borrador</option>
+                <option value="3" {{#if (eq id_estatus_p 3)}}selected{{/if}}>Archivado</option>
+                <option value="4" {{#if (eq id_estatus_p 4)}}selected{{/if}}>Revisión</option>
+              </select>
+            </td>
+            <td>
+              <button type="button" class="editor-btn editar-btn"
+                data-id="{{id_pregunta}}"
+                data-texto="{{texto_pregunta}}"
+                data-opciones="{{opciones}}">
+                ✏️ Editar
+              </button>
+              <button type="button" class="editor-btn eliminar-btn" data-id="{{id_pregunta}}" style="background: linear-gradient(to right, #e74c3c, #c0392b);">
+                🗑️ Eliminar
+              </button>
+            </td>
+          </tr>
           {{/each}}
-        </ul>
-        <button type="button" onclick="agregarOpcion({{id_pregunta}})">➕ Agregar opción</button>
-      </td>
-      <td>
-        <input type="hidden" name="id_pregunta[]" value="{{id_pregunta}}">
-        <select name="estatus[]">
-          <option value="1" {{#if (eq id_estatus_p 1)}}selected{{/if}}>Publicado</option>
-          <option value="2" {{#if (eq id_estatus_p 2)}}selected{{/if}}>Borrador</option>
-          <option value="3" {{#if (eq id_estatus_p 3)}}selected{{/if}}>Archivado</option>
-          <option value="4" {{#if (eq id_estatus_p 4)}}selected{{/if}}>Revisión</option>
-        </select>
-      </td>
-    </tr>
-    {{/each}}
-  </tbody>
-</table>
-<td><button type="button" onclick="agregarPregunta()">➕ Agregar pregunta</button></td>
-  <button type="submit" class="editor-btn">Guardar Cambios</button>
-</form>
+        </tbody>
+      </table>
+      <button type="button" id="btnAgregarPregunta">➕ Agregar pregunta</button>
+    </form>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Modal Editar -->
+  <div id="editorModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h2>Editar Pregunta</h2>
+      <form id="editarForm">
+        <input type="hidden" name="id_pregunta" id="editId">
+        <label>Texto de la pregunta:</label>
+        <input type="text" name="texto_pregunta" id="editTexto" required />
+        <div id="editOpcionesContainer"></div>
+        <button type="submit" class="editor-btn">Guardar cambios</button>
+        <button type="button" class="editor-btn" style="background: gray;" id="cerrarModal">Cancelar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Agregar -->
+  <div id="agregarModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h2>Agregar Pregunta</h2>
+      <form id="agregarForm">
+        <label>ID de la encuesta:</label>
+        <input type="number" name="id_encuesta" id="agregarIdEncuesta" required />
+        <label>Texto de la pregunta:</label>
+        <input type="text" name="texto_pregunta" id="agregarTexto" required />
+        <div id="agregarOpcionesContainer">
+          <label>Opción 1:</label>
+          <input type="text" name="opciones[]" required />
+          <label>Opción 2:</label>
+          <input type="text" name="opciones[]" required />
+        </div>
+        <button type="button" id="btnAddOpcion">➕ Agregar opción</button>
+        <button type="submit" class="editor-btn">Guardar pregunta</button>
+        <button type="button" class="editor-btn" style="background: gray;" id="cerrarAgregarModal">Cancelar</button>
+      </form>
+    </div>
+  </div>
 
 <script>
-function eliminarPregunta(id) {
-  if (confirm("¿Seguro que deseas eliminar esta pregunta?")) {
-    fetch(`/editor/eliminar-pregunta/${id}`, { method: "DELETE" })
-      .then(res => {
-        if (res.ok) location.reload();
-        else alert("Error al eliminar pregunta");
-      });
-  }
-}
+document.addEventListener('DOMContentLoaded', () => {
 
-function eliminarOpcion(index, idPregunta) {
-  if (confirm("¿Eliminar esta opción?")) {
-    fetch(`/editor/eliminar-opcion`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ index, idPregunta })
-    })
-      .then(res => {
-        if (res.ok) location.reload();
-        else alert("Error al eliminar opción");
-      });
-  }
-}
-
-function editarPregunta(id, textoActual) {
-  const nuevoTexto = prompt("Editar pregunta:", textoActual);
-  if (nuevoTexto && nuevoTexto !== textoActual) {
-    fetch(`/editor/editar-pregunta`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, nuevoTexto })
-    })
-    .then(res => {
-      if (res.ok) location.reload();
-      else alert("Error al editar la pregunta");
+  // ---------- ELIMINAR ----------
+  document.querySelectorAll('.eliminar-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      if(confirm('¿Seguro que deseas eliminar esta pregunta?')) {
+        const res = await fetch(`/editor/encuesta/eliminar-pregunta/${id}`, { method: 'DELETE' });
+        if(res.ok) location.reload();
+        else alert('Error al eliminar pregunta');
+      }
     });
-  }
-}
-
-function editarOpcion(opcionTexto, index, idPregunta) {
-  const nuevoTexto = prompt("Editar opción:", opcionTexto);
-  if (nuevoTexto && nuevoTexto !== opcionTexto) {
-    fetch(`/editor/editar-opcion`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ index, idPregunta, nuevoTexto })
-    })
-    .then(res => {
-      if (res.ok) location.reload();
-      else alert("Error al editar la opción");
-    });
-  }
-}
-
-function agregarOpcion(idPregunta) {
-  const nuevaOpcion = prompt("Nueva opción:");
-  if (nuevaOpcion) {
-    fetch(`/editor/agregar-opcion`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idPregunta, nuevaOpcion })
-    })
-    .then(res => {
-      if (res.ok) location.reload();
-      else alert("Error al agregar opción");
-    });
-  }
-}
-function agregarPregunta() {
-  const texto = prompt("Ingrese el texto de la nueva pregunta:");
-  if (!texto) return;
-
-  const idEncuesta = prompt("Ingrese el ID de la encuesta a la que pertenece:");
-  if (!idEncuesta || isNaN(idEncuesta)) {
-    alert("ID de encuesta inválido.");
-    return;
-  }
-
-  fetch(`/editor/agregar-pregunta`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id_encuesta: idEncuesta, texto_pregunta: texto })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (!data.id_pregunta) {
-      alert("Error al agregar la pregunta");
-      return;
-    }
-
-    // Crear nueva fila <tr>
-    const tbody = document.querySelector(".editor-table tbody");
-    const nuevaFila = document.createElement("tr");
-
-    nuevaFila.innerHTML = `
-      <td>${idEncuesta}</td>
-      <td>
-        <strong>${texto}</strong><br>
-        <button type="button" onclick="editarPregunta(${data.id_pregunta}, '${texto}')">✏️ Editar</button>
-        <button type="button" onclick="eliminarPregunta(${data.id_pregunta})">🗑️ Eliminar</button>
-      </td>
-      <td>
-        <ul></ul>
-        <button type="button" onclick="agregarOpcion(${data.id_pregunta})">➕ Agregar opción</button>
-      </td>
-      <td>
-        <input type="hidden" name="id_pregunta[]" value="${data.id_pregunta}">
-        <select name="estatus[]">
-          <option value="1">Publicado</option>
-          <option value="2">Borrador</option>
-          <option value="3" selected>Archivado</option>
-          <option value="4">Revisión</option>
-        </select>
-      </td>
-    `;
-
-    tbody.appendChild(nuevaFila);
-  })
-  .catch(err => {
-    console.error("Error:", err);
-    alert("Error al agregar la pregunta");
   });
-}
 
+  // ---------- EDITAR ----------
+  const modal = document.getElementById('editorModal');
+  const cerrarModal = document.getElementById('cerrarModal');
+  const editarForm = document.getElementById('editarForm');
+  const opcionesContainer = document.getElementById('editOpcionesContainer');
+
+  document.querySelectorAll('.editar-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      const texto = btn.dataset.texto;
+      const opciones = btn.dataset.opciones ? btn.dataset.opciones.split(',') : [];
+
+      document.getElementById('editId').value = id;
+      document.getElementById('editTexto').value = texto;
+
+      opcionesContainer.innerHTML = '';
+      opciones.forEach((op,i) => {
+        opcionesContainer.innerHTML += `<label>Opción ${i+1}:</label><input type="text" name="opciones[]" value="${op}" />`;
+      });
+
+      modal.style.display = 'flex';
+    });
+  });
+
+  cerrarModal.addEventListener('click', () => modal.style.display = 'none');
+
+  editarForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(editarForm);
+    const data = Object.fromEntries(formData.entries());
+    data.opciones = formData.getAll('opciones[]');
+
+    const res = await fetch('/editor/encuesta/editar-pregunta', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        id: data.id_pregunta,
+        nuevoTexto: data.texto_pregunta,
+        opciones: data.opciones
+      })
+    });
+
+    if(res.ok) location.reload();
+    else alert('Error al guardar los cambios');
+  });
+
+  // ---------- AGREGAR ----------
+  const agregarModal = document.getElementById('agregarModal');
+  const btnAgregarPregunta = document.getElementById('btnAgregarPregunta');
+  const cerrarAgregar = document.getElementById('cerrarAgregarModal');
+  const agregarForm = document.getElementById('agregarForm');
+  const addOpcionesContainer = document.getElementById('agregarOpcionesContainer');
+  const btnAddOpcion = document.getElementById('btnAddOpcion');
+
+  let opcionCount = 2;
+
+  btnAgregarPregunta.addEventListener('click', () => {
+    agregarForm.reset();
+    addOpcionesContainer.innerHTML = `
+      <label>Opción 1:</label><input type="text" name="opciones[]" required />
+      <label>Opción 2:</label><input type="text" name="opciones[]" required />
+    `;
+    opcionCount = 2;
+    agregarModal.style.display = 'flex';
+  });
+
+  cerrarAgregar.addEventListener('click', () => agregarModal.style.display = 'none');
+
+  btnAddOpcion.addEventListener('click', () => {
+    opcionCount++;
+    addOpcionesContainer.innerHTML += `<label>Opción ${opcionCount}:</label><input type="text" name="opciones[]" required />`;
+  });
+
+  agregarForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(agregarForm);
+    const data = Object.fromEntries(formData.entries());
+    data.opciones = formData.getAll('opciones[]');
+
+    const res = await fetch('/editor/encuesta/agregar-pregunta', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    });
+
+    if(res.ok) location.reload();
+    else alert('Error al guardar la nueva pregunta');
+  });
+
+});
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-
