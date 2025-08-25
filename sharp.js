@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 
 // Ruta corregida
-const carpeta = path.join(__dirname, "src/media/video_stuart_octavio");
+const carpeta = path.join(__dirname, "src/media/video_clasifica");
 
 // Verificar si la carpeta existe
 if (!fs.existsSync(carpeta)) {

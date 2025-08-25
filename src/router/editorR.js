@@ -158,28 +158,23 @@ router.post('/agregar-dato', isAuthenticated, upload.single('imagen'), async (re
 });
 
 router.post('/editar-dato-binario', isAuthenticated, upload.single('imagen'), async (req, res) => {
-  try {
-    const { id, nuevoDato, fuente } = req.body;
-    const imagenBuffer = req.file ? req.file.buffer : null;
-    if (!id || !nuevoDato) return res.status(400).send('Datos incompletos');
+  const { id, dato, fuente } = req.body;
+  const imagenBuffer = req.file ? req.file.buffer : null;
+  if (!id || !dato) return res.status(400).send('Datos incompletos');
 
-    if (imagenBuffer) {
-      await req.pool.query(
-        'UPDATE dato_curioso SET dato=?, imagen=?, fuente=? WHERE id_dato=?',
-        [nuevoDato, imagenBuffer, fuente || null, id]
-      );
-    } else {
-      await req.pool.query(
-        'UPDATE dato_curioso SET dato=?, fuente=? WHERE id_dato=?',
-        [nuevoDato, fuente || null, id]
-      );
-    }
-
-    res.redirect('/editor/datos');
-  } catch (err) {
-    console.error('Error editando dato:', err);
-    res.status(500).send('Error editando dato');
+  if (imagenBuffer) {
+    await req.pool.query(
+      'UPDATE dato_curioso SET dato=?, imagen=?, fuente=? WHERE id_dato=?',
+      [dato, imagenBuffer, fuente || null, id]
+    );
+  } else {
+    await req.pool.query(
+      'UPDATE dato_curioso SET dato=?, fuente=? WHERE id_dato=?',
+      [dato, fuente || null, id]
+    );
   }
+
+  res.redirect('/editor/datos');
 });
 
 router.delete('/eliminar-dato/:id', isAuthenticated, async (req, res) => {

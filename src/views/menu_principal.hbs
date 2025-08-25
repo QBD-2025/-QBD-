@@ -70,7 +70,7 @@
 <div class="duo-style-wrapper">
 
     {{!-- ========= SECCIÓN 1: Texto a la izquierda, Animación a la derecha ========= --}}
-    <section class="info-section">
+    <section class="info-section reverse">
         <div class="text-content">
             <h2 class="info-headline yellow-text">Divertido, efectivo y retador.</h2>
             <button type="button" class="duo-button" onclick="location.href='/minijuegos'">Minijuegos</button>    
@@ -83,64 +83,66 @@
     </section>
 
     {{!-- ========= SECCIÓN 2: Imagen a la izquierda, Texto a la derecha ========= --}}
-    <section class="info-section reverse">
+    <section class="info-section ">
         <div class="text-content">
             <h2 class="info-headline yellow-text">Refuerza tu conocimiento con examenes de práctica.</h2>
             <button class="duo-button" onclick="location.href='/materias'" >empezar</button>
         </div>
-        <div class="image-content">
+        <div class="image-content reverse">
             <div id="animationContainer" class="animacion-duolingo">
                 <img id="duolingoAnimation" src="/media/stuart_octavio_libro/stuart_octavio_libro_000001.webp" alt="Animación Duolingo2">
             </div>
         </div>
     </section>
 
-    <section class="info-section">
+    <section class="info-section reverse">
         <div class="text-content">
             <h2 class="info-headline yellow-text">¡Sorprende a tu intelecto con nuevos desafios!</h2>
             <button type="button" class="duo-button" onclick="location.href='/simulador'">Simulador</button>
         </div>
-        <div class="image-content reverse">
+        <div class="image-content">
             <div id="animationContainer5" class="animacion-duolingo">
                 <img id="duolingoAnimation5" src="media/video_admision_000/video_admision_001.webp" alt="Animación Duolingo5">
             </div>
         </div>
     </section>
 
-    {{!-- ========= SECCIÓN 3: Texto a la izquierda, Imagen a la derecha ========= --}}
-    <section class="info-section reverse">
+    {{!-- ========= NUEVA SECCIÓN AL FINAL: Clasificación ========= --}}
+    <section class="info-section ">
         <div class="text-content">
-            <h2 class="info-headline yellow-text">Datos que te hacen sobresalir.</h2>
-            <button type="button" class="duo-button" onclick="location.href='/eleccion-dato'">Datos</button>
+            <h2 class="info-headline yellow-text">Mira tu progreso y compite con otros.</h2>
+            <button type="button" class="duo-button" onclick="location.href='/ranking'">Clasificación</button>
         </div>
-        <div class="image-content">
-            <div id="animationContainer3" class="animacion-duolingo">
-                <img id="duolingoAnimation3" src="/media/caminando_stuart_octavio/caminando_stuart_octavio_001.webp" alt="Animación Duolingo3">
+        <div class="image-content reverse">
+            <div id="animationContainer7" class="animacion-duolingo">
+                <img id="duolingoAnimation7" src="/media/video_clasifica/video_clasifica_000001.webp" alt="Animación Clasificación">
             </div>
         </div>
     </section>
 
-    <section class="info-section">
+        <section class="info-section reverse">
         <div class="text-content">
             <h2 class="info-headline yellow-text">¡Demuestra quién es el mejor!</h2>
             <button type="button" class="duo-button" onclick="location.href='/competitivo'">Modo competitivo</button>
         </div>
-        <div class="image-content reverse">
+        <div class="image-content">
             <div id="animationContainer6" class="animacion-duolingo">
                 <img id="duolingoAnimation6" src="/media/batalla-sin-cuartel_000/batalla-sin-cuartel_001.webp" alt="Animación Batalla">
             </div>
         </div>
     </section>
 
-    {{!-- ========= NUEVA SECCIÓN AL FINAL: Clasificación ========= --}}
-    <section class="info-section reverse">
+    
+
+    {{!-- ========= SECCIÓN 3: Texto a la izquierda, Imagen a la derecha ========= --}}
+    <section class="info-section ">
         <div class="text-content">
-            <h2 class="info-headline yellow-text">Mira tu progreso y compite con otros.</h2>
-            <button type="button" class="duo-button" onclick="location.href='/ranking'">Clasificación</button>
+            <h2 class="info-headline yellow-text">Datos que te hacen sobresalir.</h2>
+            <button type="button" class="duo-button" onclick="location.href='/eleccion-dato'">Datos</button>
         </div>
-        <div class="image-content">
-            <div id="animationContainer4" class="animacion-duolingo">
-                <img id="duolingoAnimation4" src="/media/clasificacion_000/clasificacion_001.webp" alt="Animación Clasificación">
+        <div class="image-content reverse">
+            <div id="animationContainer3" class="animacion-duolingo">
+                <img id="duolingoAnimation3" src="/media/caminando_stuart_octavio/caminando_stuart_octavio_001.webp" alt="Animación Duolingo3">
             </div>
         </div>
     </section>
@@ -157,6 +159,7 @@
 <script src="/utils/animacion4.js"></script>
 <script src="/utils/animacion5.js"></script>
 <script src="/utils/animacion6.js"></script>
+<script src="/utils/animacion7.js"></script>
 
 <script>
     // Efecto adicional para el botón flotante

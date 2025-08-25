@@ -382,3 +382,17 @@ duo-button {
         right: 15px;
     }
 }
+
+.highlight-box {
+    background: linear-gradient(to right, #0815c5, #0c0264);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    display: inline-block; /* ajusta el ancho al contenido */
+    max-width: 400px; /* opcional: ancho máximo */
+    text-align: center;
+}
+
+.highlight-box .info-headline {
+    color: #333; /* cambia el texto a oscuro para que contraste */
+}
