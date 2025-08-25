@@ -1,0 +1,35 @@
+<!-- views/dato-sesion.hbs -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title> QueBuenDato.com </title>           
+    <link rel="stylesheet" href="/css/dato-sesion.css">
+</head>
+<body>
+  <div class="dato-container">
+    <h2 class="title">¡Que buenos datos!</h2>
+    <p class="texto-dato">{{dato}}</p>
+    {{#if imagen}}
+      <img src="data:image/jpeg;base64,{{imagen}}" alt="Imagen del dato curioso">
+    {{/if}}
+    <p style="margin-top: 1.5em; color: #888;">Redirigiendo a tu perfil...</p>
+  </div>
+  <audio id="sonidoCurioso" src="/audio/curioso.mp3" preload="auto" autoplay></audio>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const sonido = document.getElementById('sonidoCurioso');
+      sonido.play().catch(err => {
+        console.warn("El sonido no se pudo reproducir automáticamente:", err);
+      });
+
+      // Redirigir al hacer clic en cualquier parte del documento
+      document.body.addEventListener('click', () => {
+        window.location.href = "/menu_principal";
+      });
+    });
+  </script> 
+</body>
+</html>

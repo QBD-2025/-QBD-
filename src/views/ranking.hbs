@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking - QueBuenDato</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --color-primary: #0815c5;
+            --color-secondary: #facc15;
+            --color-dark: #0c0264;
+            --color-light: #f9f9f9;
+            --color-gray: #ededed;
+            --color-gold: #FFD700;
+            --color-silver: #C0C0C0;
+            --color-bronze: #CD7F32;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--color-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(120deg, var(--color-primary) 0%, var(--color-dark) 100%);
+            color: white;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        /* Podio */
+        .podium-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            color: var(--color-primary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--color-secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .podium {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .podium-item {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.3s;
+            width: 30%;
+            max-width: 250px;
+        }
+        
+        .podium-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .podium-item:nth-child(1) {
+            background: linear-gradient(135deg, var(--color-gold) 0%, #DAA520 100%);
+            color: #704c00;
+            height: 280px;
+            order: 2;
+        }
+        
+        .podium-item:nth-child(2) {
+            background: linear-gradient(135deg, var(--color-silver) 0%, #A9A9A9 100%);
+            color: #464646;
+            height: 250px;
+            order: 1;
+        }
+        
+        .podium-item:nth-child(3) {
+            background: linear-gradient(135deg, var(--color-bronze) 0%, #8C6B46 100%);
+            color: white;
+            height: 230px;
+            order: 3;
+        }
+        
+        .podium-badge {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .podium-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            border: 3px solid white;
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .podium-username {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .podium-category {
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        
+        /* Tabla */
+        .ranking-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: linear-gradient(120deg, var(--color-primary) 0%, var(--color-dark) 100%);
+            color: white;
+        }
+        
+        th {
+            padding: 16px 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        th:first-child {
+            width: 70px;
+            text-align: center;
+            padding-left: 20px;
+        }
+        
+        th:nth-child(2) {
+            width: 40%;
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid #eee;
+            transition: background 0.3s;
+        }
+        
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        td {
+            padding: 14px 15px;
+            font-size: 1rem;
+        }
+        
+        td:first-child {
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding-left: 20px;
+            color: var(--color-dark);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--color-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--color-dark);
+        }
+        
+        .username {
+            font-weight: 600;
+            color: var(--color-dark);
+        }
+        
+        .user-category {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .score {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        /* Botón flotante */
+        .floating-button {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--color-secondary);
+            color: #333;
+            border: none;
+            border-bottom: 4px solid #e0a800;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .floating-button:hover {
+            background-color: #ffd44f;
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .podium {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .podium-item {
+                width: 100%;
+                max-width: 300px;
+                height: auto !important;
+                margin-bottom: 20px;
+                flex-direction: row;
+                text-align: left;
+                justify-content: flex-start;
+            }
+            
+            .podium-avatar {
+                margin-right: 15px;
+                margin-bottom: 0;
+                width: 60px;
+                height: 60px;
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-trophy"></i> Ranking</h1>
+            <p>Clasificación de los mejores jugadores según sus puntos totales</p>
+        </header>
+        
+        <!-- Podio -->
+        <div class="podium-section">
+            <h2 class="section-title"><i class="fas fa-medal"></i> Top Jugadores</h2>
+            <div class="podium">
+                {{#if usuarios.length}}
+                    {{#with usuarios.[0]}}
+                    <div class="podium-item">
+                        <div class="podium-badge">🥇</div>
+                        <div class="podium-avatar">{{apodo.[0]}}</div>
+                        <div>
+                            <div class="podium-username">{{username}}</div>
+                            <div class="podium-category">Total - {{puntos}} puntos</div>
+                        </div>
+                    </div>
+                    {{/with}}
+                    
+                    {{#with usuarios.[1]}}
+                    <div class="podium-item">
+                        <div class="podium-badge">🥈</div>
+                        <div class="podium-avatar">{{apodo.[0]}}</div>
+                        <div>
+                            <div class="podium-username">{{username}}</div>
+                            <div class="podium-category">Total - {{puntos}} puntos</div>
+                        </div>
+                    </div>
+                    {{/with}}
+                    
+                    {{#with usuarios.[2]}}
+                    <div class="podium-item">
+                        <div class="podium-badge">🥉</div>
+                        <div class="podium-avatar">{{apodo.[0]}}</div>
+                        <div>
+                            <div class="podium-username">{{username}}</div>
+                            <div class="podium-category">Total - {{puntos}} puntos</div>
+                        </div>
+                    </div>
+                    {{/with}}
+                {{else}}
+                    <div class="podium-item"><div class="podium-badge">🥇</div><div class="podium-username">No hay datos</div></div>
+                    <div class="podium-item"><div class="podium-badge">🥈</div><div class="podium-username">No hay datos</div></div>
+                    <div class="podium-item"><div class="podium-badge">🥉</div><div class="podium-username">No hay datos</div></div>
+                {{/if}}
+            </div>
+        </div>
+        
+        <!-- Tabla -->
+        <div class="ranking-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th><i class="fas fa-user"></i> Jugador</th>
+                        <th><i class="fas fa-star"></i> Puntos Totales</th>
+                    </tr>
+                </thead>
+                <tbody id="ranking-body">
+                    {{#each usuarios}}
+                    <tr>
+                        <td>{{inc @index}}</td>
+                        <td>
+                            <div class="user-info">
+                                <div class="avatar">{{apodo.[0]}}</div>
+                                <div>
+                                    <div class="username">{{username}}</div>
+                                    <div class="user-category">Todas las materias</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="score">{{puntos}}</td>
+                    </tr>
+                    {{else}}
+                    <tr>
+                        <td colspan="3" style="text-align: center; padding: 20px;">
+                            No hay usuarios para mostrar
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Botón flotante -->
+    <button class="floating-button" onclick="location.href='/'">
+        <i class="fas fa-home"></i>
+    </button>
+</body>
+</html>

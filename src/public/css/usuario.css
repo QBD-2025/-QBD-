@@ -1,0 +1,261 @@
+/* ==================================================
+   VARIABLES GLOBALES
+================================================== */
+:root {
+  --azul-oscuro: #1a237e;
+  --azul-medio: #283593;
+  --azul-claro: #3949ab;
+  --mostaza: #ffb300;
+  --mostaza-claro: #ffca28;
+  --blanco: #ffffff;
+  --gris-claro: #f5f5f5;
+  --texto-oscuro: #212121;
+}
+
+/* ==================================================
+   RESET BÁSICO
+================================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--gris-claro);
+  color: var(--texto-oscuro);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ==================================================
+   CONTENEDOR PRINCIPAL
+================================================== */
+.profile-full {
+  width: 100%;
+  margin: 0;
+  padding: 2rem;
+}
+
+
+
+/* ==================================================
+   TARJETA DEL PERFIL
+================================================== */
+.profile-card {
+  background: var(--blanco);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* ==================================================
+   ENCABEZADO
+================================================== */
+.profile-header {
+  background: linear-gradient(135deg, var(--azul-oscuro), var(--azul-medio));
+  color: var(--blanco);
+  padding: 2.5rem 1.5rem 2rem;
+  text-align: center;
+  position: relative;
+}
+
+.profile-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.user-welcome {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 1.2rem;
+}
+
+.logout-btn {
+  display: inline-block;
+  padding: 0.6rem 1.4rem;
+  background-color: var(--mostaza);
+  color: var(--azul-oscuro);
+  text-decoration: none;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.logout-btn:hover {
+  background-color: var(--mostaza-claro);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ==================================================
+   CUERPO DEL PERFIL
+================================================== */
+.profile-body {
+  padding: 2rem 1.5rem;
+}
+
+/* Subtítulo */
+.user-subtitle {
+  color: var(--azul-oscuro);
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--mostaza);
+  display: inline-block;
+  padding-bottom: 0.4rem;
+}
+
+/* ==================================================
+   TABLA DE INFORMACIÓN
+================================================== */
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+}
+
+.info-table th {
+  text-align: left;
+  padding: 1rem 0.8rem;
+  color: var(--azul-medio);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  width: 35%;
+  background: #f8f8f8;
+}
+
+.info-table td {
+  padding: 1rem 0.8rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-bottom: 1px solid var(--gris-claro);
+}
+
+.info-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ==================================================
+   SECCIÓN DE ACCIONES
+================================================== */
+.actions-section {
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--gris-claro);
+}
+
+.actions-section h3 {
+  font-size: 1.2rem;
+  color: var(--azul-oscuro);
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.actions-section h3::after {
+  content: "";
+  position: absolute;
+  width: 50px;
+  height: 3px;
+  background: var(--mostaza);
+  bottom: -6px;
+  left: 0;
+}
+
+/* Lista de acciones */
+.actions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.action-item {
+  margin: 0;
+}
+
+/* Enlaces de acción */
+.action-link {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.2rem;
+  background: var(--gris-claro);
+  color: var(--azul-oscuro);
+  text-decoration: none;
+  border-left: 5px solid var(--mostaza);
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  gap: 0.7rem;
+  position: relative;
+}
+
+.action-link::before {
+  content: "→";
+  color: var(--mostaza);
+  transition: transform 0.3s ease;
+}
+
+.action-link:hover {
+  background: var(--azul-claro);
+  color: var(--blanco);
+  transform: translateX(5px);
+}
+
+.action-link:hover::before {
+  color: var(--blanco);
+  transform: translateX(5px);
+}
+
+.profile-full {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.page-usuario .global-header-elements {
+  display: none;
+}
+
+
+/* ==================================================
+   RESPONSIVE DESIGN
+================================================== */
+@media (max-width: 768px) {
+  .profile-half-width {
+    width: 90vw;
+    min-width: unset;
+    max-width: unset;
+  }
+
+  .profile-title {
+    font-size: 1.5rem;
+  }
+
+  .user-welcome {
+    font-size: 1rem;
+  }
+
+  .info-table th,
+  .info-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .info-table th {
+    padding-bottom: 0.3rem;
+    background: none;
+  }
+
+  .info-table td {
+    padding-top: 0.2rem;
+    padding-bottom: 1rem;
+  }
+}

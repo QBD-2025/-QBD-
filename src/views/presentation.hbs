@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title> QueBuenDato.com </title>           
+    <link rel="stylesheet" href="/css/presentation.css">
+    
+    {{!-- GOOGLE FONTS --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+</head>
+
+<div class="duo-style-wrapper">
+
+    {{!-- ========= SECCIÓN PRINCIPAL DE LLAMADO A LA ACCIÓN (Hero) ======  === --}}
+    <section class="info-section hero-section">
+        <div class="image-content">
+            <img  src="/media/videos/stuart_flotando.gif" alt="Aprende y compite">
+        </div>
+        <div class="text-content cta-text">
+            <h1 class="hero-main-headline">La forma más divertida de potenciar tu mente.</h1>
+            <button type="button" class="btn-start-duo" onclick="location.href='/video'">Empezar Ahora</button>
+            <button type="button" class="btn-secondary-duo" onclick="location.href='/login'">Ya tengo una cuenta</button>
+        </div>
+    </section>
+
+
+    {{!-- ========= SECCIÓN 2: Texto a la izquierda, Imagen a la derecha ========= --}}
+    <section class="info-section">
+        <div class="text-content">
+            <h2 class="info-headline yellow-text">Divertido, efectivo y retador.</h2>
+            <p class="info-description">Refuerza tus conocimientos con minijuegos competitivos y datos que realmente importan. ¿Quién dijo que aprender tenía que ser aburrido?</p>
+        </div>
+        <div class="image-content">
+            {{!-- CAMBIO AQUÍ: Añadimos 'controls' y quitamos los otros atributos --}}
+            <video  playsinline autoplay muted loop class="promo-video">
+                <source src="/media/videos/stuart_play.mp4" type="video/mp4">
+            </video>
+        </div>
+    </section>
+
+
+    {{!-- ========= SECCIÓN 3: Imagen a la izquierda, Texto a la derecha (Invertida) ========= --}}
+    <section class="info-section reverse">
+        <div class="text-content">
+            <h2 class="info-headline yellow-text">Diseñado para mentes curiosas.</h2>
+            <p class="info-description">Creamos una plataforma para jóvenes que buscan ir más allá, dándote una ventaja real en tus estudios y futura carrera profesional.</p>
+        </div>
+        <div class="image-content">
+            {{!-- CAMBIO AQUÍ TAMBIÉN: Añadimos 'controls' --}}
+            <video controls class="promo-video">
+                <source src="/media/videos/curiosidad.mp4" type="video/mp4">
+            </video>
+        </div>
+    </section>
+
+
+    {{!-- ========= SECCIÓN 4: Texto a la izquierda, Imagen a la derecha ========= --}}
+    <section class="info-section">
+        <div class="text-content">
+            <h2 class="info-headline yellow-text">Datos que te hacen sobresalir.</h2>
+            <p class="info-description">Accede a información clave y curiosidades de alto impacto que no encontrarás en un salón de clases tradicional, todo respaldado para ser efectivo.</p>
+        </div>
+        <div class="image-content">
+            {{!-- CAMBIO AQUÍ TAMBIÉN: Añadimos 'controls' --}}
+            <video controls class="promo-video">
+                <source src="/media/videos/aprender_mas.mp4" type="video/mp4">
+            </video>
+        </div>
+    </section>
+
+</div>
+</html>

@@ -1,0 +1,185 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    width: 100%;
+    height: 100%;
+}
+
+/* --- Verification Page Specific Styles --- */
+.verification-main-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 110vh;
+    width: 100vw;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.verification-visuals-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    background-color: #fbfafb;
+}
+
+.verification-figure {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 8px 15px #fbfafb;
+    background-color: #fbfafb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.verification-figure2 {
+    width: 200px;
+    height: 200px;
+    overflow: hidden;
+    box-shadow: 0 8px 15px #fbfafb;
+    background-color: #fbfafb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.verification-character {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    background-color: #d4cdd4;
+    box-shadow: 0 8px 15px #fbfafb;
+}
+
+.verification-text-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    max-width: 900px;
+    max-height: 300px;
+    padding: 40px;
+    background-color: #fbfafb;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.verification-headline-success {
+    color: #FFC107;
+    font-size: 2.5em;
+    font-weight: bold;
+    margin-bottom: 25px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.verification-message {
+    color: #420A6B;
+    font-size: 1.2em;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.verification-email {
+    color: #5926e4;
+    font-weight: bold;
+    word-break: break-all;
+}
+
+.verification-error-message {
+    color: red;
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+}
+
+.verification-button-resend {
+    padding: 12px 30px;
+    background-color: #FFC107;
+    color: #333;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top: 25px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.verification-button-resend:hover {
+    background-color: #e0a800;
+    transform: translateY(-2px);
+}
+
+.verification-timer-text {
+    color: #7B24C0;
+    font-size: 1em;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+.verification-success-message {
+    color: green;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+    .verification-main-wrapper {
+        flex-direction: column;
+        gap: 20px;
+        padding: 10px;
+    }
+    .verification-visuals-container {
+        flex-direction: column;
+        gap: 20px;
+        margin-bottom: 20px;
+        background-color: #fbfafb;
+    }
+    .verification-figure {
+        background-color: #fbfafb;
+        width: 150px;
+        height: 150px;
+    }
+    .verification-text-content {
+        max-width: 90%;
+        padding: 25px;
+    }
+    .verification-headline-success {
+        font-size: 2em;
+    }
+    .verification-message {
+        font-size: 1em;
+    }
+    .verification-button-resend {
+        font-size: 0.9em;
+        padding: 10px 20px;
+    }
+}
+
+
+.stuart-figure {
+    /* Elimina dimensiones fijas */
+    max-width: 70%; /* Ancho flexible */
+    height: auto; /* Altura automática */
+    aspect-ratio: 1/1; /* Mantiene relación cuadrada */
+}
+
+.stuart-character {
+    object-fit: contain; /* Muestra todo el contenido sin recortar */
+    width: 100%; /* Ocupa todo el ancho disponible */
+    height: auto; /* Altura proporcional */
+    background-color: #fbfafb; /* Mantiene el fondo */
+}

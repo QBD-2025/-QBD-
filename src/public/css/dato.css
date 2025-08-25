@@ -1,0 +1,95 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(to right, #f0f4ff, #dbe9ff);
+  color: #0a2472;
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+.contenedor-datos {
+  width: 100%;
+  max-width: 1000px;
+}
+
+.boton-volver {
+  margin-top: 50px; /* aumenta este valor según lo que necesites */
+  background-color:  #e6b421;
+  color: white;
+  padding: 30px 18px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-bottom: 20px;
+}
+
+.boton-volver:hover {
+  background-color: #001c5a;
+}
+
+.titulo {
+  text-align: center;
+  font-size: 2.4rem;
+  margin-bottom: 30px;
+  color: #0a2472;
+}
+
+.lista-datos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 25px;
+}
+
+.tarjeta-dato {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+  width: 300px;
+  min-height: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tarjeta-dato:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+}
+
+.texto-dato {
+  font-size: 1.1rem;
+  color: #333;
+  text-align: left;     /* 👈 ahora alineado a la izquierda */
+  margin-bottom: 15px;
+  width: 100%;          /* ocupa todo el ancho de la tarjeta */
+  line-height: 1.5;     /* mejor legibilidad */
+}
+
+.imagen-dato {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  max-height: 200px;
+  object-fit: cover;
+}
+
+.sin-datos {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #555;
+  margin-top: 50px;
+}

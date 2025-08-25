@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EXAMEN</title>
+  <link rel="stylesheet" href="/css/eleccion-examen.css" />
+  <style>
+    .card {
+      width: 200px;
+      height: 250px;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      padding: 1rem;
+      text-align: center;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .gif-materia {
+      width: 100%;
+      max-height: 150px;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="carousel-container">
+    <div class="carousel" id="carousel"></div>
+  
+    <div class="controls">
+      <button onclick="location.href='/examen-aleatorio'" id="randomBtn" class="boton-aleatorio">Aleatorio 🎲</button>
+      <div><button onclick="location.href='/menu_principal'">Regresar</button></div>
+    </div>  
+  </div>
+
+  <div id="leftZone" class="zone-click izquierda"></div>
+  <div id="rightZone" class="zone-click derecha"></div>
+
+  <script>
+    let currentRotation = 0;
+    const materias = {{{json materias}}}; // Pasamos desde el servidor en formato JS válido
+
+    const carousel = document.getElementById('carousel');
+    const cardCount = materias.length;
+    const theta = 360 / cardCount;
+    const radius = 820;
+    let currIndex = 0;
+
+    materias.forEach((materia, i) => {
+      const card = document.createElement('div'); 
+      card.className = 'card';
+
+      // Crear el GIF
+      const gif = document.createElement('img');
+      gif.src = `/media/videos/${materia.descripcion}.gif`;
+      gif.alt = `Animación de ${materia.descripcion}`;
+      gif.className = 'gif-materia';
+
+      // Texto de la materia
+      const texto = document.createElement('div');
+      texto.textContent = materia.descripcion;
+
+      // Agregar al DOM
+      card.appendChild(gif);
+      card.appendChild(texto);
+
+      // Posición en carrusel
+      const angle = theta * i;
+      card.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
+
+      card.onclick = () => {
+        currIndex = i;
+        rotateCarousel();
+        window.location.href = `/examen/${materia.id_materia}`;
+      };
+
+      carousel.appendChild(card);
+    });
+
+    function rotateCarousel() {
+      const angle = currIndex * -theta;
+      carousel.style.transition = 'transform 1.5s ease-in-out';
+      carousel.style.transform = `translateZ(-${radius}px) rotateY(${currentRotation}deg)`;
+    }
+
+    document.getElementById('leftZone').addEventListener('click', () => {
+      currIndex = Math.max(currIndex - 1, 0); // No baja de 0
+      currentRotation += theta; // girar a la izquierda
+      rotateCarousel();
+    });
+
+    document.getElementById('rightZone').addEventListener('click', () => {
+      currIndex = Math.min(currIndex + 1, cardCount - 1); // No sube del último
+      currentRotation -= theta; // girar a la derecha
+      rotateCarousel();
+    });
+
+    
+  </script>
+</body>
+</html>

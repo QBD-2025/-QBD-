@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>QueBuenDato.com</title>           
+    <link rel="stylesheet" href="/css/perfil.css">
+    
+    {{!-- GOOGLE FONTS --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos para el botón flotante */
+        .floating-button {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background-color: #FFC107;
+            color: #333;
+            border: none;
+            border-bottom: 4px solid #e0a800;
+            font-size: 28px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+
+        .floating-button:hover {
+            background-color: #ffd44f;
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .floating-button:active {
+            transform: translateY(2px);
+            border-bottom: 2px solid #e0a800;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Animación de latido */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Responsive para móviles */
+        @media (max-width: 768px) {
+            .floating-button {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="duo-style-wrapper">
+
+    {{!-- ========= SECCIÓN 1: Texto a la izquierda, Animación a la derecha ========= --}}
+    <section class="info-section">
+        <div class="text-content">
+            <h2 class="info-headline yellow-text">Divertido, efectivo y retador.</h2>
+            <button type="button" class="duo-button" onclick="location.href='/minijuegos'">Minijuegos</button>    
+        </div>
+        <div class="image-content">
+            <div id="animationContainer2" class="animacion-duolingo">
+                <img id="duolingoAnimation2" src="/media/video_stuart_octavio/Video_stuart_octavio_000001.webp" alt="Animación Duolingo">
+            </div>
+        </div>
+    </section>
+
+    {{!-- ========= SECCIÓN 2: Imagen a la izquierda, Texto a la derecha ========= --}}
+    <section class="info-section reverse">
+        <div class="text-content">
+            <h2 class="info-headline yellow-text">Refuerza tu conocimiento con examenes de práctica.</h2>
+            <button class="duo-button" onclick="location.href='/materias'" >empezar</button>
+        </div>
+        <div class="image-content">
+            <div id="animationContainer" class="animacion-duolingo">
+                <img id="duolingoAnimation" src="/media/stuart_octavio_libro/stuart_octavio_libro_000001.webp" alt="Animación Duolingo2">
+            </div>
+        </div>
+    </section>
+
+    <section class="info-section">
+        <div class="text-content">
+            <h2 class="info-headline yellow-text">¡Sorprende a tu intelecto con nuevos desafios!</h2>
+            <button type="button" class="duo-button" onclick="location.href='/simulador'">Simulador</button>
+        </div>
+        <div class="image-content reverse">
+            <div id="animationContainer5" class="animacion-duolingo">
+                <img id="duolingoAnimation5" src="media/video_admision_000/video_admision_001.webp" alt="Animación Duolingo5">
+            </div>
+        </div>
+    </section>
+
+    {{!-- ========= SECCIÓN 3: Texto a la izquierda, Imagen a la derecha ========= --}}
+    <section class="info-section reverse">
+        <div class="text-content">
+            <h2 class="info-headline yellow-text">Datos que te hacen sobresalir.</h2>
+            <button type="button" class="duo-button" onclick="location.href='/eleccion-dato'">Datos</button>
+        </div>
+        <div class="image-content">
+            <div id="animationContainer3" class="animacion-duolingo">
+                <img id="duolingoAnimation3" src="/media/caminando_stuart_octavio/caminando_stuart_octavio_001.webp" alt="Animación Duolingo3">
+            </div>
+        </div>
+    </section>
+
+    <section class="info-section">
+        <div class="text-content">
+            <h2 class="info-headline yellow-text">¡Demuestra quién es el mejor!</h2>
+            <button type="button" class="duo-button" onclick="location.href='/competitivo'">Modo competitivo</button>
+        </div>
+        <div class="image-content reverse">
+            <div id="animationContainer6" class="animacion-duolingo">
+                <img id="duolingoAnimation6" src="/media/batalla-sin-cuartel_000/batalla-sin-cuartel_001.webp" alt="Animación Batalla">
+            </div>
+        </div>
+    </section>
+
+    {{!-- ========= NUEVA SECCIÓN AL FINAL: Clasificación ========= --}}
+    <section class="info-section reverse">
+        <div class="text-content">
+            <h2 class="info-headline yellow-text">Mira tu progreso y compite con otros.</h2>
+            <button type="button" class="duo-button" onclick="location.href='/ranking'">Clasificación</button>
+        </div>
+        <div class="image-content">
+            <div id="animationContainer4" class="animacion-duolingo">
+                <img id="duolingoAnimation4" src="/media/clasificacion_000/clasificacion_001.webp" alt="Animación Clasificación">
+            </div>
+        </div>
+    </section>
+
+    <!-- Botón flotante circular con emoji 🧷 -->
+    <button class="floating-button" onclick="location.href='/ligas'">🧷</button>
+
+</div>
+
+{{!-- ENLAZA TU ARCHIVO DE ANIMACIÓN --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="/utils/animacion2.js"></script>
+<script src="/utils/animacion3.js"></script>
+<script src="/utils/animacion4.js"></script>
+<script src="/utils/animacion5.js"></script>
+<script src="/utils/animacion6.js"></script>
+
+<script>
+    // Efecto adicional para el botón flotante
+    const floatingBtn = document.querySelector('.floating-button');
+    if (floatingBtn) {
+        floatingBtn.addEventListener('mouseenter', function() {
+            this.style.animation = 'none';
+        });
+        
+        floatingBtn.addEventListener('mouseleave', function() {
+            this.style.animation = 'pulse 2s infinite';
+        });
+    }
+</script>
+</body>
+</html>

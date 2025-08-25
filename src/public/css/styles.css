@@ -1,0 +1,672 @@
+/* public/css/styles.css */
+
+
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /*min-height: 100vh; /* Ocupa el 100% del alto del viewport */
+    /*width: 100vw;    /* Ocupa el 100% del ancho del viewport */
+    background-color: #fbfafb; /* Un gris muy claro, casi blanco. Ajusta el tono si lo deseas. */
+    background-size: cover;
+    font-family: Arial, sans-serif;
+    overflow-y: auto;
+    position: relative; /* For positioning global elements like dots */
+}
+
+/* --- ESTILOS PARA LA SCROLLBAR PERSONALIZADA --- */
+
+/* La barra de scroll completa */
+::-webkit-scrollbar {
+  width: 12px; /* Ancho de la barra de scroll */
+}
+
+/* El fondo o "track" sobre el que se mueve la barra */
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Un gris muy claro para el fondo */
+  border-radius: 10px;
+}
+
+/* La barra desplazable (el "pulgar" o "thumb") */
+::-webkit-scrollbar-thumb {
+  background: #FFC107; /* ¡Tu color amarillo característico! */
+  border-radius: 10px; /* Bordes redondeados */
+  border: 2px solid #f1f1f1; /* Un pequeño borde para darle espacio */
+}
+
+/* El efecto cuando pasas el cursor sobre la barra desplazable */
+::-webkit-scrollbar-thumb:hover {
+  background: #5926e4; /* ¡Tu color azul/morado al pasar el cursor! */
+}
+/* --- Global Header Elements (logo, title, and dots in main.hbs) --- */
+/* Esta sección es para la barra superior que debe ir en main.hbs */
+.global-header-elements {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 75px !important;
+  background: linear-gradient(to right, #0815c5, #0c0264) !important;
+  z-index: 1000 !important;
+}
+
+/* --- Estilos para el nuevo enlace "Conócenos" en la cabecera --- */
+.header-link, .header-button {
+    text-decoration: none;
+    color: #fffcfc;
+    font-weight: bold;
+    padding: 8px 15px;
+    font-size: 1.2em;
+    border-radius: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.header-link:hover, .header-button:hover {
+    background-color:#ffb300;
+    color: #878787;
+}
+
+.top-right-nav {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.nav-username {
+    font-weight: bold;
+    color: #007bff;
+}
+
+.top-left-logo .header-link {
+    /* Quitamos la decoración fea del enlace */
+    text-decoration: none; 
+
+    /* Replicamos el estilo del texto anterior para que se vea igual */
+    color: #FFC107;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-transform: uppercase;
+    
+    /* Usamos la nueva fuente que importamos (o la que prefieras) */
+    font-family: 'Poppins', sans-serif;
+
+    /* Aseguramos que el cursor sea la manita */
+    cursor: pointer;
+
+    /* Añadimos una transición suave para el efecto hover */
+    transition: color 0.3s ease;
+}
+
+/* Efecto al pasar el cursor por encima */
+.top-left-logo .header-link:hover {
+    color: #ffffff; /* Cambia a blanco o a un amarillo más brillante */
+}
+
+
+/* -- Ajuste Menor para la Alineación Vertical -- */
+/* Puede que necesites este pequeño ajuste para que el nuevo 
+   enlace se alinee perfectamente con el logo */
+
+
+
+.top-left-logo {
+    display: flex;
+    flex-direction: row; /* Alinea el logo y el eslogan horizontalmente */
+    align-items: center; /* Centra verticalmente el logo y el texto */
+    pointer-events: auto;
+    gap: 40px; /* Espacio entre el logo y el eslogan. Ajusta este valor (ej. 0px, 5px, 10px) */
+    /* Para asegurar que el grupo del logo se pegue a la izquierda del padding */
+    margin-right: auto; /* Empuja los elementos siguientes (el dot) al final */
+} 
+
+.top-left-logo img {
+    width: 100px; /* Tamaño del logo. Ajusta según sea necesario. */
+    height: auto;
+    margin-right: -10px; 
+}
+
+.top-left-logo h1 {
+    color: #FFC107;
+    font-size: 1.2em; /* Tamaño del eslogan. Ajusta según sea necesario. */
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Las bolitas */
+.top-right-dot, .bottom-left-dot {
+    width: 25px;
+    height: 25px;
+    background-color: #FFC107;
+    border-radius: 50%;
+    pointer-events: auto;
+}
+
+.bottom-left-dot {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1000;
+
+}
+
+
+
+/* --- Presentation Page Specific Styles (for presentation.hbs) --- */
+
+/* Contenedor principal para la presentación, ocupa todo el right-section */
+.presentation-content-wrapper {
+    display: flex;
+    flex-direction: column; /* Apilar elementos verticalmente */
+    justify-content: space-between; /* Espacio entre los grupos de contenido */
+    align-items: center; /* Centrar horizontalmente */
+    height: 100%; /* Ocupa toda la altura del right-section */
+    width: 100%; /* Ocupa todo el ancho del right-section */
+    padding: 20px;
+    gap: 40px; /* Padding general para el contenido de la presentación */
+}
+
+.headline-and-button-container {
+    display: flex;
+    flex-direction: column; /* Apila el titular y el botón */
+    align-items: center; /* Centra horizontalmente el titular y el botón */
+    justify-content: center; /* Centra verticalmente si hay espacio */
+    flex-grow: 1; /* Permite que este contenedor crezca y empuje los videos hacia abajo */
+    width: 100%;
+}
+
+.presentation-headline{
+    font-size: 3.5em;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: -100px; /* Espacio debajo del titular */
+    line-height: 1.5;
+    /* Remover propiedades de posicionamiento relativo que ahora no son necesarias */
+    position: static; /* O simplemente elimina la propiedad */
+    top: unset;
+    z-index: auto;
+}
+
+.presentation-headline .blue-text {
+    color: #5926e4; /* El azul de tu degradado, o un azul que te guste */
+}
+
+.presentation-headline .yellow-text {
+    color: #FFC107; /* El amarillo que ya tenías */
+}
+
+.btn-start {
+    position: relative; /* Para que el botón se posicione correctamente */
+    padding: 15px 20px; /* Espacio alrededor del texto del botón */
+    background-color: #FFC107;
+    color: #333;
+    border: none;
+    border-radius: 50px;
+    font-weight: bold;
+    font-size: 0.7em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    /* Remover propiedades de posicionamiento relativo que ahora no son necesarias */
+    top: unset;
+    z-index: auto;
+    align-items: center; /* Centra verticalmente los items dentro de la barra */
+    justify-content: center; /* Centra horizontalmente los items dentro de la barra */
+    left:30px;
+    display: flex; /* Para centrar el texto dentro del botón */
+    margin-bottom:-1000px; /* Espacio debajo del botón para separar de los videos */
+}
+
+.btn-start:hover {
+    background-color: #e0a800;
+    transform: translateY(-4px);
+}
+
+.videos-and-cta-container {
+    display: flex;
+    justify-content: space-around; /* Distribuye espacio entre los videos */
+    align-items: flex-end; /* Alinea los videos por la parte inferior */
+    width: 100%;
+    gap: 500px; /* Espacio entre los videos */
+    /* Remover propiedades de posicionamiento absoluto para que fluya con el contenido */
+    position: static; /* O simplemente elimina la propiedad */
+    bottom: unset;
+    left: unset;
+    padding: 0 20px; /* Ajusta el padding horizontal si es necesario */
+    z-index: auto;
+    /* margin-top: auto; /* Ya no es necesario si el contenedor de arriba tiene flex-grow */
+}
+.videos-and-cta-containerv2 {
+    display: flex;
+    justify-content: space-around; /* Distribuye espacio entre los videos */
+    align-items: flex-end; /* Alinea los videos por la parte inferior */
+    width: 100%;
+    gap: -70px; /* Espacio entre los videos */
+    /* Remover propiedades de posicionamiento absoluto para que fluya con el contenido */
+    position: static; /* O simplemente elimina la propiedad */
+    bottom: unset;
+    left: unset;
+    padding: 0 20px; /* Ajusta el padding horizontal si es necesario */
+    z-index: auto;
+    /* margin-top: auto; /* Ya no es necesario si el contenedor de arriba tiene flex-grow */
+}
+
+.video-placeholder{
+    background-color: #ffffff;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+    
+}
+.video-placeholder .big {
+    right: 100px; /* Ajusta la posición del video grande */
+    width: 450px; /* El video grande ocupa el 100% del ancho del contenedor */
+    height: 500px; /* Ajusta la altura según sea necesario */
+}
+.video-placeholder .small {
+    width: 300px; /* Ancho fijo para los videos pequeños */
+    height: 350px; /* Altura fija para los videos pequeños */
+}
+.video-placeholder .supersmall{
+    width: 150px; /* Ancho fijo para los videos pequeños */
+    height: 200px; /* Altura fija para los videos pequeños */
+}
+
+.video-placeholder iframe { /* También aplica a tus etiquetas <video> */
+    width: 100%;
+    height: 100%;
+    border: none;
+    object-fit: cover; /* Para asegurar que el video cubra todo el espacio sin distorsionarse */
+}
+
+/*
+================================================
+NUEVOS ESTILOS PARA PRESENTACIÓN - ESTILO DUOLINGO
+================================================
+*/
+
+/* Contenedor principal de toda la página */
+.duo-style-wrapper {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* ---- Estructura de las secciones de información ---- */
+
+.info-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 50px; /* Espacio entre texto e imagen */
+  padding: 60px 10px; /* Espacio vertical para que respire */
+}
+
+/* Para la primera sección (hero) */
+.hero-section {
+    padding-top: 20px;
+    padding-bottom: 80px;
+    border-bottom: 2px solid #e5e5e5;
+}
+
+/* ESTA ES LA MAGIA: Invierte el orden para la sección alternada */
+.info-section.reverse {
+  flex-direction: row-reverse;
+}
+
+/* El contenedor del texto y el de la imagen */
+.text-content, .image-content {
+  flex-basis: 48%; /* Cada uno ocupa casi la mitad */
+}
+
+.image-content img, .image-content video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.promo-video {
+    border-radius: 20px;
+    background-color: #f0f0f0; /* Fondo gris claro para el video */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* Estilos de los textos */
+.hero-main-headline {
+    font-size: 2.4em;
+    font-weight: bold;
+    color: #333;
+    line-height: 1.3;
+    margin-bottom: 25px;
+}
+
+.cta-text {
+    text-align: center;
+}
+
+.info-headline {
+  font-size: 2.2em;
+  font-weight: bold;
+  line-height: 1.2;
+  margin-bottom: 15px;
+}
+.yellow-text { color: #FFC107; }
+.blue-text { color: #0817eb; }
+
+.info-description {
+  font-size: 1.1em;
+  line-height: 1.6;
+  color: #555;
+}
+
+/* Estilos de los botones (como los de Duolingo) */
+.btn-start-duo, .btn-secondary-duo {
+    width: 100%;
+    max-width: 320px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    font-size: 1em;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.btn-start-duo {
+    background-color: #FFC107;
+    color: #333;
+    border-bottom: 4px solid #e0a800;
+}
+.btn-start-duo:hover {
+    background-color: #ffd44f;
+}
+.btn-start-duo:active {
+    transform: translateY(2px);
+    border-bottom: 2px solid #e0a800;
+}
+
+.btn-secondary-duo {
+    background-color: #fff;
+    color: #FFC107;
+    border: 2px solid #e5e5e5;
+    border-bottom: 4px solid #e5e5e5;
+}
+.btn-secondary-duo:hover {
+    background-color: #f7f7f7;
+}
+.btn-secondary-duo:active {
+    transform: translateY(2px);
+    border-bottom: 2px solid #e5e5e5;
+}
+
+
+/* ---- Responsividad para Celulares ---- */
+@media (max-width: 900px) {
+  .info-section, .info-section.reverse {
+    flex-direction: column; /* Apila el texto y la imagen */
+    text-align: center;
+    padding: 40px 10px;
+  }
+  
+  /* Invierte el orden en móvil para que siempre sea Imagen -> Texto */
+  .info-section.reverse {
+      flex-direction: column-reverse;
+  }
+
+  .hero-main-headline, .info-headline {
+    font-size: 1.8em;
+  }
+}
+/* ... el resto de tu CSS (octopus-mascot, form styles, responsive adjustments) ... */
+
+
+
+/* --- Form Styles (used in registration/login forms) --- */
+.form-group {
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 7px;
+    color: #555;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+.form-group2 {
+    display: block;
+    margin-bottom: 7px;
+    color: #fdfcfc;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 15px 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 1em;
+    transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+    outline: none;
+    border-color: #7B24C0
+}
+
+
+/* Topbar */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #ffc107, #c29205); /* Mostaza claro a oscuro */
+  padding: 15px 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  margin-bottom: 30px;
+}
+
+.logo {
+  font-size: 1.5rem;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.menu-button {
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 65px;
+  right: 30px;
+  background-color: #09012c;
+  border-radius: 10px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+  overflow: hidden;
+  display: none;
+  flex-direction: column;
+  min-width: 160px;
+  z-index: 1000;
+}
+
+.dropdown-menu li {
+  list-style: none;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.dropdown-menu li:last-child {
+  border-bottom: none;
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 12px 20px;
+  color: #ffc107;
+  text-decoration: none;
+  transition: background 0.3s;
+}
+
+.dropdown-menu a:hover {
+  background-color: rgba(255, 193, 7, 0.1);
+}
+.notification-container {
+    position: relative;
+    cursor: pointer;
+    font-size: 20px;
+    margin-left: 15px;
+}
+
+#notification-count {
+    background: red;
+    color: white;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 50%;
+    position: absolute;
+    top: -5px;
+    right: -10px;
+}
+
+.notification-dropdown {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    background: white;
+    border: 1px solid #ccc;
+    width: 250px;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+.notification-dropdown ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.notification-dropdown li {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+.notification-dropdown li:hover {
+    background: #f5f5f5;
+}
+
+/* MENÚ KEBAB - ESTILOS MEJORADOS */
+.kebab-menu {
+  position: relative;
+  display: inline-block;
+  margin-left: 15px;
+  z-index: 1001; /* Mayor que el header */
+}
+
+.kebab-button {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0 10px;
+  color: white;
+  line-height: 1;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s;
+}
+
+.kebab-button:hover {
+  transform: scale(1.2);
+}
+
+.kebab-dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 3px 15px rgba(0,0,0,0.2);
+  padding: 8px 0;
+  min-width: 200px;
+  list-style: none;
+  margin-top: 5px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 1100; /* Valor más alto */
+  border: 1px solid #eee;
+}
+
+.kebab-dropdown li a {
+  display: block;
+  padding: 10px 20px;
+  color: #333;
+  text-decoration: none;
+  transition: background 0.2s;
+  font-size: 14px;
+}
+
+.kebab-dropdown li a:hover {
+  background: #f5f5f5;
+}
+
+.kebab-dropdown .cerrar-sesion {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+/* Estado activo */
+.kebab-menu.active .kebab-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* AJUSTES PARA EL HEADER */
+.global-header-elements {
+  z-index: 1000; /* Asegúrate que es menor que el menú */
+}
+
+/* NOTIFICACIONES */
+.notification-dropdown {
+  z-index: 1001; /* Igual que el menú */
+}
+/* ANIMACIONES GSAP PARA EL MENÚ KEBAB */
+.kebab-dropdown {
+  /* Elimina las transiciones CSS que podrían interferir */
+  transition: none !important;
+}
+
+.kebab-dropdown li {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.kebab-menu.active .kebab-dropdown li {
+  opacity: 1;
+  transform: translateY(0);
+}
+

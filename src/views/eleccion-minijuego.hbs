@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MINIUEGOS</title>
+  <link rel="stylesheet" href="/css/eleccion-minijuego.css" />
+</head>
+<body>
+  <div class="carousel-container">
+    <div class="carousel" id="carousel"></div>
+  
+    <div class="controls">
+      <button id="prevBtn">◀ Anterior</button>
+      <button id="randomBtn" class="boton-aleatorio">Aleatorio 🎲</button>
+      <button id="nextBtn">Siguiente ▶</button>
+      <div><button onclick="location.href='/menu_principal'">Regresar</button></div>
+    </div>  
+  </div>
+
+  <script>
+    const materias = {{{json materias}}}; // Pasamos desde el servidor en formato JS válido
+
+    const carousel = document.getElementById('carousel');
+    const cardCount = materias.length;
+    const theta = 360 / cardCount;
+    const radius = 650;
+    let currIndex = 0;
+
+    // Crear tarjetas
+    materias.forEach((materia, i) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.textContent = materia.descripcion;
+      const angle = theta * i;
+      card.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
+      card.onclick = () => {
+        currIndex = i;
+        rotateCarousel();
+        window.location.href = `/examen/${materia.id_materia}`;
+      };
+      carousel.appendChild(card);
+    });
+
+    // Rotación con animación
+    function rotateCarousel() {
+      const angle = currIndex * -theta;
+      carousel.style.transition = 'transform 1.5s ease-in-out';
+      carousel.style.transform = `translateZ(-${radius}px) rotateY(${angle}deg)`;
+    }
+
+    // Botones normales
+    document.getElementById('prevBtn').addEventListener('click', () => {
+      currIndex = (currIndex - 1 + cardCount) % cardCount;
+      rotateCarousel();
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      currIndex = (currIndex + 1) % cardCount;
+      rotateCarousel();
+    });
+
+    // 🎲 Botón Aleatorio con animación
+    document.getElementById('randomBtn').addEventListener('click', () => {
+      const randomIndex = Math.floor(Math.random() * materias.length);
+      currIndex = randomIndex;
+      rotateCarousel();
+
+      // Espera que termine la animación y redirige
+      setTimeout(() => {
+        window.location.href = `/examen/${materias[randomIndex].id_materia}`;
+      }, 1500); // igual al tiempo de transición
+    });
+
+    rotateCarousel(); // Posición inicial
+  </script>
+</body>
+</html>

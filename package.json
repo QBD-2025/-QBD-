@@ -1,0 +1,38 @@
+{
+  "name": "buen_dato",
+  "version": "1.0.0",
+  "description": "Sistem for will prepare students for the university or reforce your conociments",
+  "main": "configApp.js",
+  "scripts": {
+    "start": "node configApp.js",
+    "dev": "nodemon configApp.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Equipo dinamita",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "body-parser": "^2.2.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "express-handlebars": "^8.0.2",
+    "express-myconnection": "^1.0.4",
+    "express-session": "^1.18.1",
+    "gasp": "^0.0.2",
+    "gsap": "^3.13.0",
+    "hbs": "^4.2.0",
+    "multer": "^2.0.2",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.14.1",
+    "ngrok": "^5.0.0-beta.2",
+    "nodemailer": "^7.0.3",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "sharp": "^0.34.3",
+    "socket.io": "^4.8.1",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

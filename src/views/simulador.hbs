@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prueba de Examen de Admisión EXANI</title>
+  <link rel="stylesheet" href="/css/simulador.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Prueba de Examen de Admisión EXANI</h1>
+      <p>Simula y practica tu examen de admisión con preguntas reales del EXANI.</p>
+    </header>
+
+    <section class="practica">
+      <h2>📝 Inicia tu simulador</h2>
+      <p>Esta es una versión de prueba del examen EXANI. Al presionar el botón, comenzarás el simulador con preguntas seleccionadas.</p>
+      <button onclick="location.href='/examen-exani'">Comenzar examen</button>
+    </section>
+
+    <footer>
+      <p>© 2025 Portal EXANI Aguascalientes. Todos los derechos reservados.</p>
+    </footer>
+  </div>
+
+  <!-- Botón flotante circular con emoji 🧷 -->
+  <button class="floating-button" onclick="location.href='/ligas'">🧷</button>
+
+  <script>
+    // Efecto adicional para el botón flotante
+    const floatingBtn = document.querySelector('.floating-button');
+    floatingBtn.addEventListener('mouseenter', function() {
+      this.style.animation = 'none';
+    });
+    
+    floatingBtn.addEventListener('mouseleave', function() {
+      this.style.animation = 'pulse 2s infinite';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QueBuenDato.com.mx</title>
+  <link rel="stylesheet" href="/css/usuario.css" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="profile-full">
+    <div class="profile-card">
+      <body class="page-usuario">
+
+      
+      <!-- Encabezado del perfil -->
+      <header class="profile-header">
+        <h1 class="profile-title">Mi Perfil</h1>
+        <p class="user-welcome">Bienvenido {{user.username}} ({{user.role}})</p>
+        <a href="/logout" class="logout-btn">Cerrar sesión</a>
+      </header>
+
+      <!-- Contenido del perfil -->
+      <div class="profile-body">
+        <h2 class="user-subtitle">Tu información</h2>
+
+        <table class="info-table">
+          <tr>
+            <th>ID</th>
+            <td>{{user.id_usuario}}</td>
+          </tr>
+          <tr>
+            <th>Email</th>
+            <td>{{user.email}}</td>
+          </tr>
+          <tr>
+            <th>Nombre de usuario</th>
+            <td>{{user.username}}</td>
+          </tr>
+          <tr>
+            <th>Alias</th>
+            <td>{{user.apodo}}</td>
+          </tr>
+          <tr>
+            <th>Tipo de cuenta</th>
+            <td>{{user.role}}</td>
+          </tr>
+          <tr>
+            <th>Descripcion</th>
+            <td>{{user.descripcion}}</td>
+          </tr>
+        </table>
+
+        <div class="actions-section">
+          <h3>Acciones disponibles</h3>
+          <ul class="actions-list">
+            <li class="action-item">
+              <a href="/buscar-correo" class="action-link">Cambiar mi contraseña</a>
+            </li>
+            <li class="action-item">
+              <a href="/usuario/editar  " class="action-link">Editar mi perfil</a>
+            </li>
+            <li class="action-item">
+              <a href="/usuario/historial" class="action-link">Historial "solo esta lo visual"</a>
+            </li>
+          </ul>
+        </div>
+        </div>
+    <button onclick="window.location.href='/menu_principal'" 
+            style="
+              margin-top: 1.5rem;
+              padding: 0.8rem 2rem;
+              background-color: var(--azul-medio);
+              color: white;
+              border: none;
+              border-radius: 8px;             
+              font-weight: 600;
+              cursor: pointer;
+              box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+              transition: background-color 0.3s ease;
+            "
+            onmouseover="this.style.backgroundColor='#3949ab'"
+            onmouseout="this.style.backgroundColor='var(--azul-medio)'"
+    >
+      Regresar
+    </button>
+      </div>
+  </div>
+</body>
+</html>

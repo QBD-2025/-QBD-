@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Editor - Exámenes</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/css/editor.css">
+<style>
+  .pagination { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; margin-top: 20px; }
+  .pagination a { padding: 5px 10px; border: 1px solid #ccc; text-decoration: none; color: #333; border-radius: 4px; }
+  .pagination a.btn-primary { background-color: #007bff; color: white; font-weight: bold; }
+
+  /* Overlay general */
+  #overlay, #overlay-eliminar {
+    position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); 
+    z-index:1000; display:none;
+  }
+
+  /* Formulario edición */
+  #formulario-edicion {
+    position: fixed; top:50%; left:50%; transform: translate(-50%,-50%); background:white; 
+    padding:20px; z-index:1001; display:none; max-width:600px; width:90%; border-radius:8px;
+  }
+
+  #respuestas-container div { margin-bottom: 10px; }
+
+  /* Modal eliminar */
+  #modal-eliminar {
+    display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); 
+    background:white; padding:20px; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.3); 
+    z-index:2001; text-align:center;
+  }
+
+  #modal-eliminar button { margin: 5px; }
+</style>
+</head>
+<body>
+
+<header class="editor-header">
+  <div class="header-left">
+    <a href="/"><img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image-header"></a>
+  </div>
+  <div class="header-center text-center">
+    <h1 class="editor-title">Panel de Edición</h1>
+    <p class="editor-welcome">Bienvenido {{user.username}} (EDITOR)</p>
+  </div>
+  <div class="header-right">
+    <a href="/menu_principal" class="volver-button">Volver al Menú</a>
+  </div>
+</header>
+
+<img src="/images/stuart_recargado.png" alt="Personaje Editor" class="character-image">
+
+<div class="editor-container container mt-4">
+  <h2 class="editor-subtitle mb-4">Gestión de Exámenes</h2>
+  <div class="mb-4">
+    <a href="/editor/datos" class="editor-btn">Gestión de Datos</a>
+    <a href="/editor/encuesta" class="editor-btn">Gestión de Encuestas</a>
+  </div>
+
+  <table class="editor-table table table-striped">
+    <thead>
+      <tr>
+        <th>ID Materia</th>
+        <th>Pregunta</th>
+        <th>Opciones</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each preguntas}}
+      <tr>
+        <td>{{id_materia}}</td>
+        <td><strong>{{pregunta}}</strong></td>
+        <td>
+          <ul style="list-style:none; padding-left:0;">
+            {{#each respuestas}}
+            <li style="margin-bottom:5px;">
+              <span style="{{#if correcta}}color:green;font-weight:bold{{/if}}">
+                {{respuesta}} {{#if correcta}}(Correcta){{/if}} - Puntos: {{puntos}}
+              </span>
+            </li>
+            {{/each}}
+          </ul>
+        </td>
+        <td>
+          <button type="button" class="editor-btn"
+            data-id-pregunta="{{id_pregunta}}"
+            data-id-materia="{{id_materia}}"
+            data-pregunta="{{pregunta}}"
+            data-retroalimentacion="{{retroalimentacion}}"
+            {{#each respuestas}}
+              data-res{{@index}}-id="{{id_respuesta}}"
+              data-res{{@index}}-texto="{{respuesta}}"
+              data-res{{@index}}-puntos="{{puntos}}"
+              data-res{{@index}}-correcta="{{correcta}}"
+            {{/each}}
+            onclick="editarPreguntaDesdeAtributos(this)">✏️ Editar</button>
+
+          <button type="button" class="editor-btn btn-danger" onclick="abrirModalEliminar({{id_pregunta}})">🗑️ Eliminar</button>
+        </td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+  <div class="pagination">
+    {{#if (gt page 1)}}
+      <a href="/editor/examenes?page={{subtract page 1}}" class="btn btn-secondary">« Anterior</a>
+    {{/if}}
+    {{#each (range 1 totalPages)}}
+      <a href="/editor/examenes?page={{this}}" class="btn {{#ifEquals ../page this}}btn-primary{{else}}btn-light{{/ifEquals}}">{{this}}</a>
+    {{/each}}
+    {{#if (lt page totalPages)}}
+      <a href="/editor/examenes?page={{add page 1}}" class="btn btn-secondary">Siguiente »</a>
+    {{/if}}
+  </div>
+
+  <button type="button" class="editor-btn mt-3" onclick="agregarPregunta()">➕ Agregar pregunta</button>
+</div>
+
+<!-- Overlays -->
+<div id="overlay" onclick="cerrarForm()"></div>
+<div id="overlay-eliminar" onclick="cerrarModalEliminar()"></div>
+
+<!-- Formulario edición -->
+<form id="formulario-edicion">
+  <h3>Editar / Agregar Pregunta</h3>
+  <input type="hidden" id="editar-id" name="id_pregunta">
+  <label>ID Materia:</label>
+  <input type="number" id="editar-id-materia" name="id_materia" required>
+  <label>Texto de la Pregunta:</label>
+  <input type="text" id="editar-pregunta" name="pregunta" required>
+  <label>Retroalimentación:</label>
+  <input type="text" id="editar-retroalimentacion" name="retroalimentacion">
+  <h4>Opciones de Respuesta:</h4>
+  <div id="respuestas-container"></div>
+  <button type="submit" class="editor-btn">Guardar cambios</button>
+  <button type="button" class="editor-btn" onclick="cerrarForm()">Cancelar</button>
+</form>
+
+<!-- Modal eliminar -->
+<div id="modal-eliminar">
+  <h5>¿Deseas eliminar esta pregunta?</h5>
+  <button id="btnEliminarSi" class="editor-btn btn-danger">Sí</button>
+  <button class="editor-btn btn-secondary" onclick="cerrarModalEliminar()">No</button>
+</div>
+
+<script>
+let idEliminar = null;
+
+function abrirModalEliminar(id){
+  idEliminar = id;
+  document.getElementById('overlay-eliminar').style.display = 'block';
+  document.getElementById('modal-eliminar').style.display = 'block';
+}
+
+function cerrarModalEliminar(){
+  idEliminar = null;
+  document.getElementById('overlay-eliminar').style.display = 'none';
+  document.getElementById('modal-eliminar').style.display = 'none';
+}
+
+document.getElementById('btnEliminarSi').addEventListener('click', function(){
+  if(!idEliminar) return;
+
+  fetch(`/editor/eliminar-preguntas/${idEliminar}`, { method: 'DELETE' })
+    .then(res => {
+      if(res.ok) location.reload();
+      else alert('Error al eliminar');
+    });
+
+  cerrarModalEliminar();
+});
+
+function editarPreguntaDesdeAtributos(btn){
+  document.getElementById('editar-id').value = btn.dataset.idPregunta || '';
+  document.getElementById('editar-id-materia').value = btn.dataset.idMateria || '';
+  document.getElementById('editar-pregunta').value = btn.dataset.pregunta || '';
+  document.getElementById('editar-retroalimentacion').value = btn.dataset.retroalimentacion || '';
+
+  const container = document.getElementById('respuestas-container');
+  container.innerHTML = '';
+
+  for(let i=0;i<4;i++){
+    const div = document.createElement('div');
+    div.innerHTML = `
+      <input type="hidden" name="respuestas_id[]" value="${btn.dataset[`res${i}Id`] || ''}">
+      <label>Opción ${i+1}:</label>
+      <input type="text" name="respuestas_texto[]" value="${btn.dataset[`res${i}Texto`] || ''}" required>
+      <label>Puntos:</label>
+      <input type="number" name="puntos[]" value="${btn.dataset[`res${i}Puntos`] || 0}" min="0" required>
+      <label><input type="radio" name="correcta" value="${i}" ${btn.dataset[`res${i}Correcta`] === '1' ? 'checked' : ''}> Correcta</label>
+      <br>
+    `;
+    container.appendChild(div);
+  }
+
+  document.getElementById('formulario-edicion').style.display='block';
+  document.getElementById('overlay').style.display='block';
+}
+
+function agregarPregunta(){
+  document.getElementById('editar-id').value='';
+  document.getElementById('editar-id-materia').value='';
+  document.getElementById('editar-pregunta').value='';
+  document.getElementById('editar-retroalimentacion').value='';
+
+  const container = document.getElementById('respuestas-container');
+  container.innerHTML='';
+
+  for(let i=0;i<4;i++){
+    const div = document.createElement('div');
+    div.innerHTML = `
+      <input type="hidden" name="respuestas_id[]" value="">
+      <label>Opción ${i+1}:</label>
+      <input type="text" name="respuestas_texto[]" required>
+      <label>Puntos:</label>
+      <input type="number" name="puntos[]" min="0" value="0" required>
+      <label><input type="radio" name="correcta" value="${i}" ${i===0?'checked':''}> Correcta</label>
+      <br>
+    `;
+    container.appendChild(div);
+  }
+
+  document.getElementById('formulario-edicion').style.display='block';
+  document.getElementById('overlay').style.display='block';
+}
+
+function cerrarForm(){
+  document.getElementById('formulario-edicion').style.display='none';
+  document.getElementById('overlay').style.display='none';
+}
+
+const form=document.getElementById('formulario-edicion');
+form.addEventListener('submit', async e=>{
+  e.preventDefault();
+  const data = new FormData(form);
+  const payload={};
+
+  for(const [key,value] of data.entries()){
+    if(key.endsWith('[]')){
+      const k = key.slice(0,-2);
+      if(!payload[k]) payload[k]=[];
+      payload[k].push(value);
+    } else {
+      payload[key]=value;
+    }
+  }
+
+  payload.correcta=parseInt(data.get('correcta'));
+  const id=payload.id_pregunta;
+  const url=id? `/editor/editar-pregunta/${id}`:'/editor/agregar-pregunta';
+
+  try{
+    const res=await fetch(url,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    if(res.ok) location.reload();
+    else alert('Error al guardar cambios');
+  }catch(err){
+    console.error(err);
+    alert('Error al guardar cambios');
+  }
+});
+</script>
+
+</body>
+</html>

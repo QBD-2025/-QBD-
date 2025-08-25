@@ -1,0 +1,169 @@
+.confrontation-mode {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.confrontation-mode .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ddd;
+}
+
+.confrontation-mode .header .title {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.confrontation-mode .header .pill {
+    background: #f0f0f0;
+    padding: 8px 15px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.confrontation-mode .header .pill .vs {
+    margin: 0 10px;
+    font-weight: bold;
+    color: #e74c3c;
+}
+
+.confrontation-mode .header .timer {
+    font-size: 20px;
+    font-weight: bold;
+    color: #e74c3c;
+    background: #f9f9f9;
+    padding: 5px 15px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.confrontation-layout {
+    display: flex;
+    gap: 20px;
+}
+
+.player-area {
+    flex: 1;
+    background: #f9f9f9;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.player-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.player-header h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.player-score {
+    font-weight: bold;
+    color: #2ecc71;
+}
+
+.canvas-wrap {
+    margin: 0 auto 20px;
+    text-align: center;
+}
+
+.word {
+    font-size: 24px;
+    letter-spacing: 5px;
+    text-align: center;
+    margin-bottom: 15px;
+    font-family: monospace;
+}
+
+.wrong {
+    text-align: center;
+    color: #e74c3c;
+    margin-bottom: 15px;
+    min-height: 20px;
+}
+
+.clue {
+    text-align: center;
+    font-style: italic;
+    color: #7f8c8d;
+    padding: 10px;
+    background: #f0f0f0;
+    border-radius: 5px;
+}
+
+.game-controls {
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.game-status {
+    text-align: center;
+    font-weight: bold;
+    padding: 10px;
+    background: #f0f0f0;
+    border-radius: 5px;
+}
+
+#teclado {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+}
+
+#teclado button {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+    cursor: pointer;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+#teclado button:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+}
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.controls select, .controls button {
+    padding: 8px 12px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.controls button {
+    background: #2ecc71;
+    color: white;
+    cursor: pointer;
+    border: none;
+}
+
+.controls button:hover {
+    background: #27ae60;
+}
+
+.opponent-area {
+    opacity: 0.8;
+}

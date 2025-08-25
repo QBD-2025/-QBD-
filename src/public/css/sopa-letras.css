@@ -1,0 +1,271 @@
+
+:root{
+    --bg:#0f172a;
+    --panel:#111827;
+    --card:#1f2937;
+    --acc:#3b82f6;
+    --text:#e5e7eb;
+    --muted:#9ca3af;
+    --border:#374151;
+}
+
+body{
+    margin:0;
+    background:linear-gradient(120deg,#0b132b,#1c2541);
+    color:var(--text);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Helvetica Neue",Arial;
+}
+
+.page{
+    max-width:1100px;
+    margin:24px auto;
+    padding:0 16px;
+}
+
+.header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:16px;
+}
+.title{
+    font-size:clamp(20px,2.5vw,28px);
+    font-weight:800;
+    letter-spacing:.3px;
+}
+.pill{
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.08);
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    color:var(--muted);
+}
+
+.layout{
+    display:grid;
+    grid-template-columns: 1fr 320px;
+    gap:16px;
+}
+
+.card{
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.08);
+    backdrop-filter: blur(6px);
+    border-radius:16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25);
+}
+
+/* Estilos específicos de la sopa de letras */
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.game {
+    display: grid;
+    grid-template-columns: 1fr 250px;
+    gap: 16px;
+}
+
+.panel {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 16px;
+}
+
+.status.panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.small {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.badge {
+    background: #e5e7eb;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #111827;
+}
+
+#board {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+    user-select: none;
+}
+
+.cell:hover {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.cell.selected {
+    background: rgba(59, 130, 246, 0.3);
+}
+
+.cell.found {
+    background: rgba(34, 197, 94, 0.2);
+    border-color: rgba(34, 197, 94, 0.5);
+}
+
+.controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+button {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+button.primary {
+    background: linear-gradient(180deg,#2563eb,#1d4ed8);
+    border-color: #1d4ed8;
+    font-weight: 700;
+}
+
+.message {
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.message.win {
+    background: rgba(34, 197, 94, 0.1);
+    color: #86efac;
+}
+
+.message.lose {
+    background: rgba(239, 68, 68, 0.1);
+    color: #fca5a5;
+}
+
+.clues {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.clues li {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+}
+
+.clues li.done {
+    opacity: 0.6;
+    text-decoration: line-through;
+}
+
+.clues .word {
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.clues .hint {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+/* Estilos del chat */
+#chatBox {
+    height: 220px;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px;
+    background: #0b1023;
+    margin-bottom: 10px;
+}
+
+.msg {
+    margin-bottom: 6px;
+    line-height: 1.25;
+}
+
+.msg .u {
+    color: #93c5fd;
+    font-weight: 700;
+    margin-right: 6px;
+}
+
+.chat-input {
+    display: flex;
+    gap: 8px;
+}
+
+.chat-input input {
+    flex: 1;
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    outline: none;
+}
+
+.chat-input input:focus {
+    border-color: var(--acc);
+}
+
+.chat-send {
+    background: #3b82f6;
+    border-color: #2563eb;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+@media (max-width: 900px) {
+    .layout {
+    grid-template-columns: 1fr;
+    }
+    
+    .game {
+    grid-template-columns: 1fr;
+    }
+}
+
+.side{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}

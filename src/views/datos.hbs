@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Datos Curiosos - {{materias}}</title>
+  <link rel="stylesheet" href="/css/dato.css">
+</head>
+<body>
+  <div class="contenedor-datos">
+  <div><button class="boton-volver" onclick="location.href='/eleccion-dato'">Regresar</button></div>
+    <h1 class="titulo">{{materias}}</h1>
+
+    {{#if datos.length}}
+      <div class="lista-datos">
+        {{#each datos}}
+        <div class="tarjeta-dato">
+          <p class="texto-dato">{{texto}}</p>
+          {{#if imagenBase64}}
+            <img src="data:image/jpeg;base64,{{imagenBase64}}" alt="Imagen del dato curioso" class="imagen-dato">
+          {{/if}}
+        </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <p class="sin-datos">No hay datos curiosos para esta materia.</p>
+    {{/if}}
+
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const cards = document.querySelectorAll(".card");
+    const carousel = document.querySelector(".carousel");
+    const total = cards.length;
+    const angleStep = 360 / total;
+    const radius = 350;
+    let currentIndex = 0;
+
+    // Distribuye las cartas en círculo 3D
+    cards.forEach((card, i) => {
+      const angle = i * angleStep;
+      card.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
+    });
+
+    function rotateCarousel() {
+      const angle = currentIndex * -angleStep;
+      carousel.style.transform = `translateZ(-${radius}px) rotateY(${angle}deg)`;
+
+      cards.forEach(card => card.classList.remove('highlight'));
+      cards[currentIndex].classList.add('highlight');
+    }
+
+    document.getElementById("next").addEventListener("click", () => {
+      currentIndex = (currentIndex + 1) % total;
+      rotateCarousel();
+    });
+
+    document.getElementById("prev").addEventListener("click", () => {
+      currentIndex = (currentIndex - 1 + total) % total;
+      rotateCarousel();
+    });
+
+    rotateCarousel(); // inicial
+  });
+</script>
+
+  </div>
+</body>
+</html>

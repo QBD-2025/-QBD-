@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Editor</title>
+  <link rel="stylesheet" href="/css/editor.css" />
+  <style>
+    /* Estilos para modal de confirmación */
+    #confirmModal {
+      display: none;
+      position: fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    #confirmModal .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+    #confirmModal button {
+      margin: 5px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <header class="editor-header">
+    <div class="header-left">
+      <a href="/"><img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image-header"></a>
+    </div>
+    <div class="header-center">
+      <h1 class="editor-title">Panel de Edición</h1>
+      <p class="editor-welcome">Bienvenido {{user.username}} (EDITOR)</p>
+    </div>
+    <div class="header-right">
+      <a href="/menu_principal" class="volver-button">Volver</a>
+    </div>
+  </header>
+
+  <img src="/images/stuart_recargado.png" alt="Personaje Editor" class="character-image">
+
+  <div class="editor-container container mt-4">
+    <h2 class="editor-subtitle mb-4">Gestión de Encuesta</h2>
+    <a href="/editor/datos" class="editor-btn">Gestión de Datos</a>
+    <a href="/editor" class="editor-btn">Gestión de Exámenes</a>
+
+    <form class="editor-form">
+      <table class="editor-table">
+        <thead>
+          <tr>
+            <th>ID Encuesta</th>
+            <th>Pregunta</th>
+            <th>Opciones</th>
+            <th>Estatus</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each preguntas}}
+          <tr>
+            <td>{{id_encuesta}}</td>
+            <td><strong>{{texto}}</strong></td>
+            <td>
+              <ul>
+                {{#each opciones}}
+                <li>{{this}}</li>
+                {{/each}}
+              </ul>
+            </td>
+            <td>
+              <input type="hidden" name="id_pregunta[]" value="{{id_pregunta}}">
+              <select name="estatus[]">
+                <option value="1" {{#if (eq id_estatus_p 1)}}selected{{/if}}>Publicado</option>
+                <option value="2" {{#if (eq id_estatus_p 2)}}selected{{/if}}>Borrador</option>
+                <option value="3" {{#if (eq id_estatus_p 3)}}selected{{/if}}>Archivado</option>
+                <option value="4" {{#if (eq id_estatus_p 4)}}selected{{/if}}>Revisión</option>
+              </select>
+            </td>
+            <td>
+              <button type="button" class="editor-btn editar-btn"
+                data-id="{{id_pregunta}}"
+                data-texto="{{texto_pregunta}}"
+                data-opciones="{{opciones}}">
+                ✏️ Editar
+              </button>
+              <button type="button" class="editor-btn eliminar-btn" data-id="{{id_pregunta}}" style="background: linear-gradient(to right, #e74c3c, #c0392b);">
+                🗑️ Eliminar
+              </button>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+      <button type="button" id="btnAgregarPregunta">➕ Agregar pregunta</button>
+    </form>
+  </div>
+
+  <!-- Modal Editar -->
+  <div id="editorModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h2>Editar Pregunta</h2>
+      <form id="editarForm">
+        <input type="hidden" name="id_pregunta" id="editId">
+        <label>Texto de la pregunta:</label>
+        <input type="text" name="texto_pregunta" id="editTexto" required />
+        <div id="editOpcionesContainer"></div>
+        <button type="submit" class="editor-btn">Guardar cambios</button>
+        <button type="button" class="editor-btn" style="background: gray;" id="cerrarModal">Cancelar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Agregar -->
+  <div id="agregarModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h2>Agregar Pregunta</h2>
+      <form id="agregarForm">
+        <label>ID de la encuesta:</label>
+        <input type="number" name="id_encuesta" id="agregarIdEncuesta" required />
+        <label>Texto de la pregunta:</label>
+        <input type="text" name="texto_pregunta" id="agregarTexto" required />
+        <div id="agregarOpcionesContainer">
+          <label>Opción 1:</label>
+          <input type="text" name="opciones[]" required />
+          <label>Opción 2:</label>
+          <input type="text" name="opciones[]" required />
+        </div>
+        <button type="button" id="btnAddOpcion">➕ Agregar opción</button>
+        <button type="submit" class="editor-btn">Guardar pregunta</button>
+        <button type="button" class="editor-btn" style="background: gray;" id="cerrarAgregarModal">Cancelar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Confirmación Eliminar -->
+  <div id="confirmModal">
+    <div class="modal-content">
+      <p>¿Seguro que deseas eliminar esta pregunta?</p>
+      <button id="confirmYes" class="editor-btn" style="background: #e74c3c;">Sí, eliminar</button>
+      <button id="confirmNo" class="editor-btn" style="background: gray;">Cancelar</button>
+    </div>
+  </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+  // ---------- ELIMINAR ----------
+  let idAEliminar = null;
+  const confirmModal = document.getElementById('confirmModal');
+  const confirmYes = document.getElementById('confirmYes');
+  const confirmNo = document.getElementById('confirmNo');
+
+  document.querySelectorAll('.eliminar-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      idAEliminar = btn.dataset.id;
+      confirmModal.style.display = 'flex';
+    });
+  });
+
+  confirmNo.addEventListener('click', () => {
+    idAEliminar = null;
+    confirmModal.style.display = 'none';
+  });
+
+  confirmYes.addEventListener('click', async () => {
+    if(idAEliminar){
+      const res = await fetch(`/editor/encuesta/eliminar-pregunta/${idAEliminar}`, { method: 'DELETE' });
+      if(res.ok) location.reload();
+      else alert('Error al eliminar pregunta');
+    }
+  });
+
+  // ---------- EDITAR ----------
+  const modal = document.getElementById('editorModal');
+  const cerrarModal = document.getElementById('cerrarModal');
+  const editarForm = document.getElementById('editarForm');
+  const opcionesContainer = document.getElementById('editOpcionesContainer');
+
+  document.querySelectorAll('.editar-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      const texto = btn.dataset.texto;
+      const opciones = btn.dataset.opciones ? btn.dataset.opciones.split(',') : [];
+
+      document.getElementById('editId').value = id;
+      document.getElementById('editTexto').value = texto;
+
+      opcionesContainer.innerHTML = '';
+      opciones.forEach((op,i) => {
+        opcionesContainer.innerHTML += `<label>Opción ${i+1}:</label><input type="text" name="opciones[]" value="${op}" />`;
+      });
+
+      modal.style.display = 'flex';
+    });
+  });
+
+  cerrarModal.addEventListener('click', () => modal.style.display = 'none');
+
+  editarForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(editarForm);
+    const data = Object.fromEntries(formData.entries());
+    data.opciones = formData.getAll('opciones[]');
+
+    const res = await fetch('/editor/encuesta/editar-pregunta', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        id: data.id_pregunta,
+        nuevoTexto: data.texto_pregunta,
+        opciones: data.opciones
+      })
+    });
+
+    if(res.ok) location.reload();
+    else alert('Error al guardar los cambios');
+  });
+
+  // ---------- AGREGAR ----------
+  const agregarModal = document.getElementById('agregarModal');
+  const btnAgregarPregunta = document.getElementById('btnAgregarPregunta');
+  const cerrarAgregar = document.getElementById('cerrarAgregarModal');
+  const agregarForm = document.getElementById('agregarForm');
+  const addOpcionesContainer = document.getElementById('agregarOpcionesContainer');
+  const btnAddOpcion = document.getElementById('btnAddOpcion');
+
+  let opcionCount = 2;
+
+  btnAgregarPregunta.addEventListener('click', () => {
+    agregarForm.reset();
+    addOpcionesContainer.innerHTML = `
+      <label>Opción 1:</label><input type="text" name="opciones[]" required />
+      <label>Opción 2:</label><input type="text" name="opciones[]" required />
+    `;
+    opcionCount = 2;
+    agregarModal.style.display = 'flex';
+  });
+
+  cerrarAgregar.addEventListener('click', () => agregarModal.style.display = 'none');
+
+  btnAddOpcion.addEventListener('click', () => {
+    opcionCount++;
+    addOpcionesContainer.innerHTML += `<label>Opción ${opcionCount}:</label><input type="text" name="opciones[]" required />`;
+  });
+
+  agregarForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(agregarForm);
+    const data = Object.fromEntries(formData.entries());
+    data.opciones = formData.getAll('opciones[]');
+
+    const res = await fetch('/editor/encuesta/agregar-pregunta', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    });
+
+    if(res.ok) location.reload();
+    else alert('Error al guardar la nueva pregunta');
+  });
+
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Editar Perfil – QueBuenDato.com.mx</title>
+  <link rel="stylesheet" href="/css/usuarioEditor.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet" />
+</head>
+<body class="page-usuario">
+  <div class="profile-full">
+    <div class="profile-card">
+
+      <!-- Encabezado -->
+      <header class="profile-header">
+        <h1 class="profile-title">Editar Perfil</h1>
+      </header>
+
+      <!-- Formulario -->
+      <div class="profile-body">
+        <h2 class="user-subtitle">Información Personal</h2>
+
+        <form action="/usuario/editar" method="POST" class="edit-form">
+          <div class="form-group">
+            <label for="apodo">Alias (visible):</label>
+            <input type="text" id="apodo" name="apodo" value="{{user.apodo}}" placeholder="Escribe tu Alias" required />
+          </div>
+
+          <div class="form-group">
+            <label>Nombre real:</label>
+            <span class="display-value">"{{user.username}}"</span>
+          </div>
+
+          <div class="form-group">
+            <label>Correo electrónico:</label>
+            <input type="email" value="{{user.email}}" disabled />
+          </div>
+
+            <input type="hidden" name="username" value="{{user.username}}" />
+            <input type="hidden" name="email" value="{{user.email}}" />
+
+          <div class="form-group">
+            <label for="metas">Metas personales:</label>
+            <textarea id="metas" name="descripcion" rows="4" placeholder="Escribe tus metas o intereses...">{{user.descripcion}}</textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Tipo de cuenta:</label>
+            <span class="display-value">{{user.role}}</span>
+          </div>
+
+          <div class="button-group">
+            <button type="submit" class="save-button">Guardar Cambios</button>
+            <button type="button" onclick="window.location.href='/usuario'" class="back-button">
+              Cancelar y volver
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

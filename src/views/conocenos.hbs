@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>¡Que Buen Dato!</title>
+
+
+  
+  <style>
+    /* Reset y base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      display: flex;
+      overflow: hidden;
+    }
+
+    .main-container {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      height: 100vh;
+    }
+
+    /* 👉 Panel izquierdo */
+    .left-panel {
+      flex: 1;
+      background: linear-gradient(to bottom right, #0815c5, #0c0264);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 100px;
+      color: white;
+    }
+
+    .left-panel video {
+      width: 170%;
+      max-width: 600px;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Lado derecho con texto blanco */
+    .right-panel {
+      flex: 1;
+      background-color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px;
+      box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .right-panel h1 {
+      color: #6a1b9a;
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+
+    .right-panel h2 {
+      color: #6a1b9a;
+      font-size: 1.8rem;
+      margin-top: 30px;
+      margin-bottom: 10px;
+    }
+
+    .right-panel p {
+      font-size: 1.1rem;
+      color: #333333;
+      line-height: 1.6;
+    }
+
+    /* Responsive para pantallas pequeñas */
+    @media (max-width: 768px) {
+      .main-container {
+        flex-direction: column;
+      }
+
+      .left-panel, .right-panel {
+        width: 100%;
+        height: 50vh;
+      }
+
+      .right-panel {
+        padding: 30px;
+        text-align: center;
+        box-shadow: none;
+      }
+
+      .left-panel video {
+        width: 90%;
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <!-- Video a la izquierda con fondo degradado -->
+    <div class="left-panel">
+      <video src="/media/videos/curiosidad.mp4" controls autoplay></video>
+    </div>
+
+    <!-- Información a la derecha en fondo blanco -->
+    <div class="right-panel">
+      <h1>¿Qué es "!QueBuenDato¡"?</h1>
+      <p>
+        <strong>¡QueBuenDato!:</strong> Bienvenido a una nueva forma de aprender y estudiar.
+Nuestra plataforma ofrece un espacio donde el aprendizaje se vuelve más dinámico y entretenido. Aquí podrás conectarte con otros estudiantes a través de blogs, compartir ideas, resolver dudas y descubrir nuevas formas de estudio.
+
+Además, contamos con una versión especialmente diseñada para motivar el aprendizaje de manera divertida, promoviendo el estudio con retos, juegos y herramientas interactivas.
+
+      <h2>¿Cuál es nuestra misión?</h2>
+      <p>
+        Nuestra misión es brindar datos interesantes y relevantes de manera accesible y visualmente atractiva para todos los usuarios.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
