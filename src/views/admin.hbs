@@ -58,28 +58,32 @@
               {{/if}}
             </td>
             <td>
-              <input type="hidden" name="usuario_ids" value="{{this.id_usuario}}">
-              <select name="nuevos_roles" class="form-select role-select">
+              <input type="hidden" name="usuario_ids[]" value="{{this.id_usuario}}">
+              <select name="nuevos_roles[]" class="form-select role-select" required>
                 <option value="1" {{#if (eq this.id_tp_usuario 1)}}selected{{/if}}>USUARIO</option>
                 <option value="2" {{#if (eq this.id_tp_usuario 2)}}selected{{/if}}>EDITOR</option>
                 <option value="3" {{#if (eq this.id_tp_usuario 3)}}selected{{/if}}>ADMIN</option>
               </select>
             </td>
-            <td><span class="badge status-{{this.descripcion}}">{{this.descripcion}}</span></td>
+            <td><span class="badge status-{{this.id_status}}">{{this.status}}</span></td>
             <td>
-              <select name="nuevos_status" class="form-select role-select">
-                {{#each ../lista_status}}
-                <option value="{{this.id_status}}" {{#if (eq this.id_status ../../this.id_status)}}selected{{/if}}>
-                  {{this.descripcion}}
-                </option>
-                {{/each}}
+              <select name="nuevos_status[]" class="form-select" required>
+                <option value="1" {{#if (eq this.id_status 1)}}selected{{/if}}>Activo</option>
+                <option value="2" {{#if (eq this.id_status 2)}}selected{{/if}}>Inactivo</option>
+                <option value="3" {{#if (eq this.id_status 3)}}selected{{/if}}>Suspendido</option>
+                <option value="4" {{#if (eq this.id_status 4)}}selected{{/if}}>Pendiente</option>
+                <option value="5" {{#if (eq this.id_status 5)}}selected{{/if}}>Baja</option>
               </select>
+
+              <!-- Input de fecha de suspensión, oculto si no está suspendido -->
+              <input type="datetime-local" name="suspension_fin_{{this.id_usuario}}" class="form-control mt-1 suspension-input"
+                    {{#unless (eq this.id_status 3)}}style="display:none;"{{/unless}}
+                    value="{{this.suspension_fin}}">
+
+              
             </td>
             <td>
-              <button type="button" class="btn btn-sm btn-secondary" 
-                      onclick="abrirModalEditar({{this.id_usuario}}, '{{this.username}}', '{{this.email}}')">
-                ✏️ Editar
-              </button>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="abrirModalEditar({{this.id_usuario}}, '{{this.username}}', '{{this.email}}')">✏️ Editar</button>
             </td>
           </tr>
           {{/each}}
@@ -104,11 +108,11 @@
             <input type="hidden" id="edit-id_usuario" name="id_usuario">
             <div class="mb-3">
               <label class="form-label">Nombre</label>
-              <input type="text" class="form-control" id="edit-username" name="username">
+              <input type="text" class="form-control" id="edit-username" name="username" required>
             </div>
             <div class="mb-3">
               <label class="form-label">Email</label>
-              <input type="email" class="form-control" id="edit-email" name="email">
+              <input type="email" class="form-control" id="edit-email" name="email" required>
             </div>
             <div class="mb-3">
               <label class="form-label">Nueva contraseña (opcional)</label>
@@ -136,15 +140,15 @@
           <div class="modal-body">
             <div class="mb-3">
               <label class="form-label">Nombre</label>
-              <input type="text" class="form-control" name="username" id="usernameAgregar">
+              <input type="text" class="form-control" name="username" id="usernameAgregar" required>
             </div>
             <div class="mb-3">
               <label class="form-label">Email</label>
-              <input type="email" class="form-control" name="email" id="emailAgregar">
+              <input type="email" class="form-control" name="email" id="emailAgregar" required>
             </div>
             <div class="mb-3">
               <label class="form-label">Contraseña</label>
-              <input type="password" class="form-control" name="password" id="passwordAgregar">
+              <input type="password" class="form-control" name="password" id="passwordAgregar" required>
             </div>
           </div>
           <div class="modal-footer">
@@ -160,6 +164,16 @@
   <script>
     const modalEditar = new bootstrap.Modal(document.getElementById('modalEditarUsuario'));
     const modalAgregar = new bootstrap.Modal(document.getElementById('modalAgregarUsuario'));
+
+    function toggleSuspensionInput(select, userId) {
+      const input = document.querySelector(`input[name="suspension_fin_${userId}"]`);
+      if (select.value == '3') { // Suspendido
+        input.style.display = 'block';
+      } else {
+        input.style.display = 'none';
+        input.value = ''; // limpiar si se deselecciona
+      }
+    }
 
     function abrirModalEditar(id, nombre, email) {
       document.getElementById('edit-id_usuario').value = id;
@@ -183,11 +197,6 @@
         email: document.getElementById('edit-email').value,
         password: document.getElementById('edit-password').value
       };
-
-      if (!payload.username || !payload.email) {
-        alert("Nombre y email son obligatorios.");
-        return;
-      }
 
       try {
         const res = await fetch('/admin/editar-usuario', {

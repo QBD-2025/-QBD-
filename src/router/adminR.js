@@ -15,47 +15,52 @@ const isAdmin = (req, res, next) => {
     });
 };
 
-// GET / -> Ruta para mostrar el panel de administración
+// GET /admin
 router.get('/', isAuthenticated, isAdmin, async (req, res) => {
     try {
-        // ✨ CONSULTA CORREGIDA: Hacemos JOIN para obtener los nombres de rol y estatus
         const [usuarios] = await req.pool.query(`
-            SELECT 
-                u.id_usuario, u.username, u.email, 
-                u.id_tp_usuario, tr.descripcion,
-                u.id_status, s.descripcion
+            SELECT u.id_usuario, u.username, u.email, 
+                   u.id_tp_usuario, tr.descripcion AS rol,
+                   u.id_status, s.descripcion AS status
             FROM usuario u
             LEFT JOIN tipo_usuario tr ON u.id_tp_usuario = tr.id_tp_usuario
             LEFT JOIN status s ON u.id_status = s.id_status
             ORDER BY u.id_usuario ASC
         `);
 
-        // Consulta para obtener la lista de todos los estatus posibles
-        const [lista_status] = await req.pool.query('SELECT id_status, descripcion FROM status');
+        const [lista_status] = await req.pool.query(`SELECT * FROM status`);
 
-        // Renderizamos la vista con todos los datos necesarios
-        res.render('admin', {
-            layout: false, // Tu admin.hbs ya es un HTML completo
-            user: req.session.user,
-            usuarios: usuarios,
-            lista_status: lista_status
+        // Convertir a números y agregar flag de sesión
+        usuarios.forEach(u => {
+            u.id_status = Number(u.id_status) || 1; // 1 como fallback
+            u.sesion_activa = global.sesionesActivas?.has(u.id_usuario) || false;
         });
 
+        lista_status.forEach(s => {
+            s.id_status = Number(s.id_status) || 1;
+        });
+
+        res.render('admin', {
+            layout: false, 
+            user: req.session.user,
+            usuarios,
+            lista_status
+        });
     } catch (error) {
-        console.error("Error cargando el panel de admin:", error);
-        res.status(500).send("Error interno del servidor al cargar el panel.");
+        console.error("Error cargando usuarios:", error);
+        res.status(500).send("Error al cargar usuarios.");
     }
 });
 
-// POST /actualizar-usuarios -> Ruta para procesar los cambios del formulario
+// POST /actualizar-usuarios
 router.post('/actualizar-usuarios', isAuthenticated, isAdmin, async (req, res) => {
     const { usuario_ids, nuevos_roles, nuevos_status } = req.body;
-    
-    // IMPORTANTE: Asumimos que el ID para "Baja" en tu tabla status es 5.
-    // Si es diferente, cámbialo aquí.
-    const ID_STATUS_BAJA = 5; 
+    const ID_STATUS_BAJA = 5;
+    const ID_STATUS_SUSPENDIDO = 3;
 
-    if (!usuario_ids || !nuevos_roles || !nuevos_status || usuario_ids.length !== nuevos_roles.length || usuario_ids.length !== nuevos_status.length) {
+    if (!usuario_ids || !nuevos_roles || !nuevos_status ||
+        usuario_ids.length !== nuevos_roles.length ||
+        usuario_ids.length !== nuevos_status.length) {
         return res.redirect('/admin?error=datos_inconsistentes');
     }
 
@@ -64,55 +69,71 @@ router.post('/actualizar-usuarios', isAuthenticated, isAdmin, async (req, res) =
         const promesasDeActualizacion = [];
 
         for (let i = 0; i < usuario_ids.length; i++) {
-            const id_usuario = parseInt(usuario_ids[i], 10);
-            const nuevoRolId = parseInt(nuevos_roles[i], 10);
-            const nuevoStatusId = parseInt(nuevos_status[i], 10);
+            const id_usuario = usuario_ids[i] && usuario_ids[i].trim() !== '' ? Number(usuario_ids[i]) : null;
+            const nuevoRolId = nuevos_roles[i] && nuevos_roles[i].trim() !== '' ? Number(nuevos_roles[i]) : null;
+            const nuevoStatusId = nuevos_status[i] && nuevos_status[i].trim() !== '' ? Number(nuevos_status[i]) : null;
 
-            // Si el estatus es "Baja", lo agregamos a la lista para eliminar
+            // Captura la fecha de suspensión si viene
+            const suspension_fin = req.body[`suspension_fin_${id_usuario}`] || null;
+
+            if (id_usuario == null || nuevoRolId == null || nuevoStatusId == null) {
+                console.warn(`Fila ${i} con valores inválidos, se omite:`, {
+                    id_usuario: usuario_ids[i],
+                    nuevoRolId: nuevos_roles[i],
+                    nuevoStatusId: nuevos_status[i]
+                });
+                continue;
+            }
+
+            // Control de baja
             if (nuevoStatusId === ID_STATUS_BAJA) {
-                // Evitar que un admin se elimine a sí mismo
                 if (id_usuario === req.session.user.id_usuario) {
                     console.warn(`El admin ${id_usuario} intentó darse de baja a sí mismo. Acción omitida.`);
                     continue;
                 }
                 usuariosParaEliminar.push(id_usuario);
-            } 
-            // Si no, lo actualizamos
-            else {
-                const promesa = req.pool.query(
-                    'UPDATE usuario SET id_tp_usuario = ?, id_status = ? WHERE id_usuario = ?',
-                    [nuevoRolId, nuevoStatusId, id_usuario]
-                );
-                promesasDeActualizacion.push(promesa);
-            };
+            } else {
+                // Preparar actualización con suspensión si aplica
+                let query = 'UPDATE usuario SET id_tp_usuario = ?, id_status = ?';
+                const params = [nuevoRolId, nuevoStatusId];
+
+                if (nuevoStatusId === ID_STATUS_SUSPENDIDO) {
+                    query += ', suspension_fin = ?';
+                    params.push(suspension_fin);
+                } else {
+                    query += ', suspension_fin = NULL';
+                }
+
+                query += ' WHERE id_usuario = ?';
+                params.push(id_usuario);
+
+                promesasDeActualizacion.push(req.pool.query(query, params));
+            }
         }
 
-        // Ejecutamos las eliminaciones
+        // Ejecutar bajas
         if (usuariosParaEliminar.length > 0) {
             await req.pool.query('DELETE FROM usuario WHERE id_usuario IN (?)', [usuariosParaEliminar]);
         }
 
-        // Ejecutamos las actualizaciones
+        // Ejecutar actualizaciones
         if (promesasDeActualizacion.length > 0) {
             await Promise.all(promesasDeActualizacion);
         }
 
         req.session.mensaje = "Cambios guardados exitosamente.";
         res.redirect('/admin');
-
     } catch (error) {
         console.error("Error masivo al actualizar usuarios:", error);
         res.status(500).send("Error al guardar los cambios.");
     }
 });
 
-
+// POST /editar-usuario
 router.post('/editar-usuario', isAuthenticated, isAdmin, async (req, res) => {
     const { id_usuario, username, email, password } = req.body;
 
-    if (!id_usuario) {
-        return res.status(400).send("ID de usuario requerido.");
-    }
+    if (!id_usuario) return res.status(400).send("ID de usuario requerido.");
 
     try {
         const campos = [];
@@ -139,7 +160,6 @@ router.post('/editar-usuario', isAuthenticated, isAdmin, async (req, res) => {
         }
 
         valores.push(id_usuario);
-
         const query = `UPDATE usuario SET ${campos.join(', ')} WHERE id_usuario = ?`;
         await req.pool.query(query, valores);
 
@@ -150,21 +170,16 @@ router.post('/editar-usuario', isAuthenticated, isAdmin, async (req, res) => {
     }
 });
 
-
+// POST /agregar-usuario
 router.post('/agregar-usuario', isAuthenticated, isAdmin, async (req, res) => {
     const { username, email, password, verificado } = req.body;
 
-    if (!password || password.trim() === "") {
-        return res.status(400).send("La contraseña es obligatoria.");
-    }
+    if (!password || password.trim() === "") return res.status(400).send("La contraseña es obligatoria.");
+    if (!username || !email) return res.status(400).send("Faltan datos obligatorios.");
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        if (!username || !email || !password) {
-        return res.status(400).send("Faltan datos obligatorios.");
-    }
         const [result] = await req.pool.query(
-            
             'INSERT INTO usuario (username, email, password, verificado, id_tp_usuario, id_status) VALUES (?, ?, ?, ?, 1, 1)',
             [username, email, hashedPassword, verificado || 0]
         );
@@ -175,6 +190,5 @@ router.post('/agregar-usuario', isAuthenticated, isAdmin, async (req, res) => {
         res.sendStatus(500);
     }
 });
-
 
 module.exports = router;

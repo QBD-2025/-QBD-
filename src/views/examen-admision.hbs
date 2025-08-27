@@ -2,11 +2,78 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Examen</title>
+  <title>Examen práctica EXANI</title>
   <link rel="stylesheet" href="/css/examen.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
+<!-- PANTALLA DE PRE-EXAMEN -->
+<div class="pre-examen-container" id="preExamenContent">
+  <div class="pre-examen-content">
+    <div class="pre-examen-header">
+      <h1><i class="fas fa-graduation-cap"></i> Examen EXANI</h1>
+      <p>Demuestra tus conocimientos y compite por un lugar en el ranking global</p>
+    </div>
+
+    <!-- Top player -->
+    <div class="top-player-section">
+      <h2 class="section-title"><i class="fas fa-crown"></i> Jugador Top Global</h2>
+      {{#if rankingData.length}}
+      <div class="top-player-card">
+        <div class="top-badge">🥇</div>
+        <div class="top-avatar">{{rankingData.[0].apodo.[0]}}</div>
+        <div class="top-username">{{rankingData.[0].username}}</div>
+        <div class="top-category">Total - {{rankingData.[0].puntos}} puntos</div>
+      </div>
+      {{else}}
+      <div class="top-player-card">
+        <div class="top-badge">🥇</div>
+        <div class="top-avatar">?</div>
+        <div class="top-username">No hay datos aún</div>
+        <div class="top-category">Sé el primero en jugar</div>
+        <div class="top-score">0 puntos</div>
+      </div>
+      {{/if}}
+      <p>¡Inspírate en el mejor jugador para lograr tus propios objetivos! Completa el examen con éxito para aumentar tu puntuación global.</p>
+    </div>
+
+    {{#if ultimoExamen}}
+    <div class="previous-result">
+      <i class="fas fa-chart-line" style="font-size: 36px; margin-bottom: 10px;"></i>
+      <p>Tu último examen: <strong>{{ultimoExamen}}%</strong></p>
+    </div>
+    {{else}}
+    <div class="no-previous-results">
+      <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 15px;"></i>
+      <p>No hay resultados previos para mostrar. ¡Completa este examen para ver tu progreso!</p>
+    </div>
+    {{/if}}
+
+
+    <!-- Información del examen -->
+    <div class="exam-info">
+      <h2 class="section-title"><i class="fas fa-info-circle"></i> Información del Examen</h2>
+      <div class="info-item"><i class="fas fa-question-circle"></i><div><strong>Preguntas:</strong> {{preguntas.length}} en total</div></div>
+      <div class="info-item"><i class="fas fa-clock"></i><div><strong>Duración:</strong> 60 minutos aproximadamente</div></div>
+      <div class="info-item"><i class="fas fa-star"></i><div><strong>Puntuación máxima:</strong> 100 puntos</div></div>
+      <div class="pre-examen-buttons">
+        <button class="pre-examen-btn btn-secondary" onclick="location.href='/'">
+          <i class="fas fa-arrow-left"></i> Volver Atrás
+        </button>
+        <button class="pre-examen-btn btn-primary" onclick="location.href='/ranking'">
+          <i class="fas fa-trophy"></i> Ver Ranking Completo
+        </button>
+        <button class="pre-examen-btn btn-success pulse" onclick="iniciarExamen()">
+          <i class="fas fa-play"></i> Iniciar Examen
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENIDO DEL EXAMEN -->
+<div id="examenContent" style="display:none;">
   <header>
     Examen práctica EXANI
     <div><button onclick="location.href='/simulador'" class="btn-volver">Regresar</button></div>
@@ -56,21 +123,18 @@
     <input type="hidden" name="pendientes" id="inputPendientes">
     <input type="hidden" name="suspensos" id="inputSuspensos">
   </form>
+</div>
 
 <script>
 const preguntas = document.querySelectorAll('.contenedor-pregunta');
 let actual = 0;
 let respuestasUsuario = [];
 let estadoPreguntas = [];
-let Materia = [] // "respondida", "pendiente", "suspenso"
-
-const TIEMPO_ADVERTENCIA = 60; // segundos para aviso de “enfrascado”
+const TIEMPO_ADVERTENCIA = 60;
 let timerAdvertencia = null;
 
-// Inicializamos estadoPreguntas vacío
-for (let i = 0; i < preguntas.length; i++) {
-  estadoPreguntas[i] = "";
-}
+// Inicializa estadoPreguntas
+for (let i = 0; i < preguntas.length; i++) estadoPreguntas[i] = "";
 
 // Función para mostrar pregunta
 function mostrarPregunta(index) {
@@ -79,17 +143,27 @@ function mostrarPregunta(index) {
   preguntas[index].classList.add('activa');
   actual = index;
 
-  // Mostrar pendientes solo si es la última pregunta
-  if (actual === preguntas.length - 1) {
+  const hayPendientes = estadoPreguntas.some(e => e === "pendiente");
+  const haySuspensos = estadoPreguntas.some(e => e === "suspenso");
+
+  if (hayPendientes || haySuspensos) {
+    document.getElementById('pendientesContainer').style.display = 'block';
     actualizarPendientesUI();
   } else {
     document.getElementById('pendientesContainer').style.display = 'none';
   }
 
-  reiniciarTimerAdvertencia(); // Reinicia el aviso de tiempo
+  reiniciarTimerAdvertencia();
 }
 
-// Función de advertencia por estar mucho tiempo en la misma pregunta
+// Función pre-examen: inicia el examen
+function iniciarExamen() {
+  document.getElementById('preExamenContent').style.display = 'none';
+  document.getElementById('examenContent').style.display = 'block';
+  mostrarPregunta(0);
+}
+
+// Reinicia aviso de tiempo
 function reiniciarTimerAdvertencia() {
   if (timerAdvertencia) clearTimeout(timerAdvertencia);
   timerAdvertencia = setTimeout(() => {
@@ -97,26 +171,22 @@ function reiniciarTimerAdvertencia() {
   }, TIEMPO_ADVERTENCIA * 1000);
 }
 
-// Actualizar pendientes y suspensos mostrando materia
+// Función que actualiza el contenedor de pendientes
 function actualizarPendientesUI() {
   const cont = document.getElementById('pendientesContainer');
   cont.innerHTML = "";
-
-  let hayPendientes = false;
-  estadoPreguntas.forEach((estado, i) => {
-    if (estado === "pendiente" || estado === "suspenso") {
-      hayPendientes = true;
-      const div = document.createElement('div');
-      const tipo = estado === "pendiente" ? "en pendiente" : 'marcada "para después"';
-      const materia = preguntas[i].dataset.materia || "Materia desconocida";
-      div.textContent = `Pregunta ${i + 1} (${materia}) ${tipo}.`;
-      div.style.cursor = "pointer";
-      div.addEventListener('click', () => mostrarPregunta(i));
-      cont.appendChild(div);
+  estadoPreguntas.forEach((e, i) => {
+    if (e === "pendiente") {
+      cont.appendChild(Object.assign(document.createElement('div'), {
+        textContent: `Dejaste la pregunta ${i + 1} en pendiente.`
+      }));
+    }
+    if (e === "suspenso") {
+      cont.appendChild(Object.assign(document.createElement('div'), {
+        textContent: `Pregunta ${i + 1} marcada como "para después".`
+      }));
     }
   });
-
-  cont.style.display = hayPendientes ? 'block' : 'none';
 }
 
 // Botón "Para después"
@@ -131,37 +201,31 @@ document.querySelectorAll('.btnNoSeguro').forEach((btn, indexPregunta) => {
 
 // Selección de respuestas
 document.querySelectorAll('.opciones').forEach((opcionesDiv, preguntaIndex) => {
-  const botones = opcionesDiv.querySelectorAll('button');
-  botones.forEach((btn, respuestaIndex) => {
+  opcionesDiv.querySelectorAll('button').forEach((btn, respuestaIndex) => {
     btn.addEventListener('click', () => {
-      botones.forEach(b => b.classList.remove('seleccionada'));
+      opcionesDiv.querySelectorAll('button').forEach(b => b.classList.remove('seleccionada'));
       btn.classList.add('seleccionada');
       respuestasUsuario[preguntaIndex] = respuestaIndex;
       estadoPreguntas[preguntaIndex] = "respondida";
+      actualizarPendientesUI();
     });
   });
 });
 
-// Botón Siguiente
+// Botones Siguiente / Volver / Finalizar
 document.querySelectorAll('.btn-siguiente').forEach(btn => {
   btn.addEventListener('click', () => {
     if (!estadoPreguntas[actual]) estadoPreguntas[actual] = "pendiente";
     mostrarPregunta(actual + 1);
   });
 });
-
-// Botón Volver
 document.querySelectorAll('.btn-volver').forEach(btn => {
   btn.addEventListener('click', () => mostrarPregunta(actual - 1));
 });
-
-// Botón Finalizar
 document.querySelectorAll('.btn-finalizar').forEach(btn => {
   btn.addEventListener('click', () => {
     estadoPreguntas.forEach((e,i) => {
-      if (respuestasUsuario[i] === undefined && e !== "suspenso") {
-        estadoPreguntas[i] = "pendiente";
-      }
+      if (respuestasUsuario[i] === undefined && e !== "suspenso") estadoPreguntas[i] = "pendiente";
     });
     document.getElementById('inputRespuestas').value = JSON.stringify(respuestasUsuario);
     document.getElementById('inputPendientes').value = JSON.stringify(
@@ -175,7 +239,7 @@ document.querySelectorAll('.btn-finalizar').forEach(btn => {
 });
 
 // Cronómetro global
-let tiempoRestante = 60 * 60; // 60 minutos
+let tiempoRestante = 60 * 60;
 function actualizarCronometro() {
   const minutos = Math.floor(tiempoRestante / 60);
   const segundos = tiempoRestante % 60;
@@ -189,9 +253,6 @@ function actualizarCronometro() {
   }
 }
 const intervalo = setInterval(actualizarCronometro, 1000);
-
-// Inicia examen
-mostrarPregunta(0);
 </script>
 
 </body>

@@ -1,3 +1,226 @@
+/* ========== PRE-EXAMEN STYLES ========== */
+/* Ocultar examen inicialmente */
+#examenContent {
+  display: none;
+}
+
+.pre-examen-container {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  color: #0c0264;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.pre-examen-content {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.pre-examen-header {
+  text-align: center;
+  padding: 20px;
+  background: linear-gradient(120deg, #0815c5 0%, #0c0264 100%);
+  color: white;
+  border-radius: 15px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.pre-examen-header h1 {
+  font-size: 2.2rem;
+  margin-bottom: 10px;
+}
+
+.pre-examen-header p {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.top-player-section {
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.section-title {
+  color: #0815c5;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #facc15;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.top-player-card {
+  background: linear-gradient(135deg, #FFD700 0%, #DAA520 100%);
+  color: #704c00;
+  border-radius: 15px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin: 20px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.top-player-card::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 60%);
+  transform: rotate(30deg);
+}
+
+.top-badge {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.top-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 2.2rem;
+  margin: 0 auto 15px;
+  border: 4px solid white;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.top-username {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.top-category {
+  font-size: 1rem;
+  margin-bottom: 15px;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 5px 15px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.top-score {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 10px 0;
+}
+
+.exam-info {
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  margin-bottom: 25px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 10px;
+}
+
+.info-item i {
+  font-size: 1.5rem;
+  margin-right: 15px;
+  color: #0815c5;
+  width: 30px;
+  text-align: center;
+}
+
+.pre-examen-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.pre-examen-btn {
+  padding: 12px 25px;
+  border-radius: 50px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: linear-gradient(120deg, #0815c5 0%, #0c0264 100%);
+  color: white;
+  box-shadow: 0 4px 10px rgba(8, 21, 197, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(8, 21, 197, 0.4);
+}
+
+.btn-secondary {
+  background: white;
+  color: #0c0264;
+  border: 2px solid #0815c5;
+}
+
+.btn-secondary:hover {
+  background: #f9f9f9;
+  transform: translateY(-3px);
+}
+
+.btn-success {
+  background: linear-gradient(120deg, #28a745 0%, #1e7e34 100%);
+  color: white;
+  box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+}
+
+.btn-success:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(40, 167, 69, 0.4);
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+/* ========== MOSTRAR/OCULTAR SECCIONES ========== */
+.mostrar-examen #examenContent {
+  display: block;
+}
+
+.mostrar-examen .pre-examen-container {
+  display: none;
+}
+
+/* ========== EXAMEN STYLES ========== */
 /* Fondo general */
 html, body {
   height: 100%;
@@ -20,7 +243,7 @@ header {
 
 /* Contenedor de cada pregunta */
 .contenedor-pregunta {
-  background: linear-gradient(135deg, #0815c5, #0c0264); /* azul degradado */
+  background: linear-gradient(135deg, #0815c5, #0c0264);
   border: none;
   max-width: 750px;
   margin: 40px auto;
@@ -28,7 +251,7 @@ header {
   border-radius: 15px;
   display: none;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  color: white; /* texto blanco para contraste */
+  color: white;
 }
 
 .contenedor-pregunta.activa {
@@ -40,7 +263,6 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  ;
   color: white;
   padding: 12px 20px;
   border-radius: 10px 10px 0 0;
@@ -53,7 +275,7 @@ header {
   margin-top: 25px;
   font-size: 22px;
   font-weight: bold;
-  color: white; /* blanco para contraste */
+  color: white;
 }
 
 /* Opciones de respuesta */
@@ -66,13 +288,13 @@ header {
 
 .opciones button {
   padding: 12px;
-  border: 2px solid #0815c5; /* borde azul */
+  border: 2px solid #0815c5;
   border-radius: 10px;
   background-color: white;
   cursor: pointer;
   font-size: 17px;
   transition: all 0.3s;
-  color: #0a2472; /* texto azul oscuro */
+  color: #0a2472;
 }
 
 .opciones button:hover {
@@ -143,6 +365,52 @@ header {
 
 
 .pendientes-container {
+  position: fixed;
+  top: 50%;                   /* Lo llevamos al centro vertical */
+  left: 20px;                 /* Se mantiene a la izquierda */
+  transform: translateY(-50%);/* Lo centramos exactamente */
+  background: #fff3cd;
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid #ffeeba;
+  color: #e74c3c;
+  max-width: 280px;
+  font-weight: bold;
+  line-height: 1.5;           
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+}
+
+
+/* ELIMINA ESTAS SECCIONES DUPLICADAS Y CONFLICTIVAS: */
+/*
+.contenedor-pregunta {  ← ESTO ESTÁ DUPLICADO
+  display: none;
+  margin: 20px;
+  padding: 20px;
+  border-radius: 15px;
+  background: #f4f4f4; ← ESTE FONDO BLANCO PISA TU GRADIENTE AZUL
+}
+
+.contenedor-pregunta.activa { ← DUPLICADO
+  display: block;
+}
+
+.opciones button { ← ESTILOS ALTERNATIVOS QUE PISAN LOS ORIGINALES
+  margin: 5px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid #0815c5;
+  background: white;
+  cursor: pointer;
+}
+
+.opciones button.seleccionada { ← DUPLICADO
+  background: #0815c5;
+  color: white;
+  border-color: #0815c5;
+}
+
+.pendientes-container { ← ESTO ESTÁ DUPLICADO Y CONFLICTIVO
   height: 100%;
   color: red; 
   font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
@@ -150,6 +418,18 @@ header {
   position: absolute;
   left: 30px;
   top: 120px;
-  height: 100%;}
+  height: 100%;
+}
 
-  
+#examenContent { ← REGLA DUPLICADA
+  display: none;
+}
+
+.mostrar-examen #examenContent { ← REGLA DUPLICADA
+  display: block;
+}
+
+.mostrar-examen .pre-examen-container { ← REGLA DUPLICADA
+  display: none;
+}
+*/

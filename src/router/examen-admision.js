@@ -6,6 +6,7 @@ const db = require('../db/conexion'); // promisificado
 router.get('/examen-exani', async (req, res) => {
   try {
     const preguntasPorMateria = 20;
+    const id_usuario = req.session.user?.id_usuario;
 
     const [materias] = await db.query(`
       SELECT * FROM materias 
@@ -35,13 +36,41 @@ router.get('/examen-exani', async (req, res) => {
       }
     }
 
+    const [topGlobal] = await db.query(`
+      SELECT 
+        u.id_usuario,
+        u.username,
+        u.apodo,
+        u.puntos,
+        r.posicion,
+        r.fecha_actualizacion
+      FROM usuario u
+      LEFT JOIN ranking r ON u.id_usuario = r.id_usuario
+      ORDER BY u.puntos DESC, r.fecha_actualizacion ASC
+      LIMIT 1
+    `);
+
     preguntasFinales.sort((a, b) => a.id_materia - b.id_materia);
+
+    // Obtener porcentaje del último examen del usuario
+    let ultimoExamen = null;
+    if (id_usuario) {
+      const [usuarioRow] = await db.query(`
+        SELECT ultimo_examen
+        FROM usuario
+        WHERE id_usuario = ?
+      `, [id_usuario]);
+      ultimoExamen = usuarioRow[0]?.ultimo_examen || null;
+    }
 
     res.render('examen-admision', {
       title: 'Examen de Admisión',
       preguntas: preguntasFinales,
       layout: false,
-      preguntasIds: preguntasFinales.map(p => p.id_pregunta)
+      preguntasIds: preguntasFinales.map(p => p.id_pregunta),
+      rankingData: topGlobal,
+      topPlayer: topGlobal[0] || null,
+      ultimoExamen // ✅ ahora sí lo pasamos a la vista
     });
 
   } catch (err) {
@@ -50,7 +79,7 @@ router.get('/examen-exani', async (req, res) => {
   }
 });
 
-// 📌 Resultados EXANI con porcentaje y suma de puntos al usuario
+// 📌 Resultados EXANI con porcentaje, suma de puntos al usuario y último resultado
 router.post('/resultados_admision', async (req, res) => {
   try {
     const respuestasUsuario = JSON.parse(req.body.respuestas || '[]');
@@ -114,25 +143,45 @@ router.post('/resultados_admision', async (req, res) => {
       });
     }
 
-    // 🔹 Sumar puntos al usuario si está logueado
-    if (id_usuario) {
-      await db.query(`
-        UPDATE usuario
-        SET puntos = puntos + ?
-        WHERE id_usuario = ?
-      `, [puntosTotales, id_usuario]);
-    }
-
     // 🔹 Calcular porcentaje
     const totalPreguntas = idsPreguntas.length;
     const porcentaje = ((puntosTotales / totalPreguntas) * 100).toFixed(2);
+
+    // 🔹 Guardar y obtener último resultado si el usuario está logueado
+    if (id_usuario) {
+      // Guardar el resultado actual en una tabla de historial
+      await db.query(
+        `INSERT INTO resultados (id_usuario, puntaje, total, porcentaje, fecha) 
+         VALUES (?, ?, ?, ?, NOW())`,
+        [id_usuario, puntosTotales, totalPreguntas, porcentaje]
+      );
+
+      // Obtener el último resultado guardado
+      const [rowsUltimo] = await db.query(
+        `SELECT puntaje, total, porcentaje, fecha 
+         FROM resultados 
+         WHERE id_usuario = ? 
+         ORDER BY fecha DESC 
+         LIMIT 1`,
+        [id_usuario]
+      );
+
+      // Sumar puntos al usuario
+      await db.query(
+        `UPDATE usuario
+         SET puntos = puntos + ?, ultimo_examen = ?
+         WHERE id_usuario = ?`,
+        [puntosTotales, porcentaje, id_usuario]
+      );
+    }
 
     res.render('resultados_admision', {
       materia: materiaNombre,
       puntosTotales,
       totalPreguntas,
       porcentaje,
-      preguntas: preguntasParaResultado
+      preguntas: preguntasParaResultado,
+      ultimoExamen
     });
 
   } catch (error) {

@@ -10,6 +10,7 @@ const session = require("express-session");
 const mailer = require('./src/public/utils/mail.js');
 const passport = require('passport');
 require('./src/config/passport-config');
+global.sesionesActivas = new Set();
 
 // Configuración de la base de datos
 const pool = mysql.createPool({

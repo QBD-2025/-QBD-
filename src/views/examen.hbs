@@ -4,74 +4,149 @@
   <meta charset="UTF-8" />
   <title>Examen Interactivo</title>
   <link rel="stylesheet" href="/css/examen.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
-<header>
-  Examen - {{materia}}
-  <div><button onclick="location.href='/materias'" class="btn-volver">Regresar</button></div>
-</header>
+<!-- SECCIÓN PRE-EXAMEN -->
+<div class="pre-examen-container" id="preExamenContent">
+  <div class="pre-examen-content">
+    <div class="pre-examen-header">
+      <h1><i class="fas fa-graduation-cap"></i> Examen de {{materia}}</h1>
+      <p>Demuestra tus conocimientos y compite por un lugar en el ranking global</p>
+    </div>
 
-{{#each preguntas}}
-<div class="contenedor-pregunta {{#if @first}}activa{{/if}}" data-index="{{@index}}">
-  <div class="encabezado">
-    <div>Pregunta {{sum @index 1}} de {{../preguntas.length}}</div>
-    <div class="cronometro">10:00</div>
-  </div>
+    <!-- Top player -->
+    <div class="top-player-section">
+      <h2 class="section-title"><i class="fas fa-crown"></i> Jugador Top Global</h2>
+      {{#if rankingData.length}}
+      <div class="top-player-card">
+        <div class="top-badge">🥇</div>
+        <div class="top-avatar">{{rankingData.[0].apodo.[0]}}</div>
+        <div class="top-username">{{rankingData.[0].username}}</div>
+        <div class="top-category">Total - {{rankingData.[0].puntos}} puntos</div>
+      </div>
+      {{else}}
+      <div class="top-player-card">
+        <div class="top-badge">🥇</div>
+        <div class="top-avatar">?</div>
+        <div class="top-username">No hay datos aún</div>
+        <div class="top-category">Sé el primero en jugar</div>
+        <div class="top-score">0 puntos</div>
+      </div>
+      {{/if}}
+      <p>¡Inspírate en el mejor jugador para lograr tus propios objetivos! Completa el examen con éxito para aumentar tu puntuación global.</p>
+    </div>
 
-  <h2 class="pregunta">{{pregunta}}</h2>
-
-  <div class="opciones">
-    {{#each respuestas}}
-      <button type="button">{{respuesta}}</button>
-    {{/each}}
-  </div>
-
-  <div class="navegacion">
-    {{#unless @first}}
-      <button type="button" class="btn-volver">← Volver</button>
-    {{/unless}}
-
-    <button type="button" class="btn-volver btnNoSeguro">No seguro / Para después</button>
-
-    {{#if @last}}
-      <button type="button" class="btn-finalizar">Finalizar</button>
+    {{#if ultimoExamen}}
+    <div class="previous-result">
+      <i class="fas fa-chart-line" style="font-size: 36px; margin-bottom: 10px;"></i>
+      <p>Tu último examen: <strong>{{ultimoExamen}}%</strong></p>
+    </div>
     {{else}}
-      <button type="button" class="btn-siguiente">Siguiente →</button>
+    <div class="no-previous-results">
+      <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 15px;"></i>
+      <p>No hay resultados previos para mostrar. ¡Completa este examen para ver tu progreso!</p>
+    </div>
     {{/if}}
-  </div>
 
-  <div class="pulpo-container">
-    <img src="../media/images/pulpo.png" alt="Pulpo" class="pulpo">
+
+    <!-- Información del examen -->
+    <div class="exam-info">
+      <h2 class="section-title"><i class="fas fa-info-circle"></i> Información del Examen</h2>
+      <div class="info-item"><i class="fas fa-book"></i><div><strong>Materia:</strong> {{materia}}</div></div>
+      <div class="info-item"><i class="fas fa-question-circle"></i><div><strong>Preguntas:</strong> {{preguntas.length}} en total</div></div>
+      <div class="info-item"><i class="fas fa-clock"></i><div><strong>Duración:</strong> 15 minutos aproximadamente</div></div>
+      <div class="info-item"><i class="fas fa-star"></i><div><strong>Puntuación máxima:</strong> 20 puntos</div></div>
+      <div class="pre-examen-buttons">
+        <button class="pre-examen-btn btn-secondary" onclick="location.href='/materias'">
+          <i class="fas fa-arrow-left"></i> Volver Atrás
+        </button>
+        <button class="pre-examen-btn btn-primary" onclick="location.href='/ranking'">
+          <i class="fas fa-trophy"></i> Ver Ranking Completo
+        </button>
+        <button class="pre-examen-btn btn-success pulse" onclick="comenzarExamen()">
+          <i class="fas fa-play"></i> Iniciar Examen
+        </button>
+      </div>
+    </div>
   </div>
 </div>
-{{/each}}
 
-<div id="pendientesContainer" class="pendientes-container" style="display:none; margin-top:10px;"></div>
+<!-- SECCIÓN EXAMEN -->
+<div id="examenContent">
+  <header>
+    Examen - {{materia}}
+    <div><button onclick="volverAPreExamen()" class="btn-volver">Regresar</button></div>
+  </header>
 
-<form id="formResultados" method="POST" action="/resultados" style="display:none;">
-  <input type="hidden" name="id_materia" value="{{id_materia}}">
-  <input type="hidden" name="respuestas" id="inputRespuestas">
-  <input type="hidden" name="pendientes" id="inputPendientes">
-  <input type="hidden" name="suspensos" id="inputSuspensos">
-</form>
+  {{#each preguntas}}
+  <div class="contenedor-pregunta {{#if @first}}activa{{/if}}" data-index="{{@index}}">
+    <div class="encabezado">
+      <div>Pregunta {{sum @index 1}} de {{../preguntas.length}}</div>
+      <div class="cronometro">10:00</div>
+    </div>
+
+    <h2 class="pregunta">{{pregunta}}</h2>
+
+    <div class="opciones">
+      {{#each respuestas}}
+        <button type="button">{{respuesta}}</button>
+      {{/each}}
+    </div>
+
+    <div class="navegacion">
+      {{#unless @first}}
+        <button type="button" class="btn-volver">← Volver</button>
+      {{/unless}}
+      <button type="button" class="btn-volver btnNoSeguro">No seguro / Para después</button>
+      {{#if @last}}
+        <button type="button" class="btn-finalizar">Finalizar</button>
+      {{else}}
+        <button type="button" class="btn-siguiente">Siguiente →</button>
+      {{/if}}
+    </div>
+  </div>
+  {{/each}}
+
+  <div id="pendientesContainer" class="pendientes-container"></div>
+
+  <form id="formResultados" method="POST" action="/resultados" style="display:none;">
+    <input type="hidden" name="id_materia" value="{{id_materia}}">
+    <input type="hidden" name="respuestas" id="inputRespuestas">
+    <input type="hidden" name="pendientes" id="inputPendientes">
+    <input type="hidden" name="suspensos" id="inputSuspensos">
+  </form>
+</div>
 
 <script>
+function comenzarExamen() {
+  document.body.classList.add('mostrar-examen');
+  document.getElementById('preExamenContent').style.display = 'none';
+  document.getElementById('examenContent').style.display = 'block';
+  iniciarExamen();
+}
+
+function volverAPreExamen() {
+  document.body.classList.remove('mostrar-examen');
+  document.getElementById('preExamenContent').style.display = 'block';
+  document.getElementById('examenContent').style.display = 'none';
+}
+
 const preguntas = document.querySelectorAll('.contenedor-pregunta');
 let actual = 0;
 let respuestasUsuario = [];
-let estadoPreguntas = []; // "respondida", "pendiente", "suspenso"
+let estadoPreguntas = [];
 const TIEMPO_ADVERTENCIA = 60;
 let timerAdvertencia = null;
 
-// Inicializamos estadoPreguntas
-for (let i = 0; i < preguntas.length; i++) {
-  estadoPreguntas[i] = "pendiente"; // por defecto pendiente
+function iniciarExamen() {
+  preguntas.forEach((_, i) => estadoPreguntas[i] = "pendiente");
+  mostrarPregunta(0);
 }
 
 function mostrarPregunta(index) {
   if (index < 0 || index >= preguntas.length) return;
-  
   preguntas.forEach(p => p.classList.remove('activa'));
   preguntas[index].classList.add('activa');
   actual = index;
@@ -80,17 +155,11 @@ function mostrarPregunta(index) {
   const hayPendientes = estadoPreguntas.some(e => e === "pendiente");
   const haySuspensos = estadoPreguntas.some(e => e === "suspenso");
 
-  if (actual === preguntas.length - 1 && (hayPendientes || haySuspensos)) {
-    cont.style.display = 'block';
-    actualizarPendientesUI();
-  } else {
-    cont.style.display = 'none';
-  }
-
+  cont.style.display = (actual === preguntas.length - 1 && (hayPendientes || haySuspensos)) ? 'block' : 'none';
+  actualizarPendientesUI();
   reiniciarTimerAdvertencia();
 }
 
-// Advertencia de tiempo
 function reiniciarTimerAdvertencia() {
   if (timerAdvertencia) clearTimeout(timerAdvertencia);
   timerAdvertencia = setTimeout(() => {
@@ -98,40 +167,32 @@ function reiniciarTimerAdvertencia() {
   }, TIEMPO_ADVERTENCIA * 1000);
 }
 
-// Actualizar pendientes y suspensos en UI
 function actualizarPendientesUI() {
   const cont = document.getElementById('pendientesContainer');
   cont.innerHTML = "";
   estadoPreguntas.forEach((e, i) => {
     if (e === "pendiente") {
-      const div = document.createElement('div');
-      div.textContent = `Dejaste la pregunta ${i + 1} en pendiente.`;
-      cont.appendChild(div);
+      cont.appendChild(Object.assign(document.createElement('div'), {textContent: `Dejaste la pregunta ${i + 1} en pendiente.`}));
     }
     if (e === "suspenso") {
-      const div = document.createElement('div');
-      div.textContent = `Pregunta ${i + 1} marcada como "para después".`;
-      cont.appendChild(div);
+      cont.appendChild(Object.assign(document.createElement('div'), {textContent: `Pregunta ${i + 1} marcada como "para después".`}));
     }
   });
 }
 
-// Botón "Para después" 
-document.querySelectorAll('.btnNoSeguro').forEach((btn, indexPregunta) => { 
-  btn.addEventListener('click', (e) => { e.preventDefault(); 
-  estadoPreguntas[indexPregunta] = "suspenso"; 
-  actualizarPendientesUI(); 
-  mostrarPregunta(indexPregunta + 1); 
-  mostrarPregunta(actual + 1); 
-    }); 
+document.querySelectorAll('.btnNoSeguro').forEach((btn, indexPregunta) => {
+  btn.addEventListener('click', e => {
+    e.preventDefault();
+    estadoPreguntas[indexPregunta] = "suspenso";
+    actualizarPendientesUI();
+    mostrarPregunta(actual + 1);
   });
+});
 
-// Selección de respuestas
 document.querySelectorAll('.opciones').forEach((opcionesDiv, preguntaIndex) => {
-  const botones = opcionesDiv.querySelectorAll('button');
-  botones.forEach((btn, respuestaIndex) => {
+  opcionesDiv.querySelectorAll('button').forEach((btn, respuestaIndex) => {
     btn.addEventListener('click', () => {
-      botones.forEach(b => b.classList.remove('seleccionada'));
+      opcionesDiv.querySelectorAll('button').forEach(b => b.classList.remove('seleccionada'));
       btn.classList.add('seleccionada');
       respuestasUsuario[preguntaIndex] = respuestaIndex;
       estadoPreguntas[preguntaIndex] = "respondida";
@@ -140,46 +201,22 @@ document.querySelectorAll('.opciones').forEach((opcionesDiv, preguntaIndex) => {
   });
 });
 
-// Botón Siguiente
-document.querySelectorAll('.btn-siguiente').forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (estadoPreguntas[actual] !== "respondida" && estadoPreguntas[actual] !== "suspenso") {
-      estadoPreguntas[actual] = "pendiente";
-    }
-    mostrarPregunta(actual + 1);
-  });
-});
+document.querySelectorAll('.btn-siguiente').forEach(btn => btn.addEventListener('click', () => {
+  if (estadoPreguntas[actual] !== "respondida" && estadoPreguntas[actual] !== "suspenso") estadoPreguntas[actual] = "pendiente";
+  mostrarPregunta(actual + 1);
+}));
 
-// Botón Volver
-document.querySelectorAll('.btn-volver').forEach(btn => {
-  btn.addEventListener('click', () => {
-    mostrarPregunta(actual - 1);
-  });
-});
+document.querySelectorAll('.btn-volver:not(.btnNoSeguro)').forEach(btn => btn.addEventListener('click', () => mostrarPregunta(actual - 1)));
 
-// Botón Finalizar
-document.querySelectorAll('.btn-finalizar').forEach(btn => {
-  btn.addEventListener('click', () => {
-    // Revisar todas las preguntas antes de enviar
-    estadoPreguntas.forEach((e, i) => {
-      if (respuestasUsuario[i] === undefined && e !== "suspenso") {
-        estadoPreguntas[i] = "pendiente";
-      }
-    });
-    document.getElementById('inputRespuestas').value = JSON.stringify(respuestasUsuario);
-    document.getElementById('inputPendientes').value = JSON.stringify(
-      estadoPreguntas.map((e,i) => e==="pendiente"?i:null).filter(i=>i!==null)
-    );
-    document.getElementById('inputSuspensos').value = JSON.stringify(
-      estadoPreguntas.map((e,i) => e==="suspenso"?i:null).filter(i=>i!==null)
-    );
-    document.getElementById('formResultados').submit();
-  });
-});
+document.querySelectorAll('.btn-finalizar').forEach(btn => btn.addEventListener('click', () => {
+  estadoPreguntas.forEach((e, i) => { if (respuestasUsuario[i] === undefined && e !== "suspenso") estadoPreguntas[i] = "pendiente"; });
+  document.getElementById('inputRespuestas').value = JSON.stringify(respuestasUsuario);
+  document.getElementById('inputPendientes').value = JSON.stringify(estadoPreguntas.map((e,i)=>e==="pendiente"?i:null).filter(i=>i!==null));
+  document.getElementById('inputSuspensos').value = JSON.stringify(estadoPreguntas.map((e,i)=>e==="suspenso"?i:null).filter(i=>i!==null));
+  document.getElementById('formResultados').submit();
+}));
 
-// Inicia examen
-mostrarPregunta(0);
+document.body.classList.remove('mostrar-examen');
 </script>
-
 </body>
 </html>
