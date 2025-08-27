@@ -50,7 +50,6 @@
     </div>
     {{/if}}
 
-
     <!-- Información del examen -->
     <div class="exam-info">
       <h2 class="section-title"><i class="fas fa-info-circle"></i> Información del Examen</h2>
@@ -108,18 +107,14 @@
         <button type="button" class="btn-siguiente">Siguiente →</button>
       {{/if}}
     </div>
-
-    <div class="pulpo-container">
-      <img src="../media/images/pulpo.png" alt="Pulpo" class="pulpo">
-    </div>
   </div>
   {{/each}}
 
   <div id="pendientesContainer" class="pendientes-container" style="display:none; margin-top:10px;"></div>
 
   <form id="formResultados" method="POST" action="/resultados_admision" style="display:none;">
+    <input type="hidden" name="id_materia" value="{{id_materia}}">
     <input type="hidden" name="respuestas" id="inputRespuestas" value="[]">
-    <input type="hidden" name="idsPreguntas" id="inputIdsPreguntas" value='{{json preguntasIds}}'>
     <input type="hidden" name="pendientes" id="inputPendientes">
     <input type="hidden" name="suspensos" id="inputSuspensos">
   </form>
@@ -133,8 +128,15 @@ let estadoPreguntas = [];
 const TIEMPO_ADVERTENCIA = 60;
 let timerAdvertencia = null;
 
-// Inicializa estadoPreguntas
-for (let i = 0; i < preguntas.length; i++) estadoPreguntas[i] = "";
+// Función pre-examen: inicia el examen
+function iniciarExamen() {
+  document.getElementById('preExamenContent').style.display = 'none';
+  document.getElementById('examenContent').style.display = 'block';
+
+  // Inicializa estadoPreguntas como "pendiente" para todas las preguntas
+  estadoPreguntas = preguntas.map(() => "pendiente");
+  mostrarPregunta(0);
+}
 
 // Función para mostrar pregunta
 function mostrarPregunta(index) {
@@ -146,21 +148,11 @@ function mostrarPregunta(index) {
   const hayPendientes = estadoPreguntas.some(e => e === "pendiente");
   const haySuspensos = estadoPreguntas.some(e => e === "suspenso");
 
-  if (hayPendientes || haySuspensos) {
-    document.getElementById('pendientesContainer').style.display = 'block';
-    actualizarPendientesUI();
-  } else {
-    document.getElementById('pendientesContainer').style.display = 'none';
-  }
+  const pendientesContainer = document.getElementById('pendientesContainer');
+  pendientesContainer.style.display = (actual === preguntas.length - 1 && (hayPendientes || haySuspensos)) ? 'block' : 'none';
 
+  actualizarPendientesUI();
   reiniciarTimerAdvertencia();
-}
-
-// Función pre-examen: inicia el examen
-function iniciarExamen() {
-  document.getElementById('preExamenContent').style.display = 'none';
-  document.getElementById('examenContent').style.display = 'block';
-  mostrarPregunta(0);
 }
 
 // Reinicia aviso de tiempo
@@ -176,27 +168,27 @@ function actualizarPendientesUI() {
   const cont = document.getElementById('pendientesContainer');
   cont.innerHTML = "";
   estadoPreguntas.forEach((e, i) => {
-    if (e === "pendiente") {
-      cont.appendChild(Object.assign(document.createElement('div'), {
-        textContent: `Dejaste la pregunta ${i + 1} en pendiente.`
-      }));
-    }
-    if (e === "suspenso") {
-      cont.appendChild(Object.assign(document.createElement('div'), {
-        textContent: `Pregunta ${i + 1} marcada como "para después".`
-      }));
+    if (e === "pendiente" || e === "suspenso") {
+      const div = document.createElement('div');
+      const materia = preguntas[i].dataset.materia;
+      div.textContent = e === "pendiente" 
+        ? `Dejaste la pregunta ${i + 1} (${materia}) en pendiente.` 
+        : `Pregunta ${i + 1} (${materia}) marcada como "para después".`;
+      div.dataset.index = i;
+      div.addEventListener('click', () => mostrarPregunta(i));
+      cont.appendChild(div);
     }
   });
 }
 
 // Botón "Para después"
-document.querySelectorAll('.btnNoSeguro').forEach((btn, indexPregunta) => { 
-  btn.addEventListener('click', (e) => { 
-    e.preventDefault(); 
-    estadoPreguntas[indexPregunta] = "suspenso"; 
-    actualizarPendientesUI(); 
-    mostrarPregunta(actual + 1); 
-  }); 
+document.querySelectorAll('.btnNoSeguro').forEach((btn, indexPregunta) => {
+  btn.addEventListener('click', e => {
+    e.preventDefault();
+    estadoPreguntas[indexPregunta] = "suspenso";
+    actualizarPendientesUI();
+    mostrarPregunta(actual + 1);
+  });
 });
 
 // Selección de respuestas
@@ -215,13 +207,19 @@ document.querySelectorAll('.opciones').forEach((opcionesDiv, preguntaIndex) => {
 // Botones Siguiente / Volver / Finalizar
 document.querySelectorAll('.btn-siguiente').forEach(btn => {
   btn.addEventListener('click', () => {
-    if (!estadoPreguntas[actual]) estadoPreguntas[actual] = "pendiente";
+    if (estadoPreguntas[actual] !== "respondida" && estadoPreguntas[actual] !== "suspenso") {
+      estadoPreguntas[actual] = "pendiente";
+    }
     mostrarPregunta(actual + 1);
   });
 });
+
 document.querySelectorAll('.btn-volver').forEach(btn => {
-  btn.addEventListener('click', () => mostrarPregunta(actual - 1));
+  if (!btn.classList.contains('btnNoSeguro')) {
+    btn.addEventListener('click', () => mostrarPregunta(actual - 1));
+  }
 });
+
 document.querySelectorAll('.btn-finalizar').forEach(btn => {
   btn.addEventListener('click', () => {
     estadoPreguntas.forEach((e,i) => {

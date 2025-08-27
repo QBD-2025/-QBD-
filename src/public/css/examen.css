@@ -364,72 +364,24 @@ header {
 }
 
 
-.pendientes-container {
-  position: fixed;
-  top: 50%;                   /* Lo llevamos al centro vertical */
-  left: 20px;                 /* Se mantiene a la izquierda */
-  transform: translateY(-50%);/* Lo centramos exactamente */
-  background: #fff3cd;
-  padding: 18px;
-  border-radius: 12px;
-  border: 1px solid #ffeeba;
-  color: #e74c3c;
-  max-width: 280px;
-  font-weight: bold;
-  line-height: 1.5;           
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-}
-
-
-/* ELIMINA ESTAS SECCIONES DUPLICADAS Y CONFLICTIVAS: */
-/*
-.contenedor-pregunta {  ← ESTO ESTÁ DUPLICADO
-  display: none;
-  margin: 20px;
-  padding: 20px;
-  border-radius: 15px;
-  background: #f4f4f4; ← ESTE FONDO BLANCO PISA TU GRADIENTE AZUL
-}
-
-.contenedor-pregunta.activa { ← DUPLICADO
-  display: block;
-}
-
-.opciones button { ← ESTILOS ALTERNATIVOS QUE PISAN LOS ORIGINALES
-  margin: 5px;
-  padding: 10px 20px;
-  border-radius: 10px;
-  border: 1px solid #0815c5;
-  background: white;
-  cursor: pointer;
-}
-
-.opciones button.seleccionada { ← DUPLICADO
-  background: #0815c5;
+#pendientesContainer {
+  position: absolute; /* antes era fixed */
+  top: 100px; /* empieza al inicio del contenedor de preguntas */
+  left: 80px; /* lo ponemos a la izquierda del contenedor */
+  width: 250px;
+  max-height: 80vh; 
+  overflow-y: auto;
+  background: linear-gradient(135deg, #0815c5, #0c0264);
+  padding: 10px;
+  border: 1px solid #ccc;
   color: white;
-  border-color: #0815c5;
+  border-radius: 8px;
+  font-size: 14px;
 }
 
-.pendientes-container { ← ESTO ESTÁ DUPLICADO Y CONFLICTIVO
-  height: 100%;
-  color: red; 
-  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-  background-color: #ffffff;
-  position: absolute;
-  left: 30px;
-  top: 120px;
-  height: 100%;
+#pendientesContainer div {
+  cursor: pointer;
+  margin-bottom: 5px;
+  padding: 4px;
+  border-radius: 4px;
 }
-
-#examenContent { ← REGLA DUPLICADA
-  display: none;
-}
-
-.mostrar-examen #examenContent { ← REGLA DUPLICADA
-  display: block;
-}
-
-.mostrar-examen .pre-examen-container { ← REGLA DUPLICADA
-  display: none;
-}
-*/

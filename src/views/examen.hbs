@@ -56,7 +56,7 @@
       <h2 class="section-title"><i class="fas fa-info-circle"></i> Información del Examen</h2>
       <div class="info-item"><i class="fas fa-book"></i><div><strong>Materia:</strong> {{materia}}</div></div>
       <div class="info-item"><i class="fas fa-question-circle"></i><div><strong>Preguntas:</strong> {{preguntas.length}} en total</div></div>
-      <div class="info-item"><i class="fas fa-clock"></i><div><strong>Duración:</strong> 15 minutos aproximadamente</div></div>
+      <div class="info-item"><i class="fas fa-clock"></i><div><strong>Duración:</strong> 10 minutos aproximadamente</div></div>
       <div class="info-item"><i class="fas fa-star"></i><div><strong>Puntuación máxima:</strong> 20 puntos</div></div>
       <div class="pre-examen-buttons">
         <button class="pre-examen-btn btn-secondary" onclick="location.href='/materias'">
@@ -171,14 +171,20 @@ function actualizarPendientesUI() {
   const cont = document.getElementById('pendientesContainer');
   cont.innerHTML = "";
   estadoPreguntas.forEach((e, i) => {
-    if (e === "pendiente") {
-      cont.appendChild(Object.assign(document.createElement('div'), {textContent: `Dejaste la pregunta ${i + 1} en pendiente.`}));
-    }
-    if (e === "suspenso") {
-      cont.appendChild(Object.assign(document.createElement('div'), {textContent: `Pregunta ${i + 1} marcada como "para después".`}));
+    if (e === "pendiente" || e === "suspenso") {
+      const div = document.createElement('div');
+      div.textContent = e === "pendiente" 
+        ? `Dejaste la pregunta ${i + 1} en pendiente. ` 
+        : `Pregunta ${i + 1} marcada como "para después".`;
+      div.dataset.index = i; // guardar el índice
+      div.addEventListener('click', () => {
+        mostrarPregunta(i); // ir a la pregunta al hacer click
+      });
+      cont.appendChild(div);
     }
   });
 }
+
 
 document.querySelectorAll('.btnNoSeguro').forEach((btn, indexPregunta) => {
   btn.addEventListener('click', e => {
