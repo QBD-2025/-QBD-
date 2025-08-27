@@ -5,6 +5,56 @@
   <title>Examen Interactivo</title>
   <link rel="stylesheet" href="/css/examen.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* === MODAL DE AVISO === */
+    .modal-aviso {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+    .modal-aviso.oculto { display: none; }
+
+    .modal-content {
+      background: #fff;
+      padding: 20px 30px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 400px;
+      box-shadow: 0px 4px 12px rgba(0,0,0,0.3);
+      animation: aparecer 0.3s ease;
+    }
+
+    .modal-content p {
+      margin-bottom: 15px;
+      font-size: 18px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .modal-content button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .modal-content button:hover { background: #0056b3; }
+
+    @keyframes aparecer {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
 </head>
 <body>
 
@@ -49,7 +99,6 @@
       <p>No hay resultados previos para mostrar. ¡Completa este examen para ver tu progreso!</p>
     </div>
     {{/if}}
-
 
     <!-- Información del examen -->
     <div class="exam-info">
@@ -119,12 +168,21 @@
   </form>
 </div>
 
+<!-- MODAL DE AVISO -->
+<div id="avisoTiempo" class="modal-aviso oculto">
+  <div class="modal-content">
+    <p id="mensajeAviso">Te has quedado mucho tiempo en esta pregunta.</p>
+    <button onclick="cerrarAviso()">Entendido</button>
+  </div>
+</div>
+
 <script>
 function comenzarExamen() {
   document.body.classList.add('mostrar-examen');
   document.getElementById('preExamenContent').style.display = 'none';
   document.getElementById('examenContent').style.display = 'block';
   iniciarExamen();
+  iniciarCronometro();
 }
 
 function volverAPreExamen() {
@@ -140,11 +198,46 @@ let estadoPreguntas = [];
 const TIEMPO_ADVERTENCIA = 60;
 let timerAdvertencia = null;
 
+// CRONÓMETRO GLOBAL (10 minutos = 600s)
+let tiempoRestante = 600;
+let intervaloCronometro = null;
+
 function iniciarExamen() {
   preguntas.forEach((_, i) => estadoPreguntas[i] = "pendiente");
   mostrarPregunta(0);
 }
 
+// ---- CRONÓMETRO ----
+function iniciarCronometro() {
+  actualizarCronometroUI();
+  intervaloCronometro = setInterval(() => {
+    tiempoRestante--;
+    actualizarCronometroUI();
+    if (tiempoRestante <= 0) {
+      clearInterval(intervaloCronometro);
+      finalizarExamen();
+    }
+  }, 1000);
+}
+
+function actualizarCronometroUI() {
+  let minutos = Math.floor(tiempoRestante / 60);
+  let segundos = tiempoRestante % 60;
+  let texto = `${String(minutos).padStart(2,'0')}:${String(segundos).padStart(2,'0')}`;
+  document.querySelectorAll('.cronometro').forEach(c => c.textContent = texto);
+}
+
+// ---- MODAL DE AVISO ----
+function mostrarAviso(mensaje) {
+  document.getElementById("mensajeAviso").textContent = mensaje;
+  document.getElementById("avisoTiempo").classList.remove("oculto");
+}
+
+function cerrarAviso() {
+  document.getElementById("avisoTiempo").classList.add("oculto");
+}
+
+// ---- PREGUNTAS ----
 function mostrarPregunta(index) {
   if (index < 0 || index >= preguntas.length) return;
   preguntas.forEach(p => p.classList.remove('activa'));
@@ -163,7 +256,7 @@ function mostrarPregunta(index) {
 function reiniciarTimerAdvertencia() {
   if (timerAdvertencia) clearTimeout(timerAdvertencia);
   timerAdvertencia = setTimeout(() => {
-    alert(`¡Ojo! Llevas mucho tiempo en la pregunta ${actual + 1}. Considera avanzar o marcarla para después.`);
+    mostrarAviso(`¡Ojo! Llevas mucho tiempo en la pregunta ${actual + 1}. Considera avanzar o marcarla para después.`);
   }, TIEMPO_ADVERTENCIA * 1000);
 }
 
@@ -174,18 +267,16 @@ function actualizarPendientesUI() {
     if (e === "pendiente" || e === "suspenso") {
       const div = document.createElement('div');
       div.textContent = e === "pendiente" 
-        ? `Dejaste la pregunta ${i + 1} en pendiente. ` 
+        ? `Dejaste la pregunta ${i + 1} en pendiente.` 
         : `Pregunta ${i + 1} marcada como "para después".`;
-      div.dataset.index = i; // guardar el índice
-      div.addEventListener('click', () => {
-        mostrarPregunta(i); // ir a la pregunta al hacer click
-      });
+      div.dataset.index = i;
+      div.addEventListener('click', () => mostrarPregunta(i));
       cont.appendChild(div);
     }
   });
 }
 
-
+// ---- BOTONES ----
 document.querySelectorAll('.btnNoSeguro').forEach((btn, indexPregunta) => {
   btn.addEventListener('click', e => {
     e.preventDefault();
@@ -214,13 +305,15 @@ document.querySelectorAll('.btn-siguiente').forEach(btn => btn.addEventListener(
 
 document.querySelectorAll('.btn-volver:not(.btnNoSeguro)').forEach(btn => btn.addEventListener('click', () => mostrarPregunta(actual - 1)));
 
-document.querySelectorAll('.btn-finalizar').forEach(btn => btn.addEventListener('click', () => {
+document.querySelectorAll('.btn-finalizar').forEach(btn => btn.addEventListener('click', finalizarExamen));
+
+function finalizarExamen() {
   estadoPreguntas.forEach((e, i) => { if (respuestasUsuario[i] === undefined && e !== "suspenso") estadoPreguntas[i] = "pendiente"; });
   document.getElementById('inputRespuestas').value = JSON.stringify(respuestasUsuario);
   document.getElementById('inputPendientes').value = JSON.stringify(estadoPreguntas.map((e,i)=>e==="pendiente"?i:null).filter(i=>i!==null));
   document.getElementById('inputSuspensos').value = JSON.stringify(estadoPreguntas.map((e,i)=>e==="suspenso"?i:null).filter(i=>i!==null));
   document.getElementById('formResultados').submit();
-}));
+}
 
 document.body.classList.remove('mostrar-examen');
 </script>

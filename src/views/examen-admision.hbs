@@ -5,8 +5,67 @@
   <title>Examen práctica EXANI</title>
   <link rel="stylesheet" href="/css/examen.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+  /* === MODAL DE AVISO === */
+  .modal-aviso {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+  }
+  .modal-aviso.oculto { display: none; }
+
+  .modal-content {
+    background: #fff;
+    padding: 20px 30px;
+    border-radius: 12px;
+    text-align: center;
+    max-width: 400px;
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.3);
+    animation: aparecer 0.3s ease;
+  }
+
+  .modal-content p {
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: 500;
+    color: #333;
+  }
+
+  .modal-content button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .modal-content button:hover { background: #0056b3; }
+
+  @keyframes aparecer {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  </style>
 </head>
 <body>
+
+<!-- 🔔 MODAL DE AVISO -->
+<div id="avisoTiempo" class="modal-aviso oculto">
+  <div class="modal-content">
+    <p id="mensajeAviso">Te has quedado mucho tiempo en esta pregunta.</p>
+    <button onclick="cerrarAviso()">Entendido</button>
+  </div>
+</div>
 
 <!-- PANTALLA DE PRE-EXAMEN -->
 <div class="pre-examen-container" id="preExamenContent">
@@ -63,7 +122,7 @@
         <button class="pre-examen-btn btn-primary" onclick="location.href='/ranking'">
           <i class="fas fa-trophy"></i> Ver Ranking Completo
         </button>
-        <button class="pre-examen-btn btn-success pulse" onclick="iniciarExamen()">
+        <button class="pre-examen-btn btn-success pulse" id="btnIniciarExamen">
           <i class="fas fa-play"></i> Iniciar Examen
         </button>
       </div>
@@ -80,7 +139,7 @@
 
   {{#each preguntas}}
   <div class="contenedor-pregunta {{#if @first}}activa{{/if}}" 
-       data-index="{{@index}}" data-materia="{{materia}}">
+      data-index="{{@index}}" data-materia="{{materia}}">
     <div class="encabezado">
       <div>Pregunta {{sum @index 1}} de {{../preguntas.length}} - <strong>{{materia}}</strong></div>
       <div class="cronometro">60:00</div>
@@ -121,136 +180,148 @@
 </div>
 
 <script>
-const preguntas = document.querySelectorAll('.contenedor-pregunta');
-let actual = 0;
-let respuestasUsuario = [];
-let estadoPreguntas = [];
-const TIEMPO_ADVERTENCIA = 60;
-let timerAdvertencia = null;
+document.addEventListener('DOMContentLoaded', () => {
 
-// Función pre-examen: inicia el examen
-function iniciarExamen() {
-  document.getElementById('preExamenContent').style.display = 'none';
-  document.getElementById('examenContent').style.display = 'block';
+  const preguntas = document.querySelectorAll('.contenedor-pregunta');
+  let actual = 0;
+  let respuestasUsuario = [];
+  let estadoPreguntas = [];
+  const TIEMPO_ADVERTENCIA = 60; // segundos
+  let timerAdvertencia = null;
 
-  // Inicializa estadoPreguntas como "pendiente" para todas las preguntas
-  estadoPreguntas = preguntas.map(() => "pendiente");
-  mostrarPregunta(0);
-}
+  const btnIniciarExamen = document.getElementById('btnIniciarExamen');
 
-// Función para mostrar pregunta
-function mostrarPregunta(index) {
-  if (index < 0 || index >= preguntas.length) return;
-  preguntas.forEach(p => p.classList.remove('activa'));
-  preguntas[index].classList.add('activa');
-  actual = index;
+  btnIniciarExamen.addEventListener('click', iniciarExamen);
 
-  const hayPendientes = estadoPreguntas.some(e => e === "pendiente");
-  const haySuspensos = estadoPreguntas.some(e => e === "suspenso");
+  function iniciarExamen() {
+    document.getElementById('preExamenContent').style.display = 'none';
+    document.getElementById('examenContent').style.display = 'block';
 
-  const pendientesContainer = document.getElementById('pendientesContainer');
-  pendientesContainer.style.display = (actual === preguntas.length - 1 && (hayPendientes || haySuspensos)) ? 'block' : 'none';
+    estadoPreguntas = Array.from(preguntas).map(() => "pendiente");
+    mostrarPregunta(0);
+  }
 
-  actualizarPendientesUI();
-  reiniciarTimerAdvertencia();
-}
+  function mostrarPregunta(index) {
+    if (index < 0 || index >= preguntas.length) return;
+    preguntas.forEach(p => p.classList.remove('activa'));
+    preguntas[index].classList.add('activa');
+    actual = index;
 
-// Reinicia aviso de tiempo
-function reiniciarTimerAdvertencia() {
-  if (timerAdvertencia) clearTimeout(timerAdvertencia);
-  timerAdvertencia = setTimeout(() => {
-    alert(`¡Ojo! Llevas mucho tiempo en la pregunta ${actual + 1}. Considera avanzar o marcarla para después.`);
-  }, TIEMPO_ADVERTENCIA * 1000);
-}
+    const hayPendientes = estadoPreguntas.some(e => e === "pendiente");
+    const haySuspensos = estadoPreguntas.some(e => e === "suspenso");
 
-// Función que actualiza el contenedor de pendientes
-function actualizarPendientesUI() {
-  const cont = document.getElementById('pendientesContainer');
-  cont.innerHTML = "";
-  estadoPreguntas.forEach((e, i) => {
-    if (e === "pendiente" || e === "suspenso") {
-      const div = document.createElement('div');
-      const materia = preguntas[i].dataset.materia;
-      div.textContent = e === "pendiente" 
-        ? `Dejaste la pregunta ${i + 1} (${materia}) en pendiente.` 
-        : `Pregunta ${i + 1} (${materia}) marcada como "para después".`;
-      div.dataset.index = i;
-      div.addEventListener('click', () => mostrarPregunta(i));
-      cont.appendChild(div);
-    }
-  });
-}
+    const pendientesContainer = document.getElementById('pendientesContainer');
+    pendientesContainer.style.display = (actual === preguntas.length - 1 && (hayPendientes || haySuspensos)) ? 'block' : 'none';
 
-// Botón "Para después"
-document.querySelectorAll('.btnNoSeguro').forEach((btn, indexPregunta) => {
-  btn.addEventListener('click', e => {
-    e.preventDefault();
-    estadoPreguntas[indexPregunta] = "suspenso";
     actualizarPendientesUI();
-    mostrarPregunta(actual + 1);
-  });
-});
-
-// Selección de respuestas
-document.querySelectorAll('.opciones').forEach((opcionesDiv, preguntaIndex) => {
-  opcionesDiv.querySelectorAll('button').forEach((btn, respuestaIndex) => {
-    btn.addEventListener('click', () => {
-      opcionesDiv.querySelectorAll('button').forEach(b => b.classList.remove('seleccionada'));
-      btn.classList.add('seleccionada');
-      respuestasUsuario[preguntaIndex] = respuestaIndex;
-      estadoPreguntas[preguntaIndex] = "respondida";
-      actualizarPendientesUI();
-    });
-  });
-});
-
-// Botones Siguiente / Volver / Finalizar
-document.querySelectorAll('.btn-siguiente').forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (estadoPreguntas[actual] !== "respondida" && estadoPreguntas[actual] !== "suspenso") {
-      estadoPreguntas[actual] = "pendiente";
-    }
-    mostrarPregunta(actual + 1);
-  });
-});
-
-document.querySelectorAll('.btn-volver').forEach(btn => {
-  if (!btn.classList.contains('btnNoSeguro')) {
-    btn.addEventListener('click', () => mostrarPregunta(actual - 1));
+    reiniciarTimerAdvertencia();
   }
-});
 
-document.querySelectorAll('.btn-finalizar').forEach(btn => {
-  btn.addEventListener('click', () => {
+  function mostrarAviso(mensaje) {
+    document.getElementById("mensajeAviso").textContent = mensaje;
+    document.getElementById("avisoTiempo").classList.remove("oculto");
+  }
+
+  window.cerrarAviso = function() {
+    document.getElementById("avisoTiempo").classList.add("oculto");
+  }
+
+  function reiniciarTimerAdvertencia() {
+    if (timerAdvertencia) clearTimeout(timerAdvertencia);
+    timerAdvertencia = setTimeout(() => {
+      mostrarAviso(`¡Ojo! Llevas mucho tiempo en la pregunta ${actual + 1}. Considera avanzar o marcarla para después.`);
+    }, TIEMPO_ADVERTENCIA * 1000);
+  }
+
+  function actualizarPendientesUI() {
+    const cont = document.getElementById('pendientesContainer');
+    cont.innerHTML = "";
     estadoPreguntas.forEach((e,i) => {
-      if (respuestasUsuario[i] === undefined && e !== "suspenso") estadoPreguntas[i] = "pendiente";
+      if (e === "pendiente" || e === "suspenso") {
+        const div = document.createElement('div');
+        const materia = preguntas[i].dataset.materia;
+        div.textContent = e === "pendiente" 
+          ? `Dejaste la pregunta ${i + 1} (${materia}) en pendiente.` 
+          : `Pregunta ${i + 1} (${materia}) marcada como "para después".`;
+        div.dataset.index = i;
+        div.addEventListener('click', () => mostrarPregunta(i));
+        cont.appendChild(div);
+      }
     });
-    document.getElementById('inputRespuestas').value = JSON.stringify(respuestasUsuario);
-    document.getElementById('inputPendientes').value = JSON.stringify(
-      estadoPreguntas.map((e,i)=> e==="pendiente"?i:null).filter(i=>i!==null)
-    );
-    document.getElementById('inputSuspensos').value = JSON.stringify(
-      estadoPreguntas.map((e,i)=> e==="suspenso"?i:null).filter(i=>i!==null)
-    );
-    document.getElementById('formResultados').submit();
-  });
-});
-
-// Cronómetro global
-let tiempoRestante = 60 * 60;
-function actualizarCronometro() {
-  const minutos = Math.floor(tiempoRestante / 60);
-  const segundos = tiempoRestante % 60;
-  const texto = `${minutos.toString().padStart(2,'0')}:${segundos.toString().padStart(2,'0')}`;
-  document.querySelectorAll('.cronometro').forEach(c => c.textContent = texto);
-  if (tiempoRestante > 0) tiempoRestante--;
-  else {
-    clearInterval(intervalo);
-    alert('¡Tiempo terminado!');
-    window.location.href = '/menu_principal';
   }
-}
-const intervalo = setInterval(actualizarCronometro, 1000);
+
+  // Botón "Para después"
+  document.querySelectorAll('.btnNoSeguro').forEach((btn, indexPregunta) => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      estadoPreguntas[indexPregunta] = "suspenso";
+      actualizarPendientesUI();
+      mostrarPregunta(actual + 1);
+    });
+  });
+
+  // Selección de respuestas
+  document.querySelectorAll('.opciones').forEach((opcionesDiv, preguntaIndex) => {
+    opcionesDiv.querySelectorAll('button').forEach((btn, respuestaIndex) => {
+      btn.addEventListener('click', () => {
+        opcionesDiv.querySelectorAll('button').forEach(b => b.classList.remove('seleccionada'));
+        btn.classList.add('seleccionada');
+        respuestasUsuario[preguntaIndex] = respuestaIndex;
+        estadoPreguntas[preguntaIndex] = "respondida";
+        actualizarPendientesUI();
+      });
+    });
+  });
+
+  // Botones Siguiente / Volver / Finalizar
+  document.querySelectorAll('.btn-siguiente').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (estadoPreguntas[actual] !== "respondida" && estadoPreguntas[actual] !== "suspenso") {
+        estadoPreguntas[actual] = "pendiente";
+      }
+      mostrarPregunta(actual + 1);
+    });
+  });
+
+  document.querySelectorAll('.btn-volver').forEach(btn => {
+    if (!btn.classList.contains('btnNoSeguro')) {
+      btn.addEventListener('click', () => mostrarPregunta(actual - 1));
+    }
+  });
+
+  document.querySelectorAll('.btn-finalizar').forEach(btn => {
+    btn.addEventListener('click', () => {
+      estadoPreguntas.forEach((e,i) => {
+        if (respuestasUsuario[i] === undefined && e !== "suspenso") estadoPreguntas[i] = "pendiente";
+      });
+      document.getElementById('inputRespuestas').value = JSON.stringify(respuestasUsuario);
+      document.getElementById('inputPendientes').value = JSON.stringify(
+        estadoPreguntas.map((e,i)=> e==="pendiente"?i:null).filter(i=>i!==null)
+      );
+      document.getElementById('inputSuspensos').value = JSON.stringify(
+        estadoPreguntas.map((e,i)=> e==="suspenso"?i:null).filter(i=>i!==null)
+      );
+      document.getElementById('formResultados').submit();
+    });
+  });
+
+  // Cronómetro global
+  let tiempoRestante = 60 * 60;
+  function actualizarCronometro() {
+    const minutos = Math.floor(tiempoRestante / 60);
+    const segundos = tiempoRestante % 60;
+    const texto = `${minutos.toString().padStart(2,'0')}:${segundos.toString().padStart(2,'0')}`;
+    document.querySelectorAll('.cronometro').forEach(c => c.textContent = texto);
+    if (tiempoRestante > 0) tiempoRestante--;
+    else {
+      clearInterval(intervalo);
+      alert('¡Tiempo terminado!');
+      window.location.href = '/menu_principal';
+    }
+  }
+  const intervalo = setInterval(actualizarCronometro, 1000);
+
+});
 </script>
 
 </body>

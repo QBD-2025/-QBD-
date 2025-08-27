@@ -17,16 +17,16 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Configuración de frames
-  const framesPerStep = 2;
+  const framesPerStep = 5;
   const introStartFrameNum = 1;
-  const introEndFrameNum = 78;
+  const introEndFrameNum = 188;
   const introTotalImages = Math.floor((introEndFrameNum - introStartFrameNum) / framesPerStep) + 1;
 
-  const framePath = '/media/batalla-sin-cuartel_000/batalla-sin-cuartel_';
+  const framePath = '/media/animacion-competitivo/animacion-competitivo_';
   const frameExtension = '.webp';
 
   function getFramePath(frameNumber) {
-    const paddedNumber = String(frameNumber).padStart(3, '0'); // 6 dígitos si tus imágenes tienen 6 ceros delante
+    const paddedNumber = String(frameNumber).padStart(6, '0'); // 6 dígitos si tus imágenes tienen 6 ceros delante
     return `${framePath}${paddedNumber}${frameExtension}`;
   }
 
