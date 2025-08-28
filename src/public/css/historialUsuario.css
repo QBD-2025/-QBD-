@@ -1,9 +1,10 @@
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
-  background-color: #f0f4f8;
-  color: #333;
-  line-height: 1.5;
+  background-color: #f5f7fa;
+  color: #212121;
+  line-height: 1.6;
+  overflow-x: hidden;
 
   /* Centramos vertical y horizontal */
   display: flex;
@@ -13,42 +14,45 @@ body {
 
 /* HEADER */
 .header {
-  background: linear-gradient(90deg, #1976d2, #1e88e5);
-  color: white;
+  background: linear-gradient(90deg, #1565c0, #1e88e5);
+  color: #fff;
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .header h1 {
   margin: 0;
-  font-size: 1.6rem;
-  font-weight: 600;
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 /* BOTÓN VOLVER */
 .btn-volver {
-  background-color: white;
+  background-color: #fff;
   color: #1e88e5;
-  padding: 0.5rem 1.2rem;
-  border-radius: 8px;
+  padding: 0.55rem 1.4rem;
+  border-radius: 10px;
   text-decoration: none;
-  font-weight: bold;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.12);
   transition: all 0.3s ease;
 }
 
 .btn-volver:hover {
   background-color: #e3f2fd;
+  color: #1565c0;
   transform: translateY(-2px);
 }
 
 /* CONTENEDOR PRINCIPAL CENTRADO */
 .main-content {
-  margin-top: 4rem; /* Baja el contenido debajo del header */
+  margin-top: 4rem;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -56,53 +60,55 @@ body {
 
 /* TABLA */
 .tabla-historial {
-  width: 80%;
+  margin-top: 2rem;
+  width: 85%;
   border-collapse: collapse;
-  background-color: white;
-  border-radius: 10px;
+  background-color: #fff;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
 }
 
 .tabla-historial th, 
 .tabla-historial td {
-  padding: 1rem;
+  padding: 1rem 1.2rem;
   text-align: left;
-  font-size: 0.95rem;
+  font-size: 0.96rem;
 }
 
 .tabla-historial thead {
-  background: linear-gradient(90deg, #2196f3, #42a5f5);
-  color: white;
+  background: linear-gradient(90deg, #1e88e5, #1565c0);
   font-weight: 600;
+  letter-spacing: 0.3px;
 }
 
 .tabla-historial tbody tr {
-  transition: background-color 0.2s ease;
+  transition: background-color 0.25s ease;
 }
 
 .tabla-historial tbody tr:hover {
-  background-color: #f1f8ff;
+  background-color: #e8f3ff;
 }
 
 .tabla-historial tbody tr:nth-child(even) {
-  background-color: #fafafa;
+  background-color: #f9f9f9;
 }
 
 /* BOTÓN VER */
 .btn-ver {
-  background-color: #4caf50;
-  color: white;
-  padding: 0.45rem 0.9rem;
-  border-radius: 6px;
+  background-color: #ffca28;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
   text-decoration: none;
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
   transition: all 0.3s ease;
 }
 
 .btn-ver:hover {
-  background-color: #43a047;
+  background-color: #ffca28 ;
   transform: translateY(-2px);
 }
 
@@ -110,7 +116,7 @@ body {
 .no-datos {
   text-align: center;
   padding: 2rem;
-  color: #777;
+  color: #757575;
   font-style: italic;
   font-size: 1rem;
 }
