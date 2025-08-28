@@ -376,10 +376,14 @@ header {
   border: 1px solid #ccc;
   color: white;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 16px;
 }
 
-#pendientesContainer div {
+#pendientesContainer div:hover {
+  background-color: #f59e0b; /* un tono más brillante */
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.6); /* efecto de luz */
+  transform: scale(1.03); /* leve zoom */
+  transition: all 0.2s ease-in-out;
   cursor: pointer;
   margin-bottom: 5px;
   padding: 4px;

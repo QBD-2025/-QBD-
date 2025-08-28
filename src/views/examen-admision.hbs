@@ -157,9 +157,8 @@
       {{#unless @first}}
         <button type="button" class="btn-volver">← Volver</button>
       {{/unless}}
-
       <button type="button" class="btn-volver btnNoSeguro">No seguro / Para después</button>
-
+      <button type="button" class="btn-volver btnVolverFinal" style="display:none;">Volver al final</button>
       {{#if @last}}
         <button type="button" class="btn-finalizar">Finalizar</button>
       {{else}}
@@ -173,6 +172,7 @@
 
   <form id="formResultados" method="POST" action="/resultados_admision" style="display:none;">
     <input type="hidden" name="id_materia" value="{{id_materia}}">
+    <input type="hidden" name="idsPreguntas" id="inputIdsPreguntas" value='{{json preguntasIds}}'>
     <input type="hidden" name="respuestas" id="inputRespuestas" value="[]">
     <input type="hidden" name="pendientes" id="inputPendientes">
     <input type="hidden" name="suspensos" id="inputSuspensos">
@@ -233,22 +233,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }, TIEMPO_ADVERTENCIA * 1000);
   }
 
-  function actualizarPendientesUI() {
-    const cont = document.getElementById('pendientesContainer');
-    cont.innerHTML = "";
-    estadoPreguntas.forEach((e,i) => {
-      if (e === "pendiente" || e === "suspenso") {
-        const div = document.createElement('div');
-        const materia = preguntas[i].dataset.materia;
-        div.textContent = e === "pendiente" 
-          ? `Dejaste la pregunta ${i + 1} (${materia}) en pendiente.` 
-          : `Pregunta ${i + 1} (${materia}) marcada como "para después".`;
-        div.dataset.index = i;
-        div.addEventListener('click', () => mostrarPregunta(i));
-        cont.appendChild(div);
-      }
-    });
-  }
+ function actualizarPendientesUI() {
+  const cont = document.getElementById('pendientesContainer');
+  cont.innerHTML = "";
+  estadoPreguntas.forEach((e, i) => {
+    if (e === "pendiente" || e === "suspenso") {
+      const div = document.createElement('div');
+      div.textContent = e === "pendiente" 
+        ? `Dejaste la pregunta ${i + 1} en pendiente.` 
+        : `Pregunta ${i + 1} marcada como "para después".`;
+      div.dataset.index = i;
+      div.addEventListener('click', () => {
+        mostrarPregunta(i);
+        mostrarBotonVolverFinal(i); // 👈 aquí llamamos a mostrar el botón
+      });
+      cont.appendChild(div);
+    }
+  });
+}
 
   // Botón "Para después"
   document.querySelectorAll('.btnNoSeguro').forEach((btn, indexPregunta) => {
@@ -305,6 +307,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  function mostrarBotonVolverFinal(indexPregunta) {
+  // Ocultar todos los botones "Volver al final"
+  document.querySelectorAll('.btnVolverFinal').forEach(b => b.style.display = 'none');
+
+  // Mostrar solo en la pregunta actual
+  const preguntaActual = preguntas[indexPregunta];
+  const btn = preguntaActual.querySelector('.btnVolverFinal');
+  if (btn) {
+    btn.style.display = 'inline-block';
+    btn.onclick = () => mostrarPregunta(preguntas.length - 1);
+  }
+}
+
   // Cronómetro global
   let tiempoRestante = 60 * 60;
   function actualizarCronometro() {
@@ -319,6 +334,9 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = '/menu_principal';
     }
   }
+
+
+
   const intervalo = setInterval(actualizarCronometro, 1000);
 
 });

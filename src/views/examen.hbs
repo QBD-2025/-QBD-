@@ -149,6 +149,7 @@
         <button type="button" class="btn-volver">← Volver</button>
       {{/unless}}
       <button type="button" class="btn-volver btnNoSeguro">No seguro / Para después</button>
+      <button type="button" class="btn-volver btnVolverFinal" style="display:none;">Volver al final</button>
       {{#if @last}}
         <button type="button" class="btn-finalizar">Finalizar</button>
       {{else}}
@@ -270,12 +271,14 @@ function actualizarPendientesUI() {
         ? `Dejaste la pregunta ${i + 1} en pendiente.` 
         : `Pregunta ${i + 1} marcada como "para después".`;
       div.dataset.index = i;
-      div.addEventListener('click', () => mostrarPregunta(i));
+      div.addEventListener('click', () => {
+        mostrarPregunta(i);
+        mostrarBotonVolverFinal(i); // 👈 aquí llamamos a mostrar el botón
+      });
       cont.appendChild(div);
     }
   });
 }
-
 // ---- BOTONES ----
 document.querySelectorAll('.btnNoSeguro').forEach((btn, indexPregunta) => {
   btn.addEventListener('click', e => {
@@ -313,6 +316,19 @@ function finalizarExamen() {
   document.getElementById('inputPendientes').value = JSON.stringify(estadoPreguntas.map((e,i)=>e==="pendiente"?i:null).filter(i=>i!==null));
   document.getElementById('inputSuspensos').value = JSON.stringify(estadoPreguntas.map((e,i)=>e==="suspenso"?i:null).filter(i=>i!==null));
   document.getElementById('formResultados').submit();
+}
+
+function mostrarBotonVolverFinal(indexPregunta) {
+  // Ocultar todos los botones "Volver al final"
+  document.querySelectorAll('.btnVolverFinal').forEach(b => b.style.display = 'none');
+
+  // Mostrar solo en la pregunta actual
+  const preguntaActual = preguntas[indexPregunta];
+  const btn = preguntaActual.querySelector('.btnVolverFinal');
+  if (btn) {
+    btn.style.display = 'inline-block';
+    btn.onclick = () => mostrarPregunta(preguntas.length - 1);
+  }
 }
 
 document.body.classList.remove('mostrar-examen');

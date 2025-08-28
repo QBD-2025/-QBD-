@@ -12,33 +12,33 @@
   </header>
 
   {{#if historial.length}}
-    <table class="tabla-historial">
-      <thead>
+  <table class="tabla-historial">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Materia</th>
+        <th>Puntaje</th>
+        <th>Fecha</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each historial}}
         <tr>
-          <th>#</th>
-          <th>Materia</th>
-          <th>Puntaje</th>
-          <th>Fecha</th>
-          <th>Acciones</th>
+          <td>{{@index}}</td>
+          <td>{{materia}}</td>
+          <td>{{puntos}} / {{total}}</td>
+          <td>{{fecha}}</td>
+          <td>
+            <a href="/usuario/historial/{{id_examen}}" class="btn-ver">Ver detalles</a>
+          </td>
         </tr>
-      </thead>
-      <tbody>
-        {{#each historial}}
-          <tr>
-            <td>{{@index}}</td>
-            <td>{{materia}}</td>
-            <td>{{puntos}} / {{total}}</td>
-            <td>{{fecha}}</td>
-            <td>
-              <a href="/historial/{{id_examen}}" class="btn-ver">Ver detalles</a>
-            </td>
-          </tr>
-        {{/each}}
-      </tbody>
-    </table>
-  {{else}}
-    <p class="no-datos">No tienes exámenes realizados todavía.</p>
-  {{/if}}
+      {{/each}}
+    </tbody>
+  </table>
+{{else}}
+  <p class="no-datos">No tienes exámenes realizados todavía.</p>
+{{/if}}
 
 </body>
 </html>

@@ -172,26 +172,54 @@ router.post('/resultados', async (req, res) => {
 
     let puntosTotales = 0;
 
+    // 1️⃣ Crear registro de examen
+    const fechaInicio = new Date();
+    const duracion = 60;
+    const fechaTermino = new Date(fechaInicio.getTime() + duracion * 60000);
+
+    const [examenResult] = await db.query(
+      `INSERT INTO examen (fecha_inicio, fecha_termino, duracion, puntuacion_competencia)
+       VALUES (?, ?, ?, ?)`,
+      [fechaInicio, fechaTermino, duracion, 0]
+    );
+
+    const id_examen = examenResult.insertId;
+
+    // 2️⃣ Procesar cada respuesta y guardar en historial
     for (let i = 0; i < preguntas.length; i++) {
       const [respuestasBD] = await db.query(`
-        SELECT respuesta, correcta
+        SELECT id_respuesta, respuesta, correcta
         FROM respuesta
         WHERE id_pregunta = ?
       `, [preguntas[i].id_pregunta]);
 
-      preguntas[i].respuestas = respuestasBD;
       const seleccionadaIdx = respuestasUsuario[i];
-      preguntas[i].seleccionada = seleccionadaIdx;
-      preguntas[i].textoSeleccionado = respuestasBD[seleccionadaIdx]?.respuesta || 'No respondida';
-      preguntas[i].esCorrecta = respuestasBD[seleccionadaIdx]?.correcta === 1;
+      const seleccionada = respuestasBD[seleccionadaIdx] || null;
+      const esCorrecta = seleccionada?.correcta === 1;
+      if (esCorrecta) puntosTotales++;
 
-      if (preguntas[i].esCorrecta) puntosTotales += 1;
+      preguntas[i].respuestas = respuestasBD;
+      preguntas[i].seleccionada = seleccionadaIdx;
+      preguntas[i].textoSeleccionado = seleccionada?.respuesta || 'No respondida';
+      preguntas[i].esCorrecta = esCorrecta;
+
+      await db.query(`
+        INSERT INTO historial (id_examen, id_usuario, id_pregunta, id_respuesta, puntos, porcentaje)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `, [id_examen, id_usuario, preguntas[i].id_pregunta, seleccionada?.id_respuesta || null, esCorrecta ? 1 : 0, 0]);
     }
 
     const totalPreguntas = preguntas.length;
     const porcentaje = ((puntosTotales / totalPreguntas) * 100).toFixed(2);
 
-    // Actualizar puntos y último examen
+    // 3️⃣ Actualizar porcentaje en historial
+    await db.query(`
+      UPDATE historial
+      SET porcentaje = ?
+      WHERE id_examen = ? AND id_usuario = ?
+    `, [porcentaje, id_examen, id_usuario]);
+
+    // 4️⃣ Actualizar puntos y último examen del usuario
     await db.query(`
       UPDATE usuario
       SET puntos = puntos + ?, ultimo_examen = ?
@@ -212,32 +240,59 @@ router.post('/resultados', async (req, res) => {
   }
 });
 
+
 // Resultados examen aleatorio
 router.post('/resultados-aleatorio', async (req, res) => {
   try {
     let respuestasUsuario = req.body.respuestas;
     const id_usuario = req.session.user?.id_usuario;
-
     if (!id_usuario) return res.status(400).send('Falta id_usuario en la petición');
     if (typeof respuestasUsuario === 'string') respuestasUsuario = JSON.parse(respuestasUsuario);
 
     const preguntas = req.session.preguntasAleatorias || [];
     let puntosTotales = 0;
 
+    // 1️⃣ Crear registro de examen
+    const fechaInicio = new Date();
+    const duracion = 60;
+    const fechaTermino = new Date(fechaInicio.getTime() + duracion * 60000);
+
+    const [examenResult] = await db.query(
+      `INSERT INTO examen (fecha_inicio, fecha_termino, duracion, puntuacion_competencia)
+       VALUES (?, ?, ?, ?)`,
+      [fechaInicio, fechaTermino, duracion, 0]
+    );
+    const id_examen = examenResult.insertId;
+
+    // 2️⃣ Procesar respuestas y guardar en historial
     for (let i = 0; i < preguntas.length; i++) {
       const respuestasBD = preguntas[i].respuestas;
       const seleccionadaIdx = respuestasUsuario[i];
-      preguntas[i].seleccionada = seleccionadaIdx;
-      preguntas[i].textoSeleccionado = respuestasBD[seleccionadaIdx]?.respuesta || 'No respondida';
-      preguntas[i].esCorrecta = respuestasBD[seleccionadaIdx]?.correcta === 1;
+      const seleccionada = respuestasBD[seleccionadaIdx] || null;
+      const esCorrecta = seleccionada?.correcta === 1;
+      if (esCorrecta) puntosTotales++;
 
-      if (preguntas[i].esCorrecta) puntosTotales += 1;
+      preguntas[i].seleccionada = seleccionadaIdx;
+      preguntas[i].textoSeleccionado = seleccionada?.respuesta || 'No respondida';
+      preguntas[i].esCorrecta = esCorrecta;
+
+      await db.query(`
+        INSERT INTO historial (id_examen, id_usuario, id_pregunta, id_respuesta, puntos, porcentaje)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `, [id_examen, id_usuario, preguntas[i].id_pregunta, seleccionada?.id_respuesta || null, esCorrecta ? 1 : 0, 0]);
     }
 
     const totalPreguntas = preguntas.length;
     const porcentaje = ((puntosTotales / totalPreguntas) * 100).toFixed(2);
 
-    // Actualizar puntos y último examen
+    // 3️⃣ Actualizar porcentaje en historial
+    await db.query(`
+      UPDATE historial
+      SET porcentaje = ?
+      WHERE id_examen = ? AND id_usuario = ?
+    `, [porcentaje, id_examen, id_usuario]);
+
+    // 4️⃣ Actualizar puntos y último examen
     await db.query(`
       UPDATE usuario
       SET puntos = puntos + ?, ultimo_examen = ?
@@ -257,5 +312,6 @@ router.post('/resultados-aleatorio', async (req, res) => {
     res.status(500).send('Error mostrando resultados');
   }
 });
+
 
 module.exports = router;

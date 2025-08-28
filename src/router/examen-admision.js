@@ -70,7 +70,7 @@ router.get('/examen-exani', async (req, res) => {
       preguntasIds: preguntasFinales.map(p => p.id_pregunta),
       rankingData: topGlobal,
       topPlayer: topGlobal[0] || null,
-      ultimoExamen // ✅ ahora sí lo pasamos a la vista
+      ultimoExamen
     });
 
   } catch (err) {
@@ -79,7 +79,7 @@ router.get('/examen-exani', async (req, res) => {
   }
 });
 
-// 📌 Resultados EXANI con porcentaje, suma de puntos al usuario y último resultado
+// Resultados EXANI con porcentaje y guardado en historial
 router.post('/resultados_admision', async (req, res) => {
   try {
     const respuestasUsuario = JSON.parse(req.body.respuestas || '[]');
@@ -89,15 +89,15 @@ router.post('/resultados_admision', async (req, res) => {
       return res.status(400).send('Datos de respuestas incompletos');
     }
 
-    const id_usuario = req.session.user?.id_usuario; // <- obtenemos usuario de la sesión
+    const id_usuario = req.session.user?.id_usuario;
 
     const [filas] = await db.query(
       `SELECT p.id_pregunta, p.pregunta, r.id_respuesta, r.respuesta, r.correcta, m.descripcion AS materia
-      FROM pregunta p
-      JOIN respuesta r ON p.id_pregunta = r.id_pregunta
-      JOIN materias m ON p.id_materia = m.id_materia
-      WHERE p.id_pregunta IN (?)
-      ORDER BY p.id_pregunta, r.id_respuesta`,
+       FROM pregunta p
+       JOIN respuesta r ON p.id_pregunta = r.id_pregunta
+       JOIN materias m ON p.id_materia = m.id_materia
+       WHERE p.id_pregunta IN (?)
+       ORDER BY p.id_pregunta, r.id_respuesta`,
       [idsPreguntas]
     );
 
@@ -124,6 +124,24 @@ router.post('/resultados_admision', async (req, res) => {
     let puntosTotales = 0;
     const preguntasParaResultado = [];
 
+    // 1️⃣ Crear registro de examen
+    let id_examen = null;
+    if (id_usuario) {
+      const fechaInicio = new Date();
+      const duracion = 60; // duración en minutos
+      const fechaTermino = new Date(fechaInicio.getTime() + duracion * 60000);
+
+      const [examenResult] = await db.query(
+        `INSERT INTO examen 
+          (fecha_inicio, fecha_termino, duracion, puntuacion_competencia)
+         VALUES (?, ?, ?, ?)`,
+        [ fechaInicio, fechaTermino, duracion, 0]
+      );
+
+      id_examen = examenResult.insertId;
+    }
+
+    // 2️⃣ Procesar cada respuesta
     for (let i = 0; i < idsPreguntas.length; i++) {
       const idPregunta = idsPreguntas[i];
       const indiceRespuestaUsuario = respuestasUsuario[i];
@@ -131,7 +149,8 @@ router.post('/resultados_admision', async (req, res) => {
       const preguntaData = preguntasMap.get(idPregunta);
       if (!preguntaData) continue;
 
-      const respuestaSeleccionada = preguntaData.respuestas[indiceRespuestaUsuario];
+      const respuestaSeleccionada = preguntaData.respuestas[indiceRespuestaUsuario] || null;
+      const respuestaId = respuestaSeleccionada ? respuestaSeleccionada.id_respuesta : null;
       const esCorrecta = respuestaSeleccionada ? respuestaSeleccionada.correcta : false;
       if (esCorrecta) puntosTotales++;
 
@@ -141,37 +160,27 @@ router.post('/resultados_admision', async (req, res) => {
         esCorrecta,
         textoSeleccionado: respuestaSeleccionada ? respuestaSeleccionada.respuesta : 'No respondida'
       });
+
+      // 3️⃣ Guardar en historial
+      if (id_usuario && id_examen) {
+        await db.query(
+          `INSERT INTO historial (id_examen, id_usuario, id_pregunta, id_respuesta, puntos, porcentaje)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          [id_examen, id_usuario, idPregunta, respuestaId, esCorrecta ? 1 : 0, 0]
+        );
+      }
     }
 
-    // 🔹 Calcular porcentaje
     const totalPreguntas = idsPreguntas.length;
     const porcentaje = ((puntosTotales / totalPreguntas) * 100).toFixed(2);
 
-    // 🔹 Guardar y obtener último resultado si el usuario está logueado
-    if (id_usuario) {
-      // Guardar el resultado actual en una tabla de historial
+    // 4️⃣ Actualizar porcentaje en historial de este examen
+    if (id_usuario && id_examen) {
       await db.query(
-        `INSERT INTO resultados (id_usuario, puntaje, total, porcentaje, fecha) 
-         VALUES (?, ?, ?, ?, NOW())`,
-        [id_usuario, puntosTotales, totalPreguntas, porcentaje]
-      );
-
-      // Obtener el último resultado guardado
-      const [rowsUltimo] = await db.query(
-        `SELECT puntaje, total, porcentaje, fecha 
-         FROM resultados 
-         WHERE id_usuario = ? 
-         ORDER BY fecha DESC 
-         LIMIT 1`,
-        [id_usuario]
-      );
-
-      // Sumar puntos al usuario
-      await db.query(
-        `UPDATE usuario
-         SET puntos = puntos + ?, ultimo_examen = ?
-         WHERE id_usuario = ?`,
-        [puntosTotales, porcentaje, id_usuario]
+        `UPDATE historial
+         SET porcentaje = ?
+         WHERE id_examen = ? AND id_usuario = ?`,
+        [porcentaje, id_examen, id_usuario]
       );
     }
 
@@ -181,7 +190,7 @@ router.post('/resultados_admision', async (req, res) => {
       totalPreguntas,
       porcentaje,
       preguntas: preguntasParaResultado,
-      ultimoExamen
+      ultimoExamen: porcentaje
     });
 
   } catch (error) {
