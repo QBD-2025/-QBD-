@@ -4,7 +4,6 @@ module.exports = (base) => {
   return {
     init: (socket) => {
       socket.on('mensajeChat', ({ salaId, mensaje, usuario }) => {
-        io.to(salaId).emit('nuevoMensaje', { usuario, mensaje });
       });
     },
     

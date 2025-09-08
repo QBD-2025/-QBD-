@@ -1,202 +1,146 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db/conexion'); // promisificado
+const db = require('../db/conexion');
 
-// Generar examen EXANI (varias materias)
 router.get('/examen-exani', async (req, res) => {
-  try {
-    const preguntasPorMateria = 20;
-    const id_usuario = req.session.user?.id_usuario;
+  try {
+    const preguntasPorMateria = 20;
+    const id_usuario = req.session.user?.id_usuario;
+    const [materias] = await db.query(`SELECT * FROM materias WHERE id_materia IN (1, 2, 3, 4, 5) ORDER BY id_materia ASC`);
+    let preguntasFinales = [];
 
-    const [materias] = await db.query(`
-      SELECT * FROM materias 
-      WHERE id_materia IN (1, 2, 3, 4, 5)
-      ORDER BY id_materia ASC
-    `);
+    for (const materia of materias) {
+      // ✅ CORRECCIÓN AQUÍ: Se limpió la consulta SELECT para quitar espacios
+      const [preguntas] = await db.query(
+        `SELECT id_pregunta, id_materia, pregunta, retroalimentacion, puntos FROM pregunta WHERE id_materia = ? ORDER BY RAND() LIMIT ?`,
+        [materia.id_materia, preguntasPorMateria]
+      );
+      for (const p of preguntas) {
+        const [respuestas] = await db.query(
+          `SELECT id_respuesta, respuesta, correcta FROM respuesta WHERE id_pregunta = ?`,
+          [p.id_pregunta]
+        );
+        preguntasFinales.push({ ...p, materia: materia.descripcion, respuestas });
+      }
+    }
 
-    const preguntasFinales = [];
+    const [topGlobal] = await db.query(`SELECT u.username, u.apodo, u.puntos FROM usuario u LEFT JOIN ranking r ON u.id_usuario = r.id_usuario ORDER BY u.puntos DESC, r.fecha_actualizacion ASC LIMIT 1`);
+    let ultimoExamen = null;
+    if (id_usuario) {
+      const [ultimoExamenRow] = await db.query(
+        'SELECT porcentaje FROM usuario_examen WHERE id_usuario = ? ORDER BY fecha_termino DESC LIMIT 1', 
+        [id_usuario]
+      );
+      if (ultimoExamenRow.length > 0) {
+        ultimoExamen = ultimoExamenRow[0].porcentaje;
+      }
+    }
 
-    for (const materia of materias) {
-      const [preguntas] = await db.query(
-        `SELECT * FROM pregunta WHERE id_materia = ? ORDER BY RAND() LIMIT ?`,
-        [materia.id_materia, preguntasPorMateria]
-      );
-
-      for (const p of preguntas) {
-        const [respuestas] = await db.query(
-          `SELECT id_respuesta, respuesta, correcta FROM respuesta WHERE id_pregunta = ?`,
-          [p.id_pregunta]
-        );
-
-        preguntasFinales.push({
-          ...p,
-          materia: materia.descripcion,
-          respuestas
-        });
-      }
-    }
-
-    const [topGlobal] = await db.query(`
-      SELECT 
-        u.id_usuario,
-        u.username,
-        u.apodo,
-        u.puntos,
-        r.posicion,
-        r.fecha_actualizacion
-      FROM usuario u
-      LEFT JOIN ranking r ON u.id_usuario = r.id_usuario
-      ORDER BY u.puntos DESC, r.fecha_actualizacion ASC
-      LIMIT 1
-    `);
-
-    preguntasFinales.sort((a, b) => a.id_materia - b.id_materia);
-
-    // Obtener porcentaje del último examen del usuario
-    let ultimoExamen = null;
-    if (id_usuario) {
-      const [usuarioRow] = await db.query(`
-        SELECT ultimo_examen
-        FROM usuario
-        WHERE id_usuario = ?
-      `, [id_usuario]);
-      ultimoExamen = usuarioRow[0]?.ultimo_examen || null;
-    }
-
-    res.render('examen-admision', {
-      title: 'Examen de Admisión',
-      preguntas: preguntasFinales,
-      layout: false,
-      preguntasIds: preguntasFinales.map(p => p.id_pregunta),
-      rankingData: topGlobal,
-      topPlayer: topGlobal[0] || null,
-      ultimoExamen
-    });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Error al generar el examen');
-  }
+    res.render('examen-admision', {
+      title: 'Examen de Admisión',
+      preguntas: preguntasFinales,
+      layout: false,
+      rankingData: topGlobal,
+      topPlayer: topGlobal[0] || null,
+      ultimoExamen
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al generar el examen');
+  }
 });
 
-// Resultados EXANI con porcentaje y guardado en historial
+
 router.post('/resultados_admision', async (req, res) => {
-  try {
-    const respuestasUsuario = JSON.parse(req.body.respuestas || '[]');
-    const idsPreguntas = JSON.parse(req.body.idsPreguntas || '[]');
+  try {
+    const { respuestas, fecha_inicio_str, todosLosIds } = req.body;
+    const id_usuario = req.session.user?.id_usuario;
+    
+    if (!id_usuario) return res.status(400).send('Falta id_usuario en la petición.');
+    
+    const respuestasUsuario = JSON.parse(respuestas);
+    const idsDelExamen = JSON.parse(todosLosIds);
+    const fechaInicio = new Date(fecha_inicio_str);
+    const fechaTermino = new Date();
 
-    if (respuestasUsuario.length !== idsPreguntas.length) {
-      return res.status(400).send('Datos de respuestas incompletos');
-    }
+    if (!idsDelExamen || idsDelExamen.length === 0) {
+      return res.status(400).send('No se encontraron preguntas en el examen.');
+    }
 
-    const id_usuario = req.session.user?.id_usuario;
+    const [preguntasCompletas] = await db.query(
+      'SELECT id_pregunta, pregunta, puntos FROM pregunta WHERE id_pregunta IN (?)',
+      [idsDelExamen]
+    );
 
-    const [filas] = await db.query(
-      `SELECT p.id_pregunta, p.pregunta, r.id_respuesta, r.respuesta, r.correcta, m.descripcion AS materia
-       FROM pregunta p
-       JOIN respuesta r ON p.id_pregunta = r.id_pregunta
-       JOIN materias m ON p.id_materia = m.id_materia
-       WHERE p.id_pregunta IN (?)
-       ORDER BY p.id_pregunta, r.id_respuesta`,
-      [idsPreguntas]
+    const [todasLasRespuestas] = await db.query(
+      'SELECT id_pregunta, id_respuesta, respuesta, correcta FROM respuesta WHERE id_pregunta IN (?)',
+      [idsDelExamen]
     );
 
-    const preguntasMap = new Map();
-    let materiaNombre = 'General';
-
-    for (const fila of filas) {
-      if (!preguntasMap.has(fila.id_pregunta)) {
-        preguntasMap.set(fila.id_pregunta, {
-          id_pregunta: fila.id_pregunta,
-          pregunta: fila.pregunta,
-          materia: fila.materia,
-          respuestas: []
-        });
-        materiaNombre = fila.materia;
-      }
-      preguntasMap.get(fila.id_pregunta).respuestas.push({
-        id_respuesta: fila.id_respuesta,
-        respuesta: fila.respuesta,
-        correcta: fila.correcta === 1
-      });
+    const respuestasMap = new Map();
+    for(const resp of todasLasRespuestas) {
+        if(!respuestasMap.has(resp.id_pregunta)){
+            respuestasMap.set(resp.id_pregunta, []);
+        }
+        respuestasMap.get(resp.id_pregunta).push(resp);
     }
 
-    let puntosTotales = 0;
-    const preguntasParaResultado = [];
+    const puntosMaximos = preguntasCompletas.reduce((sum, p) => sum + p.puntos, 0);
+    let puntosObtenidos = 0;
+    const preguntasParaResultado = [];
 
-    // 1️⃣ Crear registro de examen
-    let id_examen = null;
-    if (id_usuario) {
-      const fechaInicio = new Date();
-      const duracion = 60; // duración en minutos
-      const fechaTermino = new Date(fechaInicio.getTime() + duracion * 60000);
+    for (const pregunta of preguntasCompletas) {
+      const respuestasBD = respuestasMap.get(pregunta.id_pregunta) || [];
+      let esCorrecta = false;
+      let textoSeleccionado = 'No respondida';
+      if (respuestasUsuario[pregunta.id_pregunta] !== undefined) {
+        const respuestaUsuarioIndex = respuestasUsuario[pregunta.id_pregunta];
+        const respuestaSeleccionada = respuestasBD[respuestaUsuarioIndex];
+        textoSeleccionado = respuestaSeleccionada ? respuestaSeleccionada.respuesta : 'Inválida';
+        if (respuestaSeleccionada?.correcta === 1) {
+          puntosObtenidos += pregunta.puntos;
+          esCorrecta = true;
+        }
+      }
+      preguntasParaResultado.push({
+        pregunta: pregunta.pregunta,
+        respuestas: respuestasBD,
+        esCorrecta,
+        textoSeleccionado
+      });
+    }
+    
+    const duracionMs = fechaTermino.getTime() - fechaInicio.getTime();
+    const duracionSegundos = Math.round(duracionMs / 1000);
+    const [examenResult] = await db.query(
+      'INSERT INTO examen (id_materia, duracion) VALUES (NULL, ?)',
+      [duracionSegundos]
+    );
+    const id_examen = examenResult.insertId;
+    const porcentaje = puntosMaximos > 0 ? parseFloat(((puntosObtenidos / puntosMaximos) * 100).toFixed(2)) : 0;
 
-      const [examenResult] = await db.query(
-        `INSERT INTO examen 
-          (fecha_inicio, fecha_termino, duracion, puntuacion_competencia)
-         VALUES (?, ?, ?, ?)`,
-        [ fechaInicio, fechaTermino, duracion, 0]
-      );
+    await db.query(
+      `INSERT INTO usuario_examen (id_usuario, id_examen, maximo, obtenido, fecha_inicio, fecha_termino, porcentaje) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [id_usuario, id_examen, puntosMaximos, puntosObtenidos, fechaInicio, fechaTermino, porcentaje]
+    );
 
-      id_examen = examenResult.insertId;
-    }
-
-    // 2️⃣ Procesar cada respuesta
-    for (let i = 0; i < idsPreguntas.length; i++) {
-      const idPregunta = idsPreguntas[i];
-      const indiceRespuestaUsuario = respuestasUsuario[i];
-
-      const preguntaData = preguntasMap.get(idPregunta);
-      if (!preguntaData) continue;
-
-      const respuestaSeleccionada = preguntaData.respuestas[indiceRespuestaUsuario] || null;
-      const respuestaId = respuestaSeleccionada ? respuestaSeleccionada.id_respuesta : null;
-      const esCorrecta = respuestaSeleccionada ? respuestaSeleccionada.correcta : false;
-      if (esCorrecta) puntosTotales++;
-
-      preguntasParaResultado.push({
-        pregunta: preguntaData.pregunta,
-        respuestas: preguntaData.respuestas,
-        esCorrecta,
-        textoSeleccionado: respuestaSeleccionada ? respuestaSeleccionada.respuesta : 'No respondida'
-      });
-
-      // 3️⃣ Guardar en historial
-      if (id_usuario && id_examen) {
-        await db.query(
-          `INSERT INTO historial (id_examen, id_usuario, id_pregunta, id_respuesta, puntos, porcentaje)
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          [id_examen, id_usuario, idPregunta, respuestaId, esCorrecta ? 1 : 0, 0]
-        );
-      }
-    }
-
-    const totalPreguntas = idsPreguntas.length;
-    const porcentaje = ((puntosTotales / totalPreguntas) * 100).toFixed(2);
-
-    // 4️⃣ Actualizar porcentaje en historial de este examen
-    if (id_usuario && id_examen) {
-      await db.query(
-        `UPDATE historial
-         SET porcentaje = ?
-         WHERE id_examen = ? AND id_usuario = ?`,
-        [porcentaje, id_examen, id_usuario]
-      );
-    }
-
-    res.render('resultados_admision', {
-      materia: materiaNombre,
-      puntosTotales,
-      totalPreguntas,
+    await db.query(
+      'UPDATE usuario SET puntos = puntos + ? WHERE id_usuario = ?',
+      [puntosObtenidos, id_usuario]
+    );
+    
+    res.render('resultados_admision', {
       porcentaje,
+      puntosTotales: puntosObtenidos,
+      totalPreguntas: preguntasCompletas.length,
       preguntas: preguntasParaResultado,
-      ultimoExamen: porcentaje
+      layout: false
     });
 
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error al procesar resultados');
-  }
+  } catch (error) {
+    console.error('Error generando resultados de admisión:', error);
+    res.status(500).send('Error mostrando resultados');
+  }
 });
 
 module.exports = router;

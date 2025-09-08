@@ -389,3 +389,98 @@ header {
   padding: 4px;
   border-radius: 4px;
 }
+/* === MODAL DE AVISO === */
+    .modal-aviso {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+    .modal-aviso.oculto { display: none; }
+
+    .modal-content {
+      background: #fff;
+      padding: 20px 30px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 400px;
+      box-shadow: 0px 4px 12px rgba(0,0,0,0.3);
+      animation: aparecer 0.3s ease;
+    }
+
+    .modal-content p {
+      margin-bottom: 15px;
+      font-size: 18px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .modal-content button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .modal-content button:hover { background: #0056b3; }
+
+    @keyframes aparecer {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .modal-aviso {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+  }
+  .modal-aviso.oculto { display: none; }
+
+  .modal-content {
+    background: #fff;
+    padding: 20px 30px;
+    border-radius: 12px;
+    text-align: center;
+    max-width: 400px;
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.3);
+    animation: aparecer 0.3s ease;
+  }
+
+  .modal-content p {
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: 500;
+    color: #333;
+  }
+
+  .modal-content button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .modal-content button:hover { background: #0056b3; }
+
+  @keyframes aparecer {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }

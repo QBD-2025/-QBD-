@@ -1,3 +1,5 @@
+// EN: src/sockets/socket-server.js
+
 const { seleccionarPalabraAleatoria } = require('./socket-helpers');
 
 module.exports = (io, pool) => {
@@ -6,20 +8,12 @@ module.exports = (io, pool) => {
     salas: {},
     confrontationRooms: {},
     salasSerpientes: {},
-    salasSopa: {}
+    salasSopa: {},
+    partidasGato: {} // <-- AÑADIDO: Estado específico para las partidas de Gato
   };
 
   // Configuraciones comunes
   const config = {
-    serpientes: {
-      winPosition: 100,
-      snakesAndLadders: {
-        98: 78, 95: 75, 73: 53, 55: 35, 44: 24, 30: 10, 
-        92: 62, 64: 34, 48: 18, 36: 6, 25: 5,
-        2: 22, 7: 27, 15: 35, 28: 48, 51: 71, 60: 80, 
-        5: 35, 12: 42, 21: 51, 37: 67, 45: 75, 68: 98
-      }
-    },
     sopaLetras: {
       ROWS: 10,
       COLS: 10,
@@ -28,7 +22,7 @@ module.exports = (io, pool) => {
     }
   };
 
-  // Funciones comunes
+  // Funciones comunes (se quedan igual)
   function endConfrontationGame(salaId) {
     const room = state.confrontationRooms[salaId];
     if (!room || !room.gameState) return;
@@ -48,12 +42,34 @@ module.exports = (io, pool) => {
     delete state.confrontationRooms[salaId];
   }
 
+  // ===================================================================
+  // ¡FUNCIÓN ESENCIAL AÑADIDA!
+  // Busca el socket de un usuario a partir de su ID de la base de datos.
+  // Es crucial para enviar invitaciones o mensajes directos.
+  // NOTA: Esto solo funciona si compartes la sesión de Express con Socket.IO en tu app.js
+  // ===================================================================
+  const findSocketByUserId = async (userId) => {
+    const sockets = await io.fetchSockets();
+    const userIdNum = parseInt(userId, 10);
+
+    for (const socket of sockets) {
+      if (socket.request.session.user && socket.request.session.user.id_usuario === userIdNum) {
+        // Añadimos el username al objeto socket para fácil acceso
+        socket.username = socket.request.session.user.username;
+        return socket;
+      }
+    }
+    return null; // No se encontró
+  };
+
+  // Exportamos todo lo que los demás módulos puedan necesitar
   return {
     io,
     pool,
     state,
     config,
     seleccionarPalabraAleatoria,
-    endConfrontationGame
+    endConfrontationGame,
+    findSocketByUserId // <-- ¡Exportamos la nueva función!
   };
 };

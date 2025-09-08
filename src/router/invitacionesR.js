@@ -4,331 +4,116 @@ const { v4: uuidv4 } = require('uuid');
 const router = express.Router();
 const pool = require('../db/conexion');
 
-// ----------------------------------------------------------------
-// RUTA PARA ENVIAR INVITACIÓN (MODIFICADA)
-// ----------------------------------------------------------------
+// ================================================================
+// RUTA GENÉRICA PARA INVITAR A UNA SALA EXISTENTE
+// (Gato, Serpientes y Escaleras, Sopa de Letras cooperativo)
+// ================================================================
 router.post('/invitar/:idJugador', async (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ message: 'No has iniciado sesión' });
     }
 
-    // 1. Obtenemos el salaId del cuerpo de la petición (enviado desde el cliente)
-    const { salaId } = req.body; 
+    const { salaId, juego } = req.body; // Recibe la sala actual y el nombre del juego
     const { idJugador } = req.params;
-    const idRemitente = req.session.user.id_usuario;
-    const usernameRemitente = req.session.user.username;
+    const { id_usuario: idRemitente, username: usernameRemitente } = req.session.user;
 
-    // 2. Validación: Si el cliente no nos envía un salaId, devolvemos un error.
-    if (!salaId) {
-        return res.status(400).json({ message: 'Error: No se proporcionó un ID de sala.' });
+    if (!salaId || !juego) {
+        return res.status(400).json({ message: 'Error: Faltan datos en la invitación (salaId o juego).' });
     }
-
-    // 3. ¡Ya NO creamos un nuevo salaId con uuidv4()! Usamos el que recibimos.
 
     try {
         await pool.query(
-            `INSERT INTO notificaciones 
-              (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
-              VALUES (?, ?, 'invitacion', ?, ?)`,
+            `INSERT INTO notificaciones (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) VALUES (?, ?, 'invitacion', ?, ?)`,
             [
-                idJugador, 
-                idRemitente, 
-                `${usernameRemitente} te ha invitado a una partida de Ahorcado`, 
-                // Guardamos el salaId recibido en la notificación
-                JSON.stringify({
-                    salaId: salaId,
-                    juego: 'ahorcado'
-                })
+                idJugador,
+                idRemitente,
+                `${usernameRemitente} te invita a una partida de ${juego}`,
+                JSON.stringify({ salaId, juego }) // Guarda la sala existente
             ]
         );
         
-        res.json({ 
-            message: 'Invitación enviada ✅', 
-            salaId: salaId // Devolvemos el mismo salaId para confirmación
-        });
+        res.json({ message: 'Invitación enviada ✅' });
     } catch (err) {
         console.error('Error enviando invitación:', err);
-        res.status(500).json({ message: 'Error enviando invitación' });
+        res.status(500).json({ message: 'Error del servidor al enviar la invitación' });
     }
 });
-router.post('/invitar_s/:idJugador', async (req, res) => {
-    if (!req.session.user) {
-        return res.status(401).json({ message: 'No has iniciado sesión' });
-    }
 
-    // 1. Obtenemos el salaId del cuerpo de la petición (enviado desde el cliente)
-    const { salaId } = req.body; 
-    const { idJugador } = req.params;
-    const idRemitente = req.session.user.id_usuario;
-    const usernameRemitente = req.session.user.username;
-
-    // 2. Validación: Si el cliente no nos envía un salaId, devolvemos un error.
-    if (!salaId) {
-        return res.status(400).json({ message: 'Error: No se proporcionó un ID de sala.' });
-    }
-
-    // 3. ¡Ya NO creamos un nuevo salaId con uuidv4()! Usamos el que recibimos.
-
-    try {
-        await pool.query(
-            `INSERT INTO notificaciones 
-              (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
-              VALUES (?, ?, 'invitacion', ?, ?)`,
-            [
-                idJugador, 
-                idRemitente, 
-                `${usernameRemitente} te ha invitado a una partida de Serpientes y Escaleras`, 
-                // Guardamos el salaId recibido en la notificación
-                JSON.stringify({
-                    salaId: salaId,
-                    juego: 'serpientes_escaleras'
-                })
-            ]
-        );
-        
-        res.json({ 
-            message: 'Invitación enviada ✅', 
-            salaId: salaId // Devolvemos el mismo salaId para confirmación
-        });
-    } catch (err) {
-        console.error('Error enviando invitación:', err);
-        res.status(500).json({ message: 'Error enviando invitación' });
-    }
-});
-// ... (resto del código)
-router.post('/invitar_sop/:idJugador', async (req, res) => {
-    if (!req.session.user) {
-        return res.status(401).json({ message: 'No has iniciado sesión' });
-    }
-
-    // 1. Obtenemos el salaId del cuerpo de la petición (enviado desde el cliente)
-    const { salaId } = req.body; 
-    const { idJugador } = req.params;
-    const idRemitente = req.session.user.id_usuario;
-    const usernameRemitente = req.session.user.username;
-
-    // 2. Validación: Si el cliente no nos envía un salaId, devolvemos un error.
-    if (!salaId) {
-        return res.status(400).json({ message: 'Error: No se proporcionó un ID de sala.' });
-    }
-
-    // 3. ¡Ya NO creamos un nuevo salaId con uuidv4()! Usamos el que recibimos.
-
-    try {
-        await pool.query(
-            `INSERT INTO notificaciones 
-              (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
-              VALUES (?, ?, 'invitacion', ?, ?)`,
-            [
-                idJugador, 
-                idRemitente, 
-                `${usernameRemitente} te ha invitado a una partida de Sopa de Letras`, 
-                // Guardamos el salaId recibido en la notificación
-                JSON.stringify({
-                    salaId: salaId,
-                    juego: 'sopa'
-                })
-            ]
-        );
-        
-        res.json({ 
-            message: 'Invitación enviada ✅', 
-            salaId: salaId // Devolvemos el mismo salaId para confirmación
-        });
-    } catch (err) {
-        console.error('Error enviando invitación:', err);
-        res.status(500).json({ message: 'Error enviando invitación' });
-    }
-});
-// ----------------------------------------------------------------
-// RUTA PARA ENVIAR DESAFÍO (MODO RÁPIDO)
-// ----------------------------------------------------------------
+// ================================================================
+// RUTA GENÉRICA PARA CREAR UNA SALA DE ENFRENTAMIENTO NUEVA
+// (Ahorcado, Sopa de Letras enfrentamiento)
+// ================================================================
 router.post('/enfrentar/:idJugador', async (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ message: 'No has iniciado sesión' });
     }
 
+    const { juego } = req.body; // Solo necesita saber qué juego es
     const { idJugador } = req.params;
-    const idRemitente = req.session.user.id_usuario;
-    const usernameRemitente = req.session.user.username;
+    const { id_usuario: idRemitente, username: usernameRemitente } = req.session.user;
+
+    if (!juego) {
+        return res.status(400).json({ message: 'Error: No se especificó el juego para el desafío.' });
+    }
     
-    // 1. Generamos un ID de sala único para este enfrentamiento.
+    // Crea una sala nueva y única para el 1 vs 1
     const salaId = `enfrentamiento_${uuidv4().split('-')[0]}`;
 
     try {
         await pool.query(
-            `INSERT INTO notificaciones 
-              (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
-             VALUES (?, ?, 'invitacion', ?, ?)`, // Usamos el tipo 'invitacion' para que la ruta /aceptar lo maneje
+            `INSERT INTO notificaciones (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) VALUES (?, ?, 'invitacion', ?, ?)`,
             [
-                idJugador, 
-                idRemitente, 
-                `${usernameRemitente} te ha desafiado a un Ahorcado!`, 
-                // 2. ¡La clave está aquí! Guardamos un JSON con el modo de juego.
+                idJugador,
+                idRemitente,
+                `${usernameRemitente} te desafía a un(a) ${juego}!`,
+                // Guarda la sala NUEVA con el modo 'enfrentamiento'
                 JSON.stringify({
-                    salaId: salaId + '?modo=enfrentamiento', // Agregamos el modo al final del ID de sala
-                    juego: 'ahorcado',
-                    modo: 'enfrentamiento' // <--- Este campo es el que lo cambia todo
+                    salaId: salaId + '?modo=enfrentamiento',
+                    juego,
+                    modo: 'enfrentamiento'
                 })
             ]
         );
         
-        // 3. Devolvemos el salaId para que el retador pueda unirse a su lado del juego.
+        // Devuelve la nueva sala al retador para que pueda redirigirse
         res.json({ 
-            message: 'Desafío lanzado 😈', 
-            salaId: salaId,
-            modo: 'enfrentamiento' // Devolvemos el modo para que el cliente sepa a dónde ir
+            message: 'Desafío lanzado ⚔️', 
+            salaId,
+            modo: 'enfrentamiento'
         });
-
     } catch (err) {
         console.error('Error enviando desafío:', err);
-        res.status(500).json({ message: 'Error enviando desafío' });
-    }
-});
-router.post('/enfrentar_sop/:idJugador', async (req, res) => {
-    if (!req.session.user) {
-        return res.status(401).json({ message: 'No has iniciado sesión' });
-    }
-
-    const { idJugador } = req.params;
-    const idRemitente = req.session.user.id_usuario;
-    const usernameRemitente = req.session.user.username;
-    
-    // 1. Generamos un ID de sala único para este enfrentamiento.
-    const salaId = `enfrentamiento_${uuidv4().split('-')[0]}`;
-
-    try {
-        await pool.query(
-            `INSERT INTO notificaciones 
-              (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
-             VALUES (?, ?, 'invitacion', ?, ?)`, // Usamos el tipo 'invitacion' para que la ruta /aceptar lo maneje
-            [
-                idJugador, 
-                idRemitente, 
-                `${usernameRemitente} te ha desafiado a un Sopa de letras viejito!`, 
-                // 2. ¡La clave está aquí! Guardamos un JSON con el modo de juego.
-                JSON.stringify({
-                    salaId: salaId + '?modo=enfrentamiento', // Agregamos el modo al final del ID de sala
-                    juego: 'sopa',
-                    modo: 'enfrentamiento' // <--- Este campo es el que lo cambia todo
-                })
-            ]
-        );
-        
-        // 3. Devolvemos el salaId para que el retador pueda unirse a su lado del juego.
-        res.json({ 
-            message: 'Desafío lanzado 😈', 
-            salaId: salaId,
-            modo: 'enfrentamiento' // Devolvemos el modo para que el cliente sepa a dónde ir
-        });
-
-    } catch (err) {
-        console.error('Error enviando desafío:', err);
-        res.status(500).json({ message: 'Error enviando desafío' });
+        res.status(500).json({ message: 'Error del servidor al enviar el desafío' });
     }
 });
 
 
-// ... (Tu ruta /aceptar/:idNotificacion está perfecta, no necesita cambios, 
-// ya que leerá el JSON y el nuevo campo 'modo' sin problemas)
-// ----------------------------------------------------------------
-// RUTA PARA ACEPTAR CUALQUIER NOTIFICACIÓN (INVITACIÓN O DESAFÍO)
-// ----------------------------------------------------------------
-// routes/invitacionesR.js
-// En tu archivo de rutas (invitacionesR.js o notificacionesR.js)
-
+// ================================================================
+// RUTA PARA ACEPTAR (SIN CAMBIOS)
+// Esta ruta es genérica y funciona para ambos casos.
+// ================================================================
 router.post('/aceptar/:idNotificacion', async (req, res) => {
-    console.log('Solicitud para aceptar notificación:', req.params.idNotificacion);
-    
-    if (!req.session.user) {
-        console.log('Intento de aceptación sin sesión');
-        return res.status(401).json({ 
-            success: false,
-            message: 'Debes iniciar sesión para aceptar notificaciones' 
-        });
-    }
-
+    if (!req.session.user) { return res.status(401).json({ success: false, message: 'Debes iniciar sesión' }); }
     const { idNotificacion } = req.params;
     const userId = req.session.user.id_usuario;
-
     try {
-        // 1. Obtener la notificación con información del remitente
-        const [notificaciones] = await pool.query(
-            `SELECT n.*, u.username as remitente_username 
-            FROM notificaciones n
-            JOIN usuario u ON n.id_usuario_remitente = u.id_usuario
-            WHERE n.id_notificacion = ? AND n.id_usuario_destinatario = ?`,
-            [idNotificacion, userId]
-        );
-
-        if (notificaciones.length === 0) {
-            console.log('Notificación no encontrada para el usuario:', userId);
-            return res.status(404).json({ 
-                success: false,
-                message: 'Notificación no encontrada o no tienes permiso para aceptarla' 
-            });
-        }
-
-        const notificacion = notificaciones[0];
+        const [notificaciones] = await pool.query(`SELECT n.*, u.username as remitente_username FROM notificaciones n JOIN usuario u ON n.id_usuario_remitente = u.id_usuario WHERE n.id_notificacion = ? AND n.id_usuario_destinatario = ?`, [idNotificacion, userId]);
+        if (notificaciones.length === 0) { return res.status(404).json({ success: false, message: 'Notificación no encontrada' }); }
         
-        // 2. Parsear correctamente el extra_data (manejar tanto JSON como string)
-        let extraData;
-        try {
-            extraData = typeof notificacion.extra_data === 'string' ? 
-                JSON.parse(notificacion.extra_data) : 
-                notificacion.extra_data;
-        } catch (error) {
-            console.error('Error parseando extra_data:', notificacion.extra_data);
-            return res.status(400).json({ 
-                success: false,
-                message: 'Formato de notificación inválido' 
-            });
-        }
-
-        // 3. Eliminar la notificación
-        await pool.query(
-            "DELETE FROM notificaciones WHERE id_notificacion = ?",
-            [idNotificacion]
-        );
-
-        // 4. Notificar via Socket.IO si es una invitación a juego
+        const notificacion = notificaciones[0];
+        const extraData = JSON.parse(notificacion.extra_data);
+        
+        await pool.query("DELETE FROM notificaciones WHERE id_notificacion = ?", [idNotificacion]);
+        
         if (notificacion.tipo === 'invitacion' && extraData.salaId) {
-            try {
-                // Enviar al destinatario
-                req.io.to(userId.toString()).emit('redirigirASala', {
-                    salaId: extraData.salaId,
-                    juego: extraData.juego || 'ahorcado',
-                    modo: extraData.modo || 'cooperativo',
-                    remitente: notificacion.remitente_username,
-                    categoria: extraData.categoria || 'programacion'
-                });
-
-                // Notificar al remitente que su invitación fue aceptada
-                req.io.to(notificacion.id_usuario_remitente.toString()).emit('invitacionAceptada', {
-                    salaId: extraData.salaId,
-                    destinatario: req.session.user.username
-                });
-
-                console.log(`Invitación aceptada. Sala: ${extraData.salaId}, Remitente: ${notificacion.id_usuario_remitente}, Destinatario: ${userId}`);
-            } catch (socketError) {
-                console.error('Error en notificación Socket.IO:', socketError);
-                // No fallar la operación solo por error de socket
-            }
+            req.io.to(userId.toString()).emit('redirigirASala', { salaId: extraData.salaId, juego: extraData.juego });
+            req.io.to(notificacion.id_usuario_remitente.toString()).emit('invitacionAceptada', { salaId: extraData.salaId, destinatario: req.session.user.username });
         }
-        res.json({ 
-            success: true, 
-            salaId: extraData.salaId,
-            // 👇 ¡AQUÍ ESTÁ LA LÍNEA CLAVE! 👇
-            juego: extraData.juego, // Agregamos el nombre del juego a la respuesta
-            message: 'Invitación aceptada con éxito'
-        });
+        
+        res.json({ success: true, salaId: extraData.salaId, juego: extraData.juego, message: 'Invitación aceptada' });
     } catch (err) {
         console.error('Error en aceptar notificación:', err);
-        res.status(500).json({ 
-            success: false,
-            message: 'Error interno al procesar la aceptación',
-            error: err.message 
-        });
+        res.status(500).json({ success: false, message: 'Error interno al procesar la aceptación' });
     }
 });
 

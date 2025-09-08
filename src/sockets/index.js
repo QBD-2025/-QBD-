@@ -4,6 +4,7 @@ const ahorcadoSocket = require('./socket-ahorcado.js');
 const serpientesSocket = require('./serpientes.js');
 const chatSocket = require('./socket-chat.js');
 const SopaLetrasSocket = require('./socket-sopa.js'); // El que acabamos de corregir
+const gatoSocket = require('./socket-gato.js'); // Asegúrate de que este archivo existe
 
 module.exports = (io, pool) => {
     const base = baseSocket(io, pool);
@@ -13,7 +14,8 @@ module.exports = (io, pool) => {
         ahorcado: ahorcadoSocket(base),
         serpientes: serpientesSocket(base),
         chat: chatSocket(base),
-        sopaLetras: SopaLetrasSocket(base) // ¡Correcto!
+        sopaLetras: SopaLetrasSocket(base), // ¡Correcto!
+        gato: gatoSocket(base) // Nuevo handler para el juego del gato
     };
 
     io.on('connection', (socket) => {

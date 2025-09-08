@@ -10,7 +10,6 @@ const session = require("express-session");
 const mailer = require('./src/public/utils/mail.js');
 const passport = require('passport');
 require('./src/config/passport-config');
-global.sesionesActivas = new Set();
 
 // Configuración de la base de datos
 const pool = mysql.createPool({
@@ -33,7 +32,7 @@ const io = new Server(server, {
     }
 });
 
-// Configuración de Handlebars con helpers de paginación
+// Configuración de Handlebars
 app.engine('.hbs', exphbs.engine({
     defaultLayout: 'main',
     layoutsDir: path.join(__dirname, 'src', 'views', 'layouts'),
@@ -44,24 +43,7 @@ app.engine('.hbs', exphbs.engine({
         lower: (str) => str.toLowerCase(),
         inc: (value) => parseInt(value) + 1,
         json: context => JSON.stringify(context),
-        sum: (a, b) => a + b,
-        calcularProgreso: (puntos) => {
-            const maxPuntos = 5000;
-            return Math.min(Math.round((puntos / maxPuntos) * 100), 100);
-        },
-        indexPlusOne: (index) => index + 1,
-
-        // ---------- Helpers de paginación ----------
-        add: (a, b) => a + b,
-        subtract: (a, b) => a - b,
-        gt: (a, b) => a > b,
-        lt: (a, b) => a < b,
-        ifEquals: (a, b, options) => a == b ? options.fn(this) : options.inverse(this),
-        range: (from, to) => {
-            let arr = [];
-            for (let i = from; i <= to; i++) arr.push(i);
-            return arr;
-        }
+        sum: (a, b) => a + b
     }
 }));
 app.set('view engine', '.hbs');
@@ -74,16 +56,18 @@ app.use(express.static(path.join(__dirname, 'src', 'public')));
 app.use(express.static(path.join(__dirname, 'src', 'media')));
 app.use('/media', express.static(path.join(__dirname, 'src', 'media')));
 app.use('/Audio', express.static(path.join(__dirname, 'src', 'Audio')));
-app.use('/animacion_frames_p', express.static(path.join(__dirname,'src','media','animacion_frames_p')));
+app.use('/animacion_frames_p', express.static(path.join(__dirname, 'src','media','animacion_frames_p')));
 app.use('/images', express.static(path.join(__dirname, 'src', 'public', 'media', 'images')));
 
 // Configuración de sesiones
-app.use(session({
+const sessionMiddleware = session({
     secret: process.env.SESSION_SECRET || 'clave_segura_ganopapa',
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 1000 * 60 * 60 * 24 }
-}));
+});
+app.use(sessionMiddleware);
+io.engine.use(sessionMiddleware);
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -101,7 +85,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// ---------- Rutas ----------
+// Rutas
 const ligasR = require('./src/router/ligasR.js');
 const sopaR = require('./src/router/sopaR.js');
 const gatoR = require('./src/router/gatoR.js');
@@ -128,9 +112,8 @@ const datoR = require('./src/router/datoR.js');
 const examenR = require('./src/router/examenR');
 const competitivoR = require('./src/router/competitivoR.js');
 const notificacionesR = require('./src/router/notificacionesR.js');
-const rankingR = require('./src/router/rankingR');
+const rankingR = require('./src/router/rankingR.js');
 
-// Registrar rutas
 app.use('/', rankingR);
 app.use('/', sopaR);
 app.use('/', gatoR);
@@ -159,13 +142,15 @@ app.use('/', materiasR);
 app.use('/', minijuegosR);
 app.use('/', ligasR);
 
-// Ruta ejemplo para cooperativo
+
+
+// Ruta para vista cooperativa
 app.get('/ahorcado_cooperativo', (req, res) => {
     res.render('ahorcado_competitivo', { modo: 'cooperativo' });
 });
 
 // Configuración de Socket.io
-require('./src/sockets/index.js')(io, pool);
+require('./src/sockets/index.js')(io, pool); // <--- ¡CORREGIDO!
 
 // Iniciar servidor
 const PORT = process.env.PORT || 3005;

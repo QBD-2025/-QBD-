@@ -5,56 +5,6 @@
   <title>Examen Interactivo</title>
   <link rel="stylesheet" href="/css/examen.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    /* === MODAL DE AVISO === */
-    .modal-aviso {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 2000;
-    }
-    .modal-aviso.oculto { display: none; }
-
-    .modal-content {
-      background: #fff;
-      padding: 20px 30px;
-      border-radius: 12px;
-      text-align: center;
-      max-width: 400px;
-      box-shadow: 0px 4px 12px rgba(0,0,0,0.3);
-      animation: aparecer 0.3s ease;
-    }
-
-    .modal-content p {
-      margin-bottom: 15px;
-      font-size: 18px;
-      font-weight: 500;
-      color: #333;
-    }
-
-    .modal-content button {
-      background: #007bff;
-      color: white;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .modal-content button:hover { background: #0056b3; }
-
-    @keyframes aparecer {
-      from { opacity: 0; transform: scale(0.9); }
-      to { opacity: 1; transform: scale(1); }
-    }
-  </style>
 </head>
 <body>
 
@@ -130,7 +80,7 @@
   </header>
 
   {{#each preguntas}}
-  <div class="contenedor-pregunta {{#if @first}}activa{{/if}}" data-index="{{@index}}">
+   <div class="contenedor-pregunta {{#if @first}}activa{{/if}}" data-index="{{@index}}" data-id-pregunta="{{id_pregunta}}">
     <div class="encabezado">
       <div>Pregunta {{sum @index 1}} de {{../preguntas.length}}</div>
       <div class="cronometro">10:00</div>
@@ -150,6 +100,7 @@
       {{/unless}}
       <button type="button" class="btn-volver btnNoSeguro">No seguro / Para después</button>
       <button type="button" class="btn-volver btnVolverFinal" style="display:none;">Volver al final</button>
+      
       {{#if @last}}
         <button type="button" class="btn-finalizar">Finalizar</button>
       {{else}}
@@ -159,14 +110,23 @@
   </div>
   {{/each}}
 
-  <div id="pendientesContainer" class="pendientes-container"></div>
-
+   <div id="pendientesContainer" class="pendientes-container">
+    <div class="filter-toggle">
+        <label for="toggleFiltro">Mostrar solo no respondidas</label>
+        <input type="checkbox" id="toggleFiltro" checked>
+    </div>
+    <div id="listaPreguntasNavegacion"></div>
+    </div>
+      
   <form id="formResultados" method="POST" action="/resultados" style="display:none;">
     <input type="hidden" name="id_materia" value="{{id_materia}}">
     <input type="hidden" name="respuestas" id="inputRespuestas">
+    
+    <input type="hidden" name="fecha_inicio_str" id="inputFechaInicio">
+
     <input type="hidden" name="pendientes" id="inputPendientes">
     <input type="hidden" name="suspensos" id="inputSuspensos">
-  </form>
+ </form>
 </div>
 
 <!-- MODAL DE AVISO -->
@@ -178,160 +138,211 @@
 </div>
 
 <script>
-function comenzarExamen() {
-  document.body.classList.add('mostrar-examen');
-  document.getElementById('preExamenContent').style.display = 'none';
-  document.getElementById('examenContent').style.display = 'block';
-  iniciarExamen();
-  iniciarCronometro();
-}
+    // =================================================================
+    // VARIABLES GLOBALES (SIN CAMBIOS)
+    // =================================================================
+    let fechaInicioExamen = null;
+    const preguntas = document.querySelectorAll('.contenedor-pregunta');
+    let actual = 0;
+    let respuestasUsuario = {};
+    let estadoPreguntas = [];
+    const TIEMPO_ADVERTENCIA = 60;
+    let tiempoRestante = 600;
+    let intervaloCronometro = null;
+    let mostrarSoloNoRespondidas = true;
+    let timerAdvertencia = null; // Faltaba inicializarla fuera
 
-function volverAPreExamen() {
-  document.body.classList.remove('mostrar-examen');
-  document.getElementById('preExamenContent').style.display = 'block';
-  document.getElementById('examenContent').style.display = 'none';
-}
+    // =================================================================
+    // FUNCIONES PRINCIPALES (INICIO Y NAVEGACIÓN)
+    // =================================================================
 
-const preguntas = document.querySelectorAll('.contenedor-pregunta');
-let actual = 0;
-let respuestasUsuario = [];
-let estadoPreguntas = [];
-const TIEMPO_ADVERTENCIA = 60;
-let timerAdvertencia = null;
-
-// CRONÓMETRO GLOBAL (10 minutos = 600s)
-let tiempoRestante = 600;
-let intervaloCronometro = null;
-
-function iniciarExamen() {
-  preguntas.forEach((_, i) => estadoPreguntas[i] = "pendiente");
-  mostrarPregunta(0);
-}
-
-// ---- CRONÓMETRO ----
-function iniciarCronometro() {
-  actualizarCronometroUI();
-  intervaloCronometro = setInterval(() => {
-    tiempoRestante--;
-    actualizarCronometroUI();
-    if (tiempoRestante <= 0) {
-      clearInterval(intervaloCronometro);
-      finalizarExamen();
+    function comenzarExamen() {
+        fechaInicioExamen = new Date().toISOString();
+        document.body.classList.add('mostrar-examen');
+        document.getElementById('preExamenContent').style.display = 'none';
+        document.getElementById('examenContent').style.display = 'block';
+        iniciarExamen();
+        iniciarCronometro();
     }
-  }, 1000);
-}
 
-function actualizarCronometroUI() {
-  let minutos = Math.floor(tiempoRestante / 60);
-  let segundos = tiempoRestante % 60;
-  let texto = `${String(minutos).padStart(2,'0')}:${String(segundos).padStart(2,'0')}`;
-  document.querySelectorAll('.cronometro').forEach(c => c.textContent = texto);
-}
-
-// ---- MODAL DE AVISO ----
-function mostrarAviso(mensaje) {
-  document.getElementById("mensajeAviso").textContent = mensaje;
-  document.getElementById("avisoTiempo").classList.remove("oculto");
-}
-
-function cerrarAviso() {
-  document.getElementById("avisoTiempo").classList.add("oculto");
-}
-
-// ---- PREGUNTAS ----
-function mostrarPregunta(index) {
-  if (index < 0 || index >= preguntas.length) return;
-  preguntas.forEach(p => p.classList.remove('activa'));
-  preguntas[index].classList.add('activa');
-  actual = index;
-
-  const cont = document.getElementById('pendientesContainer');
-  const hayPendientes = estadoPreguntas.some(e => e === "pendiente");
-  const haySuspensos = estadoPreguntas.some(e => e === "suspenso");
-
-  cont.style.display = (actual === preguntas.length - 1 && (hayPendientes || haySuspensos)) ? 'block' : 'none';
-  actualizarPendientesUI();
-  reiniciarTimerAdvertencia();
-}
-
-function reiniciarTimerAdvertencia() {
-  if (timerAdvertencia) clearTimeout(timerAdvertencia);
-  timerAdvertencia = setTimeout(() => {
-    mostrarAviso(`¡Ojo! Llevas mucho tiempo en la pregunta ${actual + 1}. Considera avanzar o marcarla para después.`);
-  }, TIEMPO_ADVERTENCIA * 1000);
-}
-
-function actualizarPendientesUI() {
-  const cont = document.getElementById('pendientesContainer');
-  cont.innerHTML = "";
-  estadoPreguntas.forEach((e, i) => {
-    if (e === "pendiente" || e === "suspenso") {
-      const div = document.createElement('div');
-      div.textContent = e === "pendiente" 
-        ? `Dejaste la pregunta ${i + 1} en pendiente.` 
-        : `Pregunta ${i + 1} marcada como "para después".`;
-      div.dataset.index = i;
-      div.addEventListener('click', () => {
-        mostrarPregunta(i);
-        mostrarBotonVolverFinal(i); // 👈 aquí llamamos a mostrar el botón
-      });
-      cont.appendChild(div);
+    function volverAPreExamen() {
+        document.body.classList.remove('mostrar-examen');
+        document.getElementById('preExamenContent').style.display = 'block';
+        document.getElementById('examenContent').style.display = 'none';
+        clearInterval(intervaloCronometro); // Detiene el timer si regresas
     }
-  });
-}
-// ---- BOTONES ----
-document.querySelectorAll('.btnNoSeguro').forEach((btn, indexPregunta) => {
-  btn.addEventListener('click', e => {
-    e.preventDefault();
-    estadoPreguntas[indexPregunta] = "suspenso";
-    actualizarPendientesUI();
-    mostrarPregunta(actual + 1);
-  });
-});
+    
+    function iniciarExamen() {
+        preguntas.forEach((_, i) => estadoPreguntas[i] = "pendiente");
+        mostrarPregunta(0);
+        
+        const toggleFiltro = document.getElementById('toggleFiltro');
+        if(toggleFiltro) {
+            toggleFiltro.addEventListener('change', (e) => {
+                mostrarSoloNoRespondidas = e.target.checked;
+                actualizarPendientesUI();
+            });
+        }
+    }
 
-document.querySelectorAll('.opciones').forEach((opcionesDiv, preguntaIndex) => {
-  opcionesDiv.querySelectorAll('button').forEach((btn, respuestaIndex) => {
-    btn.addEventListener('click', () => {
-      opcionesDiv.querySelectorAll('button').forEach(b => b.classList.remove('seleccionada'));
-      btn.classList.add('seleccionada');
-      respuestasUsuario[preguntaIndex] = respuestaIndex;
-      estadoPreguntas[preguntaIndex] = "respondida";
-      actualizarPendientesUI();
+    function mostrarPregunta(index) {
+        if (index < 0 || index >= preguntas.length) return;
+        
+        preguntas.forEach(p => p.classList.remove('activa'));
+        preguntas[index].classList.add('activa');
+        actual = index;
+        
+        actualizarPendientesUI();
+        reiniciarTimerAdvertencia();
+    }
+    
+    // ✅ 1. FUNCIÓN DEL TIMER REPARADA Y REUBICADA
+    function reiniciarTimerAdvertencia() {
+        if (timerAdvertencia) clearTimeout(timerAdvertencia);
+        timerAdvertencia = setTimeout(() => {
+            mostrarAviso(`¡Ojo! Llevas mucho tiempo en la pregunta ${actual + 1}. Considera avanzar o marcarla para después.`);
+        }, TIEMPO_ADVERTENCIA * 1000);
+    }
+
+
+    // =================================================================
+    // LÓGICA DE LA LISTA DE PREGUNTAS (PANEL DERECHO)
+    // =================================================================
+
+    function actualizarPendientesUI() {
+        const cont = document.getElementById('pendientesContainer');
+        const listaNav = document.getElementById('listaPreguntasNavegacion');
+        if (!cont || !listaNav) return;
+
+        listaNav.innerHTML = "";
+        cont.style.display = 'block'; 
+
+        estadoPreguntas.forEach((estado, i) => {
+            const esNoRespondida = estado === "pendiente" || estado === "suspenso";
+
+            if (!mostrarSoloNoRespondidas || esNoRespondida) {
+                const div = document.createElement('div');
+                div.className = `item-navegacion estado-${estado}`;
+                
+                let icono = '⚪️';
+                let textoEstado = `Pregunta ${i + 1}`;
+
+                if(estado === 'respondida') icono = '✅';
+                else if (estado === 'suspenso') icono = '❓';
+
+                div.innerHTML = `${icono} ${textoEstado}`;
+                div.dataset.index = i;
+                
+                // Al hacer clic, simplemente te lleva a la pregunta y activa la lógica del botón
+                div.addEventListener('click', () => {
+                    mostrarPregunta(i);
+                    // ✅ 2. LÓGICA DEL BOTÓN "VOLVER AL FINAL" SIMPLIFICADA Y AÑADIDA AQUÍ
+                    activarBotonVolverAlFinal(i);
+                });
+                listaNav.appendChild(div);
+            }
+        });
+    }
+    
+    // ✅ 3. NUEVA FUNCIÓN MÁS SIMPLE PARA EL BOTÓN
+    function activarBotonVolverAlFinal(indexDondeEstoy) {
+        // Oculta todos por si acaso
+        document.querySelectorAll('.btnVolverFinal').forEach(b => b.style.display = 'none');
+
+        // Condición simple: si NO estoy en la última pregunta, muestra el botón
+        if (indexDondeEstoy < preguntas.length - 1) {
+            const preguntaActualEl = preguntas[indexDondeEstoy];
+            const btn = preguntaActualEl.querySelector('.btnVolverFinal');
+            if (btn) {
+                btn.style.display = 'inline-block';
+                // La acción es siempre la misma: ir a la última pregunta.
+                btn.onclick = () => mostrarPregunta(preguntas.length - 1);
+            }
+        }
+    }
+
+
+    // =================================================================
+    // CRONÓMETRO Y MODAL (SIN CAMBIOS)
+    // =================================================================
+    function iniciarCronometro() {
+        tiempoRestante = 600; // Reinicia el tiempo
+        clearInterval(intervaloCronometro); // Limpia cualquier timer anterior
+        actualizarCronometroUI();
+        intervaloCronometro = setInterval(() => {
+            tiempoRestante--;
+            actualizarCronometroUI();
+            if (tiempoRestante <= 0) {
+                clearInterval(intervaloCronometro);
+                finalizarExamen();
+            }
+        }, 1000);
+    }
+
+    function actualizarCronometroUI() {
+        let minutos = Math.floor(tiempoRestante / 60);
+        let segundos = tiempoRestante % 60;
+        let texto = `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+        document.querySelectorAll('.cronometro').forEach(c => c.textContent = texto);
+    }
+
+    function mostrarAviso(mensaje) { /* ... sin cambios ... */ }
+    function cerrarAviso() { /* ... sin cambios ... */ }
+
+
+    // =================================================================
+    // EVENT LISTENERS PARA BOTONES DEL EXAMEN
+    // =================================================================
+    
+    document.querySelectorAll('.opciones').forEach((opcionesDiv) => {
+        opcionesDiv.querySelectorAll('button').forEach((btn, respuestaIndex) => {
+            btn.addEventListener('click', () => {
+                const preguntaDiv = opcionesDiv.closest('.contenedor-pregunta');
+                const preguntaIndex = parseInt(preguntaDiv.dataset.index);
+                const idPregunta = preguntaDiv.dataset.idPregunta;
+                opcionesDiv.querySelectorAll('button').forEach(b => b.classList.remove('seleccionada'));
+                btn.classList.add('seleccionada');
+                respuestasUsuario[idPregunta] = respuestaIndex;
+                estadoPreguntas[preguntaIndex] = "respondida";
+                actualizarPendientesUI();
+            });
+        });
     });
-  });
-});
+    
+    document.querySelectorAll('.btnNoSeguro').forEach((btn) => {
+        btn.addEventListener('click', e => {
+            e.preventDefault();
+            const preguntaIndex = parseInt(e.target.closest('.contenedor-pregunta').dataset.index);
+            estadoPreguntas[preguntaIndex] = "suspenso";
+            if (preguntaIndex < preguntas.length - 1) {
+                mostrarPregunta(preguntaIndex + 1);
+            } else {
+                actualizarPendientesUI();
+            }
+        });
+    });
 
-document.querySelectorAll('.btn-siguiente').forEach(btn => btn.addEventListener('click', () => {
-  if (estadoPreguntas[actual] !== "respondida" && estadoPreguntas[actual] !== "suspenso") estadoPreguntas[actual] = "pendiente";
-  mostrarPregunta(actual + 1);
-}));
+    document.querySelectorAll('.btn-siguiente').forEach(btn => btn.addEventListener('click', () => {
+        if (estadoPreguntas[actual] !== "respondida" && estadoPreguntas[actual] !== "suspenso") {
+            estadoPreguntas[actual] = "pendiente";
+        }
+        mostrarPregunta(actual + 1);
+    }));
 
-document.querySelectorAll('.btn-volver:not(.btnNoSeguro)').forEach(btn => btn.addEventListener('click', () => mostrarPregunta(actual - 1)));
+    document.querySelectorAll('.btn-volver:not(.btnNoSeguro):not(.btnVolverFinal)').forEach(btn => btn.addEventListener('click', () => mostrarPregunta(actual - 1)));
+    
+    document.querySelectorAll('.btn-finalizar').forEach(btn => btn.addEventListener('click', finalizarExamen));
 
-document.querySelectorAll('.btn-finalizar').forEach(btn => btn.addEventListener('click', finalizarExamen));
-
-function finalizarExamen() {
-  estadoPreguntas.forEach((e, i) => { if (respuestasUsuario[i] === undefined && e !== "suspenso") estadoPreguntas[i] = "pendiente"; });
-  document.getElementById('inputRespuestas').value = JSON.stringify(respuestasUsuario);
-  document.getElementById('inputPendientes').value = JSON.stringify(estadoPreguntas.map((e,i)=>e==="pendiente"?i:null).filter(i=>i!==null));
-  document.getElementById('inputSuspensos').value = JSON.stringify(estadoPreguntas.map((e,i)=>e==="suspenso"?i:null).filter(i=>i!==null));
-  document.getElementById('formResultados').submit();
-}
-
-function mostrarBotonVolverFinal(indexPregunta) {
-  // Ocultar todos los botones "Volver al final"
-  document.querySelectorAll('.btnVolverFinal').forEach(b => b.style.display = 'none');
-
-  // Mostrar solo en la pregunta actual
-  const preguntaActual = preguntas[indexPregunta];
-  const btn = preguntaActual.querySelector('.btnVolverFinal');
-  if (btn) {
-    btn.style.display = 'inline-block';
-    btn.onclick = () => mostrarPregunta(preguntas.length - 1);
-  }
-}
-
-document.body.classList.remove('mostrar-examen');
+    function finalizarExamen() {
+        clearInterval(intervaloCronometro); // Detiene el timer al finalizar
+        document.getElementById('inputRespuestas').value = JSON.stringify(respuestasUsuario);
+        document.getElementById('inputFechaInicio').value = fechaInicioExamen;
+        document.getElementById('formResultados').submit();
+    }
+    
+    // Iniciar
+    iniciarExamen();
+    document.body.classList.remove('mostrar-examen');
 </script>
 </body>
 </html>

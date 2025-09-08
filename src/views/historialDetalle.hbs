@@ -1,48 +1,28 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Detalle del Examen</title>
-  <link rel="stylesheet" href="/css/historialUsuario.css">
+  <meta charset="UTF-8">
+  <title>Detalle del Examen</title>
+  <link rel="stylesheet" href="/css/historialUsuario.css">
 </head>
 <body>
-  <header class="header">
-    <h1>📝 Detalle del Examen</h1>
-    <a href="/usuario/historial" class="btn-volver">⬅ Volver</a>
-  </header>
+  <header class="header">
+    <h1>📝 Resumen del Examen</h1>
+    <a href="/usuario/historial" class="btn-volver">⬅ Volver al Historial</a>
+  </header>
 
-  {{#if examen.length}}
-    <table class="tabla-historial">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Materia</th>
-          <th>Pregunta</th>
-          <th>Respuesta seleccionada</th>
-          <th>Puntos</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{#each examen}}
-          <tr>
-            <td>{{@index}}</td>
-            <td>{{materia}}</td>
-            <td>{{pregunta}}</td>
-            <td>{{#if respuesta}}{{respuesta}}{{else}}No respondida{{/if}}</td>
-            <td>{{puntos}}</td>
-          </tr>
-        {{/each}}
-      </tbody>
-    </table>
-
-    <p class="total-porcentaje">
-      Total de preguntas: {{examen.length}} <br>
-      Porcentaje: {{examen.[0].porcentaje}}%
-    </p>
-
-  {{else}}
-    <p class="no-datos">No se encontraron detalles de este examen.</p>
-  {{/if}}
+  {{#if examen}}
+    <div class="summary-card">
+        <h2>{{examen.materia}}</h2>
+        <p>Realizado el: <strong>{{examen.fecha}}</strong></p>
+        <div class="score-display">
+            <span class="percentage">{{examen.porcentaje}}%</span>
+            <span class="points">({{examen.obtenido}} de {{examen.maximo}} puntos)</span>
+        </div>
+    </div>
+  {{else}}
+    <p class="no-datos">No se encontraron detalles de este examen.</p>
+  {{/if}}
 
 </body>
 </html>

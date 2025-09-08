@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 03-09-2025 a las 06:27:41
+-- Tiempo de generación: 08-09-2025 a las 17:56:52
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -252,6 +252,7 @@ INSERT INTO `estatus_pregunta` (`id_estatus_p`, `estatus`) VALUES
 
 CREATE TABLE `examen` (
   `id_examen` int(11) NOT NULL,
+  `id_materia` int(10) DEFAULT NULL,
   `fecha_inicio` datetime NOT NULL,
   `fecha_termino` datetime NOT NULL,
   `duracion` time NOT NULL,
@@ -262,18 +263,9 @@ CREATE TABLE `examen` (
 -- Volcado de datos para la tabla `examen`
 --
 
-INSERT INTO `examen` (`id_examen`, `fecha_inicio`, `fecha_termino`, `duracion`, `puntuacion_competencia`) VALUES
-(4, '2025-08-27 20:32:51', '2025-08-27 21:32:51', '00:00:00', 0),
-(5, '2025-08-27 20:35:16', '2025-08-27 21:35:16', '00:00:00', 0),
-(6, '2025-08-27 20:36:32', '2025-08-27 21:36:32', '00:00:00', 0),
-(7, '2025-08-27 20:36:47', '2025-08-27 21:36:47', '00:00:00', 0),
-(8, '2025-08-27 20:36:53', '2025-08-27 21:36:53', '00:00:00', 0),
-(9, '2025-08-27 20:38:19', '2025-08-27 21:38:19', '00:00:00', 0),
-(10, '2025-08-27 20:38:25', '2025-08-27 21:38:25', '00:00:00', 0),
-(11, '2025-08-27 20:39:29', '2025-08-27 21:39:29', '00:00:00', 0),
-(12, '2025-08-27 20:57:20', '2025-08-27 21:57:20', '00:00:00', 0),
-(13, '2025-08-27 21:56:28', '2025-08-27 22:56:28', '00:00:00', 0),
-(14, '2025-08-28 11:49:48', '2025-08-28 12:49:48', '00:00:00', 0);
+INSERT INTO `examen` (`id_examen`, `id_materia`, `fecha_inicio`, `fecha_termino`, `duracion`, `puntuacion_competencia`) VALUES
+(15, 1, '0000-00-00 00:00:00', '0000-00-00 00:00:00', '00:00:08', NULL),
+(16, NULL, '0000-00-00 00:00:00', '0000-00-00 00:00:00', '00:00:09', NULL);
 
 -- --------------------------------------------------------
 
@@ -335,152 +327,6 @@ CREATE TABLE `historial` (
   `porcentaje` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `historial`
---
-
-INSERT INTO `historial` (`id_examen`, `id_usuario`, `id_pregunta`, `id_respuesta`, `puntos`, `porcentaje`) VALUES
-(12, 38, 73, NULL, 0, 9),
-(12, 38, 78, NULL, 0, 9),
-(12, 38, 81, NULL, 0, 9),
-(12, 38, 67, NULL, 0, 9),
-(12, 38, 77, NULL, 0, 9),
-(12, 38, 28, NULL, 0, 9),
-(12, 38, 76, NULL, 0, 9),
-(12, 38, 96, NULL, 0, 9),
-(12, 38, 82, NULL, 0, 9),
-(12, 38, 84, NULL, 0, 9),
-(12, 38, 91, NULL, 0, 9),
-(12, 38, 93, NULL, 0, 9),
-(12, 38, 88, NULL, 0, 9),
-(12, 38, 80, NULL, 0, 9),
-(12, 38, 74, NULL, 0, 9),
-(12, 38, 69, NULL, 0, 9),
-(12, 38, 89, NULL, 0, 9),
-(12, 38, 68, NULL, 0, 9),
-(12, 38, 72, NULL, 0, 9),
-(12, 38, 30, NULL, 0, 9),
-(12, 38, 111, 622, 1, 9),
-(12, 38, 98, 1631, 1, 9),
-(12, 38, 4, 515, 1, 9),
-(12, 38, 124, 635, 1, 9),
-(12, 38, 120, 1653, 0, 9),
-(12, 38, 128, 1661, 1, 9),
-(12, 38, 106, 1128, 1, 9),
-(12, 38, 112, 1134, 1, 9),
-(12, 38, 113, 624, 1, 9),
-(12, 38, 123, 123, 0, 9),
-(12, 38, 102, 613, 1, 9),
-(12, 38, 115, NULL, 0, 9),
-(12, 38, 125, NULL, 0, 9),
-(12, 38, 121, NULL, 0, 9),
-(12, 38, 119, NULL, 0, 9),
-(12, 38, 33, NULL, 0, 9),
-(12, 38, 122, NULL, 0, 9),
-(12, 38, 3, NULL, 0, 9),
-(12, 38, 117, NULL, 0, 9),
-(12, 38, 100, NULL, 0, 9),
-(12, 38, 144, NULL, 0, 9),
-(12, 38, 34, NULL, 0, 9),
-(12, 38, 134, NULL, 0, 9),
-(12, 38, 159, NULL, 0, 9),
-(12, 38, 135, NULL, 0, 9),
-(12, 38, 141, NULL, 0, 9),
-(12, 38, 129, NULL, 0, 9),
-(12, 38, 36, NULL, 0, 9),
-(12, 38, 154, NULL, 0, 9),
-(12, 38, 138, NULL, 0, 9),
-(12, 38, 153, NULL, 0, 9),
-(12, 38, 147, NULL, 0, 9),
-(12, 38, 145, NULL, 0, 9),
-(12, 38, 139, NULL, 0, 9),
-(12, 38, 149, NULL, 0, 9),
-(12, 38, 157, NULL, 0, 9),
-(12, 38, 152, NULL, 0, 9),
-(12, 38, 136, NULL, 0, 9),
-(12, 38, 155, NULL, 0, 9),
-(12, 38, 158, NULL, 0, 9),
-(12, 38, 189, NULL, 0, 9),
-(12, 38, 186, NULL, 0, 9),
-(12, 38, 39, NULL, 0, 9),
-(12, 38, 179, NULL, 0, 9),
-(12, 38, 161, NULL, 0, 9),
-(12, 38, 171, NULL, 0, 9),
-(12, 38, 163, NULL, 0, 9),
-(12, 38, 8, NULL, 0, 9),
-(12, 38, 172, NULL, 0, 9),
-(12, 38, 183, NULL, 0, 9),
-(12, 38, 165, NULL, 0, 9),
-(12, 38, 190, NULL, 0, 9),
-(12, 38, 160, NULL, 0, 9),
-(12, 38, 188, NULL, 0, 9),
-(12, 38, 174, NULL, 0, 9),
-(12, 38, 7, NULL, 0, 9),
-(12, 38, 173, NULL, 0, 9),
-(12, 38, 181, NULL, 0, 9),
-(12, 38, 187, NULL, 0, 9),
-(12, 38, 169, NULL, 0, 9),
-(12, 38, 9, NULL, 0, 9),
-(12, 38, 192, NULL, 0, 9),
-(12, 38, 200, NULL, 0, 9),
-(12, 38, 211, NULL, 0, 9),
-(12, 38, 40, NULL, 0, 9),
-(12, 38, 221, NULL, 0, 9),
-(12, 38, 198, NULL, 0, 9),
-(12, 38, 208, NULL, 0, 9),
-(12, 38, 209, NULL, 0, 9),
-(12, 38, 207, NULL, 0, 9),
-(12, 38, 204, NULL, 0, 9),
-(12, 38, 10, NULL, 0, 9),
-(12, 38, 196, NULL, 0, 9),
-(12, 38, 219, NULL, 0, 9),
-(12, 38, 213, NULL, 0, 9),
-(12, 38, 206, NULL, 0, 9),
-(12, 38, 197, NULL, 0, 9),
-(12, 38, 202, NULL, 0, 9),
-(12, 38, 292, NULL, 0, 9),
-(12, 38, 217, 1750, 0, 9),
-(13, 38, 3, 1536, 1, 40),
-(13, 38, 4, 515, 1, 40),
-(13, 38, 31, 31, 1, 40),
-(13, 38, 32, 543, 1, 40),
-(13, 38, 33, 1566, 1, 40),
-(13, 38, 98, 1631, 1, 40),
-(13, 38, 99, NULL, 0, 40),
-(13, 38, 100, NULL, 0, 40),
-(13, 38, 101, NULL, 0, 40),
-(13, 38, 102, NULL, 0, 40),
-(13, 38, 103, NULL, 0, 40),
-(13, 38, 104, NULL, 0, 40),
-(13, 38, 105, NULL, 0, 40),
-(13, 38, 106, NULL, 0, 40),
-(13, 38, 107, NULL, 0, 40),
-(13, 38, 108, NULL, 0, 40),
-(13, 38, 109, NULL, 0, 40),
-(13, 38, 110, NULL, 0, 40),
-(13, 38, 111, 622, 1, 40),
-(13, 38, 112, 1134, 1, 40),
-(14, 39, 2, 2, 1, 40),
-(14, 39, 28, 28, 1, 40),
-(14, 39, 29, 540, 0, 40),
-(14, 39, 30, 30, 0, 40),
-(14, 39, 67, 1600, 1, 40),
-(14, 39, 68, 1090, 0, 40),
-(14, 39, 69, 1602, 0, 40),
-(14, 39, 70, 1092, 0, 40),
-(14, 39, 71, 1093, 1, 40),
-(14, 39, 72, 1605, 0, 40),
-(14, 39, 73, 1606, 0, 40),
-(14, 39, 74, 1607, 1, 40),
-(14, 39, 75, 1608, 0, 40),
-(14, 39, 76, 1609, 0, 40),
-(14, 39, 77, 1610, 1, 40),
-(14, 39, 78, 1100, 1, 40),
-(14, 39, 79, NULL, 0, 40),
-(14, 39, 80, 1102, 0, 40),
-(14, 39, 81, 1103, 1, 40),
-(14, 39, 82, NULL, 0, 40);
-
 -- --------------------------------------------------------
 
 --
@@ -533,34 +379,6 @@ CREATE TABLE `notificaciones` (
   `leido` tinyint(1) DEFAULT 0,
   `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Volcado de datos para la tabla `notificaciones`
---
-
-INSERT INTO `notificaciones` (`id_notificacion`, `id_usuario_destinatario`, `id_usuario_remitente`, `tipo`, `mensaje`, `extra_data`, `leido`, `fecha_creacion`) VALUES
-(3, 71, 53, 'invitacion', 'DIEGO LEONARDO PORTILLA RANGEL te ha invitado a una partida', NULL, 0, '2025-08-13 17:01:54'),
-(4, 71, 53, 'invitacion', 'DIEGO LEONARDO PORTILLA RANGEL te ha invitado a una partida', NULL, 0, '2025-08-13 18:37:15'),
-(5, 71, 53, 'invitacion', 'DIEGO LEONARDO PORTILLA RANGEL te ha invitado a una partida', '6ab47ae8-b861-4d9d-92b2-81f29f0f4617', 0, '2025-08-13 19:56:45'),
-(6, 71, 53, 'invitacion', 'DIEGO LEONARDO PORTILLA RANGEL te ha invitado a una partida', '24799b01-e1d7-4873-916a-3e4551318dfb', 0, '2025-08-13 23:04:18'),
-(15, 45, 71, 'invitacion', 'archie-zendo te ha invitado a una partida', 'bca3fcc5-7857-41ec-bc54-4947b5698140', 0, '2025-08-14 02:16:27'),
-(16, 71, 53, 'invitacion', 'DIEGO LEONARDO PORTILLA RANGEL te ha invitado a una partida', '67e0cc24-a929-4191-a436-8f543c45bc88', 0, '2025-08-14 02:17:12'),
-(19, 45, 71, 'invitacion', 'archie-zendo te ha invitado a una partida', '6fbb4049-6ad1-47a4-82f6-fd9c174087ec', 0, '2025-08-14 04:40:20'),
-(20, 45, 71, 'alerta', 'archie-zendo te ha desafiado a una partida rápida', '029c5648-87ac-4a53-9dfb-96d77929feef', 0, '2025-08-14 04:40:25'),
-(22, 45, 71, 'invitacion', 'archie-zendo te ha invitado a una partida', 'ad6077d9-e659-49c8-8cc5-a0f428be99de', 0, '2025-08-14 05:07:04'),
-(23, 45, 71, 'alerta', 'archie-zendo te ha desafiado a una partida rápida', '86268427-72db-4bbc-915f-dc93c37759c9', 0, '2025-08-14 05:07:06'),
-(26, 71, 71, 'invitacion', 'archie-zendo te ha invitado a una partida', '877d9d2b-a353-4446-9829-e84b2897a912', 0, '2025-08-14 06:25:21'),
-(27, 51, 53, 'invitacion', 'DIEGO LEONARDO PORTILLA RANGEL te ha invitado a una partida', '336680fb-70c0-41d8-b60a-a3689bf6aadf', 0, '2025-08-14 06:26:31'),
-(29, 71, 53, 'invitacion', 'DIEGO LEONARDO PORTILLA RANGEL te ha invitado a una partida', '8e093563-4d05-4c84-bd05-0c4ee421704c', 0, '2025-08-14 06:27:23'),
-(30, 71, 53, 'invitacion', 'DIEGO LEONARDO PORTILLA RANGEL te ha invitado a una partida', '4abedde3-d3b5-4688-a00c-c1ea9324e774', 0, '2025-08-14 06:27:26'),
-(35, 73, 38, 'invitacion', 'danya te ha invitado a una partida de Ahorcado', '{\"salaId\":\"18e3adf9-b069-4a87-848b-ae08fac117c3\",\"juego\":\"ahorcado\"}', 0, '2025-08-21 21:15:06'),
-(36, 73, 38, 'invitacion', 'danya te ha invitado a una partida de Ahorcado', '{\"salaId\":\"18e3adf9-b069-4a87-848b-ae08fac117c3\",\"juego\":\"ahorcado\"}', 0, '2025-08-21 21:15:08'),
-(38, 73, 38, 'invitacion', 'danya te ha invitado a una partida de Sopa de Letras', '{\"salaId\":\"736d4d8e-af3b-4d4c-9d1b-17671d81a24b\",\"juego\":\"sopa\"}', 0, '2025-08-21 21:41:48'),
-(41, 73, 51, 'invitacion', 'kjdsndfnjnf te ha invitado a una partida de Sopa de Letras', '{\"salaId\":\"cf2b004d-cb48-491f-92d3-2ece0039c825\",\"juego\":\"sopa\"}', 0, '2025-08-21 21:46:53'),
-(43, 73, 51, 'invitacion', 'kjdsndfnjnf te ha invitado a una partida de Sopa de Letras', '{\"salaId\":\"cf2b004d-cb48-491f-92d3-2ece0039c825\",\"juego\":\"sopa\"}', 0, '2025-08-21 21:46:54'),
-(45, 39, 73, 'invitacion', 'Gael Portilla te ha invitado a una partida de Sopa de Letras', '{\"salaId\":\"d0de4f93-fb04-4682-a1dc-fd5308cde27a\",\"juego\":\"sopa\"}', 0, '2025-08-21 21:47:37'),
-(50, 54, 73, 'invitacion', 'Gael Portilla te ha invitado a una partida de Ahorcado', '{\"salaId\":\"cd380a3c-d66a-4ce5-93e2-67022586d7b4\",\"juego\":\"ahorcado\"}', 0, '2025-08-21 22:52:31'),
-(54, 71, 38, 'invitacion', 'Daniel te ha desafiado a un Ahorcado!', '{\"salaId\":\"enfrentamiento_3e52a810?modo=enfrentamiento\",\"juego\":\"ahorcado\",\"modo\":\"enfrentamiento\"}', 0, '2025-08-28 01:14:08');
 
 -- --------------------------------------------------------
 
@@ -3670,19 +3488,7 @@ CREATE TABLE `usuario` (
 --
 
 INSERT INTO `usuario` (`id_usuario`, `username`, `apodo`, `email`, `password`, `descripcion`, `verificado`, `token`, `actualizacion`, `token_expira`, `puntos`, `id_tp_usuario`, `id_status`, `suspension_fin`, `token_reseteo`, `token_reseteo_expira`, `ultimo_examen`) VALUES
-(38, 'Daniel', 'daniel', 'danielviramontes562@gmail.com', '$2b$10$S5iFKdeWR3R1a7zbrzpeRO.RHorV/UYuUI5F4Lwr4ot7uJfOibrpO', 'Soy estudiante de prepa, aspirante a universidad', 1, NULL, NULL, NULL, 35, 3, 1, NULL, NULL, NULL, 40.00),
-(39, 'juanito14', NULL, 'juanjose.chavez.15153@gmail.com', '$2b$12$4ByegcuPnJlNO8NgYCu0KOxdnSE5x3CECDkjpeS6sVNCF8cD5J0pq', NULL, 1, NULL, NULL, NULL, 110, 3, 1, NULL, NULL, NULL, 40.00),
-(40, 'Nievedeposole12', NULL, 'pedrozamiguel0123@gmail.com', '$2b$10$OYweYO11IUbWFmwRywa33eL/iTG0bcsK/v7hQXdQWRatpMsNZGU/W', NULL, 1, NULL, NULL, NULL, 0, 2, 1, NULL, NULL, NULL, NULL),
-(45, 'Eduardo García', NULL, 'eduardogarcia080806@gmail.com', '$2b$12$7ANoCz8irhoWI1/xfJgame05jYw6HH8ZQTF0AA4pwaTTUN1mBcN86', NULL, 1, NULL, NULL, NULL, 101, 1, 1, NULL, NULL, NULL, NULL),
-(49, 'snejen', NULL, 'diegoleonardoportillarangel@gmail.com', '$2b$10$eo.bd/ZJ6OfBYYH4nYh84OBrE1IcgFrVbpZ5nGYIA0m0AIpuAKW6C', NULL, 1, NULL, NULL, NULL, 0, 1, 1, NULL, NULL, NULL, NULL),
-(51, 'kjdsndfnjnf', NULL, 'seniorsoldadorazosonicko@gmail.com', '$2b$10$g30xIr/ilg/Wsrd9IyeffeaXLpGAaXYYUP5OaQjZM9y9BiFZWZiLu', NULL, 1, NULL, NULL, NULL, 0, 1, 1, NULL, NULL, NULL, NULL),
-(53, 'DIEGO LEONARDO PORTILLA RANGEL', NULL, '23301061550112@cetis155.edu.mx', '$2b$12$ZbfB357IE1HBrhTP5LGdwuk4qApWsynXPzY0KW8lnJBxOWFGSUlvW', NULL, 1, NULL, NULL, NULL, 6, 1, 1, NULL, NULL, NULL, 30.00),
-(54, 'RIZ0Z12', 'noobmasterpro66', '23301061550096@cetis155.edu.mx', '$2b$10$DBt6sUxajumZ.MgkG4RIH.H4aLhsFPKo3vtoRwz2r.q1gHGmaVQDG', 'siwitsiwitsiararañatejiosutelaraña', 1, NULL, NULL, NULL, 0, 3, 1, NULL, '0000-00-00 00:00:00', '2025-08-13 18:27:25', NULL),
-(69, 'Test', NULL, 'testingh569@gmail.com', '', NULL, 1, NULL, NULL, NULL, 0, 3, 1, NULL, NULL, NULL, NULL),
-(71, 'archie-zendo', NULL, 'portillarangeldiegoleonardo@gmail.com', '$2b$10$Ko4PQqIS4FAyNhatwcWnGeWrBk491X9Sz.3e0fRE1DhNf.He/4CMW', NULL, 1, NULL, NULL, NULL, 0, 1, 1, NULL, '0000-00-00 00:00:00', '2025-08-13 18:29:49', NULL),
-(72, 'Jsjsjsjsjs', NULL, 'padosterreneitor@gmail.com', '$2b$10$G01t3EWoQEbg1G653irMNu.zslRLEpv4EGxn.iheI4L.YAgrw0kEK', NULL, 0, '5597c5ea33f3c7908c3cd98c5b6655fd', NULL, '2025-08-14 12:26:33', 0, 1, 1, NULL, NULL, NULL, NULL),
-(73, 'Gael Portilla', NULL, 'gaeloctavioportillarangel@gmail.com', '', NULL, 1, NULL, NULL, NULL, 0, 1, 1, NULL, NULL, NULL, NULL),
-(74, 'paco', NULL, 'paco123qwerty@gmail.com', '$2b$10$VnZcbbXKtZeL2fPj3ENj8eESdItGiIP05outVQlP/WvB/A/qYfBlK', NULL, 0, '3f989416a9757a100dbbf1aa9a8f6375', NULL, '2025-08-21 17:16:33', 0, 1, 1, NULL, NULL, NULL, NULL);
+(76, 'DIEGO LEONARDO PORTILLA RANGEL', NULL, '23301061550112@cetis155.edu.mx', '', NULL, 1, NULL, NULL, NULL, 2, 1, 1, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -3707,8 +3513,17 @@ CREATE TABLE `usuario_examen` (
   `maximo` int(11) NOT NULL,
   `obtenido` int(11) NOT NULL,
   `fecha_inicio` datetime NOT NULL,
-  `fecha_termino` datetime NOT NULL
+  `fecha_termino` datetime NOT NULL,
+  `porcentaje` decimal(4,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `usuario_examen`
+--
+
+INSERT INTO `usuario_examen` (`id_usuario`, `id_examen`, `maximo`, `obtenido`, `fecha_inicio`, `fecha_termino`, `porcentaje`) VALUES
+(76, 15, 20, 1, '2025-09-08 09:53:55', '2025-09-08 09:54:03', 5.00),
+(76, 16, 100, 1, '2025-09-08 09:54:58', '2025-09-08 09:55:07', 1.00);
 
 --
 -- Índices para tablas volcadas
@@ -3743,7 +3558,8 @@ ALTER TABLE `estatus_pregunta`
 -- Indices de la tabla `examen`
 --
 ALTER TABLE `examen`
-  ADD PRIMARY KEY (`id_examen`);
+  ADD PRIMARY KEY (`id_examen`),
+  ADD KEY `fk_materia_examen` (`id_materia`);
 
 --
 -- Indices de la tabla `examenes_grupo`
@@ -3917,7 +3733,7 @@ ALTER TABLE `estatus_pregunta`
 -- AUTO_INCREMENT de la tabla `examen`
 --
 ALTER TABLE `examen`
-  MODIFY `id_examen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id_examen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT de la tabla `examenes_grupo`
@@ -3989,7 +3805,7 @@ ALTER TABLE `tipo_usuario`
 -- AUTO_INCREMENT de la tabla `usuario`
 --
 ALTER TABLE `usuario`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=77;
 
 --
 -- Restricciones para tablas volcadas
@@ -4000,6 +3816,12 @@ ALTER TABLE `usuario`
 --
 ALTER TABLE `dato_curioso`
   ADD CONSTRAINT `dato_curioso_ibfk_1` FOREIGN KEY (`id_materia`) REFERENCES `materias` (`id_materia`);
+
+--
+-- Filtros para la tabla `examen`
+--
+ALTER TABLE `examen`
+  ADD CONSTRAINT `fk_materia_examen` FOREIGN KEY (`id_materia`) REFERENCES `materias` (`id_materia`);
 
 --
 -- Filtros para la tabla `grupo_examenes`

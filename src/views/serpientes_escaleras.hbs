@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Serpientes y Escaleras - Multijugador</title>
-    <link rel="stylesheet" href="/css/serpientes-escaleras.css">
+    <link rel="stylesheet" href="/css/serpientes-escaleras.css" /> 
 </head>
 <body>
     <div class="page">
@@ -17,7 +17,6 @@
         </div>
 
         <div class="game-container">
-            
             <aside class="side-panel">
                 <div class="panel" id="chat-panel">
                     <h3>💬 Chat de la Sala</h3>
@@ -32,505 +31,571 @@
                     <ul id="lista-jugadores"></ul>
                 </div>
             </aside>
-
             <main class="game-board">
-                <h1>Tablero de Serpientes y Escaleras</h1>
-                
-                <div class="board-container">
-                    <div class="board" id="board">
-                        <!-- El tablero se generará con JavaScript -->
+                <div class="panel" id="lobby-panel">
+                    <h3>Sala de Espera</h3>
+                    <div id="players-list-room"></div>
+                    <div id="lobby-state">Conectando...</div>
+                    
+                    <div id="character-selector">
+                        <h4>Elige tu Ficha:</h4>
+                        <div class="emoji-grid">
+                            <span class="emoji-option selected" data-emoji="🐵">🐵</span>
+                            <span class="emoji-option" data-emoji="🐸">🐸</span>
+                            <span class="emoji-option" data-emoji="🦄">🦄</span>
+                            <span class="emoji-option" data-emoji="🤖">🤖</span>
+                            <span class="emoji-option" data-emoji="👽">👽</span>
+                            <span class="emoji-option" data-emoji="🍕">🍕</span>
+                            <span class="emoji-option" data-emoji="👻">👻</span>
+                            <span class="emoji-option" data-emoji="🎃">🎃</span>
+                            <span class="emoji-option" data-emoji="🐲">🐲</span>
+                            <span class="emoji-option" data-emoji="🐷">🐷</span>
+                            <span class="emoji-option" data-emoji="🐰">🐰</span>
+                            <span class="emoji-option" data-emoji="🐼">🐼</span>
+                            <span class="emoji-option" data-emoji="🐨">🐨</span>
+                            <span class="emoji-option" data-emoji="卐">卐</span>    
+                        </div>
                     </div>
-                    <!-- SVG para dibujar las serpientes y escaleras -->
+                    
+                    <div id="start-game-controls" class="hidden">
+                        <label for="materias-select">Categoría:</label>
+                        <select id="materias-select"></select>
+                        <button id="propose-materia-btn">Proponer Categoría</button>
+                    </div>
+
+                    <div id="vote-controls" class="hidden">
+                        <p id="vote-proposal-text"></p>
+                        <button id="vote-yes-btn">✅ Aceptar</button>
+                        <button id="vote-no-btn">❌ Rechazar</button>
+                    </div>
+                </div>
+
+                <div class="board-container">
+                    <div class="board" id="board"></div>
                     <svg id="paths-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></svg>
                 </div>
-                
                 <div class="game-controls">
                     <div class="dice-container">
                         <div class="dice" id="dice">?</div>
                         <button id="lanzar-dado" disabled>Lanzar Dado 🎲</button>
                     </div>
-                    <button id="reiniciar-juego" style="display:none;">Reiniciar Partida 🔄</button>
                     <div id="info-turno">Esperando jugadores...</div>
                 </div>
-                
-                <div class="waiting-state" id="waiting-state">
-                    <p>💤 Esperando a que se unan más jugadores...</p>
-                    <div class="player-list" id="waiting-players"></div>
-                    <button id="start-game" style="display:none;">Iniciar Juego</button>
-                </div>
             </main>
-
             <aside class="side-panel">
                 <div class="panel" id="rules-panel">
                     <h3>📜 Reglas y Símbolos</h3>
                     <ul class="rules-list">
-                         <li><strong>Lanzar Dado 🎲:</strong> Tira el dado en tu turno para avanzar. Si sacas un 6, ¡tiras de nuevo!</li>
-                         <li><strong>Escalera 🪜:</strong> Si caes en una escalera, subes a la casilla superior.</li>
-                         <li><strong>Avión 🛩️:</strong> ¡Una súper escalera! Te lleva mucho más alto.</li>
-                         <li><strong>Serpiente 🐍:</strong> Cuidado, si caes en una serpiente, te deslizarás a la casilla inferior.</li>
-                         <li><strong>Lagarto 🦎:</strong> ¡Una súper serpiente! Bajarás muchas más casillas.</li>
-                         <li><strong>Ganador 🏆:</strong> El primer jugador en llegar exactamente a la casilla 100 gana la partida.</li>
+                        <li><strong>Pregunta 🧠:</strong> Cada 3-5 turnos, aparecerá una pregunta.</li>
+                        <li><strong>Respuesta Correcta ✅:</strong> ¡Ganas un turno extra!</li>
+                        <li><strong>Respuesta Incorrecta ❌:</strong> Pierdes tu siguiente turno.</li>
+                        <li><strong>Escalera 🪜 / Avión 🛩️:</strong> Sube a la casilla superior.</li>
+                        <li><strong>Serpiente 🐍 / Lagarto 🦎:</strong> Deslízate a la casilla inferior.</li>
+                        <li><strong>Ganador 🏆:</strong> El primero en llegar a la casilla 100 gana.</li>
                     </ul>
                 </div>
             </aside>
-
         </div>
-        
         <div class="notification" id="notification"></div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // ================== 1. INICIALIZACIÓN Y VARIABLES GLOBALES ==================
-            const socket = io();
-            const salaId = "{{salaId}}";
-            const usuario = {{{json user}}};
-            
-            // Referencias a elementos DOM
-            const board = document.getElementById('board');
-            const dice = document.getElementById('dice');
-            const lanzarDadoBtn = document.getElementById('lanzar-dado');
-            const reiniciarJuegoBtn = document.getElementById('reiniciar-juego');
-            const infoTurno = document.getElementById('info-turno');
-            const chatBox = document.getElementById('chatBox');
-            const chatInput = document.getElementById('chatInput');
-            const chatBtn = document.getElementById('chatBtn');
-            const listaJugadoresEl = document.getElementById('lista-jugadores');
-            const notification = document.getElementById('notification');
-            const waitingState = document.getElementById('waiting-state');
-            const waitingPlayers = document.getElementById('waiting-players');
-            const startGameBtn = document.getElementById('start-game');
-            const pathsSvg = document.getElementById('paths-svg');
-            
-            // Estado del juego y votación
-            let votacionEnProgreso = false;
-            let tipoDeVotacionActual = null;
-            const gameState = {
-                jugadores: [],
-                turnoActual: 0,
-                dado: 0,
-                ganador: null,
-                gameStarted: false,
-                playerColors: ['player-1', 'player-2', 'player-3', 'player-4']
-            };
-            
-            // Definición mejorada de celdas especiales
-            const specialCells = {
-                // Escaleras normales (suben 2-3 filas)
-                5: 25,   // +20 posiciones
-                14: 34,  // +20 posiciones
-                22: 42,  // +20 posiciones
-                41: 61,  // +20 posiciones
-                49: 69,  // +20 posiciones
-                70: 90,  // +20 posiciones
-                
-                // Escaleras especiales (avión - suben más)
-                30: 50,  // +20 posiciones (pero visualmente diferente)
-                63: 83,  // +20 posiciones (pero visualmente diferente)
-                
-                // Serpientes normales (bajan 2-3 filas)
-                17: 4,   // -13 posiciones
-                35: 15,  // -20 posiciones
-                47: 27,  // -20 posiciones
-                65: 45,  // -20 posiciones
-                76: 56,  // -20 posiciones
-                94: 74,  // -20 posiciones
-                
-                // Serpientes especiales (lagarto - bajan más)
-                27: 7,   // -20 posiciones (pero visualmente diferente)
-                58: 38,  // -20 posiciones (pero visualmente diferente)
-                88: 68,  // -20 posiciones (pero visualmente diferente)
-                99: 79   // -20 posiciones (pero visualmente diferente)
-            };
-            
-            const cellTypes = {
-                5: 'ladder-1', 14: 'ladder-1', 22: 'ladder-1', 30: 'ladder-2', 
-                41: 'ladder-1', 49: 'ladder-1', 63: 'ladder-2', 70: 'ladder-1',
-                17: 'snake-1', 27: 'snake-2', 35: 'snake-1', 47: 'snake-1', 
-                58: 'snake-2', 65: 'snake-1', 76: 'snake-1', 88: 'snake-2', 
-                94: 'snake-1', 99: 'snake-2'
-            };
+    document.addEventListener('DOMContentLoaded', () => {
+        // ================== 1. INICIALIZACIÓN Y VARIABLES ==================
+        const socket = io();
+        const salaId = "{{salaId}}";
+        const usuario = {{{json user}}};
+        const materiasPrecargadas = {{{json materias}}};
+         // ✅ NUEVO: Lista de emojis disponibles y variable para guardar la elección
+        const EMOJI_OPTIONS =['🐵', '🐸', '🦄', '🤖', 
+                            '👻', '👽', '🎃', '🐲',
+                            '🐷', '🐰', '🐼', '🐨',
+                            '卐'
+        ];
+        let miEmoji = EMOJI_OPTIONS[0]; // Emoji por defecto
+        const elements = {
+            board: document.getElementById('board'),
+            dice: document.getElementById('dice'),
+            lanzarDadoBtn: document.getElementById('lanzar-dado'),
+            infoTurno: document.getElementById('info-turno'),
+            chatBox: document.getElementById('chatBox'),
+            chatInput: document.getElementById('chatInput'),
+            chatBtn: document.getElementById('chatBtn'),
+            listaJugadoresEl: document.getElementById('lista-jugadores'),
+            playersListRoom: document.getElementById('players-list-room'),
+            notification: document.getElementById('notification'),
+            pathsSvg: document.getElementById('paths-svg'),
+            lobbyPanel: document.getElementById('lobby-panel'),
+            lobbyState: document.getElementById('lobby-state'),
+            startGameControls: document.getElementById('start-game-controls'),
+            materiasSelect: document.getElementById('materias-select'),
+            proposeMateriaBtn: document.getElementById('propose-materia-btn'),
+            voteControls: document.getElementById('vote-controls'),
+            voteProposalText: document.getElementById('vote-proposal-text'),
+            voteYesBtn: document.getElementById('vote-yes-btn'),
+            voteNoBtn: document.getElementById('vote-no-btn'),
+        };
 
-            // ================== 2. INICIALIZACIÓN DEL JUEGO ==================
-            crearTablero();
-            socket.emit('serpientes:unirse', { salaId, usuario });
-            
-            // ================== 3. FUNCIONES DEL JUEGO ==================
-            function crearTablero() {
-                board.innerHTML = '';
-                
-                // Crear 100 celdas en patrón zig-zag
-                for (let row = 9; row >= 0; row--) {
-                    const isReverse = row % 2 === 1;
-                    
-                    for (let col = 0; col < 10; col++) {
-                        const cellIndex = isReverse ? (row * 10) + (9 - col) : (row * 10) + col;
-                        const cellNumber = cellIndex + 1;
-                        
-                        const cell = document.createElement('div');
-                        cell.className = 'cell';
-                        cell.dataset.index = cellIndex;
-                        cell.dataset.number = cellNumber;
-                        
-                        // Añadir clase especial si es necesario
-                        if (cellTypes[cellNumber]) {
-                            cell.classList.add(cellTypes[cellNumber]);
-                        }
-                        
-                        const numberSpan = document.createElement('span');
-                        numberSpan.className = 'cell-number';
-                        numberSpan.textContent = cellNumber;
-                        
-                        const specialSpan = document.createElement('span');
-                        specialSpan.className = 'cell-special';
-                        
-                        // Añadir iconos para celdas especiales
-                        if (cellTypes[cellNumber]) {
-                            if (cellTypes[cellNumber].includes('ladder')) {
-                                specialSpan.textContent = cellNumber === 30 || cellNumber === 63 ? '🛩️' : '🪜';
-                            } else {
-                                specialSpan.textContent = [27, 58, 88, 99].includes(cellNumber) ? '🦎' : '🐍';
-                            }
-                        }
-                        
-                        cell.appendChild(numberSpan);
-                        cell.appendChild(specialSpan);
-                        board.appendChild(cell);
+        let gameState = null;
+        let previousGameState = null;
+        const specialCells = {
+            // Escaleras (según tu imagen)
+            5: 25,
+            14: 47,
+            22: 42,
+            30: 50,
+            49: 69,
+            61: 82,
+            70: 90,
+            83: 98,
+
+            // Serpientes (según tu imagen)
+            17: 4,
+            27: 7,
+            35: 15,
+            45: 65,
+            58: 38,
+            76: 56,
+            88: 68,
+            94: 74,
+            99: 79
+        };
+        const playerColors = ['player-1', 'player-2', 'player-3', 'player-4'];
+
+        // ================== 2. FUNCIÓN PRINCIPAL DE RENDERIZADO ==================
+        
+        // La función actualizarUI puede quedar como te la pasé en la versión anterior.
+        // Se encarga de mostrar/ocultar el lobby y actualizar los textos.
+        function actualizarUI() {
+            if (!gameState || !gameState.jugadores) return;
+            renderPlayersInRoomList();
+            colocarJugadoresEstaticos();
+            const jugadorActual = gameState.jugadores[gameState.turnoActual];
+            const esAnfitrion = gameState.jugadores.length > 0 && Number(gameState.jugadores[0].id) === Number(usuario.id_usuario);
+            const numJugadores = gameState.jugadores.length;
+            if (gameState.gameStarted) {
+                elements.lobbyPanel.style.display = 'none';
+                elements.listaJugadoresEl.parentElement.style.display = 'none';
+                const esMiTurno = jugadorActual && Number(jugadorActual.id) === Number(usuario.id_usuario);
+                elements.lanzarDadoBtn.disabled = !esMiTurno || !!gameState.ganador || gameState.estadoDelJuego !== 'lanzando_dado';
+                if (gameState.ganador) {
+                    elements.infoTurno.textContent = `¡${gameState.ganador.username} ha ganado! 🏆`;
+                } else if (jugadorActual) {
+                    if (gameState.estadoDelJuego === 'respondiendo_pregunta') {
+                        elements.infoTurno.textContent = `${jugadorActual.username} está respondiendo 🧠`;
+                    } else {
+                        elements.infoTurno.textContent = `Turno de: ${jugadorActual.username}`;
                     }
                 }
-                
-                // Dibujar caminos de serpientes y escaleras
-                dibujarCaminos();
+                return;
             }
-            
-            function dibujarCaminos() {
-                pathsSvg.innerHTML = '';
-                
-                // Dibujar caminos para serpientes y escaleras
-                for (const [start, end] of Object.entries(specialCells)) {
-                    const startCell = document.querySelector(`.cell[data-number="${start}"]`);
-                    const endCell = document.querySelector(`.cell[data-number="${end}"]`);
+            elements.lobbyPanel.style.display = 'block';
+            elements.listaJugadoresEl.parentElement.style.display = 'block';
+            elements.startGameControls.style.display = 'none';
+            elements.voteControls.style.display = 'none';
+            if (numJugadores < 2) {
+                elements.lobbyState.textContent = "Esperando a otro jugador...";
+            } else if (gameState.votacionEnProgreso) {
+                const { proponente, textoMateria } = gameState.propuestaMateria;
+                elements.lobbyState.innerHTML = `Votación iniciada por <strong>${proponente.username}</strong>`;
+                elements.voteControls.style.display = 'block';
+                if (esAnfitrion) {
+                    elements.voteProposalText.innerHTML = `Propusiste jugar con <strong>"${textoMateria}"</strong>.<br>Esperando respuesta...`;
+                    elements.voteYesBtn.style.display = 'none';
+                    elements.voteNoBtn.style.display = 'none';
+                } else {
+                    elements.voteProposalText.innerHTML = `<strong>${proponente.username}</strong> propone:<br><strong>"${textoMateria}"</strong><br>¿Aceptas?`;
+                    elements.voteYesBtn.style.display = 'inline-block';
+                    elements.voteNoBtn.style.display = 'inline-block';
+                }
+            } else {
+                if (esAnfitrion) {
+                    elements.lobbyState.textContent = "¡Listo! Elige una categoría y propón el inicio.";
+                    elements.startGameControls.style.display = 'block';
+                } else {
+                    elements.lobbyState.textContent = "¡Listo! Esperando que el anfitrión inicie la partida.";
+                }
+            }
+        }
+
+        function renderPlayersInRoomList() {
+            elements.playersListRoom.innerHTML = '';
+            if (!gameState || !gameState.jugadores) return;
+            gameState.jugadores.forEach((p, i) => {
+                const li = document.createElement('li');
+                // Usa el emoji del estado del juego, con un emoji por defecto si aún no existe
+                const playerEmoji = p.emoji || EMOJI_OPTIONS[i] || '❔';
+                li.innerHTML = `<span class="player-emoji-lobby">${playerEmoji}</span> ${p.username}`;
+                elements.playersListRoom.appendChild(li);
+            });
+        }
+        // ================== 3. FUNCIONES DEL TABLERO Y DADO ==================
+
+        // ✅ FUNCIÓN CORREGIDA PARA PINTAR EL TABLERO CORRECTAMENTE
+        function crearTablero() {
+            elements.board.innerHTML = '';
+            const endCells = {};
+            for (const start in specialCells) {
+                endCells[specialCells[start]] = parseInt(start);
+            }
+
+            for (let r = 9; r >= 0; r--) {
+                for (let c = 0; c < 10; c++) {
+                    const i = r % 2 !== 0 ? (r * 10) + (9 - c) : (r * 10) + c;
+                    const n = i + 1;
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.number = n;
                     
-                    if (!startCell || !endCell) continue;
+                    let specialIcon = '';
+                    let specialClass = '';
+
+                    if (specialCells[n]) {
+                        if (specialCells[n] > n) {
+                            specialClass = 'ladder-start';
+                            specialIcon = '🪜';
+                        } else {
+                            specialClass = 'snake-start';
+                            specialIcon = '🐍';
+                        }
+                    } else if (endCells[n]) {
+                        if (n > endCells[n]) {
+                            specialClass = 'ladder-end';
+                        } else {
+                            specialClass = 'snake-end';
+                        }
+                    }
                     
-                    const startRect = startCell.getBoundingClientRect();
-                    const endRect = endCell.getBoundingClientRect();
-                    const boardRect = board.getBoundingClientRect();
+                    if (specialClass) cell.classList.add(specialClass);
+                    cell.innerHTML = `<span class="cell-number">${n}</span><span class="cell-icon">${specialIcon}</span>`;
+                    elements.board.appendChild(cell);
+                }
+            }
+            dibujarCaminos();
+        }
+        
+        // ✅ FUNCIÓN MEJORADA PARA DIBUJAR CAMINOS CURVOS
+        function dibujarCaminos() {
+            setTimeout(() => {
+                elements.pathsSvg.innerHTML = '';
+                for (const start in specialCells) {
+                    const end = specialCells[start];
+                    const sC = document.querySelector(`.cell[data-number="${start}"]`);
+                    const eC = document.querySelector(`.cell[data-number="${end}"]`);
+                    if (!sC || !eC) continue;
+
+                    const sR = sC.getBoundingClientRect();
+                    const eR = eC.getBoundingClientRect();
+                    const bR = elements.board.getBoundingClientRect();
+                    const sX = sR.left + sR.width / 2 - bR.left;
+                    const sY = sR.top + sR.height / 2 - bR.top;
+                    const eX = eR.left + eR.width / 2 - bR.left;
+                    const eY = eR.top + eR.height / 2 - bR.top;
                     
-                    const startX = startRect.left + startRect.width/2 - boardRect.left;
-                    const startY = startRect.top + startRect.height/2 - boardRect.top;
-                    const endX = endRect.left + endRect.width/2 - boardRect.left;
-                    const endY = endRect.top + endRect.height/2 - boardRect.top;
-                    
-                    const isLadder = parseInt(end) > parseInt(start);
-                    
-                    // Crear camino
-                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    const isLadder = end > start;
                     
                     if (isLadder) {
-                        // Para escaleras: línea recta con "escalones"
-                        path.setAttribute('d', `M${startX},${startY} L${endX},${endY}`);
-                        path.setAttribute('class', 'ladder-path');
-                    } else {
-                        // Para serpientes: línea curva
-                        const midX = (startX + endX) / 2;
-                        const curveHeight = 50;
-                        const curveDirection = startX > endX ? 1 : -1;
-                        
-                        path.setAttribute('d', `M${startX},${startY} C${startX},${startY - curveHeight * curveDirection} ${endX},${endY + curveHeight * curveDirection} ${endX},${endY}`);
-                        path.setAttribute('class', 'snake-path');
+                        p.setAttribute('d', `M${sX},${sY} L${eX},${eY}`);
+                        p.setAttribute('class', 'ladder-path');
+                    } else { // Curva para las serpientes
+                        const cpx1 = sX + (eX - sX) * 0.3 + (sY - eY) * 0.2;
+                        const cpy1 = sY + (eY - sY) * 0.3 + (eX - sX) * 0.2;
+                        const cpx2 = sX + (eX - sX) * 0.7 - (sY - eY) * 0.2;
+                        const cpy2 = sY + (eY - sY) * 0.7 - (eX - sX) * 0.2;
+                        p.setAttribute('d', `M ${sX} ${sY} C ${cpx1} ${cpy1}, ${cpx2} ${cpy2}, ${eX} ${eY}`);
+                        p.setAttribute('class', 'snake-path');
                     }
-                    
-                    pathsSvg.appendChild(path);
+                    elements.pathsSvg.appendChild(p);
                 }
+            }, 100);
+        }
+
+        // Las demás funciones de animación, colocación de jugadores, etc., pueden quedar
+        // como en la versión anterior que te proporcioné, ya que su lógica es correcta.
+        async function animarMovimiento(playerElement, fromPos, toPos, finalPos) {
+             for (let i = fromPos + 1; i <= toPos; i++) {
+                await moverFicha(playerElement, i, 200);
             }
-            
-            function colocarJugadores() {
-                document.querySelectorAll('.player').forEach(p => p.classList.add('pending-removal'));
+            if (finalPos !== toPos) {
+                await new Promise(resolve => setTimeout(resolve, 300));
+                await moverFicha(playerElement, finalPos, 500);
+            }
+        }
+        function moverFicha(playerElement, pos, duration = 300) {
+            return new Promise(resolve => {
+                const finalCell = document.querySelector(`.cell[data-number="${pos}"]`);
+                if (finalCell) {
+                    const finalRect = finalCell.getBoundingClientRect();
+                    const boardRect = elements.board.getBoundingClientRect();
+                    const playerRect = playerElement.getBoundingClientRect();
+                    playerElement.style.transition = `all ${duration}ms ease-in-out`;
+                    playerElement.style.left = `${(finalRect.left - boardRect.left) + (finalRect.width / 2) - (playerRect.width / 2)}px`;
+                    playerElement.style.top = `${(finalRect.top - boardRect.top) + (finalRect.height / 2) - (playerRect.height / 2)}px`;
+                }
+                setTimeout(resolve, duration);
+            });
+        }
+        function animarDado(valorFinal) {
+            elements.lanzarDadoBtn.disabled = true;
+            let sorteo;
+            const anim = setInterval(() => {
+                sorteo = Math.floor(Math.random() * 6) + 1;
+                elements.dice.textContent = sorteo;
+            }, 80);
+            setTimeout(() => {
+                clearInterval(anim);
+                elements.dice.textContent = valorFinal;
+            }, 1000);
+        }
+        function colocarJugadoresEstaticos() {
+            if (!gameState || !gameState.jugadores) return;
+            const jugadorQueSeMueveId = previousGameState?.jugadores[previousGameState.turnoActual]?.id;
+
+            gameState.jugadores.forEach((jugador, i) => {
+                if (jugador.id === jugadorQueSeMueveId && previousGameState) return;
                 
-                gameState.jugadores.forEach((jugador, i) => {
-                    const position = (jugador.posicion || 1) - 1;
-                    const cell = document.querySelector(`.cell[data-index="${position}"]`);
-                    
-                    if (!cell) return;
-                    
-                    let playerEl = document.querySelector(`.player[data-player-id="${jugador.id}"]`);
-                    if (!playerEl) {
-                        playerEl = document.createElement('div');
-                        playerEl.className = `player ${gameState.playerColors[i]}`;
-                        playerEl.dataset.playerId = jugador.id;
-                        playerEl.textContent = i + 1;
-                        board.appendChild(playerEl);
-                    }
-                    
-                    playerEl.classList.remove('pending-removal');
-                    playerEl.dataset.playerIndex = i;
-                    
+                let playerEl = document.querySelector(`.player[data-player-id="${jugador.id}"]`);
+                if (!playerEl) {
+                    playerEl = document.createElement('div');
+                    playerEl.className = `player`; // Ya no necesita color específico
+                    playerEl.dataset.playerId = jugador.id;
+                    elements.board.appendChild(playerEl);
+                }
+
+                // Asigna el emoji del estado del juego a la ficha
+                playerEl.textContent = jugador.emoji || EMOJI_OPTIONS[i] || '❔';
+                
+                const cell = document.querySelector(`.cell[data-number="${jugador.posicion || 1}"]`);
+                if (cell) {
                     const cellRect = cell.getBoundingClientRect();
-                    const boardRect = board.getBoundingClientRect();
-                    
-                    const offsetX = (i % 2) * 20;
-                    const offsetY = Math.floor(i / 2) * 20;
-                    
-                    playerEl.style.left = `${(cellRect.left - boardRect.left) + offsetX}px`;
-                    playerEl.style.top = `${(cellRect.top - boardRect.top) + offsetY}px`;
-                });
-                
-                document.querySelectorAll('.player.pending-removal').forEach(p => p.remove());
-            }
-            
-            function actualizarInterfaz() {
-                const jugadorActual = gameState.jugadores[gameState.turnoActual];
-                const esMiTurno = gameState.gameStarted && jugadorActual && (Number(jugadorActual.id) === Number(usuario.id_usuario));
-                
-                lanzarDadoBtn.disabled = !esMiTurno || gameState.ganador;
-                
-                const puedeProponerReinicio = (gameState.gameStarted || gameState.ganador) && !votacionEnProgreso;
-                reiniciarJuegoBtn.style.display = puedeProponerReinicio ? 'block' : 'none';
-                reiniciarJuegoBtn.disabled = votacionEnProgreso;
-                
-                if (!gameState.gameStarted) {
-                    infoTurno.textContent = "Esperando para iniciar...";
-                } else if (gameState.ganador) {
-                    infoTurno.textContent = `¡${gameState.ganador.username} ha ganado!`;
-                } else if (jugadorActual) {
-                    infoTurno.textContent = `Turno de: ${jugadorActual.username}`;
+                    const boardRect = elements.board.getBoundingClientRect();
+                    const playerRect = playerEl.getBoundingClientRect();
+                    playerEl.style.transition = 'none';
+                    playerEl.style.left = `${(cellRect.left - boardRect.left) + (cellRect.width / 2) - (playerRect.width / 2)}px`;
+                    playerEl.style.top = `${(cellRect.top - boardRect.top) + (cellRect.height / 2) - (playerRect.height / 2)}px`;
+                    setTimeout(() => { playerEl.style.transition = ''; }, 50);
                 }
+            });
+        }
+        // ================== 4. LÓGICA DE PREGUNTAS Y CHAT ==================
 
-                waitingPlayers.innerHTML = '';
-                gameState.jugadores.forEach(jugador => {
-                    const playerTag = document.createElement('div');
-                    playerTag.className = 'player-tag';
-                    playerTag.textContent = jugador.username;
-                    waitingPlayers.appendChild(playerTag);
-                });
-                
-                const esAnfitrion = gameState.jugadores.length > 0 && Number(usuario.id_usuario) === Number(gameState.jugadores[0].id);
-                const puedeProponerInicio = esAnfitrion && gameState.jugadores.length >= 2 && !gameState.gameStarted;
+        function addChatMessage(user, msg, type = '') {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-message ${type}`;
+            msgDiv.innerHTML = type === 'system' ? msg : `<strong>${user}:</strong> ${msg}`;
+            elements.chatBox.appendChild(msgDiv);
+            elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
+        }
 
-                startGameBtn.textContent = 'Proponer Inicio 🚀';
-                startGameBtn.style.display = puedeProponerInicio ? 'block' : 'none';
-                startGameBtn.disabled = votacionEnProgreso;
-                
-                waitingState.style.display = gameState.gameStarted ? 'none' : 'block';
-            }
+        function showQuestionInChat(pregunta) {
+            const questionDiv = document.createElement('div');
+            questionDiv.id = `pregunta-${pregunta.id_pregunta}`;
+            questionDiv.classList.add('chat-message', 'question-message');
+            questionDiv.innerHTML = `<p><strong>${pregunta.pregunta}</strong></p>`;
             
-            function mostrarNotificacion(mensaje) {
-                notification.textContent = mensaje;
-                notification.classList.add('show');
-                setTimeout(() => notification.classList.remove('show'), 3000);
-            }
-
-            function mostrarVotacionEnChat({ proponente, tipo }) {
-                const voteDiv = document.createElement('div');
-                voteDiv.className = 'chat-message system-message';
-                voteDiv.id = 'vote-message';
-                
-                const textoAccion = tipo === 'reinicio' ? 'reiniciar el juego' : 'iniciar el juego';
-                
-                const mensaje = document.createElement('p');
-                mensaje.innerHTML = `<strong>${proponente}</strong> quiere ${textoAccion}. ¿Están de acuerdo?`;
-                
-                const buttonsDiv = document.createElement('div');
-                buttonsDiv.style.marginTop = '10px';
-
-                const siBtn = document.createElement('button');
-                siBtn.textContent = '✅ Sí';
-                siBtn.className = 'vote-btn';
-                
-                const noBtn = document.createElement('button');
-                noBtn.textContent = '❌ No';
-                noBtn.className = 'vote-btn';
-
-                buttonsDiv.appendChild(siBtn);
-                buttonsDiv.appendChild(noBtn);
-                voteDiv.appendChild(mensaje);
-                voteDiv.appendChild(buttonsDiv);
-                
-                const enviarVoto = (voto) => {
-                    socket.emit('serpientes:votar', { salaId, voto, tipoVotacion: tipo });
-                    siBtn.disabled = true;
-                    noBtn.disabled = true;
-                    mensaje.textContent = `Has votado ${voto ? 'SÍ' : 'NO'}.`;
+            const optionsDiv = document.createElement('div');
+            optionsDiv.classList.add('question-options');
+            
+            pregunta.opciones.forEach(opcion => {
+                const btn = document.createElement('button');
+                btn.textContent = opcion.texto;
+                btn.onclick = () => {
+                    optionsDiv.querySelectorAll('button').forEach(b => b.disabled = true);
+                    socket.emit('serpientes:responderPregunta', { salaId, respuestaId: opcion.id });
                 };
-
-                siBtn.onclick = () => enviarVoto(true);
-                noBtn.onclick = () => enviarVoto(false);
-
-                chatBox.appendChild(voteDiv);
-                chatBox.scrollTop = chatBox.scrollHeight;
-            }
+                optionsDiv.appendChild(btn);
+            });
             
-            function animarDado(valorFinal) {
-                lanzarDadoBtn.disabled = true;
-                dice.classList.add('rolling');
-                let Sorteo;
+            questionDiv.appendChild(optionsDiv);
+            elements.chatBox.appendChild(questionDiv);
+            elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
+        }
 
-                const animacion = setInterval(() => {
-                    Sorteo = Math.floor(Math.random() * 6) + 1;
-                    dice.textContent = Sorteo;
-                }, 80);
+        function handleAnswerFeedback({ esCorrecta, respuestaCorrectaTexto }) {
+            const preguntaDiv = elements.chatBox.querySelector('.question-message:last-child');
+            if (!preguntaDiv) return;
 
-                setTimeout(() => {
-                    clearInterval(animacion);
-                    dice.classList.remove('rolling');
-                    dice.textContent = valorFinal;
-                }, 1000);
+            const botones = preguntaDiv.querySelectorAll('button');
+            botones.forEach(btn => {
+                btn.classList.add(btn.textContent === respuestaCorrectaTexto ? 'respuesta-correcta' : 'respuesta-incorrecta');
+            });
+        }
+
+        // ================== 5. JUGADORES ACTIVOS E INVITACIONES ==================
+
+        async function cargarJugadoresActivos() {
+            try {
+                const res = await fetch('/competitivo');
+                if (!res.ok) throw new Error('Error al obtener jugadores');
+                const jugadores = await res.json();
+                
+                elements.listaJugadoresEl.innerHTML = '';
+                const sePuedeInvitar = !gameState || !gameState.votacionEnProgreso;
+
+                jugadores.forEach(jugador => {
+                    if (jugador.id === usuario.id_usuario) return;
+                    const item = document.createElement('li');
+                    
+                    let inviteButtonHTML = '';
+                    if (sePuedeInvitar) {
+                        inviteButtonHTML = `<div class="actions"><button class="btn-invite" data-id="${jugador.id}">Invitar 🤝</button></div>`;
+                    }
+                    item.innerHTML = `<span>${jugador.username}</span>${inviteButtonHTML}`;
+                    elements.listaJugadoresEl.appendChild(item);
+                });
+            } catch (error) {
+                console.error('Error al cargar jugadores:', error);
+                elements.listaJugadoresEl.innerHTML = '<li>Error al cargar jugadores.</li>';
             }
+        }
+        
+        function mostrarNotificacion(mensaje) {
+            elements.notification.textContent = mensaje;
+            elements.notification.classList.add('show');
+            setTimeout(() => elements.notification.classList.remove('show'), 3000);
+        }
 
-            // ================== 4. MANEJO DE SOCKETS ==================
-            socket.on('serpientes:estado', (sala) => {
-                Object.assign(gameState, sala); 
-                colocarJugadores(); 
-                actualizarInterfaz();
-                dice.textContent = gameState.dado || '?';
+        // ================== 6. MANEJO DE SOCKETS Y EVENTOS ==================
 
-                if (gameState.gameStarted && !gameState.ganador && gameState.turnoActual === 0 && gameState.jugadores.every(j => j.posicion === 1)) {
-                     const voteMessage = document.getElementById('vote-message');
-                     if (voteMessage) voteMessage.remove();
+         function setupSocketListeners() {
+            socket.on('serpientes:estado', async (serverState) => {
+                const jugadorEnTurnoAntes = previousGameState?.jugadores[previousGameState.turnoActual];
+                
+                gameState = serverState;
+                actualizarUI(); // Dibuja la UI estática y los jugadores que no se mueven
+
+                if (previousGameState && jugadorEnTurnoAntes) {
+                    const jugadorDespues = gameState.jugadores.find(p => p.id === jugadorEnTurnoAntes.id);
+                    if (jugadorDespues) {
+                        const posAnterior = jugadorEnTurnoAntes.posicion;
+                        const posNueva = jugadorDespues.posi cion;
+                        
+                        if (posAnterior !== posNueva) {
+                            let playerEl = document.querySelector(`.player[data-player-id="${jugadorDespues.id}"]`);
+                            if (!playerEl) return;
+
+                            elements.lanzarDadoBtn.disabled = true;
+                            
+                            const posIntermedia = Math.min(posAnterior + (gameState.dado || 0), 100);
+                            await animarMovimiento(playerEl, posAnterior, posIntermedia, posNueva);
+                            
+                            actualizarUI();
+                        }
+                    }
+                }
+
+                if (previousGameState && gameState.log.length > previousGameState.log.length) {
+                    const nuevosLogs = gameState.log.slice(previousGameState.log.length);
+                    nuevosLogs.forEach(mensaje => addChatMessage(null, mensaje, 'system'));
+                }
+                
+                previousGameState = JSON.parse(JSON.stringify(serverState));
+            });
+
+            socket.on('serpientes:dado', ({ valor }) => animarDado(valor));
+            socket.on('serpientes:error', ({ mensaje }) => mostrarNotificacion(mensaje));
+            socket.on('serpientes:votacionMateria', (propuesta) => addChatMessage(null, `<strong>${propuesta.proponente.username}</strong> propone jugar con: <strong>${propuesta.textoMateria}</strong>`, 'system'));
+            socket.on('serpientes:votacionCancelada', ({ motivo }) => addChatMessage(null, `Votación cancelada: ${motivo}`, 'system'));
+            
+            // ✅ CORREGIDO: Escucha el evento para todos, pero solo actúa si es para ti.
+            socket.on('serpientes:mostrarPregunta', ({ pregunta, jugadorId }) => {
+                if (Number(jugadorId) === Number(usuario.id_usuario)) {
+                    showQuestionInChat(pregunta);
                 }
             });
-            
-            socket.on('serpientes:dado', ({ jugador, valor }) => {
-                animarDado(valor);
-                mostrarNotificacion(`${jugador} ha sacado un ${valor}!`);
-            });
-            
-            socket.on('serpientes:ganador', ({ ganador }) => {
-                mostrarNotificacion(`¡El ganador es ${ganador.username}! 🥳`);
-                gameState.ganador = ganador;
-                actualizarInterfaz();
-            });
-            
-            socket.on('serpientes:votacionInicio', ({ proponente }) => {
-                votacionEnProgreso = true;
-                tipoDeVotacionActual = 'inicio';
-                actualizarInterfaz();
-                mostrarVotacionEnChat({ proponente, tipo: 'inicio' });
-            });
-            
-            socket.on('serpientes:votacionReinicio', ({ proponente }) => {
-                votacionEnProgreso = true;
-                tipoDeVotacionActual = 'reinicio';
-                actualizarInterfaz();
-                mostrarVotacionEnChat({ proponente, tipo: 'reinicio' });
-            });
 
-            socket.on('serpientes:votacionCancelada', ({ motivo }) => {
-                votacionEnProgreso = false;
-                tipoDeVotacionActual = null;
-                actualizarInterfaz();
-                const voteMessage = document.getElementById('vote-message');
-                if (voteMessage) voteMessage.remove();
-                mostrarNotificacion(`Votación cancelada: ${motivo}`);
-            });
-            
-            socket.on('jugadorUnido', (data) => {
-                mostrarNotificacion(`${data.username} se unió a la sala`);
-                cargarJugadoresActivos();
-            });
-            
-            socket.on('jugadorAbandono', (data) => {
-                mostrarNotificacion(`${data.username} abandonó la sala`);
-                cargarJugadoresActivos();
-            });
-            
-            // ================== 5. EVENTOS DE INTERFAZ ==================
-            lanzarDadoBtn.addEventListener('click', () => {
-                lanzarDadoBtn.disabled = true;
-                socket.emit('serpientes:lanzarDado', { salaId, userId: usuario.id_usuario });
-            });
-            
-            startGameBtn.addEventListener('click', () => {
-                socket.emit('serpientes:proponerInicio', { salaId });
-            });
-
-            reiniciarJuegoBtn.addEventListener('click', () => {
-                socket.emit('serpientes:proponerReinicio', { salaId });
-            });
-            
-            // ================== 6. CHAT Y JUGADORES ==================
-            function mostrarMensaje(user, msg) {
-                const msgDiv = document.createElement('div');
-                msgDiv.className = 'chat-message';
-                msgDiv.innerHTML = `<span class="u">${user}:</span> <span>${msg}</span>`;
-                chatBox.appendChild(msgDiv);
-                chatBox.scrollTop = chatBox.scrollHeight;
-            }
-            
-            function enviarMensaje() {
-                const mensaje = chatInput.value.trim();
-                if (mensaje && salaId) {
-                    socket.emit('mensajeChat', { salaId, mensaje, usuario: usuario.username });
-                    chatInput.value = '';
-                }
-            }
-            
-            chatBtn.addEventListener('click', enviarMensaje);
-            chatInput.addEventListener('keypress', (e) => e.key === 'Enter' && enviarMensaje());
-            
+            socket.on('serpientes:respuestaResultado', handleAnswerFeedback);
             socket.on('nuevoMensaje', (data) => {
                 if (data.usuario && data.mensaje) {
-                    mostrarMensaje(data.usuario, data.mensaje);
+                    addChatMessage(data.usuario, data.mensaje);
                 }
             });
+        }
+        
+        function setupEventListeners() {
+            elements.lanzarDadoBtn.addEventListener('click', () => socket.emit('serpientes:lanzarDado', { salaId, userId: usuario.id_usuario }));
             
-            async function cargarJugadoresActivos() {
-                try {
-                    const res = await fetch('/competitivo');
-                    if (!res.ok) throw new Error('Error al obtener jugadores');
-                    const jugadores = await res.json();
-                    
-                    listaJugadoresEl.innerHTML = '';
-                    jugadores.forEach(jugador => {
-                        if (jugador.id === usuario.id_usuario) return;
-                        
-                        const item = document.createElement('li');
-                        item.innerHTML = `
-                            <span>${jugador.username}</span> 
-                            <div class="actions">
-                                <button class="btn-invite" data-id="${jugador.id}">Invitar 🤝</button>
-                            </div>
-                        `;
-                        
-                        listaJugadoresEl.appendChild(item);
-                    });
-                } catch (error) {
-                    console.error('Error al cargar jugadores:', error);
-                    listaJugadoresEl.innerHTML = '<li>Error al cargar jugadores.</li>';
+            elements.proposeMateriaBtn.addEventListener('click', () => {
+                const idMateria = elements.materiasSelect.value;
+                const textoMateria = elements.materiasSelect.options[elements.materiasSelect.selectedIndex].text;
+                socket.emit('serpientes:proponerMateria', { salaId, idMateria, textoMateria });
+            });
+            elements.voteYesBtn.addEventListener('click', () => socket.emit('serpientes:votar', { salaId, voto: true }));
+            elements.voteNoBtn.addEventListener('click', () => socket.emit('serpientes:votar', { salaId, voto: false }));
+            
+            const enviarMensaje = () => {
+                const mensaje = elements.chatInput.value.trim();
+                if (mensaje) {
+                    socket.emit('mensajeChat', { salaId, mensaje, usuario: usuario.username });
+                    elements.chatInput.value = '';
                 }
-            }
-            
-            listaJugadoresEl.addEventListener('click', async (e) => {
-                const target = e.target;
-                if (!target.classList.contains('btn-invite')) return;
-                
-                const idJugador = target.dataset.id;
+            };
+            elements.chatBtn.addEventListener('click', enviarMensaje);
+            elements.chatInput.addEventListener('keypress', (e) => e.key === 'Enter' && enviarMensaje());
+            elements.lobbyPanel.addEventListener('click', (e) => {
+                if (e.target.classList.contains('emoji-option')) {
+                    // Previene la selección si el juego ya empezó (doble seguridad)
+                    if(gameState && gameState.gameStarted) return;
+                    
+                    const selectedEmoji = e.target.dataset.emoji;
+                    miEmoji = selectedEmoji;
+                    
+                    // Emite el nuevo evento al servidor
+                    socket.emit('serpientes:elegirFicha', { salaId, emoji: selectedEmoji });
+                    
+                    // Actualiza la UI para mostrar la selección
+                    document.querySelectorAll('.emoji-option').forEach(el => el.classList.remove('selected'));
+                    e.target.classList.add('selected');
+                }
+            });
+            elements.listaJugadoresEl.addEventListener('click', async (e) => {
+                if (!e.target.classList.contains('btn-invite')) return;
+                const idJugador = e.target.dataset.id;
                 if (!idJugador) return;
                 
                 try {
-                    const res = await fetch(`/invitar_s/${idJugador}`, {
+                    const res = await fetch(`/invitar/${idJugador}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ salaId: salaId, tipoJuego: 'Serpientes y Escaleras' })
+                        body: JSON.stringify({ salaId: salaId, juego: 'serpientes_escaleras' })
                     });
-                    
                     const data = await res.json();
                     mostrarNotificacion(data.message || 'Invitación enviada');
                 } catch (error) {
-                    console.error('Error en la invitación:', error);
                     mostrarNotificacion('Hubo un problema al enviar la invitación.');
                 }
             });
             
-            // ================== 7. INICIALIZACIÓN FINAL ==================
+            window.addEventListener('resize', dibujarCaminos);
+        }
+
+        // ================== 7. INICIALIZACIÓN DEL JUEGO ==================
+        function init() {
+            crearTablero();
+            setupSocketListeners();
+            setupEventListeners();
+            
+            if (!materiasPrecargadas || materiasPrecargadas.length === 0) {
+                elements.startGameControls.innerHTML = '<p>No hay categorías con preguntas.</p>';
+            } else {
+                materiasPrecargadas.forEach(m => {
+                    const option = document.createElement('option');
+                    option.value = m.id_materia;
+                    option.textContent = m.descripcion;
+                    elements.materiasSelect.appendChild(option);
+                });
+            }
+            
             cargarJugadoresActivos();
             setInterval(cargarJugadoresActivos, 15000);
             
-            // Redibujar caminos cuando la ventana cambie de tamaño
-            window.addEventListener('resize', dibujarCaminos);
-        });
+            socket.emit('serpientes:unirse', { salaId, usuario });
+        }
+
+        init();
+    });
     </script>
 </body>
 </html>

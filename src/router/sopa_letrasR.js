@@ -3,7 +3,7 @@ const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const pool = require('../db/conexion');
 
-// Ruta para obtener materias
+// Ruta para obtener materias (similar al ahorcado)
 router.get('/sopa/materias', async (req, res) => {
     try {
         const [materias] = await pool.query(
@@ -21,7 +21,7 @@ router.get('/sopa/materias', async (req, res) => {
 // Ruta principal para crear nueva sala
 router.get('/sopa', (req, res) => {
     const nuevaSalaId = uuidv4();
-    res.redirect(`/sopa/${nuevaSalaId}`);
+    res.redirect(`/sopa-letras/${nuevaSalaId}`);
 });
 
 // Ruta para unirse a sala existente

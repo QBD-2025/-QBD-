@@ -1,218 +1,293 @@
-// En: src/sockets/serpientes.js
-module.exports = (base) => {
-    const { io, state, config } = base;
+// EN: src/sockets/socket-serpientes.js
 
-    // Función para emitir el estado actualizado a la sala
+module.exports = (base) => {
+    const { io, state, config, pool } = base;
+    const salasSerpientes = state.salasSerpientes;
+    const EMOJI_DEFAULTS = ['🐵', '🐸', '🦄', '🤖', 
+                            '👻', '👽', '🎃', '🐲',
+                            '🐷', '🐰', '🐼', '🐨',
+                            '卐'
+    ];
+
     const emitirEstado = (salaId) => {
-        if (state.salasSerpientes[salaId]) {
-            io.to(salaId).emit('serpientes:estado', state.salasSerpientes[salaId]);
+        if (salasSerpientes[salaId]) {
+            io.to(salaId).emit('serpientes:estado', salasSerpientes[salaId]);
         }
     };
 
-    // === NUEVA FUNCIÓN PARA REINICIAR EL JUEGO ===
-    // Esta función resetea la sala a su estado inicial, pero manteniendo a los jugadores.
-    const reiniciarJuego = (salaId) => {
-        const sala = state.salasSerpientes[salaId];
+    const iniciarPartida = async (salaId, idMateria) => {
+        const sala = salasSerpientes[salaId];
         if (!sala) return;
 
-        sala.jugadores.forEach(jugador => {
-            jugador.posicion = 1;
-        });
+        try {
+            const [rows] = await pool.query(
+                `SELECT p.id_pregunta, p.pregunta, p.retroalimentacion, r.id_respuesta, r.respuesta, r.correcta 
+                 FROM pregunta p JOIN respuesta r ON p.id_pregunta = r.id_pregunta 
+                 WHERE p.id_materia = ?`,
+                [idMateria]
+            );
 
-        sala.turnoActual = 0;
-        sala.dado = 0;
-        sala.ganador = null;
-        sala.gameStarted = true; // El juego continúa, solo se reinicia
-        sala.votacionEnProgreso = false;
-        sala.tipoVotacion = null;
-        sala.votos = {};
-        sala.log.push('¡La partida ha sido reiniciada por votación!');
-        
-        emitirEstado(salaId);
+            const preguntasMap = new Map();
+            rows.forEach(row => {
+                if (!preguntasMap.has(row.id_pregunta)) {
+                    preguntasMap.set(row.id_pregunta, {
+                        id_pregunta: row.id_pregunta,
+                        pregunta: row.pregunta,
+                        retroalimentacion: row.retroalimentacion,
+                        opciones: []
+                    });
+                }
+                preguntasMap.get(row.id_pregunta).opciones.push({ id: row.id_respuesta, texto: row.respuesta, correcta: !!row.correcta });
+            });
+
+            let todasLasPreguntas = Array.from(preguntasMap.values());
+            if (todasLasPreguntas.length < 5) {
+                io.to(salaId).emit('serpientes:error', { mensaje: `No hay suficientes preguntas (${todasLasPreguntas.length}/5) en esta categoría.` });
+                sala.votacionEnProgreso = false; sala.votos = {}; sala.propuestaMateria = null;
+                emitirEstado(salaId);
+                return;
+            }
+
+            todasLasPreguntas.sort(() => Math.random() - 0.5);
+            sala.preguntas = todasLasPreguntas;
+            
+            sala.jugadores.forEach(j => { j.posicion = 1; j.turnosPerdidos = 0; });
+            sala.turnoActual = 0;
+            sala.ganador = null;
+            sala.gameStarted = true;
+            sala.votacionEnProgreso = false;
+            sala.estadoDelJuego = 'lanzando_dado';
+            sala.turnosParaPregunta = Math.floor(Math.random() * 3) + 3;
+            sala.log.push(`¡La partida de ${sala.propuestaMateria.textoMateria} ha comenzado!`);
+            
+            emitirEstado(salaId);
+
+        } catch (error) {
+            console.error("Error al iniciar partida de Serpientes:", error);
+            io.to(salaId).emit('serpientes:error', { message: 'Error del servidor al cargar preguntas.' });
+        }
     };
-
 
     return {
         init: (socket) => {
             socket.on('serpientes:unirse', ({ salaId, usuario }) => {
                 socket.join(salaId);
 
-                if (!state.salasSerpientes[salaId]) {
-                    state.salasSerpientes[salaId] = {
+                if (!salasSerpientes[salaId]) {
+                    salasSerpientes[salaId] = {
                         jugadores: [],
                         turnoActual: 0,
                         dado: 0,
                         ganador: null,
                         gameStarted: false,
-                        votacionEnProgreso: false,
-                        tipoVotacion: null, // Para saber si es de 'inicio' o 'reinicio'
-                        votos: {},
                         log: [],
-                        config: config.serpientes
+                        config: config.serpientes,
+                        votacionEnProgreso: false,
+                        votos: {},
+                        idMateria: null,
+                        preguntas: [],
+                        preguntaActual: null,
+                        estadoDelJuego: 'esperando_materia',
+                        turnosParaPregunta: 0,
+                        propuestaMateria: null,
                     };
                 }
 
-                const sala = state.salasSerpientes[salaId];
-                
-                // Si el juego ya empezó Y NO HAY UN GANADOR, no dejamos entrar a nadie más
-                if (sala.gameStarted && !sala.ganador) {
-                    socket.emit('serpientes:error', { mensaje: 'Esta partida ya ha comenzado.' });
-                    return;
-                }
-
-                if (sala.jugadores.length >= 4 && !sala.jugadores.some(p => p.id === usuario.id_usuario)) {
-                    socket.emit('serpientes:error', { mensaje: 'La sala está llena.' });
-                    return;
-                }
+                const sala = salasSerpientes[salaId];
+                if (sala.gameStarted && !sala.ganador) {return;}
+                if (sala.jugadores.length >= 4 && !sala.jugadores.some(p => p.id === usuario.id_usuario)) {return;}
 
                 if (!sala.jugadores.some(p => p.id === usuario.id_usuario)) {
                     sala.jugadores.push({
                         id: usuario.id_usuario,
                         socketId: socket.id,
                         username: usuario.username,
-                        posicion: 1
+                        posicion: 1,
+                        turnosPerdidos: 0,
+                        emoji: EMOJI_DEFAULTS[sala.jugadores.length] || '👽' 
                     });
                 }
                 
-                sala.log.push(`${usuario.username} se ha unido a la partida.`);
+                sala.log.push(`${usuario.username} se ha unido.`);
+                emitirEstado(salaId);
+            });
+            socket.on('serpientes:elegirFicha', ({ salaId, emoji }) => {
+                const sala = salasSerpientes[salaId];
+                if (!sala || sala.gameStarted) return; // No se puede cambiar si la partida empezó
+
+                const jugador = sala.jugadores.find(j => j.socketId === socket.id);
+                if (jugador) {
+                    // Opcional: Prevenir que se elija un emoji ya en uso
+                    const emojiEnUso = sala.jugadores.some(p => p.emoji === emoji && p.id !== jugador.id);
+                    if (!emojiEnUso) {
+                        jugador.emoji = emoji;
+                        emitirEstado(salaId); // Notifica a todos del cambio
+                    } else {
+                        // Opcional: Notificar al jugador que el emoji no está disponible
+                        socket.emit('serpientes:error', { mensaje: 'Ese emoji ya está en uso.' });
+                    }
+                }
+            });
+            socket.on('serpientes:proponerMateria', ({ salaId, idMateria, textoMateria }) => {
+                const sala = salasSerpientes[salaId];
+                const proponente = sala?.jugadores.find(j => j.socketId === socket.id);
+
+                if (!sala || !proponente || sala.jugadores[0].id !== proponente.id) {
+                    return;
+                }
+                
+                if (sala.gameStarted || sala.votacionEnProgreso || sala.jugadores.length < 2) return;
+                
+                sala.votacionEnProgreso = true;
+                sala.propuestaMateria = { proponente, idMateria, textoMateria };
+                sala.votos = { [proponente.id]: true }; 
+                
+                io.to(salaId).emit('serpientes:votacionMateria', sala.propuestaMateria);
                 emitirEstado(salaId);
             });
             
-            socket.on('serpientes:proponerInicio', ({ salaId }) => {
-                const sala = state.salasSerpientes[salaId];
-                const jugadorProponente = sala?.jugadores.find(j => j.socketId === socket.id);
+            socket.on('serpientes:votar', ({ salaId, voto }) => {
+                const sala = salasSerpientes[salaId];
+                const votante = sala?.jugadores.find(j => j.socketId === socket.id);
+                if (!sala || !votante || !sala.votacionEnProgreso || sala.votos[votante.id] !== undefined) return;
 
-                if (!sala || !jugadorProponente || sala.gameStarted || sala.votacionEnProgreso) return;
-                if (sala.jugadores[0].id !== jugadorProponente.id) return;
-                if (sala.jugadores.length < 2) return;
+                sala.votos[votante.id] = voto;
+                const todosHanVotado = Object.keys(sala.votos).length === sala.jugadores.length;
 
-                sala.votacionEnProgreso = true;
-                sala.tipoVotacion = 'inicio'; // Especificamos el tipo
-                sala.votos = {};
-                
-                io.to(salaId).emit('serpientes:votacionInicio', { proponente: jugadorProponente.username });
-            });
-
-            // === CAMBIO CLAVE 1: LÓGICA DE REINICIO AÑADIDA ===
-            socket.on('serpientes:proponerReinicio', ({ salaId }) => {
-                const sala = state.salasSerpientes[salaId];
-                const jugadorProponente = sala?.jugadores.find(j => j.socketId === socket.id);
-                
-                // Se puede proponer reinicio si el juego ha empezado y no hay otra votación
-                if (!sala || !jugadorProponente || !sala.gameStarted || sala.votacionEnProgreso) return;
-
-                sala.votacionEnProgreso = true;
-                sala.tipoVotacion = 'reinicio'; // Especificamos el tipo
-                sala.votos = {};
-                
-                // El frontend escuchará este evento
-                io.to(salaId).emit('serpientes:votacionReinicio', { proponente: jugadorProponente.username });
-            });
-
-            // === CAMBIO CLAVE 2: MANEJO DE VOTOS MEJORADO ===
-            socket.on('serpientes:votar', ({ salaId, voto, tipoVotacion }) => {
-                const sala = state.salasSerpientes[salaId];
-                const jugadorVotante = sala?.jugadores.find(j => j.socketId === socket.id);
-
-                // La votación debe estar activa y ser del tipo correcto
-                if (!sala || !jugadorVotante || !sala.votacionEnProgreso || sala.tipoVotacion !== tipoVotacion || sala.votos[jugadorVotante.id] !== undefined) {
-                    return;
-                }
-
-                sala.votos[jugadorVotante.id] = voto;
-                
-                if (Object.keys(sala.votos).length === sala.jugadores.length) {
-                    sala.votacionEnProgreso = false;
-                    const todosVotaronSi = Object.values(sala.votos).every(v => v === true);
-
-                    if (todosVotaronSi) {
-                        // AQUÍ ESTÁ LA MAGIA: decidimos qué hacer según el tipo de votación
-                        if (sala.tipoVotacion === 'inicio') {
-                            sala.gameStarted = true;
-                            sala.log.push('¡Todos los jugadores están listos! El juego comienza.');
-                            emitirEstado(salaId);
-                        } else if (sala.tipoVotacion === 'reinicio') {
-                            reiniciarJuego(salaId); // Llamamos a la nueva función de reinicio
-                        }
-                    } else {
-                        sala.votos = {};
-                        sala.tipoVotacion = null;
-                        io.to(salaId).emit('serpientes:votacionCancelada', { motivo: 'Alguien votó que no.' });
-                    }
+                if (!voto) {
+                    sala.votacionEnProgreso = false; sala.votos = {}; sala.propuestaMateria = null;
+                    io.to(salaId).emit('serpientes:votacionCancelada', { motivo: `${votante.username} rechazó la categoría.` });
+                    emitirEstado(salaId);
+                } else if (voto && todosHanVotado) {
+                    iniciarPartida(salaId, sala.propuestaMateria.idMateria);
                 }
             });
 
             socket.on('serpientes:lanzarDado', ({ salaId, userId }) => {
-                // ... (El resto de esta función no necesita cambios, está bien como la tenías)
-                const sala = state.salasSerpientes[salaId];
-                if (!sala || sala.ganador || !sala.gameStarted) return;
+                const sala = salasSerpientes[salaId];
+                if (!sala || sala.ganador || !sala.gameStarted || sala.estadoDelJuego !== 'lanzando_dado') return;
+                
                 const jugadorActual = sala.jugadores[sala.turnoActual];
-                if (jugadorActual.id !== userId) return;
+                if (Number(jugadorActual.id) !== Number(userId)) return;
+
+                if (jugadorActual.turnosPerdidos > 0) {
+                    jugadorActual.turnosPerdidos--;
+                    sala.log.push(`INFO: ${jugadorActual.username} pierde su turno.`);
+                    sala.turnoActual = (sala.turnoActual + 1) % sala.jugadores.length;
+                    emitirEstado(salaId);
+                    return;
+                }
                 
                 const valorDado = Math.floor(Math.random() * 6) + 1;
                 sala.dado = valorDado;
-                sala.log.push(`${jugadorActual.username} ha sacado un ${valorDado}.`);
+                sala.log.push(`DADO: ${jugadorActual.username} ha sacado un ${valorDado}.`);
+                io.to(salaId).emit('serpientes:dado', { valor: valorDado });
 
-                // Emitir el valor del dado INMEDIATAMENTE para que el frontend pueda animarlo.
-                io.to(salaId).emit('serpientes:dado', { jugador: jugadorActual.username, valor: valorDado });
-
-                // Esperar un poco para que la animación se vea antes de mover la ficha
                 setTimeout(() => {
-                    let posicionPotencial = jugadorActual.posicion + valorDado;
-                    if (posicionPotencial > sala.config.winPosition) {
-                        posicionPotencial = sala.config.winPosition - (posicionPotencial - sala.config.winPosition);
-                    }
-                    jugadorActual.posicion = posicionPotencial;
+                    let posIntermedia = jugadorActual.posicion + valorDado;
+                    if (posIntermedia > 100) posIntermedia = 100 - (posIntermedia - 100);
+                    jugadorActual.posicion = posIntermedia;
 
-                    const especial = sala.config.snakesAndLadders[jugadorActual.posicion];
+                    // ✅ INICIO DE LA MODIFICACIÓN: USA EL MAPA DE TU IMAGEN
+                    const snakesAndLadders = {
+                        // Escaleras (según tu imagen)
+                        5: 25, 14: 47, 22: 42, 30: 50, 49: 69, 61: 82, 70: 90, 83: 98,
+                        // Serpientes (según tu imagen)
+                        17: 4, 27: 7, 35: 15, 45: 65, 58: 38, 76: 56, 88: 68, 94: 74, 99: 79
+                    };
+                    
+                    // Reemplaza la línea original por esta:
+                    const especial = snakesAndLadders[jugadorActual.posicion];
+                    // ✅ FIN DE LA MODIFICACIÓN
+
                     if (especial) {
                         const tipo = especial > jugadorActual.posicion ? 'escalera' : 'serpiente';
-                        sala.log.push(`¡${jugadorActual.username} encontró una ${tipo}!`);
+                        sala.log.push(`EVENTO: ¡${jugadorActual.username} encontró una ${tipo}!`);
                         jugadorActual.posicion = especial;
                     }
                     
-                    if (jugadorActual.posicion === sala.config.winPosition) {
-                        sala.ganador = jugadorActual;
-                        sala.log.push(`🎉 ¡${jugadorActual.username} ha ganado la partida! 🎉`);
+                    sala.turnosParaPregunta--;
+                    if (sala.turnosParaPregunta <= 0 && sala.preguntas.length > 0) {
+                        sala.log.push(`PREGUNTA: ¡Turno de pregunta para ${jugadorActual.username}!`);
+                        sala.preguntaActual = sala.preguntas.pop();
+                        sala.estadoDelJuego = 'respondiendo_pregunta';
+                        // ✅ CORREGIDO: Se emite a toda la sala, para que todos la vean, pero con el ID del jugador que debe responder.
+                        io.to(salaId).emit('serpientes:mostrarPregunta', { pregunta: sala.preguntaActual, jugadorId: jugadorActual.id });
                     } else {
-                        if (valorDado !== 6) {
+                        if (jugadorActual.posicion === 100) {
+                            sala.ganador = jugadorActual;
+                        } else if (valorDado !== 6) {
                             sala.turnoActual = (sala.turnoActual + 1) % sala.jugadores.length;
                         } else {
-                            sala.log.push(`${jugadorActual.username} saca de nuevo por obtener un 6.`);
+                            sala.log.push(`INFO: ${jugadorActual.username} tira de nuevo por sacar un 6.`);
                         }
                     }
-                    
                     emitirEstado(salaId);
-                }, 1200); // 1.2 segundos, un poco más que la animación del dado.
+                }, 1200);
             });
             
-            // Eliminé el 'proponerReinicio' que tenías duplicado. Ya está arriba con su lógica completa.
+            socket.on('serpientes:responderPregunta', ({ salaId, respuestaId }) => {
+                const sala = salasSerpientes[salaId];
+                const jugadorActual = sala.jugadores[sala.turnoActual];
+                
+                if (!sala || !jugadorActual || socket.id !== jugadorActual.socketId || sala.estadoDelJuego !== 'respondiendo_pregunta') {
+                    return;
+                }
+
+                const opcionCorrecta = sala.preguntaActual.opciones.find(opt => opt.correcta);
+                const esCorrecta = (Number(respuestaId) === Number(opcionCorrecta.id));
+
+                if (esCorrecta) {
+                    sala.log.push(`INFO: ${jugadorActual.username} respondió correctamente. ¡Tira de nuevo!`);
+                } else {
+                    sala.log.push(`INFO: ${jugadorActual.username} respondió incorrectamente. Pierde un turno.`);
+                    jugadorActual.turnosPerdidos = 1;
+                    sala.turnoActual = (sala.turnoActual + 1) % sala.jugadores.length;
+                }
+
+                io.to(salaId).emit('serpientes:respuestaResultado', { esCorrecta, respuestaCorrectaTexto: opcionCorrecta.texto });
+                sala.preguntaActual = null;
+                sala.estadoDelJuego = 'lanzando_dado';
+                sala.turnosParaPregunta = Math.floor(Math.random() * 3) + 3;
+                
+                // ✅ CORRECCIÓN: Añadimos un pequeño delay antes de emitir el nuevo estado.
+                // Esto da tiempo a que el cliente procese el resultado de la respuesta antes de continuar.
+                setTimeout(() => {
+                    emitirEstado(salaId);
+                }, 1500); // 1.5 segundos de pausa
+            });
         },
 
         cleanup: (socket) => {
-           // ... (Tu función de cleanup está bien, sin cambios)
-           for (const salaId in state.salasSerpientes) {
-                const sala = state.salasSerpientes[salaId];
+           for (const salaId in salasSerpientes) {
+                const sala = salasSerpientes[salaId];
                 const jugadorIndex = sala.jugadores.findIndex(j => j.socketId === socket.id);
 
                 if (jugadorIndex !== -1) {
-                    const jugadorDesconectado = sala.jugadores[jugadorIndex];
-                    sala.log.push(`${jugadorDesconectado.username} se ha desconectado.`);
+                    const jugadorDesc = sala.jugadores[jugadorIndex];
+                    sala.log.push(`${jugadorDesc.username} se ha desconectado.`);
                     
+                    const eraAnfitrion = jugadorIndex === 0;
                     sala.jugadores.splice(jugadorIndex, 1);
                     
                     if (sala.jugadores.length === 0) {
-                        delete state.salasSerpientes[salaId];
-                        console.log(`Sala ${salaId} de Serpientes eliminada por estar vacía.`);
+                        delete salasSerpientes[salaId];
                         return;
                     }
+
                     if (sala.votacionEnProgreso) {
-                        sala.votacionEnProgreso = false;
-                        sala.votos = {};
+                        sala.votacionEnProgreso = false; sala.votos = {}; sala.propuestaMateria = null;
                         io.to(salaId).emit('serpientes:votacionCancelada', { motivo: 'Un jugador se desconectó.' });
                     }
-                    if (sala.turnoActual === jugadorIndex) {
-                        sala.turnoActual = sala.turnoActual % sala.jugadores.length;
+                    
+                    if (sala.gameStarted && sala.jugadores.length < 2) {
+                        sala.ganador = sala.jugadores[0]; // El que queda gana
+                        sala.log.push(`FIN: ${sala.ganador.username} gana porque el oponente se desconectó.`);
+                    }
+
+                    // Asegura que el turno no quede apuntando a un jugador que no existe
+                    if (sala.turnoActual >= sala.jugadores.length) {
+                        sala.turnoActual = 0;
                     }
                     emitirEstado(salaId);
                 }
