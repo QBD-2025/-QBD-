@@ -49,6 +49,7 @@ app.engine('.hbs', exphbs.engine({
 app.set('view engine', '.hbs');
 app.set('views', path.join(__dirname, 'src', 'views'));
 
+
 // Middlewares
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -58,6 +59,7 @@ app.use('/media', express.static(path.join(__dirname, 'src', 'media')));
 app.use('/Audio', express.static(path.join(__dirname, 'src', 'Audio')));
 app.use('/animacion_frames_p', express.static(path.join(__dirname, 'src','media','animacion_frames_p')));
 app.use('/images', express.static(path.join(__dirname, 'src', 'public', 'media', 'images')));
+app.use('/src/audio', express.static(path.join(__dirname, 'src', 'audio')));
 
 // Configuración de sesiones
 const sessionMiddleware = session({

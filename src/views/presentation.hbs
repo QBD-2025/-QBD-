@@ -12,6 +12,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
 </head>
 
+<audio id="introAudio" src="/src/audio/bienvenido.mp3"></audio>
+
 <div class="duo-style-wrapper">
 
     {{!-- ========= SECCIÓN PRINCIPAL DE LLAMADO A LA ACCIÓN (Hero) ======  === --}}
@@ -21,7 +23,7 @@
         </div>
         <div class="text-content cta-text">
             <h1 class="hero-main-headline">La forma más divertida de potenciar tu mente.</h1>
-            <button type="button" class="btn-start-duo" onclick="location.href='/video'">Empezar Ahora</button>
+            <button type="button" class="btn-start-duo" id="btnEmpezar">Empezar Ahora</button>
             <button type="button" class="btn-secondary-duo" onclick="location.href='/login'">Ya tengo una cuenta</button>
         </div>
     </section>
@@ -70,6 +72,19 @@
             </video>
         </div>
     </section>
+
+
+<script>
+    const btnEmpezar = document.getElementById("btnEmpezar");
+
+    btnEmpezar.addEventListener("click", () => {
+        // Guardamos que hubo interacción
+        localStorage.setItem("startClicked", "true");
+
+        // Redirigimos a la animación
+        window.location.href = "/video";
+    });
+</script>
 
 </div>
 </html>

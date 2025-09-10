@@ -101,7 +101,7 @@ SELECT ue.id_examen, ue.obtenido, ue.maximo, ue.porcentaje, ue.fecha_inicio AS f
     }));
 
     res.render('historialUsuario', {
-      layout: 'main',
+      layout: false,
       title: 'Historial de Exámenes',
       historial
     });
