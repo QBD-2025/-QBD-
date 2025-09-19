@@ -123,7 +123,7 @@
         <section class="info-section reverse">
         <div class="text-content">
             <h2 class="info-headline yellow-text">¡Demuestra quién es el mejor!</h2>
-            <button type="button" class="duo-button" onclick="location.href='/competitivo'">Modo competitivo</button>
+            <button type="button" class="duo-button" onclick="location.href='/portal'">Modo competitivo</button>
         </div>
         <div class="image-content">
             <div id="animationContainer6" class="animacion-duolingo">
@@ -174,5 +174,23 @@
         });
     }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // Buscamos el botón por su ID
+    document.getElementById('competitive-button').addEventListener('click', function(event) {
+        // Prevenimos cualquier acción por defecto (como una redirección)
+        event.preventDefault(); 
+        
+        // Mostramos la alerta bonita
+        Swal.fire({
+            title: '¡Próximamente!',
+            text: 'El Modo Competitivo está en desarrollo. ¡Prepárate para la batalla! 😈',
+            icon: 'info', // Puedes usar 'success', 'error', 'warning', 'info', 'question'
+            confirmButtonText: '¡Entendido!',
+            confirmButtonColor: '#FFC107' // Un color que combine con tu página
+        });
+    });
+</script>
+
 </body>
 </html>

@@ -1,186 +1,309 @@
-/* styles/ranking.css */
+ :root {
+            --color-primary: #0815c5;
+            --color-secondary: #facc15;
+            --color-dark: #0c0264;
+            --color-light: #f9f9f9;
+            --color-gray: #ededed;
+            --color-gold: #FFD700;
+            --color-silver: #C0C0C0;
+            --color-bronze: #CD7F32;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--color-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(120deg, var(--color-primary) 0%, var(--color-dark) 100%);
+            color: white;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        /* Podio */
+        .podium-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            color: var(--color-primary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--color-secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .podium {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .podium-item {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.3s;
+            width: 30%;
+            max-width: 250px;
+        }
+        
+        .podium-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .podium-item:nth-child(1) {
+            background: linear-gradient(135deg, var(--color-gold) 0%, #DAA520 100%);
+            color: #704c00;
+            height: 280px;
+            order: 2;
+        }
+        
+        .podium-item:nth-child(2) {
+            background: linear-gradient(135deg, var(--color-silver) 0%, #A9A9A9 100%);
+            color: #464646;
+            height: 250px;
+            order: 1;
+        }
+        
+        .podium-item:nth-child(3) {
+            background: linear-gradient(135deg, var(--color-bronze) 0%, #8C6B46 100%);
+            color: white;
+            height: 230px;
+            order: 3;
+        }
+        
+        .podium-badge {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .podium-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            border: 3px solid white;
+            background: rgba(255, 255, 255, 0.3);
+            /* AÑADIDO: Estilo para la imagen de perfil */
+            object-fit: cover; 
+        }
+        
+        .podium-username {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .podium-category {
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        
+        /* Tabla */
+        .ranking-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: linear-gradient(120deg, var(--color-primary) 0%, var(--color-dark) 100%);
+            color: white;
+        }
+        
+        th {
+            padding: 16px 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        th:first-child {
+            width: 70px;
+            text-align: center;
+            padding-left: 20px;
+        }
+        
+        th:nth-child(2) {
+            width: 40%;
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid #eee;
+            transition: background 0.3s;
+        }
+        
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        td {
+            padding: 14px 15px;
+            font-size: 1rem;
+        }
+        
+        td:first-child {
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding-left: 20px;
+            color: var(--color-dark);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--color-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--color-dark);
+            /* AÑADIDO: Estilo para la imagen de perfil */
+            object-fit: cover; 
+            padding: 0; /* Quita el padding para que la imagen ocupe todo */
+        }
 
-/* Variables de colores para fácil personalización */
-:root {
-    --primary-color: #3498db;
-    --secondary-color: #2ecc71;
-    --background-color: #f8f9fa;
-    --text-color: #333;
-    --border-color: #e0e0e0;
-    --header-bg: #f1f8ff;
-    --alternate-row: #f9f9f9;
-    --avatar-size: 40px;
-    --progress-bar-height: 8px;
-}
+        .avatar img {
+             width: 100%;
+             height: 100%;
+             border-radius: 50%;
+        }
+        
+        .username {
+            font-weight: 600;
+            color: var(--color-dark);
+        }
+        
+        .user-category {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .score {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        /* Botón flotante */
+        .floating-button {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--color-secondary);
+            color: #333;
+            border: none;
+            border-bottom: 4px solid #e0a800;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-/* Estilos generales */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--background-color);
-    color: var(--text-color);
-    line-height: 1.6;
-    padding: 20px;
-}
-
-header {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-header h1 {
-    color: var(--primary-color);
-    font-size: 2.5rem;
-    margin-bottom: 10px;
-}
-
-/* Contenedor principal */
-main {
-    max-width: 1000px;
-    margin: 0 auto;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-}
-
-/* Estilos de la tabla */
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-thead {
-    background-color: var(--header-bg);
-}
-
-th {
-    padding: 15px;
-    text-align: left;
-    font-weight: 600;
-    color: var(--primary-color);
-    border-bottom: 2px solid var(--primary-color);
-}
-
-tr {
-    border-bottom: 1px solid var(--border-color);
-    transition: background-color 0.2s ease;
-}
-
-tr:hover {
-    background-color: #f5f5f5;
-}
-
-td {
-    padding: 15px;
-}
-
-/* Estilos para las filas según posición */
-tr:nth-child(even) {
-    background-color: var(--alternate-row);
-}
-
-tr:nth-child(-n+3) {
-    background-color: rgba(46, 204, 113, 0.1);
-}
-
-/* Información de usuario */
-.user-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.avatar {
-    width: var(--avatar-size);
-    height: var(--avatar-size);
-    border-radius: 50%;
-    background-color: var(--primary-color);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 1.2rem;
-}
-
-.username {
-    font-weight: 600;
-    margin-bottom: 4px;
-}
-
-/* Barra de progreso */
-.progress-container {
-    width: 100%;
-    height: var(--progress-bar-height);
-    background-color: #e0e0e0;
-    border-radius: 10px;
-    margin-bottom: 8px;
-    overflow: hidden;
-}
-
-.progress-bar {
-    height: 100%;
-    background-color: var(--secondary-color);
-    border-radius: 10px;
-    transition: width 0.5s ease;
-}
-
-/* Estilos para las posiciones */
-td:first-child {
-    font-weight: bold;
-    color: var(--primary-color);
-}
-
-/* Estilos responsivos */
-@media (max-width: 768px) {
-    body {
-        padding: 10px;
-    }
-    
-    table {
-        display: block;
-        overflow-x: auto;
-    }
-    
-    th, td {
-        padding: 10px;
-    }
-    
-    .user-info {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 6px;
-    }
-    
-    .avatar {
-        margin-bottom: 5px;
-    }
-    
-    th:nth-child(4),
-    td:nth-child(4) {
-        min-width: 120px;
-    }
-}
-
-/* Animaciones para mejorar la experiencia */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-tr {
-    animation: fadeIn 0.3s ease forwards;
-}
-
-tr:nth-child(1) { animation-delay: 0.05s; }
-tr:nth-child(2) { animation-delay: 0.1s; }
-tr:nth-child(3) { animation-delay: 0.15s; }
-tr:nth-child(4) { animation-delay: 0.2s; }
-tr:nth-child(5) { animation-delay: 0.25s; }
-/* Continuar según sea necesario */
+        .floating-button:hover {
+            background-color: #ffd44f;
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .podium {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .podium-item {
+                width: 100%;
+                max-width: 300px;
+                height: auto !important;
+                margin-bottom: 20px;
+                flex-direction: row;
+                text-align: left;
+                justify-content: flex-start;
+            }
+            
+            .podium-avatar {
+                margin-right: 15px;
+                margin-bottom: 0;
+                width: 60px;
+                height: 60px;
+                font-size: 1.4rem;
+            }
+        }

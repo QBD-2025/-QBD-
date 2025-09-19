@@ -45,7 +45,7 @@ router.get('/examen/:id_materia', async (req, res) => {
         }
 
         const [topGlobal] = await db.query(`
-            SELECT u.username, u.apodo, u.puntos FROM usuario u
+            SELECT u.username, u.apodo, u.puntos,u.foto_perfil FROM usuario u
             LEFT JOIN ranking r ON u.id_usuario = r.id_usuario
             ORDER BY u.puntos DESC, r.fecha_actualizacion ASC LIMIT 1
         `);
@@ -96,6 +96,7 @@ router.get('/examen-aleatorio', async (req, res) => {
         u.apodo,
         u.puntos,
         r.posicion,
+        u.foto_perfil,
         r.fecha_actualizacion
       FROM usuario u
       LEFT JOIN ranking r ON u.id_usuario = r.id_usuario

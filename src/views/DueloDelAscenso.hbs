@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Duelos de Ascenso</title>
+    <link rel="stylesheet" href="/css/competitivo-duelos.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div id="matchmakingView" class="duelo-container">
+        <aside class="player-card">
+            <img src="{{user.foto_perfil}}" alt="Tu avatar" class="player-avatar">
+            <h2>{{user.username}}</h2>
+            <div class="player-rank">
+                <p>Rango: #{{stats.rank}}</p>
+                <span>{{stats.puntos}} Puntos</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress" style="width: {{stats.progress_percent}}%;"></div>
+            </div>
+            <p class="next-rank-info">Faltan {{stats.points_needed}} puntos para el siguiente rango</p>
+            <hr>
+            <div class="player-stats">
+                <p><i class="fas fa-fist-raised"></i> Récord: {{stats.victorias}}V - {{stats.derrotas}}D</p>
+                <p><i class="fas fa-fire"></i> Racha Actual: {{stats.racha}} Victorias</p>
+            </div>
+        </aside>
+        <main class="matchmaking-center">
+            <h1>Duelos de Ascenso</h1>
+            <p class="subtitle">Elige tu arena y demuestra tu conocimiento.</p>
+            
+            <div id="actionContainer" class="action-container">
+                <button id="btnBuscarCarrera" class="btn-buscar-duelo btn-carrera">
+                    <i class="fas fa-user-graduate"></i> DUELO POR CARRERA
+                </button>
+                <button id="btnBuscarGeneral" class="btn-buscar-duelo btn-general">
+                    <i class="fas fa-globe"></i> DUELO GENERAL
+                </button>
+                <button id="btnCancelarBusqueda" class="btn-cancelar-duelo" style="display: none;">
+                    <i class="fas fa-times"></i> CANCELAR
+                </button>
+            </div>
+
+            <p id="statusText" class="status-text">Compite en tu área de especialidad o en cultura general.</p>
+        </main>
+       <aside class="info-panel">
+            <div class="tabs-container">
+                <div class="tabs">
+                    <button class="tab-link active" data-tab="tab-global">🌍 Global</button>
+                    <button class="tab-link" data-tab="tab-carrera">🎓 Carrera</button>
+                </div>
+
+                <div id="tab-global" class="tab-content active">
+                    <div id="rankingGlobalContainer" class="ranking-list"></div>
+                </div>
+
+                <div id="tab-carrera" class="tab-content">
+                    <select id="selectorCarrera">
+                        <option value="">Selecciona tu carrera</option>
+                    </select>
+                    <div id="rankingCarreraContainer" class="ranking-list"></div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <div id="dueloView" class="duelo-body" style="display: none;">
+        <header class="duelo-header">
+            <div id="marcador" class="marcador">
+                <span id="puntuacionTuya">0</span> - <span id="puntuacionOponente">0</span>
+            </div>
+            <div id="preguntaContainer" class="pregunta-container">
+                <p id="numeroPregunta">Pregunta 1 / 10</p>
+                <h2 id="textoPregunta">¡Duelo encontrado! Preparando la primera pregunta...</h2>
+            </div>
+            <div id="cronometro" class="cronometro">15</div>
+        </header>
+
+        <div id="draftContainer" class="draft-container">
+            <h2 id="draftTitle">Selección de Campo de Batalla</h2>
+            <p id="draftInstruction">Esperando al oponente...</p>
+            <div id="materiasGrid" class="materias-grid"></div>
+        </div>
+
+        <main id="arenaContainer" class="arena-container" style="display: none;">
+            <section id="zonaJugador" class="zona-jugador">
+                <div class="info-jugador">
+                    <img src="{{user.foto_perfil}}" alt="Tu Avatar" class="avatar">
+                    <h3>{{user.username}}</h3>
+                    <span class="racha" id="tuRacha">🔥 x0</span>
+                </div>
+                <div id="opcionesContainer" class="opciones-container"></div>
+            </section>
+            <section id="zonaOponente" class="zona-jugador oponente">
+                <div class="info-jugador">
+                    <img id="oponenteAvatar" src="/media/images/default_avatar.png" alt="Avatar Oponente" class="avatar">
+                    <h3 id="oponenteUsername">Oponente</h3>
+                    <span class="racha" id="oponenteRacha">🔥 x0</span>
+                </div>
+                <div id="estadoOponente" class="estado-oponente"></div>
+            </section>
+        </main>
+    </div>
+
+     <div id="modalDificultad" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Elige la Dificultad</h2>
+            <p>Las preguntas serán más difíciles, ¡pero la recompensa será mayor!</p>
+            <div class="dificultad-opciones">
+                <button data-dificultad="facil">Fácil</button>
+                <button data-dificultad="normal">Normal</button>
+                <button data-dificultad="dificil">Difícil</button>
+            </div>
+            <button id="cerrarModalDificultad" class="btn-cerrar-modal">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="modalEstasSeguro" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="textoPulla">¿Estás seguro de esa respuesta?</h2>
+            <p>Un verdadero campeón nunca duda... ¿o sí?</p>
+            <div class="dificultad-opciones">
+                <button id="btnConfirmarRespuesta">¡Sí, estoy seguro!</button>
+                <button id="btnCancelarRespuesta">Mejor lo pienso...</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+    const socket = io();
+    const user = {{{json user}}};
+    let salaId = null;
+    let oponente = null;
+    let cronometroInterval = null;
+    let preguntaActualId = null;
+
+    // --- Elementos del DOM (Completos) ---
+    const matchmakingView = document.getElementById('matchmakingView');
+    const dueloView = document.getElementById('dueloView');
+    const btnBuscarCarrera = document.getElementById('btnBuscarCarrera');
+    const btnBuscarGeneral = document.getElementById('btnBuscarGeneral');
+    const btnCancelarBusqueda = document.getElementById('btnCancelarBusqueda');
+    const statusText = document.getElementById('statusText');
+    const modalDificultad = document.getElementById('modalDificultad');
+    const modalEstasSeguro = document.getElementById('modalEstasSeguro');
+    const tabs = document.querySelectorAll('.tab-link');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const selectorCarrera = document.getElementById('selectorCarrera');
+    const rankingGlobalContainer = document.getElementById('rankingGlobalContainer');
+    const rankingCarreraContainer = document.getElementById('rankingCarreraContainer');
+    const oponenteUsernameEl = document.getElementById('oponenteUsername');
+    const oponenteAvatarEl = document.getElementById('oponenteAvatar');
+    const draftContainer = document.getElementById('draftContainer');
+    const arenaContainer = document.getElementById('arenaContainer');
+    const draftTitle = document.getElementById('draftTitle');
+    const draftInstruction = document.getElementById('draftInstruction');
+    const materiasGrid = document.getElementById('materiasGrid');
+    const textoPregunta = document.getElementById('textoPregunta');
+    const opcionesContainer = document.getElementById('opcionesContainer');
+    const cronometroEl = document.getElementById('cronometro');
+    const tuRachaEl = document.getElementById('tuRacha');
+    const oponenteRachaEl = document.getElementById('oponenteRacha');
+
+
+    // --- Lógica de Pestañas (Tabs) y Rankings ---
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(item => item.classList.remove('active'));
+            tab.classList.add('active');
+            const target = document.getElementById(tab.dataset.tab);
+            tabContents.forEach(content => content.classList.remove('active'));
+            target.classList.add('active');
+            if (tab.dataset.tab === 'tab-carrera') {
+                cargarRankingCarrera(selectorCarrera.value);
+            } else {
+                cargarRankingGlobal();
+            }
+        });
+    });
+
+    function renderizarRanking(container, jugadores) {
+        container.innerHTML = '';
+        if (!jugadores || jugadores.length === 0) {
+            container.innerHTML = '<p>No hay jugadores en este ranking.</p>';
+            return;
+        }
+        jugadores.forEach(jugador => {
+            if (jugador.id_usuario === user.id_usuario) return;
+            const item = document.createElement('div');
+            item.className = 'player-item';
+            item.innerHTML = `
+                <img src="${jugador.foto_perfil || '/media/images/default_avatar.png'}" alt="Avatar" class="avatar">
+                <div class="player-info">
+                    <strong>${jugador.username}</strong>
+                    <p>${jugador.puntos} puntos</p>
+                </div>
+                <button class="btn-desafiar" data-id="${jugador.id_usuario}">Desafiar ⚔️</button>
+            `;
+            container.appendChild(item);
+        });
+    }
+
+    async function cargarRankingGlobal() {
+        const response = await fetch('/api/ranking/global');
+        const jugadores = await response.json();
+        renderizarRanking(rankingGlobalContainer, jugadores);
+    }
+
+    async function cargarRankingCarrera(idCarrera) {
+        if (!idCarrera) {
+            rankingCarreraContainer.innerHTML = '<p>Selecciona una carrera.</p>';
+            return;
+        }
+        const response = await fetch(`/api/ranking/carrera/${idCarrera}`);
+        const jugadores = await response.json();
+        renderizarRanking(rankingCarreraContainer, jugadores);
+    }
+    
+    document.addEventListener('click', async (e) => {
+        if (e.target && e.target.classList.contains('btn-desafiar')) {
+            e.target.disabled = true;
+            e.target.textContent = 'Enviado...';
+            const idOponente = e.target.dataset.id;
+            try {
+                await fetch(`/desafiar/duelo/${idOponente}`, { method: 'POST' });
+            } catch (error) {
+                console.error("Error al enviar desafío:", error);
+                e.target.disabled = false;
+                e.target.textContent = 'Desafiar ⚔️';
+            }
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        cargarRankingGlobal();
+        const resCarreras = await fetch('/api/usuario/carreras');
+        const carreras = await resCarreras.json();
+        selectorCarrera.innerHTML = '<option value="">Selecciona tu carrera</option>';
+        carreras.forEach(carrera => {
+            const option = document.createElement('option');
+            option.value = carrera.id_carrera;
+            option.textContent = carrera.descripcion;
+            selectorCarrera.appendChild(option);
+        });
+    });
+
+    selectorCarrera.addEventListener('change', () => {
+        cargarRankingCarrera(selectorCarrera.value);
+    });
+    
+    // --- Lógica de Matchmaking ---
+    function iniciarBusqueda(modo, dificultad = null) {
+        modalDificultad.classList.remove('visible');
+        btnBuscarCarrera.style.display = 'none';
+        btnBuscarGeneral.style.display = 'none';
+        btnCancelarBusqueda.style.display = 'inline-block';
+        statusText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando oponente...';
+        
+        const evento = `duelo:buscar:${modo}`;
+        const payload = modo === 'carrera' ? { user, dificultad } : user;
+        socket.emit(evento, payload);
+    }
+    
+    function restaurarBusqueda(mensaje) {
+        btnBuscarCarrera.style.display = 'inline-block';
+        btnBuscarGeneral.style.display = 'inline-block';
+        btnCancelarBusqueda.style.display = 'none';
+        statusText.textContent = mensaje;
+    }
+
+    btnBuscarCarrera.addEventListener('click', () => {
+        modalDificultad.classList.add('visible');
+    });
+
+    btnBuscarGeneral.addEventListener('click', () => iniciarBusqueda('general'));
+
+    btnCancelarBusqueda.addEventListener('click', () => {
+        socket.emit('duelo:cancelarBusqueda', user.id_usuario);
+        restaurarBusqueda("Búsqueda cancelada.");
+    });
+
+    modalDificultad.querySelectorAll('.dificultad-opciones button').forEach(btn => {
+        btn.onclick = () => {
+            const dificultad = btn.dataset.dificultad;
+            iniciarBusqueda('carrera', dificultad);
+        };
+    });
+    
+    document.getElementById('cerrarModalDificultad').onclick = () => {
+        modalDificultad.classList.remove('visible');
+    }; 
+    
+    // --- Lógica de Sockets para el Juego ---
+
+    // Este listener lo reciben ambos jugadores (retador y retado)
+    
+    socket.on('duelo:encontrado', (data) => {
+        salaId = data.salaId;
+        oponente = data.oponente[user.id_usuario];
+        statusText.textContent = `¡Duelo encontrado contra ${oponente.username}! Preparando la arena...`;
+        btnCancelarBusqueda.style.display = 'none';
+        
+        oponenteUsernameEl.textContent = oponente.username;
+        oponenteAvatarEl.src = oponente.foto_perfil || '/media/images/default_avatar.png';
+
+        setTimeout(() => {
+            matchmakingView.style.opacity = '0';
+            setTimeout(() => {
+                matchmakingView.style.display = 'none';
+                dueloView.style.display = 'flex';
+                setTimeout(() => {
+                    dueloView.style.opacity = '1';
+                    socket.emit('duelo:clienteListo', { salaId, userId: user.id_usuario });
+                }, 100);
+            }, 500);
+        }, 1500);
+    });
+
+    socket.on('duelo:iniciarMiniDraft', ({ categorias }) => {
+        draftTitle.textContent = "ELIGE TU CAMPO DE BATALLA";
+        draftInstruction.textContent = "Selecciona en secreto una de las siguientes categorías.";
+        materiasGrid.innerHTML = '';
+
+        if (categorias.length === 0) {
+            draftInstruction.textContent = "No se encontraron categorías compatibles.";
+            return;
+        }
+
+        categorias.forEach(categoria => {
+            const card = document.createElement('div');
+            card.className = 'materia-card';
+            card.dataset.id = categoria.id; 
+            card.textContent = categoria.descripcion;
+            
+            card.onclick = () => {
+                document.querySelectorAll('.materia-card').forEach(c => {
+                    c.onclick = null;
+                    if (c !== card) c.classList.add('deshabilitada');
+                });
+                card.classList.add('seleccionada');
+                draftInstruction.textContent = "¡Elección guardada! Esperando a tu oponente...";
+                socket.emit('duelo:seleccionarCategoria', { salaId, userId: user.id_usuario, idCategoria: categoria.id });
+            };
+            materiasGrid.appendChild(card);
+        });
+    });
+
+    socket.on('duelo:miniDraftFinalizado', () => {
+        draftContainer.style.display = 'none';
+        arenaContainer.style.display = 'flex';
+    });
+
+    socket.on('duelo:nuevaPregunta', ({ pregunta, opciones, numeroPregunta, totalPreguntas, evento }) => {
+        preguntaActualId = pregunta.id_pregunta;
+        textoPregunta.textContent = pregunta.pregunta;
+        document.getElementById('numeroPregunta').textContent = `Pregunta ${numeroPregunta} / ${totalPreguntas}`;
+        opcionesContainer.innerHTML = '';
+        
+        if (evento) {
+             // Aquí puedes añadir una función para mostrar visualmente el evento
+        }
+
+        if (cronometroInterval) clearInterval(cronometroInterval);
+        let tiempoRestante = evento?.duracion || 15;
+        cronometroEl.textContent = tiempoRestante;
+        cronometroInterval = setInterval(() => {
+            tiempoRestante--;
+            cronometroEl.textContent = tiempoRestante;
+            if (tiempoRestante <= 0) clearInterval(cronometroInterval);
+        }, 1000);
+
+        opciones.forEach(opcion => {
+            const btn = document.createElement('button');
+            btn.className = 'opcion-btn';
+            btn.textContent = opcion.respuesta;
+            btn.dataset.id = opcion.id_respuesta;
+            
+            btn.onclick = () => {
+                const accionResponder = () => {
+                    opcionesContainer.querySelectorAll('button').forEach(b => b.disabled = true);
+                    btn.classList.add('seleccionada-jugador');
+                    socket.emit('duelo:responder', {
+                        salaId,
+                        userId: user.id_usuario,
+                        idPregunta: pregunta.id_pregunta,
+                        idRespuesta: opcion.id_respuesta
+                    });
+                };
+                
+                if (Math.random() < 0.25) { 
+                    document.getElementById('textoPulla').textContent = "¿Última palabra?";
+                    modalEstasSeguro.classList.add('visible');
+                    document.getElementById('btnConfirmarRespuesta').onclick = () => {
+                        modalEstasSeguro.classList.remove('visible');
+                        accionResponder();
+                    };
+                    document.getElementById('btnCancelarRespuesta').onclick = () => {
+                        modalEstasSeguro.classList.remove('visible');
+                    };
+                } else {
+                    accionResponder();
+                }
+            };
+            opcionesContainer.appendChild(btn);
+        });
+    });
+
+    socket.on('duelo:actualizarEstado', ({ puntuaciones, rachas }) => {
+        document.getElementById('puntuacionTuya').textContent = puntuaciones[user.id_usuario];
+        document.getElementById('puntuacionOponente').textContent = puntuaciones[oponente.id_usuario];
+
+        // ✅ CORRECCIÓN: Verificar si el objeto 'rachas' existe antes de usarlo.
+        if (rachas) {
+            tuRachaEl.textContent = `🔥 x${rachas[user.id_usuario]}`;
+            oponenteRachaEl.textContent = `🔥 x${rachas[oponente.id_usuario]}`;
+        }
+    });
+
+    socket.on('duelo:error', ({ mensaje }) => {
+        alert(`Error en el duelo: ${mensaje}`);
+        window.location.href = '/competitivo/duelos';
+    });
+
+</script>
+</body>
+</html>

@@ -427,7 +427,7 @@
 
         async function cargarJugadoresActivos() {
             try {
-                const res = await fetch('/competitivo');
+                const res = await fetch('/jugadores');
                 if (!res.ok) throw new Error('Error al obtener jugadores');
                 const jugadores = await res.json();
                 
@@ -470,7 +470,7 @@
                     const jugadorDespues = gameState.jugadores.find(p => p.id === jugadorEnTurnoAntes.id);
                     if (jugadorDespues) {
                         const posAnterior = jugadorEnTurnoAntes.posicion;
-                        const posNueva = jugadorDespues.posi cion;
+                        const posNueva = jugadorDespues.posicion;
                         
                         if (posAnterior !== posNueva) {
                             let playerEl = document.querySelector(`.player[data-player-id="${jugadorDespues.id}"]`);

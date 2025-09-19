@@ -92,29 +92,41 @@ router.post('/enfrentar/:idJugador', async (req, res) => {
 // RUTA PARA ACEPTAR (SIN CAMBIOS)
 // Esta ruta es genérica y funciona para ambos casos.
 // ================================================================
+// ✅ CORREGIDO: Ruta para Aceptar
 router.post('/aceptar/:idNotificacion', async (req, res) => {
-    if (!req.session.user) { return res.status(401).json({ success: false, message: 'Debes iniciar sesión' }); }
+    if (!req.session.user) { 
+        return res.status(401).json({ success: false, message: 'Debes iniciar sesión' }); 
+    }
     const { idNotificacion } = req.params;
     const userId = req.session.user.id_usuario;
     try {
-        const [notificaciones] = await pool.query(`SELECT n.*, u.username as remitente_username FROM notificaciones n JOIN usuario u ON n.id_usuario_remitente = u.id_usuario WHERE n.id_notificacion = ? AND n.id_usuario_destinatario = ?`, [idNotificacion, userId]);
-        if (notificaciones.length === 0) { return res.status(404).json({ success: false, message: 'Notificación no encontrada' }); }
+        const [notificaciones] = await pool.query(
+            `SELECT * FROM notificaciones WHERE id_notificacion = ? AND id_usuario_destinatario = ?`,
+            [idNotificacion, userId]
+        );
+
+        if (notificaciones.length === 0) {
+            return res.status(404).json({ success: false, message: 'Notificación no encontrada' });
+        }
         
         const notificacion = notificaciones[0];
         const extraData = JSON.parse(notificacion.extra_data);
         
         await pool.query("DELETE FROM notificaciones WHERE id_notificacion = ?", [idNotificacion]);
         
-        if (notificacion.tipo === 'invitacion' && extraData.salaId) {
-            req.io.to(userId.toString()).emit('redirigirASala', { salaId: extraData.salaId, juego: extraData.juego });
-            req.io.to(notificacion.id_usuario_remitente.toString()).emit('invitacionAceptada', { salaId: extraData.salaId, destinatario: req.session.user.username });
-        }
-        
-        res.json({ success: true, salaId: extraData.salaId, juego: extraData.juego, message: 'Invitación aceptada' });
+        // ✅ RESPUESTA MEJORADA: Devolvemos más datos al frontend
+        // para que el cliente decida qué hacer.
+        res.json({ 
+            success: true, 
+            tipo: notificacion.tipo, // Ej: 'desafio_duelo' o 'invitacion'
+            id_remitente: notificacion.id_usuario_remitente,
+            extra_data: extraData,
+            message: 'Notificación procesada' 
+        });
+
     } catch (err) {
         console.error('Error en aceptar notificación:', err);
         res.status(500).json({ success: false, message: 'Error interno al procesar la aceptación' });
     }
 });
-
 module.exports = router;

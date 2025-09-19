@@ -1,3 +1,4 @@
+// --------------------- rankingR.js -----------------
 const express = require('express');
 const router = express.Router();
 const pool = require('../db/conexion'); // importa el pool
@@ -11,6 +12,7 @@ router.get('/ranking', async (req, res) => {
                 u.username,
                 u.apodo,
                 u.puntos,
+                u.foto_perfil, -- <-- AÑADIDO: Traer la foto de perfil
                 r.posicion,
                 r.fecha_actualizacion
             FROM usuario u

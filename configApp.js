@@ -43,12 +43,26 @@ app.engine('.hbs', exphbs.engine({
         lower: (str) => str.toLowerCase(),
         inc: (value) => parseInt(value) + 1,
         json: context => JSON.stringify(context),
-        sum: (a, b) => a + b
+        sum: (a, b) => a + b,
+        gt(a, b) { return a > b; }, // "Greater Than" (Mayor que)
+        lt(a, b) { return a < b; }, // "Less Than" (Menor que)
+        subtract(a, b) { return a - b; }, // Restar
+        add(a, b) { return a + b; }, // Sumar (ya lo tenías, pero lo pongo para asegurar)
+        ifEquals(arg1, arg2, options) { // Para comparar si son iguales
+            return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
+        },
+        range(start, end) { // Para crear la lista de números de la paginación
+            const arr = [];
+            for (let i = start; i <= end; i++) {
+                arr.push(i);
+            }
+            return arr;
+        }
+        // ✅ FIN DE LOS HELPERS NUEVOS
     }
 }));
 app.set('view engine', '.hbs');
 app.set('views', path.join(__dirname, 'src', 'views'));
-
 
 // Middlewares
 app.use(express.urlencoded({ extended: true }));
@@ -60,6 +74,7 @@ app.use('/Audio', express.static(path.join(__dirname, 'src', 'Audio')));
 app.use('/animacion_frames_p', express.static(path.join(__dirname, 'src','media','animacion_frames_p')));
 app.use('/images', express.static(path.join(__dirname, 'src', 'public', 'media', 'images')));
 app.use('/src/audio', express.static(path.join(__dirname, 'src', 'audio')));
+
 
 // Configuración de sesiones
 const sessionMiddleware = session({
@@ -152,7 +167,8 @@ app.get('/ahorcado_cooperativo', (req, res) => {
 });
 
 // Configuración de Socket.io
-require('./src/sockets/index.js')(io, pool); // <--- ¡CORREGIDO!
+require('./src/sockets/minijuegos/index.js')(io, pool); // <--- ¡CORREGIDO!
+require('./src/sockets/modo_competitivo/index.js')(io, pool);
 
 // Iniciar servidor
 const PORT = process.env.PORT || 3005;

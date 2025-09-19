@@ -19,21 +19,30 @@
     <!-- Top player -->
     <div class="top-player-section">
       <h2 class="section-title"><i class="fas fa-crown"></i> Jugador Top Global</h2>
+      
       {{#if rankingData.length}}
-      <div class="top-player-card">
-        <div class="top-badge">🥇</div>
-        <div class="top-avatar">{{rankingData.[0].apodo.[0]}}</div>
-        <div class="top-username">{{rankingData.[0].username}}</div>
-        <div class="top-category">Total - {{rankingData.[0].puntos}} puntos</div>
-      </div>
+        {{#with rankingData.[0]}}
+          <div class="top-player-card">
+            <div class="top-badge">🥇</div>
+            
+            {{#if foto_perfil}}
+              <img src="{{foto_perfil}}" alt="Foto de {{username}}" class="top-avatar">
+            {{else}}
+              <div class="top-avatar">{{apodo.[0]}}</div>
+            {{/if}}
+            
+            <div class="top-username">{{username}}</div>
+            <div class="top-category">Total - {{puntos}} puntos</div>
+          </div>
+        {{/with}}
       {{else}}
-      <div class="top-player-card">
-        <div class="top-badge">🥇</div>
-        <div class="top-avatar">?</div>
-        <div class="top-username">No hay datos aún</div>
-        <div class="top-category">Sé el primero en jugar</div>
-        <div class="top-score">0 puntos</div>
-      </div>
+        <div class="top-player-card">
+          <div class="top-badge">🥇</div>
+          <div class="top-avatar">?</div>
+          <div class="top-username">No hay datos aún</div>
+          <div class="top-category">Sé el primero en jugar</div>
+          <div class="top-score">0 puntos</div>
+        </div>
       {{/if}}
       <p>¡Inspírate en el mejor jugador para lograr tus propios objetivos! Completa el examen con éxito para aumentar tu puntuación global.</p>
     </div>

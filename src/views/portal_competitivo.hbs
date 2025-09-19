@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Competitivo - QueBuenDato</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #1a202c; /* Un fondo oscuro para resaltar las tarjetas */
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .portal-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .portal-header h1 {
+            font-size: 3rem;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+        .portal-header p {
+            font-size: 1.2rem;
+            color: #a0aec0; /* Un gris claro para el subtítulo */
+        }
+
+        .modes-container {
+            display: flex;
+            gap: 40px; /* Espacio entre las tarjetas */
+        }
+
+        .mode-card {
+            width: 400px;
+            height: 550px;
+            background-color: #2d3748; /* Un gris más oscuro para la tarjeta */
+            border-radius: 20px;
+            padding: 30px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .mode-card:hover {
+            transform: translateY(-10px);
+            border-color: #facc15; /* El amarillo de tu marca */
+            box-shadow: 0 10px 30px rgba(250, 204, 21, 0.2);
+        }
+
+        .mode-card .mode-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            background-color: #4a5568; /* Placeholder color */
+        }
+
+        .mode-card h2 {
+            font-size: 2rem;
+            margin: 0 0 15px 0;
+            color: #facc15;
+        }
+
+        .mode-card p {
+            font-size: 1rem;
+            color: #cbd5e0;
+            flex-grow: 1; /* Empuja el botón hacia abajo */
+        }
+
+        .mode-card .btn-entrar {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #facc15, #e0a800);
+            color: #1a202c;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .mode-card:hover .btn-entrar {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(250, 204, 21, 0.3);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="portal-header">
+        <h1>Elige tu Arena</h1>
+        <p>¿Prefieres la gloria individual o la victoria en equipo?</p>
+    </div>
+
+    <div class="modes-container">
+        <div class="mode-card" onclick="window.location.href='/duelos'">
+            <img src="/media/videos/duelodelascenso.gif" alt="Duelo 1 contra 1" class="mode-image">/
+            <h2>Duelos de Ascenso</h2>
+            <p>
+                Desafía a un oponente en un duelo de conocimiento 1 vs 1. ¡Demuestra tu habilidad, sube en el ranking y obtén recompensas únicas!
+            </p>
+            <button class="btn-entrar">
+                <i class="fas fa-user-shield"></i> Entrar a la Arena
+            </button>
+        </div>
+
+        <div class="mode-card" onclick="window.location.href='/competitivo/equipos/lobby'">
+            <img src="/media/videos/duelodelsaber.gif" alt="Duelo en Equipo" class="mode-image">
+            <h2>Duelo del Saber</h2>
+            <p>
+                Forma un equipo y compite en una batalla de ingenio y velocidad. ¡La cooperación y la rapidez son la clave para la victoria!
+            </p>
+            <button class="btn-entrar">
+                <i class="fas fa-users"></i> Formar Equipo
+            </button>
+        </div>
+    </div>
+    
+    <button onclick="location.href='/menu_principal'" style="margin-top: 40px; background: transparent; border: 1px solid #4a5568; color: #a0aec0;">Regresar al Menú</button>
+
+</body>
+</html>
