@@ -38,39 +38,40 @@ function getFramePath(frameNumber) {
 }
 
 // ======================================================================
-// === PRE-CARGA DE IMÁGENES ============================================
+// === PRE-CARGA DE IMÁGENES (CAMBIO: ahora progresiva) =================
 // ======================================================================
-const preloadedImages = [];
-let loadedImagesCount = 0;
-let totalUniqueImagesToLoad = 0;
+function preloadFrames(start, end, callback) {
+    let loaded = 0;
+    const total = end - start + 1;
 
-const framesToLoad = new Set();
+    for (let i = start; i <= end; i++) {
+        const img = new Image();
+        img.src = getFramePath(i);
+        img.onload = () => {
+            loaded++;
+            if (loaded === total && callback) callback();
+        };
+        img.onerror = () => {
+            loaded++;
+            if (loaded === total && callback) callback();
+        };
+    }
+}
 
-// Introducción
-for (let i = introStartFrameNum; i <= introEndFrameNum; i++) framesToLoad.add(i);
-// Bucle Idle
-for (let i = loopStartFrameNum; i <= loopEndFrameNum; i++) framesToLoad.add(i);
-// Outro
-for (let i = outroStartFrameNum; i <= outroEndFrameNum; i++) framesToLoad.add(i);
+// Primero precargamos solo la intro
+preloadFrames(introStartFrameNum, introEndFrameNum, () => {
+    console.log("✅ Intro lista");
+    waitForUserInteraction();
 
-totalUniqueImagesToLoad = framesToLoad.size;
+    // Mientras corre la intro, precargamos idle
+    preloadFrames(loopStartFrameNum, loopEndFrameNum, () => {
+        console.log("✅ Idle listo");
 
-framesToLoad.forEach(frameNumber => {
-    const img = new Image();
-    img.src = getFramePath(frameNumber);
-    img.onload = () => {
-        loadedImagesCount++;
-        if (loadedImagesCount === totalUniqueImagesToLoad) {
-            console.log('✅ Todos los frames cargados. Animación lista.');
-            waitForUserInteraction();
-        }
-    };
-    img.onerror = () => {
-        console.error(`❌ Error al cargar frame: ${getFramePath(frameNumber)}`);
-        loadedImagesCount++;
-        if (loadedImagesCount === totalUniqueImagesToLoad) waitForUserInteraction();
-    };
-    preloadedImages.push(img);
+        // Luego precargamos outro
+        preloadFrames(outroStartFrameNum, outroEndFrameNum, () => {
+            console.log("✅ Outro listo");
+        });
+    });
 });
 
 // ======================================================================
@@ -104,17 +105,22 @@ function initAnimation() {
     });
 
     // Escena 2: Bucle Idle
+    // ⚡ CAMBIO: frames controlados por currentTime del audio
     loopTimeline = gsap.timeline({
         paused: true,
         repeat: -1
     });
 
-    loopTimeline.to(animationElement, {
-        duration: loopTotalImages / 20,
+    loopTimeline.to({}, { // objeto vacío solo para el "tick"
+        duration: 1, // da igual, porque usamos currentTime
+        repeat: -1,
         ease: "none",
         onUpdate: function () {
-            const currentFrame = Math.floor(this.progress() * loopTotalImages) + loopStartFrameNum;
-            animationElement.src = getFramePath(currentFrame);
+            if (esperandoAudio.duration > 0) {
+                const progress = (esperandoAudio.currentTime % esperandoAudio.duration) / esperandoAudio.duration;
+                const currentFrame = Math.floor(progress * loopTotalImages) + loopStartFrameNum;
+                animationElement.src = getFramePath(currentFrame);
+            }
         }
     });
 

@@ -87,22 +87,38 @@ router.post('/desafiar/duelo/:idOponente', async (req, res) => {
     if (!req.session.user) return res.status(401).json({ message: 'No has iniciado sesión' });
     
     const { idOponente } = req.params;
+    const { materia } = req.body;
+    const tiempoLimite = 2 * 24 * 60 * 60; // 2 días en segundos
     const { id_usuario: idRemitente, username: usernameRemitente } = req.session.user;
 
     try {
+        const extraData = {
+            remitente: req.session.user,
+            materia,
+            tiempoLimite,
+            fecha_expira: new Date(Date.now() + tiempoLimite * 1000) // fecha límite exacta
+        };
+
         await pool.query(
-            `INSERT INTO notificaciones (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
-             VALUES (?, ?, 'desafio_duelo', ?, ?)`,
-            [idOponente, idRemitente, `${usernameRemitente} te desafía a un Duelo de Ascenso!`, JSON.stringify({ remitente: req.session.user })]
+            `INSERT INTO notificaciones 
+            (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
+            VALUES (?, ?, 'desafio_duelo', ?, ?)`,
+            [
+                idOponente,
+                idRemitente,
+                `${usernameRemitente} te desafía a un Duelo de Ascenso en ${materia}!`,
+                JSON.stringify(extraData)
+            ]
         );
         
         req.io.to(idOponente.toString()).emit('notificacion_recibida');
-        res.json({ message: '¡Desafío enviado!' });
+        res.json({ success: true, message: '¡Desafío enviado!', extraData });
     } catch (err) {
         console.error('Error enviando desafío:', err);
         res.status(500).json({ message: 'Error del servidor al enviar el desafío' });
     }
 });
+
 
 // ✅ ¡LA LÍNEA MÁS IMPORTANTE VA AL FINAL DE TODO!
 module.exports = router;

@@ -110,15 +110,19 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
         }
         
         const notificacion = notificaciones[0];
-        const extraData = JSON.parse(notificacion.extra_data);
-        
+        let extraData = {};
+        try {
+            extraData = notificacion.extra_data ? JSON.parse(notificacion.extra_data) : {};
+        } catch (err) {
+            console.warn("⚠️ extra_data no es JSON válido:", notificacion.extra_data);
+            extraData = {};
+        }
+
         await pool.query("DELETE FROM notificaciones WHERE id_notificacion = ?", [idNotificacion]);
-        
-        // ✅ RESPUESTA MEJORADA: Devolvemos más datos al frontend
-        // para que el cliente decida qué hacer.
+
         res.json({ 
             success: true, 
-            tipo: notificacion.tipo, // Ej: 'desafio_duelo' o 'invitacion'
+            tipo: notificacion.tipo, 
             id_remitente: notificacion.id_usuario_remitente,
             extra_data: extraData,
             message: 'Notificación procesada' 
@@ -127,6 +131,37 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
     } catch (err) {
         console.error('Error en aceptar notificación:', err);
         res.status(500).json({ success: false, message: 'Error interno al procesar la aceptación' });
+    }
+});
+
+router.post('/rechazar/:idNotificacion', async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ success: false, message: 'Debes iniciar sesión' });
+    }
+
+    const { idNotificacion } = req.params;
+    const userId = req.session.user.id_usuario;
+
+    try {
+        // Verificar que la notificación exista y sea para este usuario
+        const [notificaciones] = await pool.query(
+            `SELECT * FROM notificaciones WHERE id_notificacion = ? AND id_usuario_destinatario = ?`,
+            [idNotificacion, userId]
+        );
+
+        if (notificaciones.length === 0) {
+            return res.status(404).json({ success: false, message: 'Notificación no encontrada' });
+        }
+
+        // Borrar la notificación
+        await pool.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
+
+        // Opcional: devolver algún mensaje al frontend
+        res.json({ success: true, message: 'Notificación rechazada y eliminada' });
+
+    } catch (err) {
+        console.error('Error al rechazar notificación:', err);
+        res.status(500).json({ success: false, message: 'Error interno al rechazar la notificación' });
     }
 });
 module.exports = router;
