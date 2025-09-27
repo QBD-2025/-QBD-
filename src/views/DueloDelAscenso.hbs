@@ -9,76 +9,61 @@
 <div id="rankingGlobalContainer"></div>
 
 <script>
-    const user = {{{json user}}};
+    const user = {{{json user}}}; // asegúrate que el helper "json" existe en tu backend
     const rankingGlobalContainer = document.getElementById('rankingGlobalContainer');
 
-    document.addEventListener('click', async (e) => {
-    if (e.target && e.target.tagName === 'BUTTON' && e.target.dataset.id) {
-        const idOponente = e.target.dataset.id;
-
-        // Preguntar materia
-        const materia = prompt("¿Qué materia quieres para el desafío?");
-        if (!materia) return;
-
-        // Tiempo límite fijo de 2 días (en horas o fecha)
-        const tiempoLimite = 2 * 24 * 60 * 60; // 2 días en segundos
-
-        e.target.disabled = true;
-        e.target.textContent = 'Enviado...';
-
-        try {
-            await fetch(`/desafiar/duelo/${idOponente}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ materia, tiempoLimite })
-            });
-        } catch (error) {
-            console.error("Error al enviar desafío:", error);
-            e.target.disabled = false;
-            e.target.textContent = 'Desafiar ⚔️';
-        }
-    }
-});
-
+    // Renderizar ranking
     function renderizarRanking(container, jugadores) {
-            container.innerHTML = '';
-            if (!jugadores || jugadores.length === 0) {
-                container.innerHTML = '<p>No hay jugadores en este ranking.</p>';
-                return;
-            }
-
-            // Ordenar jugadores de mayor a menor puntos
-            jugadores.sort((a, b) => b.puntos - a.puntos);
-
-            // Encontrar tu posición
-            const miIndex = jugadores.findIndex(j => j.id_usuario === user.id_usuario);
-
-            jugadores.forEach((jugador, i) => {
-                const item = document.createElement('div');
-                item.innerHTML = `
-                    <img src="${jugador.foto_perfil || '/media/images/default_avatar.png'}" alt="Avatar" width="40">
-                    <strong>${jugador.username}</strong>
-                    <span>${jugador.puntos} puntos</span>
-                    ${i < miIndex ? `<button data-id="${jugador.id_usuario}">Desafiar ⚔️</button>` : ''}
-                `;
-                container.appendChild(item);
-            });
+        container.innerHTML = '';
+        if (!jugadores || jugadores.length === 0) {
+            container.innerHTML = '<p>No hay jugadores en este ranking.</p>';
+            return;
         }
 
+        // Ordenar jugadores de mayor a menor puntos
+        jugadores.sort((a, b) => b.puntos - a.puntos);
 
+        // Encontrar tu posición
+        const miIndex = jugadores.findIndex(j => j.id_usuario === user.id_usuario);
+
+        jugadores.forEach((jugador, i) => {
+            const item = document.createElement('div');
+            item.innerHTML = `
+                <img src="${jugador.foto_perfil || '/media/images/default_avatar.png'}" alt="Avatar" width="40">
+                <strong>${jugador.username}</strong>
+                <span>${jugador.puntos} puntos</span>
+                ${i < miIndex ? `<button data-id="${jugador.id_usuario}">Desafiar ⚔️</button>` : ''}
+            `;
+            container.appendChild(item);
+        });
+    }
+
+    // Cargar ranking global
     async function cargarRankingGlobal() {
         const response = await fetch('/api/ranking/global');
         const jugadores = await response.json();
         renderizarRanking(rankingGlobalContainer, jugadores);
     }
 
+    // ÚNICO event listener de click
     document.addEventListener('click', async (e) => {
         if (e.target && e.target.tagName === 'BUTTON' && e.target.dataset.id) {
+            const idOponente = e.target.dataset.id;
+
+
+            const tiempoLimite = 2 * 24 * 60 * 60; // 2 días en segundos
+
             e.target.disabled = true;
             e.target.textContent = 'Enviado...';
-            const idOponente = e.target.dataset.id;
+
             try {
-                await fetch(`/desafiar/duelo/${idOponente}`, { method: 'POST' });
+                const res = await fetch(`/desafiar/duelo/${idOponente}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tiempoLimite })
+                });
+                const data = await res.json();
+                console.log("Respuesta del servidor:", data);
             } catch (error) {
                 console.error("Error al enviar desafío:", error);
                 e.target.disabled = false;
@@ -87,10 +72,9 @@
         }
     });
 
-    document.addEventListener('DOMContentLoaded', async () => {
-        cargarRankingGlobal();
-    });
+    document.addEventListener('DOMContentLoaded', cargarRankingGlobal);
 </script>
+
 
 </body>
 </html>

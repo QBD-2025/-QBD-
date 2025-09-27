@@ -51,16 +51,13 @@
             {{/if}}
         </div>
     </div>
+    <div id="mensajeExamen"></div>
 
     {{{body}}}
-
-    <div class="bottom-left-dot"></div>
-    <audio id="musica" loop src="/Audio/bby_no.mp3"></audio>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
     // ✅ FUNCIONES GLOBALES (para que el HTML las encuentre)
-   // --- FUNCIONES GLOBALES (para que el HTML las encuentre) ---
     function toggleNotifications(event) {
         event.stopPropagation();
         const list = document.getElementById("notification-list");
@@ -79,6 +76,21 @@
                 if (notif.tipo === 'invitacion' || notif.tipo === 'desafio_duelo') {
                     li.innerHTML = `<span>${notif.mensaje}</span><button class="btn-aceptar" data-id="${notif.id_notificacion}">Aceptar</button>`;
                     li.innerHTML += `<button class="btn-rechazar" data-id="${notif.id_notificacion}">Rechazar</button>`;
+                } else if (notif.tipo === 'duelo_aceptado') {
+                    // Notificación de duelo aceptado - mostrar enlace al examen
+                    let extraData = {};
+                    try { extraData = JSON.parse(notif.extra_data || '{}'); } catch(e) { extraData = {}; }
+                    li.innerHTML = `
+                        <span>${notif.mensaje}</span>
+                        <button class="btn-ir-examen" onclick="window.location.href='/duelo/examen/${extraData.salaId}'" 
+                                style="background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-left: 10px; font-weight: bold;">
+                            Unirse
+                        </button>
+                        <button class="btn-eliminar" data-id="${notif.id_notificacion}" 
+                                style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-left: 5px;">
+                            ✕
+                        </button>
+                    `;
                 } else {
                     li.innerHTML = `<span>${notif.mensaje}</span>`;
                 }
@@ -122,47 +134,147 @@
         {{#if user}}
             const socket = io();
 
-            // 1. Listener para ACEPTAR cualquier notificación
+            // 1. Listener para ACEPTAR cualquier notificación - VERSIÓN CORREGIDA
             document.getElementById('notifications-ul')?.addEventListener('click', async (event) => {
                 if (event.target.classList.contains('btn-aceptar')) {
                     const notifId = event.target.dataset.id;
+                    const button = event.target;
+                    
+                    // Deshabilitar botón mientras procesa
+                    button.disabled = true;
+                    button.textContent = 'Procesando...';
+                    
                     try {
-                        const response = await fetch(`/aceptar/${notifId}`, { method: 'POST' });
+                        const response = await fetch(`/invitaciones/aceptar/${notifId}`, { method: 'POST' });
                         const data = await response.json();
+                        
+                        console.log('Respuesta del servidor:', data); // DEBUG
+                        
                         if (data.success) {
+                            // Remover la notificación de la UI inmediatamente
+                            const li = event.target.closest('li');
+                            if (li) li.remove();
+                            
+                            // Manejar según el tipo de notificación
                             if (data.tipo === 'desafio_duelo') {
-                                // AVISAMOS AL SERVIDOR QUE ACEPTAMOS EL DUELO
-                                socket.emit('duelo:aceptarDesafio', { id_retador: data.id_remitente });
+                                console.log('✅ Duelo aceptado, datos:', data);
+                                
+                                // Mostrar mensaje con opción de ir al examen
+                                const cont = document.getElementById('mensajeExamen') || document.body;
+                                const mensajeDiv = document.createElement('div');
+                                mensajeDiv.id = 'duelo-aceptado-mensaje';
+                                mensajeDiv.style.cssText = `
+                                    position: fixed; top: 20px; left: 50%; transform: translateX(-50%); 
+                                    background: #28a745; color: white; padding: 20px; border-radius: 8px; 
+                                    z-index: 9999; text-align: center; max-width: 400px;
+                                `;
+                                mensajeDiv.innerHTML = `
+                                    <h4>¡Desafío Aceptado!</h4>
+                                    <p>${data.message}</p>
+                                    <p><strong>Ve a las notificaciones 🔔 para unirte al duelo.</strong></p>
+                                    <div style="margin-top: 15px;">
+                                        <button id="btn-cerrar-mensaje" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                                            Entendido
+                                        </button>
+                                    </div>
+                                `;
+                                cont.appendChild(mensajeDiv);
+                                
+                                // Event listeners para los botones
+                                document.getElementById('btn-cerrar-mensaje').addEventListener('click', () => {
+                                    mensajeDiv.remove();
+                                    // Recargar notificaciones después de un delay para que el backend termine de procesar
+                                    setTimeout(cargarNotificaciones, 1500); // Aumentar delay
+                                });
+                                
+                                // Auto-cerrar después de 10 segundos
+                                setTimeout(() => {
+                                    if (document.getElementById('duelo-aceptado-mensaje')) {
+                                        mensajeDiv.remove();
+                                    }
+                                }, 10000);
+                                
                             } else if (data.tipo === 'invitacion') {
-                                // REDIRIGIMOS A MINIJUEGOS (esto ya funcionaba)
-                                window.location.href = `/${data.extra_data.juego}/${data.extra_data.salaId}`;
+                                // Minijuegos normales
+                                console.log('✅ Invitación aceptada, redirigiendo:', data.redirigir);
+                                window.location.href = data.redirigir;
+                                
+                            } else {
+                                // Otros tipos de notificación
+                                console.log('✅ Notificación procesada:', data.message);
+                                // Solo recargar notificaciones
+                                setTimeout(cargarNotificaciones, 500);
                             }
+                            
                         } else {
-                            alert(data.message || 'No se pudo aceptar.');
+                            console.error('❌ Error al aceptar:', data.message);
+                            alert(data.message || 'No se pudo aceptar la notificación.');
+                            button.disabled = false;
+                            button.textContent = 'Aceptar';
                         }
-                    } catch (error) { console.error("Error al aceptar:", error); }
+                        
+                    } catch (error) {
+                        console.error("❌ Error de red al aceptar:", error);
+                        alert('Error de conexión. Inténtalo de nuevo.');
+                        button.disabled = false;
+                        button.textContent = 'Aceptar';
+                    }
                 }
+                
                 if (event.target.classList.contains('btn-rechazar')) {
                     const notifId = event.target.dataset.id;
+                    const button = event.target;
+                    
+                    button.disabled = true;
+                    button.textContent = 'Rechazando...';
 
                     try {
-                        const li=event.target.closest('li');
-                        if (li) { li.remove(); }
-                        await fetch(`/rechazar/${notifId}`, { method: 'POST' });
+                        const li = event.target.closest('li');
+                        if (li) li.remove();
                         
-                    } catch (error) { console.error("Error al rechazar:", error); }
+                        await fetch(`/invitaciones/rechazar/${notifId}`, { method: 'POST' });
+                        console.log('✅ Notificación rechazada');
+                        
+                    } catch (error) {
+                        console.error("❌ Error al rechazar:", error);
+                        button.disabled = false;
+                        button.textContent = 'Rechazar';
+                    }
+                }
+                
+                if (event.target.classList.contains('btn-eliminar')) {
+                    const notifId = event.target.dataset.id;
+                    const button = event.target;
+                    
+                    button.disabled = true;
+                    button.textContent = '...';
+
+                    try {
+                        const li = event.target.closest('li');
+                        if (li) li.remove();
+                        
+                        await fetch(`/invitaciones/rechazar/${notifId}`, { method: 'POST' });
+                        console.log('✅ Notificación eliminada');
+                        
+                    } catch (error) {
+                        console.error("❌ Error al eliminar:", error);
+                        button.disabled = false;
+                        button.textContent = '✕';
+                    }
                 } 
             });
 
             // ✅ 2. Listener GLOBAL para la orden de redirección del Duelo de Ascenso
             // Este evento lo reciben AMBOS jugadores, estén donde estén.
-            socket.on('duelo:iniciarDesafio', ({ salaId }) => {
-                //alert('¡Desafío aceptado! Redirigiendo a la sala del duelo...');
-                window.location.href = `/competitivo/duelo/enfrentamiento/${salaId}`;
+            socket.on('duelo:iniciarDesafio', ({ salaId, mensaje }) => {
+                console.log('🚀 Recibido evento duelo:iniciarDesafio:', { salaId, mensaje });
+                if (mensaje) alert(mensaje);
+                window.location.href = `/duelo/enfrentamiento/${salaId}`;
             });
 
             // 3. Listener para que la campanita se actualice en tiempo real
             socket.on('notificacion_recibida', () => {
+                console.log('🔔 Notificación recibida, recargando...');
                 cargarNotificaciones(); 
             });
             

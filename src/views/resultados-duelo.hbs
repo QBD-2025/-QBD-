@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+{{#each respuestas}}
+    <div>
+        <p>Pregunta: {{this.id_pregunta}}</p>
+        {{#if ../ocultarOponente}}
+            <p>Respuesta del oponente: <span class="bloqueado">Completa tu examen para verla</span></p>
+        {{else}}
+            <p>Respuesta del oponente: {{this.respuesta}}</p>
+        {{/if}}
+    </div>
+{{/each}}
+
+<div>
+    <button onclick="location.href='/portal'">Volver al inicio</button>
+</div>
+
+<style>
+.bloqueado {
+    filter: blur(3px);
+    color: gray;
+}
+</style>
+
+</body>
+</html>

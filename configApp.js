@@ -136,7 +136,7 @@ app.use('/', sopaR);
 app.use('/', gatoR);
 app.use('/', serpEscalerasR);
 app.use('/', sopaLetrasR);
-app.use('/', invitacionesR);
+app.use('/invitaciones', invitacionesR);
 app.use('/', ahorcadoR);
 app.use('/', examenAdmisionR);
 app.use('/', notificacionesR);
