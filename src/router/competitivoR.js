@@ -270,63 +270,98 @@ router.get('/duelo/examen/:salaId', async (req, res) => {
 // --- RUTA PARA RESPONDER DUELO - CORREGIDA ---
 router.post('/duelo/responder/:salaId', async (req, res) => {
     if (!req.session.user) return res.status(401).json({ error: 'No autorizado' });
-
+    
     const { salaId } = req.params;
     const { respuestas, fecha_inicio_str, tiempo_empleado } = req.body;
     const id_usuario = req.session.user.id_usuario;
-
+    
     try {
-        // Parsear respuestas (viene como JSON string desde el frontend)
+        // Parsear respuestas
         const respuestasObj = typeof respuestas === 'string' ? JSON.parse(respuestas) : respuestas;
-
+        
         // Verificar que el duelo existe y el usuario participa
         const [duelos] = await pool.query(
             `SELECT * FROM duelos WHERE id_duelo = ? AND (id_retador = ? OR id_defensor = ?)`,
             [salaId, id_usuario, id_usuario]
         );
-
-        if (duelos.length === 0) {
-            return res.status(404).json({ success: false, error: 'Duelo no encontrado' });
-        }
-
+        
+        if (duelos.length === 0) return res.status(404).json({ success: false, error: 'Duelo no encontrado' });
+        
         const duelo = duelos[0];
-        const esRetador = (duelo.id_retador === id_usuario);
-
-        // Guardar respuestas en BD - TABLA CORREGIDA (sin 's')
+        const esRetador = duelo.id_retador === id_usuario;
+        const idOponente = esRetador ? duelo.id_defensor : duelo.id_retador;
+        
+        // Guardar respuestas en BD
         for (const [id_pregunta, respuesta_seleccionada] of Object.entries(respuestasObj)) {
             await pool.query(
                 `INSERT INTO duelo_respuestas (id_duelo, id_usuario, id_pregunta, respuesta)
-                VALUES (?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE respuesta = VALUES(respuesta)`,
+                 VALUES (?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE respuesta = VALUES(respuesta)`,
                 [salaId, id_usuario, parseInt(id_pregunta), parseInt(respuesta_seleccionada)]
             );
         }
-
+        
         // Marcar que ya contestó este jugador
         const campoRespuesta = esRetador ? 'respondido_retador' : 'respondido_oponente';
-        await pool.query(
-            `UPDATE duelos SET ${campoRespuesta} = 1 WHERE id_duelo = ?`,
-            [salaId]
+        await pool.query(`UPDATE duelos SET ${campoRespuesta} = 1 WHERE id_duelo = ?`, [salaId]);
+        
+        // 🎯 AQUÍ ES DONDE ENVÍAS LA NOTIFICACIÓN AL OPONENTE
+        // Verificar si el oponente AÚN NO ha terminado para enviarle la notificación
+        const [respuestasOponente] = await pool.query(
+            `SELECT COUNT(*) as total FROM duelo_respuestas WHERE id_duelo = ? AND id_usuario = ?`,
+            [salaId, idOponente]
         );
-
+        
+        const oponenteYaTermino = respuestasOponente[0].total > 0;
+        
+        if (!oponenteYaTermino) {
+            // El oponente AÚN NO termina, enviarle notificación con puntaje oculto
+            const puntajeBorroso = Math.floor(Math.random() * 10) + 1; // puntaje falso
+            
+            // Crear notificación para el oponente
+            await pool.query(
+                `INSERT INTO notificaciones 
+                (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data)
+                VALUES (?, ?, 'oponente_termino', ?, ?)`,
+                [
+                    idOponente, 
+                    id_usuario, 
+                    `${req.session.user.username} ha terminado el duelo. Su puntuación: ******* (termina tu examen para verla)`,
+                    JSON.stringify({ 
+                        salaId, 
+                        puntajeBorroso, 
+                        ocultar: true,
+                        usuarioQueTermino: req.session.user.username
+                    })
+                ]
+            );
+            
+            // Emitir socket en tiempo real
+            if (req.io) {
+                req.io.to(idOponente.toString()).emit('oponente_termino', {
+                    salaId,
+                    mensaje: `${req.session.user.username} ha terminado el duelo`,
+                    puntajeOculto: true
+                });
+                
+                req.io.to(idOponente.toString()).emit('notificacion_recibida');
+            }
+        }
+        
         // Verificar si ambos ya terminaron para calcular resultados
-        const [dueloActualizado] = await pool.query(
-            `SELECT * FROM duelos WHERE id_duelo = ?`,
-            [salaId]
-        );
-
+        const [dueloActualizado] = await pool.query(`SELECT * FROM duelos WHERE id_duelo = ?`, [salaId]);
         if (dueloActualizado[0].respondido_retador && dueloActualizado[0].respondido_oponente) {
-            // Ambos terminaron, calcular ganador y actualizar puntos
             await calcularResultadosDuelo(salaId);
         }
-
+        
         res.redirect(`/duelo/resultados/${salaId}`);
-
+        
     } catch (error) {
         console.error("Error al guardar respuestas de duelo:", error);
         res.status(500).json({ success: false, error: "Error al guardar respuestas" });
     }
 });
+
 
 // --- FUNCIÓN AUXILIAR PARA CALCULAR RESULTADOS DEL DUELO ---
 async function calcularResultadosDuelo(salaId) {
@@ -341,46 +376,37 @@ async function calcularResultadosDuelo(salaId) {
         
         const duelo = duelos[0];
 
-        // Calcular puntuación del retador - CORREGIDO PARA TU ESTRUCTURA
-        const [puntajeRetador] = await pool.query(`
-            SELECT COUNT(*) as correctas
-            FROM duelo_respuestas dr
-            INNER JOIN pregunta p ON dr.id_pregunta = p.id_pregunta
-            WHERE dr.id_duelo = ? AND dr.id_usuario = ? 
-            AND EXISTS (
-                SELECT 1 FROM respuesta r 
-                WHERE r.id_pregunta = p.id_pregunta 
-                AND r.correcta = 1 
-                AND r.id_respuesta = (
-                    SELECT res.id_respuesta FROM respuesta res 
-                    WHERE res.id_pregunta = p.id_pregunta 
-                    ORDER BY res.id_respuesta 
-                    LIMIT dr.respuesta, 1
-                )
-            )
-        `, [salaId, duelo.id_retador]);
+        // Función auxiliar para calcular puntaje de un jugador
+        async function calcularPuntajeJugador(idJugador) {
+            const [respuestasJugador] = await pool.query(
+                `SELECT dr.id_pregunta, dr.respuesta as indice_respuesta
+                 FROM duelo_respuestas dr
+                 WHERE dr.id_duelo = ? AND dr.id_usuario = ?`,
+                [salaId, idJugador]
+            );
 
-        // Calcular puntuación del defensor - CORREGIDO PARA TU ESTRUCTURA
-        const [puntajeDefensor] = await pool.query(`
-            SELECT COUNT(*) as correctas
-            FROM duelo_respuestas dr
-            INNER JOIN pregunta p ON dr.id_pregunta = p.id_pregunta
-            WHERE dr.id_duelo = ? AND dr.id_usuario = ? 
-            AND EXISTS (
-                SELECT 1 FROM respuesta r 
-                WHERE r.id_pregunta = p.id_pregunta 
-                AND r.correcta = 1 
-                AND r.id_respuesta = (
-                    SELECT res.id_respuesta FROM respuesta res 
-                    WHERE res.id_pregunta = p.id_pregunta 
-                    ORDER BY res.id_respuesta 
-                    LIMIT dr.respuesta, 1
-                )
-            )
-        `, [salaId, duelo.id_defensor]);
+            let correctas = 0;
+            
+            for (let resp of respuestasJugador) {
+                const [opciones] = await pool.query(
+                    `SELECT correcta FROM respuesta 
+                     WHERE id_pregunta = ? 
+                     ORDER BY id_respuesta 
+                     LIMIT ?, 1`,
+                    [resp.id_pregunta, resp.indice_respuesta - 1]
+                );
+                
+                if (opciones.length > 0 && opciones[0].correcta === 1) {
+                    correctas++;
+                }
+            }
+            
+            return correctas;
+        }
 
-        const correctasRetador = puntajeRetador[0].correctas;
-        const correctasDefensor = puntajeDefensor[0].correctas;
+        // Calcular puntajes
+        const correctasRetador = await calcularPuntajeJugador(duelo.id_retador);
+        const correctasDefensor = await calcularPuntajeJugador(duelo.id_defensor);
 
         let id_ganador = null;
         let puntosGanador = 0;
@@ -388,7 +414,7 @@ async function calcularResultadosDuelo(salaId) {
         // Determinar ganador
         if (correctasRetador > correctasDefensor) {
             id_ganador = duelo.id_retador;
-            puntosGanador = 20; // Puntos por ganar duelo
+            puntosGanador = 20;
         } else if (correctasDefensor > correctasRetador) {
             id_ganador = duelo.id_defensor;
             puntosGanador = 20;
@@ -439,13 +465,46 @@ async function calcularResultadosDuelo(salaId) {
     }
 }
 
+async function verificarOponenteTerminado(salaId, userId) {
+    try {
+        // Traer el duelo y saber quién es el oponente
+        const [duelos] = await pool.query(
+            `SELECT * FROM duelos WHERE id_duelo = ? AND (id_retador = ? OR id_defensor = ?)`,
+            [salaId, userId, userId]
+        );
+        if (duelos.length === 0) return null;
+
+        const duelo = duelos[0];
+        const esRetador = duelo.id_retador === userId;
+        const idOponente = esRetador ? duelo.id_defensor : duelo.id_retador;
+
+        // Revisar si el oponente ya contestó
+        const [respuestasOponente] = await pool.query(
+            `SELECT COUNT(*) as total FROM duelo_respuestas WHERE id_duelo = ? AND id_usuario = ?`,
+            [salaId, idOponente]
+        );
+
+        if (respuestasOponente[0].total > 0) {
+            // Generar "puntaje borroso" para mostrar en notificación
+            const puntajeBorroso = Math.floor(Math.random() * 10) + 1; // número aleatorio entre 1 y 10
+            return { idOponente, puntajeBorroso };
+        }
+
+        return null;
+
+    } catch (error) {
+        console.error('Error verificando oponente terminado:', error);
+        return null;
+    }
+}
+
 // --- RUTA DE RESULTADOS - CORREGIDA ---
 router.get('/duelo/resultados/:salaId', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     
     const userId = req.session.user.id_usuario;
     const { salaId } = req.params;
-
+    
     try {
         const [duelos] = await pool.query(
             `SELECT d.*, u1.username as retador_username, u2.username as defensor_username
@@ -455,35 +514,137 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
              WHERE d.id_duelo = ?`,
             [salaId]
         );
-
+        
         if (duelos.length === 0) return res.redirect('/portal');
-
+        
         const duelo = duelos[0];
-
+        
         // Verificar que el usuario es participante
         if (duelo.id_retador !== userId && duelo.id_defensor !== userId) {
             return res.redirect('/portal?error=no_autorizado');
         }
-
-        const [respuestas] = await pool.query(
-            `SELECT dr.*, p.pregunta, r.respuesta, r.correcta
+        
+        // Verificar si YO ya terminé mi examen
+        const [misRespuestas] = await pool.query(
+            `SELECT COUNT(*) as total FROM duelo_respuestas WHERE id_duelo = ? AND id_usuario = ?`,
+            [salaId, userId]
+        );
+        
+        const yaTermineMiExamen = misRespuestas[0].total > 0;
+        
+        // Si no he terminado mi examen, redirigir al examen
+        if (!yaTermineMiExamen) {
+            return res.redirect(`/duelo/examen/${salaId}`);
+        }
+        
+        const esRetador = duelo.id_retador === userId;
+        const idOponente = esRetador ? duelo.id_defensor : duelo.id_retador;
+        const ambosTerminaron = duelo.respondido_retador && duelo.respondido_oponente;
+        
+        // Obtener MIS respuestas con las preguntas - VERSIÓN SIMPLIFICADA
+        const [misRespuestasDetalle] = await pool.query(
+            `SELECT dr.id_pregunta, dr.respuesta as indice_respuesta_seleccionada, 
+                    p.pregunta
              FROM duelo_respuestas dr
              INNER JOIN pregunta p ON dr.id_pregunta = p.id_pregunta
-             LEFT JOIN respuesta r ON dr.id_pregunta = r.id_pregunta
-             WHERE dr.id_duelo = ?
-             ORDER BY dr.id_usuario, dr.id_pregunta`,
-            [salaId]
+             WHERE dr.id_duelo = ? AND dr.id_usuario = ?
+             ORDER BY dr.id_pregunta`,
+            [salaId, userId]
         );
 
+        // Ahora para cada respuesta, obtener si es correcta o no
+        for (let respuesta of misRespuestasDetalle) {
+            const [respuestasOpciones] = await pool.query(
+                `SELECT id_respuesta, correcta 
+                 FROM respuesta 
+                 WHERE id_pregunta = ? 
+                 ORDER BY id_respuesta`,
+                [respuesta.id_pregunta]
+            );
+            
+            // El campo dr.respuesta contiene el ÍNDICE de la respuesta (1, 2, 3, 4...)
+            // Necesitamos obtener la respuesta en esa posición
+            const indiceRespuesta = respuesta.indice_respuesta_seleccionada - 1; // Convertir a índice base 0
+            
+            if (respuestasOpciones[indiceRespuesta]) {
+                respuesta.es_correcta = respuestasOpciones[indiceRespuesta].correcta === 1;
+            } else {
+                respuesta.es_correcta = false; // Si no existe la opción, es incorrecta
+            }
+        }
+
+        let respuestasOponente = [];
+
+        // Solo obtener respuestas del oponente si ambos terminaron
+        if (ambosTerminaron) {
+            const [respuestasOponenteDetalle] = await pool.query(
+                `SELECT dr.id_pregunta, dr.respuesta as indice_respuesta_seleccionada
+                 FROM duelo_respuestas dr
+                 WHERE dr.id_duelo = ? AND dr.id_usuario = ?
+                 ORDER BY dr.id_pregunta`,
+                [salaId, idOponente]
+            );
+            
+            // Procesar respuestas del oponente igual que las mías
+            for (let respuesta of respuestasOponenteDetalle) {
+                const [respuestasOpciones] = await pool.query(
+                    `SELECT id_respuesta, correcta 
+                     FROM respuesta 
+                     WHERE id_pregunta = ? 
+                     ORDER BY id_respuesta`,
+                    [respuesta.id_pregunta]
+                );
+                
+                const indiceRespuesta = respuesta.indice_respuesta_seleccionada - 1;
+                
+                if (respuestasOpciones[indiceRespuesta]) {
+                    respuesta.es_correcta = respuestasOpciones[indiceRespuesta].correcta === 1;
+                } else {
+                    respuesta.es_correcta = false;
+                }
+            }
+            
+            respuestasOponente = respuestasOponenteDetalle;
+        }
+
+        // Combinar respuestas mías y del oponente por pregunta
+        const respuestasCombinadas = misRespuestasDetalle.map(miResp => {
+            const respOponente = respuestasOponente.find(r => r.id_pregunta === miResp.id_pregunta);
+            return {
+                id_pregunta: miResp.id_pregunta,
+                pregunta: miResp.pregunta,
+                mi_respuesta: miResp.indice_respuesta_seleccionada,
+                mi_correcta: miResp.es_correcta,
+                oponente_respuesta: respOponente ? respOponente.indice_respuesta_seleccionada : null,
+                oponente_correcta: respOponente ? respOponente.es_correcta : null
+            };
+        });
+
+        // Calcular puntajes
+        const miPuntaje = misRespuestasDetalle.filter(r => r.es_correcta).length;
+        const oponentePuntaje = ambosTerminaron ? 
+            respuestasOponente.filter(r => r.es_correcta).length : null;
+        
+        // Limpiar notificaciones relacionadas con este duelo para este usuario
+        await pool.query(
+            `DELETE FROM notificaciones 
+             WHERE id_usuario_destinatario = ? 
+             AND (JSON_EXTRACT(extra_data, '$.salaId') = ? OR tipo = 'duelo_aceptado' OR tipo = 'oponente_termino')`,
+            [userId, salaId]
+        );
+        
         res.render('resultados-duelo', {
             layout: 'main',
             user: req.session.user,
             duelo: duelo,
-            respuestas: respuestas,
-            ambosTerminaron: duelo.respondido_retador && duelo.respondido_oponente,
-            esRetador: duelo.id_retador === userId
+            respuestas: respuestasCombinadas,
+            ambosTerminaron: ambosTerminaron,
+            esRetador: esRetador,
+            miPuntaje: miPuntaje,
+            oponentePuntaje: oponentePuntaje,
+            nombreOponente: esRetador ? duelo.defensor_username : duelo.retador_username
         });
-
+        
     } catch (error) {
         console.error('Error al cargar resultados del duelo:', error);
         res.redirect('/portal?error=error_servidor');
@@ -651,6 +812,31 @@ router.post('/duelo/abandonar/:salaId', async (req, res) => {
 
     } catch (error) {
         console.error('Error al abandonar duelo:', error);
+        res.status(500).json({ success: false, error: 'Error del servidor' });
+    }
+});
+
+// --- RUTA PARA ELIMINAR NOTIFICACIONES ---
+router.delete('/notificaciones/eliminar/:idNotificacion', async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ success: false, error: 'No autorizado' });
+    
+    const { idNotificacion } = req.params;
+    const userId = req.session.user.id_usuario;
+    
+    try {
+        const resultado = await pool.query(
+            `DELETE FROM notificaciones 
+             WHERE id_notificacion = ? AND id_usuario_destinatario = ?`,
+            [idNotificacion, userId]
+        );
+        
+        res.json({ 
+            success: true, 
+            message: 'Notificación eliminada',
+            eliminadas: resultado[0].affectedRows 
+        });
+    } catch (error) {
+        console.error('Error al eliminar notificación:', error);
         res.status(500).json({ success: false, error: 'Error del servidor' });
     }
 });

@@ -130,7 +130,7 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
                 remitenteId: extraData.remitente.id_usuario,
                 remitente: extraData.remitente.username,
                 fechaLimite
-            });
+            }); 
 
             // Crear duelo asincrónico
             await pool.query(
@@ -271,6 +271,30 @@ router.post('/rechazar/:idNotificacion', async (req, res) => {
     } catch (err) {
         console.error('Error al rechazar notificación:', err);
         res.status(500).json({ success: false, message: 'Error interno al rechazar la notificación' });
+    }
+});
+
+router.delete('/notificaciones/eliminar/:idNotificacion', async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ success: false, error: 'No autorizado' });
+    
+    const { idNotificacion } = req.params;
+    const userId = req.session.user.id_usuario;
+    
+    try {
+        const resultado = await pool.query(
+            `DELETE FROM notificaciones 
+            WHERE id_notificacion = ? AND id_usuario_destinatario = ?`,
+            [idNotificacion, userId]
+        );
+        
+        res.json({ 
+            success: true, 
+            message: 'Notificación eliminada',
+            eliminadas: resultado[0].affectedRows 
+        });
+    } catch (error) {
+        console.error('Error al eliminar notificación:', error);
+        res.status(500).json({ success: false, error: 'Error del servidor' });
     }
 });
 
