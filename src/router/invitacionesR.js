@@ -43,12 +43,12 @@ router.post('/invitar/:idJugador', async (req, res) => {
 router.post('/enfrentar/:idJugador', async (req, res) => {
     if (!req.session.user) return res.status(401).json({ message: 'No has iniciado sesión' });
 
-    const { juego } = req.body;
+    const { juego, materia } = req.body;
     const { idJugador } = req.params;
     const { id_usuario: idRemitente, username: usernameRemitente } = req.session.user;
 
-    if (!juego) {
-        return res.status(400).json({ message: 'Error: Faltan datos del desafío (juego).' });
+    if (!juego || !materia) {
+        return res.status(400).json({ message: 'Error: Faltan datos del desafío (juego o materia).' });
     }
 
     // Genera un ID único para la sala
@@ -61,6 +61,7 @@ router.post('/enfrentar/:idJugador', async (req, res) => {
             salaId,
             juego,
             modo: 'enfrentamiento',
+            materia,
             remitente: req.session.user,
             fechaExpira
         });
@@ -71,7 +72,7 @@ router.post('/enfrentar/:idJugador', async (req, res) => {
             [
                 idJugador,
                 idRemitente,
-                `${usernameRemitente} te desafía a un duelo. Tienes 48h para responder.`,
+                `${usernameRemitente} te desafía a un duelo de ${materia}. Tienes 48h para responder.`,
                 extraData
             ]
         );
@@ -129,15 +130,16 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
                 userId,
                 remitenteId: extraData.remitente.id_usuario,
                 remitente: extraData.remitente.username,
+                materia: extraData.materia,
                 fechaLimite
-            }); 
+            });
 
             // Crear duelo asincrónico
             await pool.query(
-                `INSERT INTO duelos (id_duelo, id_retador, id_defensor, fecha_limite, respondido_retador, respondido_oponente)
-                 VALUES (?, ?, ?, ?, 0, 0)
+                `INSERT INTO duelos (id_duelo, id_retador, id_defensor, materia, fecha_limite, respondido_retador, respondido_oponente)
+                 VALUES (?, ?, ?, ?, ?, 0, 0)
                  ON DUPLICATE KEY UPDATE fecha_limite = VALUES(fecha_limite)`,
-                [salaId, extraData.remitente.id_usuario, userId, fechaLimite]
+                [salaId, extraData.remitente.id_usuario, userId, extraData.materia, fechaLimite]
             );
 
             console.log('✅ Duelo creado en BD');
@@ -146,9 +148,29 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             await pool.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
             console.log('🧹 Notificación original eliminada');
 
+            // 🧹 Eliminar TODAS las demás notificaciones de desafío para este usuario
+            const [notificacionesEliminadas] = await pool.query(
+                `DELETE FROM notificaciones 
+                WHERE id_usuario_destinatario = ? 
+                AND tipo IN ('desafio_duelo', 'invitacion')
+                AND id_notificacion != ?`,
+                [userId, idNotificacion]
+            );
+            console.log(`🧹 Eliminadas ${notificacionesEliminadas.affectedRows} notificaciones adicionales`);
+
+            // 🧹 OPCIONAL: También eliminar notificaciones del remitente si tenía otros duelos pendientes con este usuario
+            await pool.query(
+                `DELETE FROM notificaciones 
+                WHERE id_usuario_destinatario = ? 
+                AND id_usuario_remitente = ?
+                AND tipo = 'desafio_duelo'`,
+                [extraData.remitente.id_usuario, userId]
+            );
+            console.log('🧹 Notificaciones cruzadas eliminadas');
+
             // Preparar datos para las nuevas notificaciones
-            const notifRetadorData = JSON.stringify({ salaId});
-            const notifDefensorData = JSON.stringify({ salaId});
+            const notifRetadorData = JSON.stringify({ salaId, materia: extraData.materia });
+            const notifDefensorData = JSON.stringify({ salaId, materia: extraData.materia });
             
             console.log('📤 Extra data para notificaciones:', {
                 retador: notifRetadorData,
@@ -163,7 +185,7 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
                     [
                         extraData.remitente.id_usuario,
                         userId,
-                        `${req.session.user.username} aceptó tu desafío de. Tienes 48 horas para hacer el examen.`,
+                        `${req.session.user.username} aceptó tu desafío de ${extraData.materia}. Tienes 48 horas para hacer el examen.`,
                         notifRetadorData
                     ]
                 );
@@ -176,7 +198,7 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
                     [
                         userId,
                         extraData.remitente.id_usuario,
-                        `Duelo activo contra ${extraData.remitente.username} Tienes 48 horas para hacer el examen.`,
+                        `Duelo activo contra ${extraData.remitente.username} en ${extraData.materia}. Tienes 48 horas para hacer el examen.`,
                         notifDefensorData
                     ]
                 );
@@ -208,7 +230,7 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
                 success: true,
                 tipo: 'desafio_duelo',
                 salaId,
-                message: `¡Desafío aceptado! Tienes 48 horas para hacer el examen. Ve a las notificaciones para unirte.`,
+                message: `¡Desafío aceptado! Tienes 48 horas para hacer el examen de ${extraData.materia}. Ve a las notificaciones para unirte.`,
                 mostrarEnlace: true,
                 enlaceExamen: `/duelo/examen/${salaId}`,
                 fechaLimite: fechaLimite,
@@ -271,30 +293,6 @@ router.post('/rechazar/:idNotificacion', async (req, res) => {
     } catch (err) {
         console.error('Error al rechazar notificación:', err);
         res.status(500).json({ success: false, message: 'Error interno al rechazar la notificación' });
-    }
-});
-
-router.delete('/notificaciones/eliminar/:idNotificacion', async (req, res) => {
-    if (!req.session.user) return res.status(401).json({ success: false, error: 'No autorizado' });
-    
-    const { idNotificacion } = req.params;
-    const userId = req.session.user.id_usuario;
-    
-    try {
-        const resultado = await pool.query(
-            `DELETE FROM notificaciones 
-            WHERE id_notificacion = ? AND id_usuario_destinatario = ?`,
-            [idNotificacion, userId]
-        );
-        
-        res.json({ 
-            success: true, 
-            message: 'Notificación eliminada',
-            eliminadas: resultado[0].affectedRows 
-        });
-    } catch (error) {
-        console.error('Error al eliminar notificación:', error);
-        res.status(500).json({ success: false, error: 'Error del servidor' });
     }
 });
 

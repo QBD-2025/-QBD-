@@ -9,6 +9,69 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <style>
+        .profile-icon-container {
+            position: relative;
+            display: inline-block;
+            margin-right: 15px;
+        }
+
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #ddd;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+            min-width: 150px;
+            z-index: 1000;
+        }
+
+        .profile-dropdown ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .profile-dropdown li {
+            padding: 0;
+        }
+
+        .profile-dropdown a {
+            display: block;
+            padding: 10px 15px;
+            text-decoration: none;
+            color: #333;
+            border-bottom: 1px solid #eee;
+        }
+
+        .profile-dropdown a:hover {
+            background: #f5f5f5;
+        }
+
+        .profile-dropdown a.cerrar-sesion {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 
@@ -25,6 +88,29 @@
         <div class="top-right-nav">
             {{#if user}}
                 <span class="nav-username">Hola, {{user.username}}</span>
+                
+                <!-- Ícono de perfil -->
+                <div class="profile-icon-container">
+                    <div class="profile-icon" id="profile-icon">
+                        {{#if user.avatarUrl}}
+                            <img src="{{user.avatarUrl}}" alt="Perfil" style="width:100%;height:100%;border-radius:50%;">
+                        {{else}}
+                            {{#if user.username}}
+                                {{user.username.[0]}}
+                            {{else}}
+                                U
+                            {{/if}}
+                        {{/if}}
+                    </div>
+                    <div class="profile-dropdown" id="profile-dropdown">
+                        <ul>
+                            <li><a href="/usuario">Mi Perfil</a></li>
+                            <li><a href="/configuracion">Configuración</a></li>
+                            <li><a href="/logout" class="cerrar-sesion">Cerrar sesión</a></li>
+                        </ul>
+                    </div>
+                </div>
+
                 <div class="notification-container">
                     🔔 <span id="notification-count" style="display:none;"></span>
                 </div>
@@ -114,21 +200,43 @@
             kebabButton.addEventListener('click', function(e) {
                 e.stopPropagation();
                 document.getElementById('notification-list').style.display = 'none';
+                document.getElementById('profile-dropdown').style.display = 'none';
                 const menu = this.parentElement;
                 const isActive = menu.classList.toggle('active');
                 gsap.to('.kebab-dropdown', { opacity: isActive ? 1 : 0, duration: 0.2 });
                 gsap.to('.kebab-dropdown li', { opacity: isActive ? 1 : 0, y: isActive ? 0 : -15, stagger: 0.1, duration: 0.3 });
             });
         }
+
+        // --- Lógica del ícono de perfil ---
+        const profileIcon = document.getElementById('profile-icon');
+        if (profileIcon) {
+            profileIcon.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const dropdown = document.getElementById('profile-dropdown');
+                const isVisible = dropdown.style.display === 'block';
+                
+                // Cerrar otros menús
+                document.getElementById('notification-list').style.display = 'none';
+                document.querySelector('.kebab-menu')?.classList.remove('active');
+                
+                // Toggle profile dropdown
+                dropdown.style.display = isVisible ? 'none' : 'block';
+            });
+        }
+
         document.querySelector('.notification-container')?.addEventListener('click', toggleNotifications);
         document.addEventListener('click', () => {
             const activeMenu = document.querySelector('.kebab-menu.active');
             if (activeMenu) activeMenu.classList.remove('active');
             const notifList = document.getElementById('notification-list');
             if(notifList) notifList.style.display = 'none';
+            const profileDropdown = document.getElementById('profile-dropdown');
+            if(profileDropdown) profileDropdown.style.display = 'none';
         });
         document.querySelector('.kebab-dropdown')?.addEventListener('click', e => e.stopPropagation());
         document.getElementById('notification-list')?.addEventListener('click', e => e.stopPropagation());
+        document.getElementById('profile-dropdown')?.addEventListener('click', e => e.stopPropagation());
 
         // --- LÓGICA DE SOCKETS Y NOTIFICACIONES (Solo para usuarios logueados) ---
         {{#if user}}
