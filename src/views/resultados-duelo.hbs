@@ -7,13 +7,18 @@
     <style>
         .resultado-container { max-width: 800px; margin: 0 auto; padding: 20px; }
         .puntajes { display: flex; justify-content: space-between; margin: 20px 0; }
-        .puntaje-card { background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; }
+        .puntaje-card { background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; flex: 1; margin: 0 10px; }
+        .puntaje-numero { font-size: 2em; font-weight: bold; color: #007bff; }
         .pregunta-resultado { background: white; border: 1px solid #ddd; margin: 10px 0; padding: 15px; border-radius: 8px; }
         .respuesta-correcta { color: #28a745; font-weight: bold; }
         .respuesta-incorrecta { color: #dc3545; }
         .esperando { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0; }
         .oponente-pendiente { color: #6c757d; font-style: italic; }
-        .btn-volver { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-volver { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-volver:hover { background: #0056b3; }
+        .respuestas-comparacion { margin-top: 10px; }
+        .mi-respuesta, .oponente-respuesta { margin: 8px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; }
+        .info-duelo { background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -37,7 +42,7 @@
             </div>
             
             <div class="puntaje-card">
-                <h4>{{nombreOponente}}</h4>
+                <h4>{{#if nombreOponente}}{{nombreOponente}}{{else}}Oponente{{/if}}</h4>
                 <div class="puntaje-numero">
                     {{#if ambosTerminaron}}
                         {{oponentePuntaje}}/10
@@ -50,35 +55,34 @@
 
         {{#unless ambosTerminaron}}
         <div class="esperando">
-            <h4>⏳ Esperando a {{nombreOponente}}</h4>
+            <h4>⏳ Esperando a {{#if nombreOponente}}{{nombreOponente}}{{else}}tu oponente{{/if}}</h4>
             <p>Tu oponente aún está realizando el examen. Los resultados completos aparecerán cuando termine.</p>
             <p>Puedes cerrar esta página y volver más tarde, o esperar aquí.</p>
         </div>
         {{/unless}}
 
         <!-- Resultados por pregunta -->
-        <h3>Detalle de respuestas</h3>
+        <h3>Detalle de respuestas ({{respuestas.length}} preguntas)</h3>
+        
         {{#each respuestas}}
         <div class="pregunta-resultado">
-            <h4>Pregunta {{this.id_pregunta}}</h4>
+            <h4>Pregunta {{orden}} de 10</h4>
             <p><strong>{{this.pregunta}}</strong></p>
             
             <div class="respuestas-comparacion">
                 <div class="mi-respuesta">
-                    <strong>Tu respuesta:</strong> 
+                    <strong>Tu respuesta:</strong>
                     <span class="{{#if this.mi_correcta}}respuesta-correcta{{else}}respuesta-incorrecta{{/if}}">
-                        Opción {{this.mi_respuesta}} 
-                        {{#if this.mi_correcta}}✓ Correcta{{else}}✗ Incorrecta{{/if}}
+                        {{#if this.mi_correcta}}✓{{else}}✗{{/if}} {{this.mi_respuesta_texto}}
                     </span>
                 </div>
-                
+
                 <div class="oponente-respuesta">
-                    <strong>{{../nombreOponente}}:</strong> 
+                    <strong>{{#if ../nombreOponente}}{{../nombreOponente}}{{else}}Oponente{{/if}}:</strong>
                     {{#if ../ambosTerminaron}}
-                        {{#if this.oponente_respuesta}}
+                        {{#if this.oponente_respuesta_texto}}
                             <span class="{{#if this.oponente_correcta}}respuesta-correcta{{else}}respuesta-incorrecta{{/if}}">
-                                Opción {{this.oponente_respuesta}} 
-                                {{#if this.oponente_correcta}}✓ Correcta{{else}}✗ Incorrecta{{/if}}
+                                {{#if this.oponente_correcta}}✓{{else}}✗{{/if}} {{this.oponente_respuesta_texto}}
                             </span>
                         {{else}}
                             <span class="oponente-pendiente">No respondió</span>
@@ -92,17 +96,39 @@
         {{/each}}
 
         {{#if ambosTerminaron}}
-        <div class="resultado-final">
+        <div class="resultado-final" style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center;">
             <h3>Resultado Final</h3>
             {{#if (eq miPuntaje oponentePuntaje)}}
                 <h4 style="color: #ffc107;">¡Empate! Ambos obtuvieron {{miPuntaje}} puntos</h4>
-                <p>Ambos jugadores obtienen 10 puntos de bonificación.</p>
+                <p>Fue un duelo muy reñido. No hay cambios en el ranking.</p>
             {{else}}
                 {{#if (gt miPuntaje oponentePuntaje)}}
                     <h4 style="color: #28a745;">¡Ganaste! {{miPuntaje}} vs {{oponentePuntaje}}</h4>
-                    <p>Has ganado 20 puntos por tu victoria.</p>
+                    {{#if puntosGanados}}
+                        <div style="font-size: 1.5em; margin: 15px 0;">
+                            <span style="color: #28a745; font-weight: bold;">+{{puntosGanados}} puntos</span>
+                        </div>
+                        {{#if infoRanking}}
+                            <p style="color: #6c757d;">
+                                Tu ranking: #{{infoRanking.puestoRetador}} | 
+                                Oponente: #{{infoRanking.puestoDefensor}}
+                            </p>
+                        {{/if}}
+                    {{/if}}
+                    <p>¡Excelente desempeño!</p>
                 {{else}}
                     <h4 style="color: #dc3545;">Perdiste: {{miPuntaje}} vs {{oponentePuntaje}}</h4>
+                    {{#if puntosGanados}}
+                        <div style="font-size: 1.5em; margin: 15px 0;">
+                            <span style="color: #dc3545; font-weight: bold;">{{puntosGanados}} puntos</span>
+                        </div>
+                        {{#if infoRanking}}
+                            <p style="color: #6c757d;">
+                                Tu ranking: #{{infoRanking.puestoRetador}} | 
+                                Oponente: #{{infoRanking.puestoDefensor}}
+                            </p>
+                        {{/if}}
+                    {{/if}}
                     <p>Mejor suerte la próxima vez. Sigue practicando.</p>
                 {{/if}}
             {{/if}}
@@ -111,9 +137,9 @@
 
         <!-- Botón para volver -->
         <div style="text-align: center; margin-top: 30px;">
-            <button class="btn-volver" onclick="volverAlPortal()">
+            <a href="/portal" class="btn-volver">
                 Volver al Portal de Duelos
-            </button>
+            </a>
         </div>
     </div>
 
@@ -121,46 +147,40 @@
         // Auto-actualizar página si el oponente no ha terminado
         {{#unless ambosTerminaron}}
         let contadorRecargas = 0;
-        const maxRecargas = 20; // Máximo 20 recargas (10 minutos)
-        
+        const maxRecargas = 20;
+
         function verificarEstado() {
             contadorRecargas++;
             if (contadorRecargas > maxRecargas) {
-                console.log('Dejando de recargar automáticamente');
+                console.log('Se detuvo la recarga automática para evitar bucles.');
                 return;
             }
             
-            fetch(`/competitivo/duelo/estado/{{duelo.id_duelo}}`)
-                .then(response => response.json())
+            fetch('/duelo/estado/{{duelo.id_duelo}}')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('La respuesta del servidor no fue OK: ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.ambosCompletaron) {
-                        location.reload(); // Recargar para mostrar resultados completos
+                        console.log('¡Ambos terminaron! Recargando página...');
+                        location.reload();
                     } else {
-                        // Esperar 30 segundos antes de verificar de nuevo
+                        console.log('Oponente aún no termina, verificando de nuevo en 30s...');
                         setTimeout(verificarEstado, 30000);
                     }
                 })
                 .catch(error => {
                     console.error('Error verificando estado:', error);
-                    // Intentar de nuevo en 1 minuto si hay error
                     setTimeout(verificarEstado, 60000);
                 });
         }
-        
-        // Iniciar verificación después de 30 segundos
-        setTimeout(verificarEstado, 30000);
-        {{/unless}}
 
-        function volverAlPortal() {
-            window.location.href = '/portal';
-        }
-        
-        // Helpers para las comparaciones en el template (solo client-side)
-        {{#if ambosTerminaron}}
-        // Estos helpers funcionan solo en el cliente para las comparaciones finales
-        function eq(a, b) { return a === b; }
-        function gt(a, b) { return a > b; }
-        {{/if}}
+        // Iniciar verificación después de 10 segundos
+        setTimeout(verificarEstado, 10000);
+        {{/unless}}
     </script>
 </body>
 </html>

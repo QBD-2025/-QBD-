@@ -1,12 +1,220 @@
-// En: src/router/competitivoR.js
 const express = require('express');
 const router = express.Router();
 const pool = require('../db/conexion');
 
+// Número de preguntas por duelo
+const NUM_PREGUNTAS_POR_DUELO = 10;
+
+// --- FUNCIONES AUXILIARES ---
+
+// Función para obtener las respuestas detalladas de un usuario en un duelo
+async function obtenerRespuestas(idUsuario, salaId) {
+    const [respuestas] = await pool.query(`
+        SELECT 
+            dr.id_pregunta,
+            dr.id_respuesta,
+            p.pregunta,
+            r.respuesta as texto_respuesta,
+            r.correcta as es_correcta,
+            dp.orden
+        FROM duelos_respuestas dr
+        INNER JOIN duelos_preguntas dp ON dr.id_duelo = dp.id_duelo AND dr.id_pregunta = dp.id_pregunta
+        INNER JOIN pregunta p ON dr.id_pregunta = p.id_pregunta
+        INNER JOIN respuesta r ON dr.id_respuesta = r.id_respuesta
+        WHERE dr.id_duelo = ? AND dr.id_usuario = ?
+        ORDER BY dp.orden
+    `, [salaId, idUsuario]);
+    
+    return respuestas;
+}
+
+// Función para verificar si ambos jugadores terminaron el duelo
+async function verificarAmbosTerminaron(salaId) {
+    const [duelo] = await pool.query(`
+        SELECT respondido_retador, respondido_oponente 
+        FROM duelos 
+        WHERE id_duelo = ?
+    `, [salaId]);
+    
+    if (duelo.length === 0) return false;
+    
+    return duelo[0].respondido_retador && duelo[0].respondido_oponente;
+}
+
+// Función para obtener información del oponente
+async function obtenerOponente(idUsuario, salaId) {
+    const [duelo] = await pool.query(`
+        SELECT id_retador, id_defensor 
+        FROM duelos 
+        WHERE id_duelo = ?
+    `, [salaId]);
+    
+    if (duelo.length === 0) return null;
+    
+    const idOponente = duelo[0].id_retador === idUsuario 
+        ? duelo[0].id_defensor 
+        : duelo[0].id_retador;
+    
+    const [oponente] = await pool.query(`
+        SELECT id_usuario as id, username 
+        FROM usuario 
+        WHERE id_usuario = ?
+    `, [idOponente]);
+    
+    return oponente[0];
+}
+
+// Función para calcular el puntaje basado en respuestas correctas
+function calcularPuntaje(respuestas) {
+    return respuestas.filter(r => r.es_correcta).length;
+}
+
+// Función para obtener el puesto/ranking de un usuario
+async function obtenerRankingUsuario(idUsuario) {
+    const [ranking] = await pool.query(`
+        SELECT COUNT(*) + 1 as puesto
+        FROM usuario
+        WHERE puntos > (SELECT puntos FROM usuario WHERE id_usuario = ?)
+    `, [idUsuario]);
+    
+    return ranking[0].puesto;
+}
+
+// Función para calcular puntos según diferencia de ranking
+function calcularPuntosSegunRanking(puestoRetador, puestoDefensor, ganoRetador) {
+    const PUNTOS_BASE_VICTORIA = 10;
+    const BONUS_POR_PUESTO = 2;
+    const PENALIZACION_POR_PUESTO = 1;
+    const PUNTOS_MINIMOS = 5;
+    const BONUS_MAXIMO = 20;
+    const PUNTOS_PERDIDA = -5;
+    const PUNTOS_PERDIDA_CONTRA_PEOR = -8;
+    
+    const diferencia = puestoDefensor - puestoRetador; // positivo = defensor está peor, negativo = defensor está mejor
+    
+    let puntosRetador = 0;
+    let puntosDefensor = 0;
+    
+    if (ganoRetador) {
+        // El retador ganó
+        if (diferencia < 0) {
+            // Ganó contra alguien mejor posicionado (puesto menor)
+            const bonus = Math.min(Math.abs(diferencia) * BONUS_POR_PUESTO, BONUS_MAXIMO);
+            puntosRetador = PUNTOS_BASE_VICTORIA + bonus;
+        } else {
+            // Ganó contra alguien peor posicionado
+            puntosRetador = Math.max(PUNTOS_BASE_VICTORIA - (diferencia * PENALIZACION_POR_PUESTO), PUNTOS_MINIMOS);
+        }
+        
+        // El defensor perdió
+        if (diferencia < 0) {
+            // Perdió contra alguien peor posicionado (penalización mayor)
+            puntosDefensor = PUNTOS_PERDIDA_CONTRA_PEOR;
+        } else {
+            puntosDefensor = PUNTOS_PERDIDA;
+        }
+    } else {
+        // El defensor ganó
+        if (diferencia > 0) {
+            // Ganó contra alguien mejor posicionado
+            const bonus = Math.min(diferencia * BONUS_POR_PUESTO, BONUS_MAXIMO);
+            puntosDefensor = PUNTOS_BASE_VICTORIA + bonus;
+        } else {
+            // Ganó contra alguien peor posicionado
+            puntosDefensor = Math.max(PUNTOS_BASE_VICTORIA - (Math.abs(diferencia) * PENALIZACION_POR_PUESTO), PUNTOS_MINIMOS);
+        }
+        
+        // El retador perdió
+        if (diferencia > 0) {
+            // Perdió contra alguien peor posicionado
+            puntosRetador = PUNTOS_PERDIDA_CONTRA_PEOR;
+        } else {
+            puntosRetador = PUNTOS_PERDIDA;
+        }
+    }
+    
+    return { puntosRetador, puntosDefensor };
+}
+
+// Función para registrar el duelo en el historial y actualizar puntos
+async function finalizarDuelo(salaId, idGanador, idPerdedor, puntajeGanador, puntajePerdedor) {
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+        
+        // Obtener información del duelo
+        const [duelo] = await conn.query('SELECT * FROM duelos WHERE id_duelo = ?', [salaId]);
+        if (!duelo.length) throw new Error('Duelo no encontrado');
+        
+        const esRetadorGanador = duelo[0].id_retador === idGanador;
+        
+        // Obtener rankings
+        const puestoRetador = await obtenerRankingUsuario(duelo[0].id_retador);
+        const puestoDefensor = await obtenerRankingUsuario(duelo[0].id_defensor);
+        
+        // Calcular puntos según ranking
+        const { puntosRetador, puntosDefensor } = calcularPuntosSegunRanking(
+            puestoRetador, 
+            puestoDefensor, 
+            esRetadorGanador
+        );
+        
+        // Actualizar puntos de los usuarios
+        await conn.query(
+            'UPDATE usuario SET puntos = puntos + ? WHERE id_usuario = ?',
+            [puntosRetador, duelo[0].id_retador]
+        );
+        
+        await conn.query(
+            'UPDATE usuario SET puntos = puntos + ? WHERE id_usuario = ?',
+            [puntosDefensor, duelo[0].id_defensor]
+        );
+        
+        // Registrar en historial
+        await conn.query(`
+            INSERT INTO historial_duelos 
+            (id_duelo, id_retador, id_defensor, id_ganador, puntos_retador, puntos_defensor,fecha_duelo)
+            VALUES (?, ?, ?, ?, ?, ?, NOW())
+        `, [salaId, duelo[0].id_retador, duelo[0].id_defensor, idGanador, 
+            esRetadorGanador ? puntajeGanador : puntajePerdedor,
+            esRetadorGanador ? puntajePerdedor : puntajeGanador,
+            puntosRetador, puntosDefensor]);
+        
+        // Actualizar estado del duelo
+        await conn.query('UPDATE duelos SET estado = ? WHERE id_duelo = ?', ['finalizado', salaId]);
+        
+        await conn.commit();
+        await conn.release();
+        
+        return { puntosRetador, puntosDefensor, puestoRetador, puestoDefensor };
+    } catch (error) {
+        await conn.rollback();
+        await conn.release();
+        throw error;
+    }
+}
+
+// Función para obtener información completa del duelo
+async function obtenerDuelo(salaId) {
+    const [duelo] = await pool.query(`
+        SELECT 
+            d.*,
+            u1.username as retador_username,
+            u1.id_usuario as retador_id,
+            u2.username as defensor_username,
+            u2.id_usuario as defensor_id
+        FROM duelos d
+        LEFT JOIN usuario u1 ON d.id_retador = u1.id_usuario
+        LEFT JOIN usuario u2 ON d.id_defensor = u2.id_usuario
+        WHERE d.id_duelo = ?
+    `, [salaId]);
+    
+    return duelo[0];
+}
+
 // --- RUTA PARA LA "SALA DE DUELOS" 1V1 ---
 router.get('/portal', async (req, res) => {
     try {
-        // Cambiar historial_duelos por duelo_respuestas si no existe la tabla historial_duelos
         const [userData] = await pool.query(
             `SELECT 
                 u.puntos,
@@ -28,50 +236,38 @@ router.get('/portal', async (req, res) => {
     }
 });
 
-// --- RUTA PARA LA VISTA DEL ENFRENTAMIENTO EN SÍ ---
+// --- RUTA PARA LA VISTA DEL ENFRENTAMIENTO ---
 router.get('/duelo/enfrentamiento/:salaId', async (req, res) => {
-    console.log('🎯 Acceso a duelo/enfrentamiento con salaId:', req.params.salaId);
-    
-    if (!req.session.user) {
-        console.log('❌ Usuario no autenticado, redirigiendo a login');
-        return res.redirect('/login');
-    }
+    if (!req.session.user) return res.redirect('/login');
 
     const { salaId } = req.params;
     const userId = req.session.user.id_usuario;
 
     try {
-        // Verificar que el duelo existe y el usuario es participante
         const [duelos] = await pool.query(
             `SELECT * FROM duelos WHERE id_duelo = ? AND (id_retador = ? OR id_defensor = ?)`,
             [salaId, userId, userId]
         );
 
-        if (duelos.length === 0) {
-            console.log('❌ Duelo no encontrado o usuario no autorizado:', salaId, userId);
-            return res.redirect('/portal?error=duelo_no_encontrado');
-        }
+        if (duelos.length === 0) return res.redirect('/portal?error=duelo_no_encontrado');
 
         const duelo = duelos[0];
-        console.log('✅ Duelo encontrado:', duelo);
 
-        // Renderizar la página del duelo
         res.render('examen-competitivo', { 
             layout: 'main',
             user: req.session.user,
             salaId: salaId,
             duelo: duelo,
-            esRetador: (duelo.id_retador === userId)
+            esRetador: duelo.id_retador === userId
         });
 
     } catch (error) {
-        console.error('❌ Error al cargar duelo:', error);
+        console.error('Error al cargar duelo:', error);
         res.redirect('/portal?error=error_servidor');
     }
 });
 
-// --- RUTAS API (RANKINGS, DESAFÍOS, ETC.) ---
-
+// --- API: Rankings ---
 router.get('/api/ranking/global', async (req, res) => {
     try {
         const [jugadores] = await pool.query(`
@@ -115,16 +311,15 @@ router.get('/api/usuario/carreras', async (req, res) => {
     }
 });
 
+// --- RUTA PARA CREAR/ENVIAR DUELO ---
 router.post('/desafiar/duelo/:idOponente', async (req, res) => {
-    if (!req.session.user) 
-        return res.status(401).json({ message: 'No has iniciado sesión' });
+    if (!req.session.user) return res.status(401).json({ message: 'No has iniciado sesión' });
 
     const { idOponente } = req.params;
     const { id_usuario: idRemitente, username: usernameRemitente } = req.session.user;
 
-    // Construir mensaje y extraData correctamente
     const mensajeNotificacion = `${usernameRemitente} te desafía a un Duelo de Ascenso!`;
-    const extraData = {
+    const extraDataBase = {
         remitente: {
             id_usuario: idRemitente,
             username: usernameRemitente,
@@ -132,43 +327,69 @@ router.post('/desafiar/duelo/:idOponente', async (req, res) => {
             id_tp_usuario: req.session.user.id_tp_usuario,
             foto_perfil: req.session.user.foto_perfil
         },
-        tiempoLimite: 2 * 24 * 60 * 60 // 48 horas en segundos
+        tiempoLimite: 2 * 24 * 60 * 60
     };
 
+    const conn = await pool.getConnection();
     try {
-        await pool.query(
-            `INSERT INTO notificaciones 
-            (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
-            VALUES (?, ?, 'desafio_duelo', ?, ?)`,
+        await conn.beginTransaction();
+
+        const id_duelo = `duelo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const fechaLimite = new Date();
+        fechaLimite.setHours(fechaLimite.getHours() + 48);
+
+        await conn.query(
+            `INSERT INTO duelos (id_duelo, id_retador, id_defensor, fecha_limite, estado, respondido_retador, respondido_oponente)
+             VALUES (?, ?, ?, ?, 'pendiente', 0, 0)`,
+            [id_duelo, idRemitente, idOponente, fechaLimite]
+        );
+
+        // Limpiar preguntas por seguridad
+        await conn.query(`DELETE FROM duelos_preguntas WHERE id_duelo = ?`, [id_duelo]);
+
+        // Generar preguntas aleatorias
+        const [preguntas] = await conn.query(`SELECT id_pregunta FROM pregunta ORDER BY RAND() LIMIT ?`, [NUM_PREGUNTAS_POR_DUELO]);
+        if (!preguntas || preguntas.length === 0) {
+            await conn.rollback();
+            await conn.release();
+            return res.status(500).json({ message: 'No hay preguntas disponibles' });
+        }
+
+        for (let i = 0; i < preguntas.length; i++) {
+            await conn.query(`INSERT INTO duelos_preguntas (id_duelo, id_pregunta, orden) VALUES (?, ?, ?)`, [id_duelo, preguntas[i].id_pregunta, i + 1]);
+        }
+
+        // Notificación
+        const extraData = { ...extraDataBase, id_duelo };
+        await conn.query(
+            `INSERT INTO notificaciones (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
+             VALUES (?, ?, 'desafio_duelo', ?, ?)`,
             [idOponente, idRemitente, mensajeNotificacion, JSON.stringify(extraData)]
         );
 
-        // Emitir notificación por socket si tienes io
+        await conn.commit();
+        await conn.release();
+
         if (req.io) req.io.to(idOponente.toString()).emit('notificacion_recibida');
 
-        res.json({ 
-            success: true, 
-            message: '¡Desafío enviado!', 
-            extraData 
-        });
+        res.json({ success: true, message: '¡Desafío enviado!', id_duelo, extraData });
 
     } catch (err) {
+        try { await conn.rollback(); } catch(e){ /* ignore */ }
+        await conn.release();
         console.error('Error enviando desafío:', err);
         res.status(500).json({ message: 'Error del servidor al enviar el desafío' });
     }
 });
 
-// --- RUTA PARA EL EXAMEN INDIVIDUAL DE DUELO (ASÍNCRONO) - CORREGIDA ---
+// --- RUTA EXAMEN INDIVIDUAL DUELO ---
 router.get('/duelo/examen/:salaId', async (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/login');
-    }
+    if (!req.session.user) return res.redirect('/login');
 
     const { salaId } = req.params;
     const userId = req.session.user.id_usuario;
 
     try {
-        // Verificar que el duelo existe y el usuario es participante
         const [duelos] = await pool.query(
             `SELECT d.*, 
              u1.username as retador_username, 
@@ -180,73 +401,35 @@ router.get('/duelo/examen/:salaId', async (req, res) => {
             [salaId, userId, userId]
         );
 
-        if (duelos.length === 0) {
-            return res.redirect('/portal?error=duelo_no_encontrado');
-        }
+        if (duelos.length === 0) return res.redirect('/portal?error=duelo_no_encontrado');
 
         const duelo = duelos[0];
-        
-        // Verificar si ya hizo el examen - TABLA CORREGIDA (sin 's')
-        const [respuestasExistentes] = await pool.query(
-            `SELECT COUNT(*) as count FROM duelo_respuestas WHERE id_duelo = ? AND id_usuario = ?`,
-            [salaId, userId]
-        );
+        const esRetador = duelo.id_retador === userId;
 
-        if (respuestasExistentes[0].count > 0) {
+        // ✅ Cambiado: verificar si ya terminó usando respondido_retador/oponente
+        if ((esRetador && duelo.respondido_retador) || (!esRetador && duelo.respondido_oponente)) {
             return res.redirect(`/duelo/resultados/${salaId}?mensaje=Ya completaste este examen`);
         }
 
-        // Verificar si el tiempo no ha expirado
         if (new Date() > new Date(duelo.fecha_limite)) {
             return res.redirect(`/duelo/resultados/${salaId}?mensaje=El tiempo para este duelo ha expirado`);
         }
 
-        if (duelo.estado === 'abandonado') {
-            const esRetador = (duelo.id_retador === userId);
-            const miEstado = esRetador ? duelo.estado_retador : duelo.estado_defensor;
-            
-            if (miEstado === 'abandonado') {
-                // Yo abandoné
-                return res.redirect('/portal?mensaje=Abandonaste este duelo');
-            } else {
-                // El oponente abandonó
-                const [abandonadorInfo] = await pool.query(
-                    `SELECT username FROM usuario WHERE id_usuario = ?`,
-                    [duelo.id_usuario_abandono]
-                );
-                const nombreAbandonador = abandonadorInfo[0]?.username || 'Tu oponente';
-                
-                return res.render('duelo-abandonado', {
-                    layout: 'main',
-                    user: req.session.user,
-                    mensaje: `${nombreAbandonador} ha abandonado el duelo. ¡Has ganado!`,
-                    duelo: duelo
-                });
-            }
-        }
-
-
-        const esRetador = (duelo.id_retador === userId);
-        
-        // Obtener preguntas ALEATORIAS (no por materia específica)
+        // Cargar preguntas
         const [preguntas] = await pool.query(
-            `SELECT p.id_pregunta, p.pregunta
-             FROM pregunta p 
-             ORDER BY RAND() 
-             LIMIT 10`
+            `SELECT p.id_pregunta, p.pregunta, dp.orden
+             FROM duelos_preguntas dp
+             INNER JOIN pregunta p ON dp.id_pregunta = p.id_pregunta
+             WHERE dp.id_duelo = ?
+             ORDER BY dp.orden`,
+            [salaId]
         );
 
-        if (preguntas.length === 0) {
-            return res.redirect('/portal?error=no_hay_preguntas');
-        }
+        if (!preguntas.length) return res.redirect('/portal?error=no_hay_preguntas');
 
-        // Obtener respuestas para cada pregunta
         for (let pregunta of preguntas) {
             const [respuestas] = await pool.query(
-                `SELECT id_respuesta, respuesta, correcta 
-                 FROM respuesta 
-                 WHERE id_pregunta = ? 
-                 ORDER BY id_respuesta`,
+                `SELECT id_respuesta, respuesta, correcta FROM respuesta WHERE id_pregunta = ? ORDER BY id_respuesta`,
                 [pregunta.id_pregunta]
             );
             pregunta.respuestas = respuestas;
@@ -257,7 +440,7 @@ router.get('/duelo/examen/:salaId', async (req, res) => {
             user: req.session.user,
             duelo: duelo,
             preguntas: preguntas,
-            esRetador: esRetador,
+            esRetador,
             tiempoRestante: Math.max(0, new Date(duelo.fecha_limite) - new Date())
         });
 
@@ -267,579 +450,170 @@ router.get('/duelo/examen/:salaId', async (req, res) => {
     }
 });
 
-// --- RUTA PARA RESPONDER DUELO - CORREGIDA ---
+// --- POST: Guardar respuestas duelo ---
 router.post('/duelo/responder/:salaId', async (req, res) => {
     if (!req.session.user) return res.status(401).json({ error: 'No autorizado' });
-    
+
     const { salaId } = req.params;
-    const { respuestas, fecha_inicio_str, tiempo_empleado } = req.body;
+    const { respuestas } = req.body;
     const id_usuario = req.session.user.id_usuario;
-    
+
     try {
-        // Parsear respuestas
         const respuestasObj = typeof respuestas === 'string' ? JSON.parse(respuestas) : respuestas;
-        
-        // Verificar que el duelo existe y el usuario participa
+
         const [duelos] = await pool.query(
             `SELECT * FROM duelos WHERE id_duelo = ? AND (id_retador = ? OR id_defensor = ?)`,
             [salaId, id_usuario, id_usuario]
         );
-        
-        if (duelos.length === 0) return res.status(404).json({ success: false, error: 'Duelo no encontrado' });
-        
+        if (!duelos.length) return res.status(404).json({ error: 'Duelo no encontrado' });
+
         const duelo = duelos[0];
         const esRetador = duelo.id_retador === id_usuario;
-        const idOponente = esRetador ? duelo.id_defensor : duelo.id_retador;
-        
-        // Guardar respuestas en BD
-        for (const [id_pregunta, respuesta_seleccionada] of Object.entries(respuestasObj)) {
+
+        // Guardar respuestas
+        for (const [id_pregunta, id_respuesta] of Object.entries(respuestasObj)) {
             await pool.query(
-                `INSERT INTO duelo_respuestas (id_duelo, id_usuario, id_pregunta, respuesta)
-                 VALUES (?, ?, ?, ?)
-                 ON DUPLICATE KEY UPDATE respuesta = VALUES(respuesta)`,
-                [salaId, id_usuario, parseInt(id_pregunta), parseInt(respuesta_seleccionada)]
+                `INSERT INTO duelos_respuestas (id_duelo, id_usuario, id_pregunta, id_respuesta) VALUES (?, ?, ?, ?)`,
+                [salaId, id_usuario, id_pregunta, id_respuesta]
             );
         }
-        
-        // Marcar que ya contestó este jugador
-        const campoRespuesta = esRetador ? 'respondido_retador' : 'respondido_oponente';
-        await pool.query(`UPDATE duelos SET ${campoRespuesta} = 1 WHERE id_duelo = ?`, [salaId]);
-        
-        // 🎯 AQUÍ ES DONDE ENVÍAS LA NOTIFICACIÓN AL OPONENTE
-        // Verificar si el oponente AÚN NO ha terminado para enviarle la notificación
-        const [respuestasOponente] = await pool.query(
-            `SELECT COUNT(*) as total FROM duelo_respuestas WHERE id_duelo = ? AND id_usuario = ?`,
-            [salaId, idOponente]
-        );
-        
-        const oponenteYaTermino = respuestasOponente[0].total > 0;
-        
-        if (!oponenteYaTermino) {
-            // El oponente AÚN NO termina, enviarle notificación con puntaje oculto
-            const puntajeBorroso = Math.floor(Math.random() * 10) + 1; // puntaje falso
-            
-            // Crear notificación para el oponente
-            await pool.query(
-                `INSERT INTO notificaciones 
-                (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data)
-                VALUES (?, ?, 'oponente_termino', ?, ?)`,
-                [
-                    idOponente, 
-                    id_usuario, 
-                    `${req.session.user.username} ha terminado el duelo. Su puntuación: ******* (termina tu examen para verla)`,
-                    JSON.stringify({ 
-                        salaId, 
-                        puntajeBorroso, 
-                        ocultar: true,
-                        usuarioQueTermino: req.session.user.username
-                    })
-                ]
-            );
-            
-            // Emitir socket en tiempo real
-            if (req.io) {
-                req.io.to(idOponente.toString()).emit('oponente_termino', {
-                    salaId,
-                    mensaje: `${req.session.user.username} ha terminado el duelo`,
-                    puntajeOculto: true
-                });
-                
-                req.io.to(idOponente.toString()).emit('notificacion_recibida');
-            }
-        }
-        
-        // Verificar si ambos ya terminaron para calcular resultados
-        const [dueloActualizado] = await pool.query(`SELECT * FROM duelos WHERE id_duelo = ?`, [salaId]);
-        if (dueloActualizado[0].respondido_retador && dueloActualizado[0].respondido_oponente) {
-            await calcularResultadosDuelo(salaId);
-        }
-        
+
+        // Marcar duelo como respondido
+        if (esRetador) await pool.query(`UPDATE duelos SET respondido_retador = 1 WHERE id_duelo = ?`, [salaId]);
+        else await pool.query(`UPDATE duelos SET respondido_oponente = 1 WHERE id_duelo = ?`, [salaId]);
+
         res.redirect(`/duelo/resultados/${salaId}`);
-        
-    } catch (error) {
-        console.error("Error al guardar respuestas de duelo:", error);
-        res.status(500).json({ success: false, error: "Error al guardar respuestas" });
-    }
-});
-
-
-// --- FUNCIÓN AUXILIAR PARA CALCULAR RESULTADOS DEL DUELO ---
-async function calcularResultadosDuelo(salaId) {
-    try {
-        // Obtener información del duelo
-        const [duelos] = await pool.query(
-            `SELECT * FROM duelos WHERE id_duelo = ?`,
-            [salaId]
-        );
-
-        if (duelos.length === 0) return;
-        
-        const duelo = duelos[0];
-
-        // Función auxiliar para calcular puntaje de un jugador
-        async function calcularPuntajeJugador(idJugador) {
-            const [respuestasJugador] = await pool.query(
-                `SELECT dr.id_pregunta, dr.respuesta as indice_respuesta
-                 FROM duelo_respuestas dr
-                 WHERE dr.id_duelo = ? AND dr.id_usuario = ?`,
-                [salaId, idJugador]
-            );
-
-            let correctas = 0;
-            
-            for (let resp of respuestasJugador) {
-                const [opciones] = await pool.query(
-                    `SELECT correcta FROM respuesta 
-                     WHERE id_pregunta = ? 
-                     ORDER BY id_respuesta 
-                     LIMIT ?, 1`,
-                    [resp.id_pregunta, resp.indice_respuesta - 1]
-                );
-                
-                if (opciones.length > 0 && opciones[0].correcta === 1) {
-                    correctas++;
-                }
-            }
-            
-            return correctas;
-        }
-
-        // Calcular puntajes
-        const correctasRetador = await calcularPuntajeJugador(duelo.id_retador);
-        const correctasDefensor = await calcularPuntajeJugador(duelo.id_defensor);
-
-        let id_ganador = null;
-        let puntosGanador = 0;
-
-        // Determinar ganador
-        if (correctasRetador > correctasDefensor) {
-            id_ganador = duelo.id_retador;
-            puntosGanador = 20;
-        } else if (correctasDefensor > correctasRetador) {
-            id_ganador = duelo.id_defensor;
-            puntosGanador = 20;
-        } else {
-            // Empate - ambos ganan puntos menores
-            puntosGanador = 10;
-        }
-
-        // Actualizar estado del duelo
-        await pool.query(
-            `UPDATE duelos SET estado = 'completado' WHERE id_duelo = ?`,
-            [salaId]
-        );
-
-        // Guardar en historial si existe la tabla
-        try {
-            if (id_ganador) {
-                await pool.query(
-                    `INSERT INTO historial_duelos (id_duelo, id_retador, id_defensor, id_ganador, puntos_retador, puntos_defensor, fecha_completado)
-                     VALUES (?, ?, ?, ?, ?, ?, NOW())`,
-                    [salaId, duelo.id_retador, duelo.id_defensor, id_ganador, correctasRetador, correctasDefensor]
-                );
-
-                // Actualizar puntos del ganador
-                await pool.query(
-                    `UPDATE usuario SET puntos = puntos + ? WHERE id_usuario = ?`,
-                    [puntosGanador, id_ganador]
-                );
-            } else {
-                // Empate - ambos ganan puntos
-                await pool.query(
-                    `INSERT INTO historial_duelos (id_duelo, id_retador, id_defensor, puntos_retador, puntos_defensor, fecha_completado)
-                     VALUES (?, ?, ?, ?, ?, NOW())`,
-                    [salaId, duelo.id_retador, duelo.id_defensor, correctasRetador, correctasDefensor]
-                );
-
-                await pool.query(
-                    `UPDATE usuario SET puntos = puntos + ? WHERE id_usuario IN (?, ?)`,
-                    [puntosGanador, duelo.id_retador, duelo.id_defensor]
-                );
-            }
-        } catch (historialError) {
-            console.warn('No se pudo guardar en historial_duelos (tabla puede no existir):', historialError);
-        }
 
     } catch (error) {
-        console.error('Error al calcular resultados del duelo:', error);
-    }
-}
-
-async function verificarOponenteTerminado(salaId, userId) {
-    try {
-        // Traer el duelo y saber quién es el oponente
-        const [duelos] = await pool.query(
-            `SELECT * FROM duelos WHERE id_duelo = ? AND (id_retador = ? OR id_defensor = ?)`,
-            [salaId, userId, userId]
-        );
-        if (duelos.length === 0) return null;
-
-        const duelo = duelos[0];
-        const esRetador = duelo.id_retador === userId;
-        const idOponente = esRetador ? duelo.id_defensor : duelo.id_retador;
-
-        // Revisar si el oponente ya contestó
-        const [respuestasOponente] = await pool.query(
-            `SELECT COUNT(*) as total FROM duelo_respuestas WHERE id_duelo = ? AND id_usuario = ?`,
-            [salaId, idOponente]
-        );
-
-        if (respuestasOponente[0].total > 0) {
-            // Generar "puntaje borroso" para mostrar en notificación
-            const puntajeBorroso = Math.floor(Math.random() * 10) + 1; // número aleatorio entre 1 y 10
-            return { idOponente, puntajeBorroso };
-        }
-
-        return null;
-
-    } catch (error) {
-        console.error('Error verificando oponente terminado:', error);
-        return null;
-    }
-}
-
-// --- RUTA DE RESULTADOS - CORREGIDA ---
-router.get('/duelo/resultados/:salaId', async (req, res) => {
-    if (!req.session.user) return res.redirect('/login');
-    
-    const userId = req.session.user.id_usuario;
-    const { salaId } = req.params;
-    
-    try {
-        const [duelos] = await pool.query(
-            `SELECT d.*, u1.username as retador_username, u2.username as defensor_username
-             FROM duelos d
-             LEFT JOIN usuario u1 ON d.id_retador = u1.id_usuario
-             LEFT JOIN usuario u2 ON d.id_defensor = u2.id_usuario
-             WHERE d.id_duelo = ?`,
-            [salaId]
-        );
-        
-        if (duelos.length === 0) return res.redirect('/portal');
-        
-        const duelo = duelos[0];
-        
-        // Verificar que el usuario es participante
-        if (duelo.id_retador !== userId && duelo.id_defensor !== userId) {
-            return res.redirect('/portal?error=no_autorizado');
-        }
-        
-        // Verificar si YO ya terminé mi examen
-        const [misRespuestas] = await pool.query(
-            `SELECT COUNT(*) as total FROM duelo_respuestas WHERE id_duelo = ? AND id_usuario = ?`,
-            [salaId, userId]
-        );
-        
-        const yaTermineMiExamen = misRespuestas[0].total > 0;
-        
-        // Si no he terminado mi examen, redirigir al examen
-        if (!yaTermineMiExamen) {
-            return res.redirect(`/duelo/examen/${salaId}`);
-        }
-        
-        const esRetador = duelo.id_retador === userId;
-        const idOponente = esRetador ? duelo.id_defensor : duelo.id_retador;
-        const ambosTerminaron = duelo.respondido_retador && duelo.respondido_oponente;
-        
-        // Obtener MIS respuestas con las preguntas - VERSIÓN SIMPLIFICADA
-        const [misRespuestasDetalle] = await pool.query(
-            `SELECT dr.id_pregunta, dr.respuesta as indice_respuesta_seleccionada, 
-                    p.pregunta
-             FROM duelo_respuestas dr
-             INNER JOIN pregunta p ON dr.id_pregunta = p.id_pregunta
-             WHERE dr.id_duelo = ? AND dr.id_usuario = ?
-             ORDER BY dr.id_pregunta`,
-            [salaId, userId]
-        );
-
-        // Ahora para cada respuesta, obtener si es correcta o no
-        for (let respuesta of misRespuestasDetalle) {
-            const [respuestasOpciones] = await pool.query(
-                `SELECT id_respuesta, correcta 
-                 FROM respuesta 
-                 WHERE id_pregunta = ? 
-                 ORDER BY id_respuesta`,
-                [respuesta.id_pregunta]
-            );
-            
-            // El campo dr.respuesta contiene el ÍNDICE de la respuesta (1, 2, 3, 4...)
-            // Necesitamos obtener la respuesta en esa posición
-            const indiceRespuesta = respuesta.indice_respuesta_seleccionada - 1; // Convertir a índice base 0
-            
-            if (respuestasOpciones[indiceRespuesta]) {
-                respuesta.es_correcta = respuestasOpciones[indiceRespuesta].correcta === 1;
-            } else {
-                respuesta.es_correcta = false; // Si no existe la opción, es incorrecta
-            }
-        }
-
-        let respuestasOponente = [];
-
-        // Solo obtener respuestas del oponente si ambos terminaron
-        if (ambosTerminaron) {
-            const [respuestasOponenteDetalle] = await pool.query(
-                `SELECT dr.id_pregunta, dr.respuesta as indice_respuesta_seleccionada
-                 FROM duelo_respuestas dr
-                 WHERE dr.id_duelo = ? AND dr.id_usuario = ?
-                 ORDER BY dr.id_pregunta`,
-                [salaId, idOponente]
-            );
-            
-            // Procesar respuestas del oponente igual que las mías
-            for (let respuesta of respuestasOponenteDetalle) {
-                const [respuestasOpciones] = await pool.query(
-                    `SELECT id_respuesta, correcta 
-                     FROM respuesta 
-                     WHERE id_pregunta = ? 
-                     ORDER BY id_respuesta`,
-                    [respuesta.id_pregunta]
-                );
-                
-                const indiceRespuesta = respuesta.indice_respuesta_seleccionada - 1;
-                
-                if (respuestasOpciones[indiceRespuesta]) {
-                    respuesta.es_correcta = respuestasOpciones[indiceRespuesta].correcta === 1;
-                } else {
-                    respuesta.es_correcta = false;
-                }
-            }
-            
-            respuestasOponente = respuestasOponenteDetalle;
-        }
-
-        // Combinar respuestas mías y del oponente por pregunta
-        const respuestasCombinadas = misRespuestasDetalle.map(miResp => {
-            const respOponente = respuestasOponente.find(r => r.id_pregunta === miResp.id_pregunta);
-            return {
-                id_pregunta: miResp.id_pregunta,
-                pregunta: miResp.pregunta,
-                mi_respuesta: miResp.indice_respuesta_seleccionada,
-                mi_correcta: miResp.es_correcta,
-                oponente_respuesta: respOponente ? respOponente.indice_respuesta_seleccionada : null,
-                oponente_correcta: respOponente ? respOponente.es_correcta : null
-            };
-        });
-
-        // Calcular puntajes
-        const miPuntaje = misRespuestasDetalle.filter(r => r.es_correcta).length;
-        const oponentePuntaje = ambosTerminaron ? 
-            respuestasOponente.filter(r => r.es_correcta).length : null;
-        
-        // Limpiar notificaciones relacionadas con este duelo para este usuario
-        await pool.query(
-            `DELETE FROM notificaciones 
-             WHERE id_usuario_destinatario = ? 
-             AND (JSON_EXTRACT(extra_data, '$.salaId') = ? OR tipo = 'duelo_aceptado' OR tipo = 'oponente_termino')`,
-            [userId, salaId]
-        );
-        
-        res.render('resultados-duelo', {
-            layout: 'main',
-            user: req.session.user,
-            duelo: duelo,
-            respuestas: respuestasCombinadas,
-            ambosTerminaron: ambosTerminaron,
-            esRetador: esRetador,
-            miPuntaje: miPuntaje,
-            oponentePuntaje: oponentePuntaje,
-            nombreOponente: esRetador ? duelo.defensor_username : duelo.retador_username
-        });
-        
-    } catch (error) {
-        console.error('Error al cargar resultados del duelo:', error);
-        res.redirect('/portal?error=error_servidor');
-    }
-});
-
-// --- RUTA PARA VER EL ESTADO/PROGRESO DEL DUELO - CORREGIDA ---
-router.get('/duelo/estado/:salaId', async (req, res) => {
-    if (!req.session.user) return res.status(401).json({ error: 'No autorizado' });
-
-    const { salaId } = req.params;
-    const userId = req.session.user.id_usuario;
-
-    try {
-        const [duelos] = await pool.query(
-            `SELECT d.*, 
-             u1.username as retador_username, 
-             u2.username as defensor_username,
-             (SELECT COUNT(*) FROM duelo_respuestas WHERE id_duelo = d.id_duelo AND id_usuario = d.id_retador) as respuestas_retador,
-             (SELECT COUNT(*) FROM duelo_respuestas WHERE id_duelo = d.id_duelo AND id_usuario = d.id_defensor) as respuestas_defensor
-             FROM duelos d
-             LEFT JOIN usuario u1 ON d.id_retador = u1.id_usuario
-             LEFT JOIN usuario u2 ON d.id_defensor = u2.id_usuario
-             WHERE d.id_duelo = ? AND (d.id_retador = ? OR d.id_defensor = ?)`,
-            [salaId, userId, userId]
-        );
-
-        if (duelos.length === 0) {
-            return res.status(404).json({ error: 'Duelo no encontrado' });
-        }
-
-        const duelo = duelos[0];
-        const esRetador = (duelo.id_retador === userId);
-        const yaConteste = (esRetador ? duelo.respuestas_retador : duelo.respuestas_defensor) > 0;
-        const oponenteContesto = (esRetador ? duelo.respuestas_defensor : duelo.respuestas_retador) > 0;
-
-        res.json({
-            duelo: {
-                id_duelo: duelo.id_duelo,
-                fecha_limite: duelo.fecha_limite,
-                retador_username: duelo.retador_username,
-                defensor_username: duelo.defensor_username
-            },
-            miEstado: {
-                yaConteste: yaConteste,
-                esRetador: esRetador
-            },
-            oponenteEstado: {
-                yaContesto: oponenteContesto
-            },
-            tiempoRestante: Math.max(0, new Date(duelo.fecha_limite) - new Date()),
-            ambosCompletaron: yaConteste && oponenteContesto
-        });
-
-    } catch (error) {
-        console.error('Error al obtener estado del duelo:', error);
+        console.error('Error guardando respuestas del duelo:', error);
         res.status(500).json({ error: 'Error del servidor' });
     }
 });
 
-// --- RUTA PARA ABANDONAR UN DUELO ---
-router.post('/duelo/abandonar/:salaId', async (req, res) => {
+// --- API: Verificar estado del duelo ---
+router.get('/duelo/estado/:salaId', async (req, res) => {
     if (!req.session.user) return res.status(401).json({ error: 'No autorizado' });
 
     const { salaId } = req.params;
-    const userId = req.session.user.id_usuario;
-    const { razon } = req.body;
 
     try {
-        // 1️⃣ Verificar que el duelo existe y el usuario es participante
-        const [duelos] = await pool.query(
-            `SELECT * FROM duelos WHERE id_duelo = ? AND (id_retador = ? OR id_defensor = ?)`,
-            [salaId, userId, userId]
-        );
-        if (duelos.length === 0) {
-            return res.status(404).json({ success: false, error: 'Duelo no encontrado' });
-        }
-
-        const duelo = duelos[0];
-        const esRetador = (duelo.id_retador === userId);
-        const campoEstado = esRetador ? 'estado_retador' : 'estado_defensor';
-        const oponenteId = esRetador ? duelo.id_defensor : duelo.id_retador;
-
-        // 2️⃣ Marcar como abandonado
-        await pool.query(
-            `UPDATE duelos 
-             SET ${campoEstado} = 'abandonado', 
-                 fecha_abandono = NOW(),
-                 id_usuario_abandono = ?,
-                 razon_abandono = ?,
-                 estado = 'abandonado'
-             WHERE id_duelo = ?`,
-            [userId, razon || 'Abandono voluntario', salaId]
-        );
-
-        // 3️⃣ Obtener nombre del usuario que abandonó
-        const [usuarioInfo] = await pool.query(
-            `SELECT username FROM usuario WHERE id_usuario = ?`,
-            [userId]
-        );
-        const nombreAbandonador = usuarioInfo[0]?.username || 'Un jugador';
-
-        // 4️⃣ Notificar al oponente
-        await pool.query(
-            `INSERT INTO notificaciones (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
-             VALUES (?, ?, 'duelo_abandonado', ?, ?)`,
-            [
-                oponenteId,
-                userId,
-                `${nombreAbandonador} ha abandonado el duelo. Has ganado por abandono.`,
-                JSON.stringify({ 
-                    salaId, 
-                    ganador: 'oponente', 
-                    razon: 'abandono',
-                    abandonador: nombreAbandonador
-                })
-            ]
-        );
-
-        // 5️⃣ Emitir evento socket en tiempo real
-        if (req.io) {
-            req.io.to(oponenteId.toString()).emit('duelo_abandonado', {
-                salaId,
-                mensaje: `${nombreAbandonador} ha abandonado el duelo`,
-                ganaste: true
-            });
-            
-            req.io.to(userId.toString()).emit('duelo_abandonado', {
-                salaId,
-                mensaje: 'Has abandonado el duelo',
-                ganaste: false
-            });
-        }
-
-        // 6️⃣ Actualizar puntos → el oponente gana 10 por abandono
-        await pool.query(
-            `UPDATE usuario SET puntos = puntos + 10 WHERE id_usuario = ?`,
-            [oponenteId]
-        );
-
-        // 7️⃣ Guardar en historial_duelos (si existe)
-        try {
-            await pool.query(
-                `INSERT INTO historial_duelos 
-                (id_duelo, id_retador, id_defensor, id_ganador, puntos_retador, puntos_defensor, fecha_completado, tipo_finalizacion)
-                VALUES (?, ?, ?, ?, ?, ?, NOW(), 'abandono')`,
-                [
-                    salaId, 
-                    duelo.id_retador, 
-                    duelo.id_defensor, 
-                    oponenteId, 
-                    esRetador ? 0 : 10, 
-                    esRetador ? 10 : 0
-                ]
-            );
-        } catch (historialError) {
-            console.warn('No se pudo guardar en historial:', historialError);
-        }
-
-        res.json({
-            success: true,
-            message: 'Has abandonado el duelo',
-            redirigir: '/portal'
-        });
-
+        const ambosCompletaron = await verificarAmbosTerminaron(salaId);
+        res.json({ ambosCompletaron });
     } catch (error) {
-        console.error('Error al abandonar duelo:', error);
-        res.status(500).json({ success: false, error: 'Error del servidor' });
+        console.error('Error verificando estado del duelo:', error);
+        res.status(500).json({ error: 'Error del servidor' });
     }
 });
 
-// --- RUTA PARA ELIMINAR NOTIFICACIONES ---
-router.delete('/notificaciones/eliminar/:idNotificacion', async (req, res) => {
-    if (!req.session.user) return res.status(401).json({ success: false, error: 'No autorizado' });
-    
-    const { idNotificacion } = req.params;
-    const userId = req.session.user.id_usuario;
-    
+// --- RESULTADOS ---
+router.get('/duelo/resultados/:salaId', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+
+    const { salaId } = req.params;
+    const idUsuario = req.session.user.id_usuario;
+
     try {
-        const resultado = await pool.query(
-            `DELETE FROM notificaciones 
-             WHERE id_notificacion = ? AND id_usuario_destinatario = ?`,
-            [idNotificacion, userId]
-        );
+        // Obtener información del duelo
+        const duelo = await obtenerDuelo(salaId);
         
-        res.json({ 
-            success: true, 
-            message: 'Notificación eliminada',
-            eliminadas: resultado[0].affectedRows 
+        if (!duelo) {
+            return res.redirect('/portal?error=duelo_no_encontrado');
+        }
+
+        // Obtener respuestas del usuario
+        const misRespuestasDetalladas = await obtenerRespuestas(idUsuario, salaId);
+
+        // Verificar si ambos terminaron
+        const ambosTerminaron = await verificarAmbosTerminaron(salaId);
+        
+        // Obtener respuestas del oponente solo si ambos terminaron
+        let respuestasOponenteDetalladas = [];
+        let oponentePuntaje = null;
+        let nombreOponente = '';
+        let puntosGanados = null;
+        let infoRanking = null;
+        
+        if (ambosTerminaron) {
+            const oponente = await obtenerOponente(idUsuario, salaId);
+            if (oponente) {
+                nombreOponente = oponente.username;
+                respuestasOponenteDetalladas = await obtenerRespuestas(oponente.id, salaId);
+                oponentePuntaje = calcularPuntaje(respuestasOponenteDetalladas);
+                
+                // ✅ Finalizar duelo solo si aún no se ha finalizado
+                if (duelo.estado !== 'finalizado') {
+                    const miPuntaje = calcularPuntaje(misRespuestasDetalladas);
+                    
+                    let idGanador, idPerdedor;
+                    if (miPuntaje > oponentePuntaje) {
+                        idGanador = idUsuario;
+                        idPerdedor = oponente.id;
+                    } else if (oponentePuntaje > miPuntaje) {
+                        idGanador = oponente.id;
+                        idPerdedor = idUsuario;
+                    } else {
+                        // Empate - no se otorgan puntos
+                        idGanador = null;
+                        idPerdedor = null;
+                    }
+                    
+                    if (idGanador) {
+                        infoRanking = await finalizarDuelo(salaId, idGanador, idPerdedor, 
+                            idGanador === idUsuario ? miPuntaje : oponentePuntaje,
+                            idGanador === idUsuario ? oponentePuntaje : miPuntaje);
+                        
+                        // Determinar cuántos puntos ganó/perdió el usuario actual
+                        const esRetador = duelo.id_retador === idUsuario;
+                        puntosGanados = esRetador ? infoRanking.puntosRetador : infoRanking.puntosDefensor;
+                    }
+                } else {
+                    // Si ya está finalizado, obtener los puntos del historial
+                    const [historial] = await pool.query(`
+                        SELECT puntos_retador, puntos_defensor 
+                        FROM historial_duelos 
+                        WHERE id_duelo = ?
+                    `, [salaId]);
+                    
+                    if (historial.length > 0) {
+                        const esRetador = duelo.id_retador === idUsuario;
+                        puntosGanados = esRetador ? historial[0].puntos_retador : historial[0].puntos_defensor;
+                    }
+                }
+            }
+        }
+
+        // Combinar respuestas para mostrar en la vista
+        const respuestasCombinadas = misRespuestasDetalladas.map((miResp, index) => {
+            const respOponente = respuestasOponenteDetalladas.find(r => r.id_pregunta === miResp.id_pregunta);
+            return {
+                id_pregunta: miResp.id_pregunta,
+                orden: index + 1, // ✅ Orden empezando desde 1
+                pregunta: miResp.pregunta,
+                mi_respuesta_texto: miResp.texto_respuesta,
+                mi_correcta: miResp.es_correcta,
+                oponente_respuesta_texto: respOponente ? respOponente.texto_respuesta : null,
+                oponente_correcta: respOponente ? respOponente.es_correcta : null,
+            };
         });
-    } catch (error) {
-        console.error('Error al eliminar notificación:', error);
-        res.status(500).json({ success: false, error: 'Error del servidor' });
+
+        const miPuntaje = calcularPuntaje(misRespuestasDetalladas);
+
+        res.render('resultados-duelo', {
+            layout: 'main',
+            user: req.session.user,
+            duelo: duelo,
+            miPuntaje,
+            oponentePuntaje,
+            nombreOponente,
+            respuestas: respuestasCombinadas,
+            ambosTerminaron,
+            esRetador: idUsuario === duelo.retador_id
+        });
+
+    } catch (err) {
+        console.error('Error mostrando resultados del duelo:', err);
+        res.status(500).send('Ocurrió un error al mostrar los resultados del duelo.');
     }
 });
-
 
 module.exports = router;

@@ -363,12 +363,14 @@
                 const preguntaDiv = opcionesDiv.closest('.contenedor-pregunta');
                 const preguntaIndex = parseInt(preguntaDiv.dataset.index);
                 const idPregunta = preguntaDiv.dataset.idPregunta;
-                const opcionSeleccionada = parseInt(btn.dataset.opcion);
+                
+                // ✅ GUARDAR id_respuesta en lugar de índice
+                const idRespuesta = parseInt(btn.dataset.idRespuesta);
                 
                 opcionesDiv.querySelectorAll('button').forEach(b => b.classList.remove('seleccionada'));
                 btn.classList.add('seleccionada');
                 
-                respuestasUsuario[idPregunta] = opcionSeleccionada;
+                respuestasUsuario[idPregunta] = idRespuesta;
                 estadoPreguntas[preguntaIndex] = "respondida";
                 actualizarPendientesUI();
             });
@@ -400,18 +402,21 @@
     document.querySelectorAll('.btn-finalizar').forEach(btn => btn.addEventListener('click', finalizarExamen));
 
     function finalizarExamen() {
-        if (confirm('¿Estás seguro de que quieres finalizar el duelo? No podrás modificar tus respuestas después.')) {
-            clearInterval(intervaloCronometro);
-            clearInterval(intervaloDuelo);
-            
-            const tiempoEmpleado = fechaInicioExamen ? new Date() - new Date(fechaInicioExamen) : 0;
-            
-            document.getElementById('inputRespuestas').value = JSON.stringify(respuestasUsuario);
-            document.getElementById('inputFechaInicio').value = fechaInicioExamen;
-            document.getElementById('inputTiempoEmpleado').value = tiempoEmpleado;
-            document.getElementById('formResultados').submit();
-        }
+    if (confirm('¿Estás seguro de que quieres finalizar el duelo? No podrás modificar tus respuestas después.')) {
+        console.log('📤 ENVIANDO RESPUESTAS:', respuestasUsuario);
+        console.log('📤 Como JSON:', JSON.stringify(respuestasUsuario));
+        
+        clearInterval(intervaloCronometro);
+        clearInterval(intervaloDuelo);
+        
+        const tiempoEmpleado = fechaInicioExamen ? new Date() - new Date(fechaInicioExamen) : 0;
+        
+        document.getElementById('inputRespuestas').value = JSON.stringify(respuestasUsuario);
+        document.getElementById('inputFechaInicio').value = fechaInicioExamen;
+        document.getElementById('inputTiempoEmpleado').value = tiempoEmpleado;
+        document.getElementById('formResultados').submit();
     }
+}   
     
     // =================================================================
     // INICIALIZACIÓN
@@ -452,7 +457,7 @@ async function abandonarDuelo(razon) {
         
     } catch (error) {
         console.error('Error al abandonar duelo:', error);
-        alert('Error de conexión al abandonar duelo');
+        alert('Error de conexión al abandonar duelo');  
     }
 }
 

@@ -133,8 +133,11 @@
                     </ul>
                 </div>
             {{else}}
-                <a href="/login" class="header-link">Iniciar Sesión</a>
-            {{/if}}
+        <!-- Mostrar botón de iniciar sesión solo si NO estamos en /presentation -->
+        {{#unless (eq currentPath "/")}}
+            <a href="/login" class="header-link">Iniciar Sesión</a>
+        {{/unless}}
+        {{/if}}
         </div>
     </div>
     <div id="mensajeExamen"></div>

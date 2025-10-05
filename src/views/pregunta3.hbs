@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="/css/formulario1.css"/>
   <title>QueBuenDato.com.mx</title>
-
 </head>
 <body class="page-usuario">
   <!-- Efecto de partículas -->
@@ -17,7 +16,8 @@
 
     <!-- Columna del formulario -->
     <div class="form-column">
-        
+      <!-- ✅ AGREGAR FORM AQUÍ -->
+      <form action="/procesar-formulario" method="POST">
         {{#each preguntas}}
           <div class="pregunta">
             <p><strong>{{pregunta}}</strong></p>
@@ -31,7 +31,9 @@
           <hr>
         {{/each}}
 
-        <button onclick="location.href='/pregunta4'", class="button">Siguiente</button>
+        <!-- ✅ CAMBIAR BOTÓN A TYPE="SUBMIT" -->
+        <button type="submit" class="button">Siguiente</button>
+      </form>
     </div>
   </div>
 
@@ -69,5 +71,5 @@
       }
     });
   </script>
-</body>a
+</body>
 </html>

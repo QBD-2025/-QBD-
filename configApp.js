@@ -10,6 +10,7 @@ const session = require("express-session");
 const mailer = require('./src/public/utils/mail.js');
 const passport = require('passport');
 require('./src/config/passport-config');
+const hbs = require('hbs')
 
 // Configuración de la base de datos
 const pool = mysql.createPool({
@@ -33,6 +34,7 @@ const io = new Server(server, {
 });
 
 // Configuración de Handlebars
+// Configuración de Handlebars
 app.engine('.hbs', exphbs.engine({
     defaultLayout: 'main',
     layoutsDir: path.join(__dirname, 'src', 'views', 'layouts'),
@@ -44,23 +46,45 @@ app.engine('.hbs', exphbs.engine({
         inc: (value) => parseInt(value) + 1,
         json: context => JSON.stringify(context),
         sum: (a, b) => a + b,
-        gt(a, b) { return a > b; }, // "Greater Than" (Mayor que)
-        lt(a, b) { return a < b; }, // "Less Than" (Menor que)
-        subtract(a, b) { return a - b; }, // Restar
-        add(a, b) { return a + b; }, // Sumar (ya lo tenías, pero lo pongo para asegurar)
-        ifEquals(arg1, arg2, options) { // Para comparar si son iguales
+        gt(a, b) { return a > b; },
+        lt(a, b) { return a < b; },
+        subtract(a, b) { return a - b; },
+        add(a, b) { return a + b; },
+        ifEquals(arg1, arg2, options) {
             return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
         },
-        range(start, end) { // Para crear la lista de números de la paginación
+        range(start, end) {
             const arr = [];
             for (let i = start; i <= end; i++) {
                 arr.push(i);
             }
             return arr;
+        },
+        // AGREGAR EL HELPER ifCond AQUÍ
+        ifCond(v1, operator, v2, options) {
+            switch (operator) {
+                case '==':
+                    return (v1 == v2) ? options.fn(this) : options.inverse(this);
+                case '===':
+                    return (v1 === v2) ? options.fn(this) : options.inverse(this);
+                case '!=':
+                    return (v1 != v2) ? options.fn(this) : options.inverse(this);
+                case '<':
+                    return (v1 < v2) ? options.fn(this) : options.inverse(this);
+                case '<=':
+                    return (v1 <= v2) ? options.fn(this) : options.inverse(this);
+                case '>':
+                    return (v1 > v2) ? options.fn(this) : options.inverse(this);
+                case '>=':
+                    return (v1 >= v2) ? options.fn(this) : options.inverse(this);
+                default:
+                    return options.inverse(this);
+            }
         }
-        // ✅ FIN DE LOS HELPERS NUEVOS
     }
 }));
+
+
 app.set('view engine', '.hbs');
 app.set('views', path.join(__dirname, 'src', 'views'));
 

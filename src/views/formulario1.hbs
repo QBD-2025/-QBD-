@@ -7,7 +7,27 @@
   <link rel="stylesheet" href="/css/formulario1.css" />
 </head>
 <body class="page-usuario">
-  {{> _formulario1_content preguntas=preguntas }}
+  <div class="main-form-container">
+  <div class="image-column"></div> <!-- Columna oculta -->
+  <div class="form-column">
+    <form action="/procesar-formulario" method="POST">
+      {{#each preguntas}}
+        <div class="pregunta">
+          <p><strong>{{pregunta}}</strong></p>
+          {{#each opciones}}
+            <label>
+              <input type="radio" name="respuesta_{{../id_pregunta}}" value="{{id_opcion}}" required />
+              {{texto_opcion}}
+            </label>
+          {{/each}}
+        </div>
+        <hr>
+      {{/each}}
+
+      <button type="submit" class="button">Siguiente</button>
+    </form>
+  </div>
+</div>
 </body>
 </html>
   
