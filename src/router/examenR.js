@@ -290,10 +290,112 @@ router.post('/resultados-aleatorio', async (req, res) => {
       layout: false
     });
 
-  } catch (error) {
+  } catch (error) { 
     console.error('Error generando resultados del examen aleatorio:', error);
     res.status(500).send('Error mostrando resultados');
   }
+});
+
+
+////////////////////////////////////////////// Examenes de carrera ////////////////////////////////////////
+router.get('/examen_carrera', async (req, res) => {
+    try {
+        const id_usuario = req.session.user?.id_usuario;
+        if (!id_usuario) return res.status(400).send('Usuario no identificado');
+
+        // 1️⃣ Obtener la carrera del usuario
+        const [[usuarioCarrera]] = await db.query(`
+            SELECT id_carrera 
+            FROM usuario_carrera 
+            WHERE id_usuario = ?
+        `, [id_usuario]);
+
+        if (!usuarioCarrera) return res.status(404).send('No se encontró la carrera del usuario');
+
+        const id_carrera = usuarioCarrera.id_carrera;
+
+        // 2️⃣ Obtener las materias de esa carrera
+        const [materias] = await db.query(`
+            SELECT id_materia, descripcion 
+            FROM materias 
+            WHERE id_carrera = ?
+        `, [id_carrera]);
+
+        if (materias.length === 0) return res.status(404).send('No hay materias asignadas a esta carrera');
+
+        // 3️⃣ (Opcional) Obtener las preguntas de todas las materias de esta carrera
+        // Por ejemplo, seleccionando hasta 10 preguntas por materia
+        const preguntasPorMateria = [];
+        for (const materia of materias) {
+            const [preguntas] = await db.query(`
+                SELECT id_pregunta, pregunta, retroalimentacion, puntos 
+                FROM pregunta 
+                WHERE id_materia = ? 
+                LIMIT 10
+            `, [materia.id_materia]);
+
+            for (let pregunta of preguntas) {
+                const [respuestas] = await db.query(`
+                    SELECT id_respuesta, respuesta, correcta 
+                    FROM respuesta 
+                    WHERE id_pregunta = ?
+                `, [pregunta.id_pregunta]);
+
+                pregunta.respuestas = respuestas.sort(() => Math.random() - 0.5); // Barajar respuestas
+            }
+
+            preguntasPorMateria.push({
+                materia: materia.descripcion,
+                preguntas
+            });
+        }
+
+        // 4️⃣ Renderizar la vista
+        res.render('examen-carrera', {
+            materias,
+            preguntasPorMateria,
+            layout: false
+        });
+
+    } catch (error) {
+        console.error('Error cargando examen de carrera:', error);
+        res.status(500).send('Error cargando examen de carrera');
+    }
+});
+
+// En routes/examenR.js
+router.get('/materias_carrera', async (req, res) => {
+    try {
+        const id_usuario = req.session.user?.id_usuario;
+        if (!id_usuario) return res.status(400).send('Usuario no identificado');
+
+        // Obtener la carrera del usuario
+        const [[usuarioCarrera]] = await db.query(`
+            SELECT id_carrera 
+            FROM usuario_carrera
+            WHERE id_usuario = ?
+        `, [id_usuario]);
+
+        if (!usuarioCarrera) return res.status(404).send('No se encontró la carrera del usuario');
+
+        const id_carrera = usuarioCarrera.id_carrera;
+
+        // Obtener las materias de esta carrera
+        const [materias] = await db.query(`
+          SELECT m.id_materia, m.descripcion
+          FROM carrera_materia cm
+          JOIN materias m ON cm.id_materia = m.id_materia
+          WHERE cm.id_carrera = ?`, [id_carrera]);
+        console.log('Materias de carrera', materias);
+        res.render('materias-carrera', {
+            materias,
+            layout: false
+        });
+
+    } catch (error) {
+        console.error('Error cargando materias de carrera:', error);
+        res.status(500).send('Error cargando materias de carrera');
+    }
 });
 
 

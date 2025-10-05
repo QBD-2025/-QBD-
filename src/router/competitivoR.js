@@ -348,7 +348,7 @@ router.post('/desafiar/duelo/:idOponente', async (req, res) => {
         await conn.query(`DELETE FROM duelos_preguntas WHERE id_duelo = ?`, [id_duelo]);
 
         // Generar preguntas aleatorias
-        const [preguntas] = await conn.query(`SELECT id_pregunta FROM pregunta ORDER BY RAND() LIMIT ?`, [NUM_PREGUNTAS_POR_DUELO]);
+        const [preguntas] = await conn.query(`SELECT id_pregunta, pregunta FROM pregunta GROUP BY pregunta ORDER BY RAND() LIMIT ?`, [NUM_PREGUNTAS_POR_DUELO]);
         if (!preguntas || preguntas.length === 0) {
             await conn.rollback();
             await conn.release();
@@ -505,7 +505,6 @@ router.get('/duelo/estado/:salaId', async (req, res) => {
     }
 });
 
-// --- RESULTADOS ---
 router.get('/duelo/resultados/:salaId', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
 
@@ -515,36 +514,33 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
     try {
         // Obtener información del duelo
         const duelo = await obtenerDuelo(salaId);
-        
-        if (!duelo) {
-            return res.redirect('/portal?error=duelo_no_encontrado');
-        }
+        if (!duelo) return res.redirect('/portal?error=duelo_no_encontrado');
 
         // Obtener respuestas del usuario
         const misRespuestasDetalladas = await obtenerRespuestas(idUsuario, salaId);
 
         // Verificar si ambos terminaron
         const ambosTerminaron = await verificarAmbosTerminaron(salaId);
-        
+
         // Obtener respuestas del oponente solo si ambos terminaron
         let respuestasOponenteDetalladas = [];
         let oponentePuntaje = null;
         let nombreOponente = '';
         let puntosGanados = null;
         let infoRanking = null;
-        
+
         if (ambosTerminaron) {
             const oponente = await obtenerOponente(idUsuario, salaId);
             if (oponente) {
                 nombreOponente = oponente.username;
                 respuestasOponenteDetalladas = await obtenerRespuestas(oponente.id, salaId);
                 oponentePuntaje = calcularPuntaje(respuestasOponenteDetalladas);
-                
-                // ✅ Finalizar duelo solo si aún no se ha finalizado
+
+                // Finalizar duelo solo si aún no se ha finalizado
                 if (duelo.estado !== 'finalizado') {
                     const miPuntaje = calcularPuntaje(misRespuestasDetalladas);
-                    
                     let idGanador, idPerdedor;
+
                     if (miPuntaje > oponentePuntaje) {
                         idGanador = idUsuario;
                         idPerdedor = oponente.id;
@@ -552,28 +548,29 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
                         idGanador = oponente.id;
                         idPerdedor = idUsuario;
                     } else {
-                        // Empate - no se otorgan puntos
                         idGanador = null;
                         idPerdedor = null;
                     }
-                    
+
                     if (idGanador) {
-                        infoRanking = await finalizarDuelo(salaId, idGanador, idPerdedor, 
+                        infoRanking = await finalizarDuelo(
+                            salaId, 
+                            idGanador, 
+                            idPerdedor, 
                             idGanador === idUsuario ? miPuntaje : oponentePuntaje,
-                            idGanador === idUsuario ? oponentePuntaje : miPuntaje);
-                        
-                        // Determinar cuántos puntos ganó/perdió el usuario actual
+                            idGanador === idUsuario ? oponentePuntaje : miPuntaje
+                        );
+
                         const esRetador = duelo.id_retador === idUsuario;
                         puntosGanados = esRetador ? infoRanking.puntosRetador : infoRanking.puntosDefensor;
                     }
                 } else {
                     // Si ya está finalizado, obtener los puntos del historial
-                    const [historial] = await pool.query(`
-                        SELECT puntos_retador, puntos_defensor 
-                        FROM historial_duelos 
-                        WHERE id_duelo = ?
-                    `, [salaId]);
-                    
+                    const [historial] = await pool.query(
+                        `SELECT puntos_retador, puntos_defensor 
+                         FROM historial_duelos 
+                         WHERE id_duelo = ?`, [salaId]
+                    );
                     if (historial.length > 0) {
                         const esRetador = duelo.id_retador === idUsuario;
                         puntosGanados = esRetador ? historial[0].puntos_retador : historial[0].puntos_defensor;
@@ -583,11 +580,11 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
         }
 
         // Combinar respuestas para mostrar en la vista
-        const respuestasCombinadas = misRespuestasDetalladas.map((miResp, index) => {
+        let respuestasCombinadas = misRespuestasDetalladas.map((miResp, index) => {
             const respOponente = respuestasOponenteDetalladas.find(r => r.id_pregunta === miResp.id_pregunta);
             return {
                 id_pregunta: miResp.id_pregunta,
-                orden: index + 1, // ✅ Orden empezando desde 1
+                orden: index + 1,
                 pregunta: miResp.pregunta,
                 mi_respuesta_texto: miResp.texto_respuesta,
                 mi_correcta: miResp.es_correcta,
@@ -595,6 +592,9 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
                 oponente_correcta: respOponente ? respOponente.es_correcta : null,
             };
         });
+
+        // ✅ Eliminar preguntas duplicadas (por texto de la pregunta)
+        const respuestasCombinadasUnicas = [...new Map(respuestasCombinadas.map(r => [r.pregunta, r])).values()].map((r, index) => ({ ...r, orden: index + 1 })); 
 
         const miPuntaje = calcularPuntaje(misRespuestasDetalladas);
 
@@ -605,7 +605,7 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
             miPuntaje,
             oponentePuntaje,
             nombreOponente,
-            respuestas: respuestasCombinadas,
+            respuestas: respuestasCombinadasUnicas, // Usamos la versión única
             ambosTerminaron,
             esRetador: idUsuario === duelo.retador_id
         });
@@ -616,4 +616,208 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
     }
 });
 
+
+////////////////////////////////////////////////////////////// MATCHMAKING ////////////////////////////////////////////////////////////////
+
+router.get('/matchmaking', async (req, res) => {
+    console.log('👉 Sesión actual:', req.session.user);
+    try {
+        const userId = req.session.user.id_usuario;
+        
+        const [userData] = await pool.query(
+            `SELECT 
+                u.puntos,
+                COALESCE(SUM(CASE WHEN h.id_ganador = u.id_usuario THEN 1 ELSE 0 END), 0) AS victorias,
+                COALESCE(SUM(CASE WHEN h.id_ganador IS NOT NULL AND h.id_ganador != u.id_usuario THEN 1 ELSE 0 END), 0) AS derrotas
+            FROM 
+                usuario u
+            LEFT JOIN 
+                historial_duelos h ON u.id_usuario = h.id_retador OR u.id_usuario = h.id_defensor
+            WHERE 
+                u.id_usuario = ?
+            GROUP BY
+                u.id_usuario, u.puntos`,
+            [userId]
+        );
+
+        // El resultado estará en userData[0]
+        // Calcular ranking (posición en el ranking global)
+        const [rankingData] = await pool.query(
+            `SELECT COUNT(*) + 1 as rank
+             FROM usuario 
+             WHERE puntos > (SELECT puntos FROM usuario WHERE id_usuario = ?)`,
+            [userId]
+        );
+
+        // Calcular progreso hacia el siguiente rango (ejemplo simple)
+        const currentPoints = userData[0]?.puntos || 0;
+        const nextRankPoints = Math.ceil((currentPoints + 100) / 100) * 100;
+        const progressPercent = ((currentPoints % 100) / 100) * 100;
+
+        const stats = {
+            ...userData[0],
+            rank: rankingData[0]?.rank || 1,
+            progress_percent: progressPercent,
+            points_needed: nextRankPoints - currentPoints
+        };
+        
+        res.render('matchmaking', {
+            layout: 'main',
+            user: req.session.user,
+            stats: stats
+        });
+
+    } catch (error) {
+        console.error("Error al cargar la sala de duelos:", error);
+    }
+});
+
+
+// ✅ RUTA PARA BUSCAR USUARIOS PARA DESAFÍO
+router.get('/api/buscar/usuarios', async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ error: 'No autorizado' });
+    
+    try {
+        const { q } = req.query; // Query de búsqueda
+        let query = `
+            SELECT u.id_usuario, u.username, u.foto_perfil, u.puntos
+            FROM usuario u
+            WHERE u.id_usuario != ?
+        `;
+        let params = [req.session.user.id_usuario];
+
+        if (q && q.trim()) {
+            query += ` AND u.username LIKE ?`;
+            params.push(`%${q.trim()}%`);
+        }
+
+        query += ` ORDER BY u.puntos DESC LIMIT 20`;
+
+        const [usuarios] = await pool.query(query, params);
+        res.json(usuarios);
+    } catch (error) {
+        console.error('Error buscando usuarios:', error);
+        res.status(500).json({ error: 'Error al buscar usuarios' });
+    }
+});
+
+// ✅ RUTA PARA HISTORIAL DE DUELOS
+router.get('/api/usuario/historial', async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ error: 'No autorizado' });
+    
+    try {
+        const [historial] = await pool.query(`
+            SELECT 
+                h.*,
+                u1.username as retador_username,
+                u1.foto_perfil as retador_foto,
+                u2.username as defensor_username,  
+                u2.foto_perfil as defensor_foto,
+                ug.username as ganador_username
+            FROM historial_duelos h
+            LEFT JOIN usuario u1 ON h.id_retador = u1.id_usuario
+            LEFT JOIN usuario u2 ON h.id_defensor = u2.id_usuario  
+            LEFT JOIN usuario ug ON h.id_ganador = ug.id_usuario
+            WHERE h.id_retador = ? OR h.id_defensor = ?
+            ORDER BY h.fecha_duelo DESC
+            LIMIT 50
+        `, [req.session.user.id_usuario, req.session.user.id_usuario]);
+        
+        res.json(historial);
+    } catch (error) {
+        console.error('Error al obtener historial:', error);
+        res.status(500).json({ error: 'Error al obtener historial de duelos' });
+    }
+});
+
+router.get('/sala/:salaId', async (req, res, next) => {
+    if (!req.session.user) {
+        return res.redirect('/');
+    }
+
+    try {
+        const { salaId } = req.params;
+        const userId = req.session.user.id_usuario;
+        
+        // Validar UUID
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(salaId)) {
+            console.log(`[ROUTER]: UUID inválido: ${salaId}`);
+            return res.redirect('/competitivo/portal');
+        }
+
+        // ✅ VERIFICAR QUE LA SALA EXISTA EN EL SERVIDOR
+        const salasPendientes = global.salasPendientes;
+        const salasEspera = global.salasEspera || new Map();
+        
+        const salaExiste = salasPendientes.has(salaId) || salasEspera.has(salaId);
+        
+        if (!salaExiste) {
+            console.log(`[ROUTER]: Sala ${salaId} no encontrada en servidor`);
+            req.session.errorMsg = 'La sala no existe o expiró. Solicita una nueva invitación.';
+            return res.redirect('/competitivo/portal');
+        }
+
+        const sala = salasPendientes.get(salaId) || salasEspera.get(salaId);
+        
+        // Verificar que el usuario sea parte de la sala
+        const retadorId = sala.retador || sala.idRetador;
+        const retadoId = sala.retado || sala.idRetado;
+        
+        if (parseInt(userId) !== parseInt(retadorId) && parseInt(userId) !== parseInt(retadoId)) {
+            console.log(`[ROUTER]: Usuario ${userId} no es parte de la sala ${salaId}`);
+            req.session.errorMsg = 'No tienes acceso a esta sala.';
+            return res.redirect('/competitivo/portal');
+        }
+
+        console.log(`[ROUTER]: ✅ Sala ${salaId} válida para usuario ${userId}`);
+
+        // CONTINUAR CON EL CÓDIGO ORIGINAL...
+        const [userData] = await pool.query(
+            `SELECT 
+                u.puntos,
+                COALESCE(SUM(CASE WHEN h.id_ganador = u.id_usuario THEN 1 ELSE 0 END), 0) AS victorias,
+                COALESCE(SUM(CASE WHEN h.id_ganador IS NOT NULL AND h.id_ganador != u.id_usuario THEN 1 ELSE 0 END), 0) AS derrotas
+            FROM 
+                usuario u
+            LEFT JOIN 
+                historial_duelos h ON u.id_usuario = h.id_retador OR u.id_usuario = h.id_defensor
+            WHERE 
+                u.id_usuario = ?
+            GROUP BY
+                u.id_usuario, u.puntos`,
+            [userId]
+        );
+
+        const [rankingData] = await pool.query(
+            `SELECT COUNT(*) + 1 as rank
+             FROM usuario 
+             WHERE puntos > (SELECT puntos FROM usuario WHERE id_usuario = ?)`,
+            [userId]
+        );
+
+        const currentPoints = userData[0]?.puntos || 0;
+        const nextRankPoints = Math.ceil((currentPoints + 100) / 100) * 100;
+        const progressPercent = ((currentPoints % 100) / 100) * 100;
+
+        const stats = {
+            ...userData[0],
+            rank: rankingData[0]?.rank || 1,
+            progress_percent: progressPercent,
+            points_needed: nextRankPoints - currentPoints
+        };
+        
+        res.render('matchmaking', {
+            layout: 'main',
+            user: req.session.user,
+            stats: stats,
+            salaId: salaId,
+            enSala: true
+        });
+
+    } catch (error) {
+        console.error("[ROUTER ERROR] al cargar sala:", error);
+        res.redirect('/competitivo/portal');
+    }
+});
 module.exports = router;

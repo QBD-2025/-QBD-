@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Duelos de Ascenso</title>
+    <link rel="stylesheet" href="/css/competitivo-duelos.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <button onclick="location.href='/portal'">Desafia a alguien</button>
+    <div id="matchmakingView" class="duelo-container">
+        <aside class="player-card">
+            <img src="{{user.foto_perfil}}" alt="Tu avatar" class="player-avatar">
+            <h2>{{user.username}}</h2>
+            <div class="player-rank">
+                <p>Rango: #{{stats.rank}}</p>
+                <span>{{stats.puntos}} Puntos</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress" style="width: {{stats.progress_percent}}%;"></div>
+            </div>
+            <p class="next-rank-info">Faltan {{stats.points_needed}} puntos para el siguiente rango</p>
+            <hr>
+            <div class="player-stats">
+                <p><i class="fas fa-fist-raised"></i> Récord: {{stats.victorias}}V - {{stats.derrotas}}D</p>
+                <p><i class="fas fa-fire"></i> Racha Actual: {{stats.racha}} Victorias</p>
+            </div>
+        </aside>
+        <main class="matchmaking-center">
+            <h1>Duelos de Ascenso</h1>
+            <p class="subtitle">Elige tu arena y demuestra tu conocimiento.</p>
+            
+            <div id="actionContainer" class="action-container">
+                <button id="btnBuscarCarrera" class="btn-buscar-duelo btn-carrera">
+                    <i class="fas fa-user-graduate"></i> DUELO POR CARRERA
+                </button>
+                <button id="btnBuscarGeneral" class="btn-buscar-duelo btn-general">
+                    <i class="fas fa-globe"></i> DUELO GENERAL
+                </button>
+                <button id="btnCancelarBusqueda" class="btn-cancelar-duelo" style="display: none;">
+                    <i class="fas fa-times"></i> CANCELAR
+                </button>
+            </div>
+
+            <p id="statusText" class="status-text">Compite en tu área de especialidad o en cultura general.</p>
+        </main>
+    </div>
+
+    <div id="dueloView" class="duelo-body" style="display: none;">
+        <header class="duelo-header">
+            <div id="marcador" class="marcador">
+                <span id="puntuacionTuya">0</span> - <span id="puntuacionOponente">0</span>
+            </div>
+            <div id="preguntaContainer" class="pregunta-container">
+                <p id="numeroPregunta">Pregunta 1 / 10</p>
+                <h2 id="textoPregunta">¡Duelo encontrado! Preparando la primera pregunta...</h2>
+            </div>
+            <div id="cronometro" class="cronometro">15</div>
+        </header>
+
+        <div id="draftContainer" class="draft-container">
+            <h2 id="draftTitle">Selección de Campo de Batalla</h2>
+            <p id="draftInstruction">Esperando al oponente...</p>
+            <div id="materiasGrid" class="materias-grid"></div>
+        </div>
+
+        <main id="arenaContainer" class="arena-container" style="display: none;">
+            <section id="zonaJugador" class="zona-jugador">
+                <div class="info-jugador">
+                    <img src="{{user.foto_perfil}}" alt="Tu Avatar" class="avatar">
+                    <h3>{{user.username}}</h3>
+                    <span class="racha" id="tuRacha">🔥 x0</span>
+                </div>
+                <div id="opcionesContainer" class="opciones-container"></div>
+            </section>
+            <section id="zonaOponente" class="zona-jugador oponente">
+                <div class="info-jugador">
+                    <img id="oponenteAvatar" src="/media/images/default_avatar.png" alt="Avatar Oponente" class="avatar">
+                    <h3 id="oponenteUsername">Oponente</h3>
+                    <span class="racha" id="oponenteRacha">🔥 x0</span>
+                </div>
+                <div id="estadoOponente" class="estado-oponente"></div>
+            </section>
+        </main>
+    </div>
+
+    <div id="modalDificultad" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Elige la Dificultad</h2>
+            <p>Las preguntas serán más difíciles, ¡pero la recompensa será mayor!</p>
+            <div class="dificultad-opciones">
+                <button data-dificultad="facil">Fácil</button>
+                <button data-dificultad="normal">Normal</button>
+                <button data-dificultad="dificil">Difícil</button>
+            </div>
+            <button id="cerrarModalDificultad" class="btn-cerrar-modal">Cancelar</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+// ================================================================
+// CONFIGURACIÓN INICIAL Y VARIABLES GLOBALES
+// ================================================================
+const socket = io();
+const user = {{{json user}}};
+let salaId = null;
+let salaActual = null;
+let oponente = null;
+let cronometroInterval = null;
+let preguntaActualId = null;
+let socketRegistrado = false;
+
+// Elementos del DOM
+const matchmakingView = document.getElementById('matchmakingView');
+const dueloView = document.getElementById('dueloView');
+const btnBuscarCarrera = document.getElementById('btnBuscarCarrera');
+const btnBuscarGeneral = document.getElementById('btnBuscarGeneral');
+const btnCancelarBusqueda = document.getElementById('btnCancelarBusqueda');
+const statusText = document.getElementById('statusText');
+const modalDificultad = document.getElementById('modalDificultad');
+const tabs = document.querySelectorAll('.tab-link');
+const tabContents = document.querySelectorAll('.tab-content');
+const selectorCarrera = document.getElementById('selectorCarrera');
+const rankingGlobalContainer = document.getElementById('rankingGlobalContainer');
+const rankingCarreraContainer = document.getElementById('rankingCarreraContainer');
+const oponenteUsernameEl = document.getElementById('oponenteUsername');
+const oponenteAvatarEl = document.getElementById('oponenteAvatar');
+const draftContainer = document.getElementById('draftContainer');
+const arenaContainer = document.getElementById('arenaContainer');
+const draftTitle = document.getElementById('draftTitle');
+const draftInstruction = document.getElementById('draftInstruction');
+const materiasGrid = document.getElementById('materiasGrid');
+const textoPregunta = document.getElementById('textoPregunta');
+const opcionesContainer = document.getElementById('opcionesContainer');
+const cronometroEl = document.getElementById('cronometro');
+const tuRachaEl = document.getElementById('tuRacha');
+const oponenteRachaEl = document.getElementById('oponenteRacha');
+
+console.log('[DUELO INIT]: Portal iniciado para usuario:', user.id_usuario);
+
+// ================================================================
+// REGISTRO DE SOCKET (CRÍTICO)
+// ================================================================
+socket.userId = user?.id_usuario ? parseInt(user.id_usuario) : null;
+
+if (user?.id_usuario) {
+    console.log('[SOCKET]: Registrando usuario...');
+    socket.emit('usuario:registrar', user.id_usuario);
+    socket.emit('competitivo:entrarPortal', user.id_usuario);
+    socketRegistrado = true;
+} else {
+    console.error('[ERROR]: Usuario no encontrado');
+}
+
+// ================================================================
+// DETECCIÓN DE SALA EN URL
+// ================================================================
+const urlPath = window.location.pathname;
+const salaMatch = urlPath.match(/\/competitivo\/sala\/([a-f0-9-]{36})/i);
+
+if (salaMatch) {
+    salaActual = salaMatch[1];
+    console.log(`[URL SALA]: Detectada sala ${salaActual}`);
+    
+    btnBuscarCarrera.style.display = 'none';
+    btnBuscarGeneral.style.display = 'none';
+    btnCancelarBusqueda.style.display = 'inline-block';
+    statusText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando a la sala...';
+    
+    const conectarASala = async () => {
+        console.log('[SALA]: Esperando registro del socket...');
+        
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        let intentos = 0;
+        const maxIntentos = 20;
+        
+        const intentarConexion = async () => {
+            intentos++;
+            console.log(`[SALA]: Intento ${intentos}/${maxIntentos}`);
+            
+            if (socket.connected && socket.userId) {
+                console.log(`[SALA]: ✅ Emitiendo sala:unirse para ${salaActual}`);
+                socket.emit('sala:unirse', { salaId: salaActual });
+                socket.hasJoinedSala = true;
+                return true;
+            } else {
+                console.log(`[SALA]: Socket no listo (connected: ${socket.connected}, userId: ${socket.userId})`);
+                
+                if (intentos >= maxIntentos) {
+                    console.error(`[SALA]: ❌ Timeout después de ${maxIntentos} intentos`);
+                    statusText.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error de conexión. Recargando...';
+                    setTimeout(() => window.location.reload(), 2000);
+                    return false;
+                }
+                
+                await new Promise(resolve => setTimeout(resolve, 400));
+                return intentarConexion();
+            }
+        };
+        
+        await intentarConexion();
+    };
+    
+    conectarASala();
+    
+    socket.on('connect', () => {
+        if (salaActual && !socket.hasJoinedSala) {
+            console.log(`[SALA]: Reconexión detectada, reintentando unirse a ${salaActual}`);
+            setTimeout(() => {
+                socket.hasJoinedSala = true;
+                socket.emit('sala:unirse', { salaId: salaActual });
+            }, 1000);
+        }
+    });
+}
+
+// ================================================================
+// LISTENERS DE SALA
+// ================================================================
+socket.on('sala:conectado', (data) => {
+    console.log('[SALA CONECTADO]:', data);
+    statusText.innerHTML = `<i class="fas fa-check-circle"></i> ${data.mensaje}`;
+    salaActual = data.salaId;
+    
+    const currentPath = window.location.pathname;
+    const expectedPath = `/competitivo/sala/${data.salaId}`;
+    
+    if (currentPath !== expectedPath) {
+        window.history.pushState({}, '', expectedPath);
+        console.log(`[URL]: Actualizada a ${expectedPath}`);
+    }
+});
+
+socket.on('sala:error', (data) => {
+    console.error('[SALA ERROR]:', data.mensaje);
+    
+    if (window.mostrarNotificacionTemporal) {
+        window.mostrarNotificacionTemporal(data.mensaje, 'error');
+    }
+    
+    statusText.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${data.mensaje}`;
+    btnCancelarBusqueda.textContent = 'Volver al Portal';
+    
+    setTimeout(() => {
+        window.location.href = '/competitivo/portal';
+    }, 3000);
+});
+
+// ================================================================
+// LISTENER CRÍTICO: duelo:dueloListo
+// ================================================================
+socket.on('duelo:dueloListo', ({ salaId }) => {
+    console.log('[DUELO LISTO]: ✅ Iniciando transición a arena...');
+    
+    statusText.innerHTML = '<i class="fas fa-swords"></i> ¡Duelo listo! Entrando a la arena...';
+    btnCancelarBusqueda.style.display = 'none';
+    
+    setTimeout(() => {
+        matchmakingView.style.opacity = '0';
+        
+        setTimeout(() => {
+            matchmakingView.style.display = 'none';
+            dueloView.style.display = 'flex';
+            
+            console.log('[DUELO LISTO]: Emitiendo duelo:clienteListo');
+            socket.emit('duelo:clienteListo', { 
+                salaId, 
+                userId: user.id_usuario 
+            });
+            
+            setTimeout(() => {
+                dueloView.style.opacity = '1';
+            }, 100);
+        }, 500);
+    }, 1500);
+});
+
+// ================================================================
+// FUNCIONES DE RANKING
+// ================================================================
+function renderizarRanking(container, jugadores) {
+    container.innerHTML = '';
+    
+    if (!jugadores || jugadores.length === 0) {
+        container.innerHTML = '<p>No hay jugadores en este ranking.</p>';
+        return;
+    }
+
+    jugadores.forEach(jugador => {
+        if (jugador.id_usuario === user.id_usuario) return;
+
+        const item = document.createElement('div');
+        item.className = 'player-item';
+        item.innerHTML = `
+            <img src="${jugador.foto_perfil || '/media/images/default_avatar.png'}" alt="Avatar" class="avatar">
+            <div class="player-info">
+                <strong>${jugador.username}</strong>
+                <p>${jugador.puntos} puntos</p>
+            </div>
+            <div class="player-actions">
+                <button class="btn-buscar" onclick="buscarJugadorEnLobby(${jugador.id_usuario}, '${jugador.username}')">
+                    Invitar Lobby 👤
+                </button>
+                <button class="btn-notificar" onclick="enviarDesafioBD(${jugador.id_usuario}, '${jugador.username}', this)">
+                    Invitar Notif 📧
+                </button>
+            </div>
+        `;
+        
+        container.appendChild(item);
+    });
+}
+
+async function enviarDesafioBD(idOponente, usernameOponente, btnElement) {
+    if (parseInt(idOponente) === parseInt(user.id_usuario)) {
+        if (window.mostrarNotificacionTemporal) {
+            window.mostrarNotificacionTemporal('No puedes desafiarte a ti mismo', 'error');
+        }
+        return;
+    }
+
+    console.log(`[BD DESAFÍO]: Enviando a ${usernameOponente} (ID: ${idOponente})`);
+    
+    if (btnElement) {
+        btnElement.disabled = true;
+        btnElement.textContent = 'Enviando...';
+    }
+    
+    try {
+        const response = await fetch(`/invitaciones/desafio/duelo/${idOponente}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                modo: 'general',
+                dificultad: null
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `Error ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.salaId) {
+            console.log(`[BD DESAFÍO]: ✅ Enviado. Sala: ${data.salaId}`);
+            
+            if (window.mostrarNotificacionTemporal) {
+                window.mostrarNotificacionTemporal(
+                    `✅ Desafío enviado a ${usernameOponente}`, 
+                    'success'
+                );
+            }
+            
+            statusText.innerHTML = `<i class="fas fa-paper-plane"></i> Desafío enviado a <strong>${usernameOponente}</strong>`;
+            setTimeout(() => {
+                statusText.textContent = 'Compite en tu área de especialidad o en cultura general.';
+            }, 5000);
+        } else {
+            throw new Error(data.message || 'Respuesta inválida');
+        }
+        
+    } catch (error) {
+        console.error('[BD DESAFÍO ERROR]:', error);
+        
+        let mensajeError = error.message;
+        
+        if (error.message.includes('Ya tienes un desafío pendiente')) {
+            mensajeError = '⏱️ Ya enviaste un desafío. Espera 5 minutos.';
+        }
+        
+        if (window.mostrarNotificacionTemporal) {
+            window.mostrarNotificacionTemporal(mensajeError, 'error');
+        }
+        
+    } finally {
+        if (btnElement) {
+            btnElement.disabled = false;
+            btnElement.textContent = 'Invitar Notif 📧';
+        }
+    }
+}
+
+window.enviarDesafioBD = enviarDesafioBD;
+
+async function cargarRankingGlobal() {
+    try {
+        const response = await fetch('/competitivo/api/ranking/global');
+        const jugadores = await response.json();
+        renderizarRanking(rankingGlobalContainer, jugadores);
+    } catch (error) {
+        console.error('Error cargando ranking global:', error);
+    }
+}
+
+async function cargarRankingCarrera(idCarrera) {
+    if (!idCarrera) {
+        rankingCarreraContainer.innerHTML = '<p>Selecciona una carrera.</p>';
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/competitivo/api/ranking/carrera/${idCarrera}`);
+        const jugadores = await response.json();
+        renderizarRanking(rankingCarreraContainer, jugadores);
+    } catch (error) {
+        console.error('Error cargando ranking de carrera:', error);
+    }
+}
+
+// ================================================================
+// LÓGICA DE PESTAÑAS
+// ================================================================
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        tabs.forEach(item => item.classList.remove('active'));
+        tab.classList.add('active');
+        const target = document.getElementById(tab.dataset.tab);
+        tabContents.forEach(content => content.classList.remove('active'));
+        target.classList.add('active');
+        
+        if (tab.dataset.tab === 'tab-carrera') {
+            cargarRankingCarrera(selectorCarrera.value);
+        } else {
+            cargarRankingGlobal();
+        }
+    });
+});
+
+// ================================================================
+// INVITACIÓN DE LOBBY
+// ================================================================
+function buscarJugadorEnLobby(idOponente, username) {
+    if (idOponente === user.id_usuario) {
+        if (window.mostrarNotificacionTemporal) {
+            window.mostrarNotificacionTemporal('No puedes desafiarte a ti mismo', 'error');
+        }
+        return;
+    }
+    
+    console.log(`[LOBBY]: Invitando a ${username} (ID: ${idOponente})`);
+    
+    statusText.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Invitando a <strong>${username}</strong>...`;
+    btnBuscarCarrera.style.display = 'none';
+    btnBuscarGeneral.style.display = 'none';
+    btnCancelarBusqueda.style.display = 'inline-block';
+
+    socket.emit('duelo:invitarLobby', { 
+        idOponente: idOponente,
+        usernameOponente: username
+    });
+}
+
+window.buscarJugadorEnLobby = buscarJugadorEnLobby;
+
+// ================================================================
+// EVENTOS DE INVITACIÓN LOBBY
+// ================================================================
+socket.on('duelo:invitacionLobbyEnviada', (data) => {
+    console.log('[LOBBY]: Invitación enviada:', data.mensaje);
+    statusText.innerHTML = `<i class="fas fa-clock"></i> ${data.mensaje}`;
+});
+
+socket.on('duelo:invitacionLobbyError', (data) => {
+    if (window.mostrarNotificacionTemporal) {
+        window.mostrarNotificacionTemporal(data.mensaje, 'error');
+    }
+    restaurarBusqueda(data.mensaje);
+});
+
+socket.on('duelo:invitacionExpirada', (data) => {
+    if (window.mostrarNotificacionTemporal) {
+        window.mostrarNotificacionTemporal(data.mensaje, 'info');
+    }
+    restaurarBusqueda(data.mensaje);
+});
+
+socket.on('duelo:invitacionLobbyRechazada', (data) => {
+    if (window.mostrarNotificacionTemporal) {
+        window.mostrarNotificacionTemporal(data.mensaje, 'error');
+    }
+    restaurarBusqueda(data.mensaje);
+});
+
+// ================================================================
+// MATCHMAKING NORMAL
+// ================================================================
+function iniciarBusqueda(modo, dificultad = null) {
+    modalDificultad.classList.remove('visible');
+    btnBuscarCarrera.style.display = 'none';
+    btnBuscarGeneral.style.display = 'none';
+    btnCancelarBusqueda.style.display = 'inline-block';
+    statusText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando oponente...';
+    
+    const evento = `duelo:buscar:${modo}`;
+    const payload = modo === 'carrera' ? { user, dificultad } : user;
+    socket.emit(evento, payload);
+}
+
+function restaurarBusqueda(mensaje) {
+    btnBuscarCarrera.style.display = 'inline-block';
+    btnBuscarGeneral.style.display = 'inline-block';
+    btnCancelarBusqueda.style.display = 'none';
+    statusText.textContent = mensaje;
+}
+
+btnBuscarCarrera.addEventListener('click', () => {
+    modalDificultad.classList.add('visible');
+});
+
+btnBuscarGeneral.addEventListener('click', () => iniciarBusqueda('general'));
+
+btnCancelarBusqueda.addEventListener('click', () => {
+    if (salaActual) {
+        window.location.href = '/competitivo/portal';
+    } else {
+        socket.emit('duelo:cancelarBusqueda', user.id_usuario);
+        restaurarBusqueda("Búsqueda cancelada.");
+    }
+});
+
+modalDificultad.querySelectorAll('.dificultad-opciones button').forEach(btn => {
+    if (btn.dataset.dificultad) {
+        btn.onclick = () => iniciarBusqueda('carrera', btn.dataset.dificultad);
+    }
+});
+
+document.getElementById('cerrarModalDificultad').onclick = () => {
+    modalDificultad.classList.remove('visible');
+};
+
+// ================================================================
+// EVENTOS DEL DUELO
+// ================================================================
+socket.on('duelo:iniciarDesafio', ({ salaId: newSalaId }) => {
+    console.log('[DUELO]: Matchmaking encontró pareja:', newSalaId);
+    
+    if (document.body.classList.contains('in-transition')) return;
+    document.body.classList.add('in-transition');
+
+    salaId = newSalaId;
+    statusText.textContent = 'Duelo encontrado! Preparando...';
+    btnCancelarBusqueda.style.display = 'none';
+    
+    setTimeout(() => {
+        matchmakingView.style.opacity = '0';
+        setTimeout(() => {
+            matchmakingView.style.display = 'none';
+            dueloView.style.display = 'flex';
+            
+            socket.emit('duelo:clienteListo', { salaId, userId: user.id_usuario });
+            
+            setTimeout(() => {
+                dueloView.style.opacity = '1';
+                document.body.classList.remove('in-transition');
+            }, 100);
+        }, 500);
+    }, 1500);
+});
+
+socket.on('duelo:oponenteInfo', ({ oponenteId, oponente: oponenteData }) => {
+    console.log('[DUELO]: Info del oponente recibida:', oponenteData.username);
+    oponenteUsernameEl.textContent = oponenteData.username;
+    oponenteAvatarEl.src = oponenteData.foto_perfil || '/media/images/default_avatar.png';
+    oponente = { ...oponenteData, id_usuario: oponenteId };
+});
+
+socket.on('duelo:iniciarMiniDraft', ({ categorias }) => {
+    console.log('[DRAFT]: Recibidas', categorias.length, 'categorías');
+    
+    draftTitle.textContent = "ELIGE TU CAMPO DE BATALLA";
+    draftInstruction.textContent = "Selecciona una categoría.";
+    materiasGrid.innerHTML = '';
+
+    if (categorias.length === 0) {
+        draftInstruction.textContent = "No hay categorías disponibles.";
+        return;
+    }
+
+    categorias.forEach(categoria => {
+        const card = document.createElement('div');
+        card.className = 'materia-card';
+        card.dataset.id = categoria.id;
+        card.textContent = categoria.descripcion;
+        
+        card.onclick = () => {
+            document.querySelectorAll('.materia-card').forEach(c => {
+                c.onclick = null;
+                if (c !== card) c.classList.add('deshabilitada');
+            });
+            card.classList.add('seleccionada');
+            draftInstruction.textContent = "Esperando oponente...";
+            
+            console.log('[DRAFT]: Seleccionando categoría', categoria.id);
+            socket.emit('duelo:seleccionarCategoria', { 
+                salaId: salaActual || salaId, 
+                userId: user.id_usuario, 
+                idCategoria: categoria.id 
+            });
+        };
+        materiasGrid.appendChild(card);
+    });
+});
+
+socket.on('duelo:oponenteSelecciono', () => {
+    console.log('[DRAFT]: Oponente seleccionó su categoría');
+    draftInstruction.textContent = "El oponente ya seleccionó...";
+});
+
+socket.on('duelo:miniDraftFinalizado', () => {
+    console.log('[DRAFT]: ✅ Finalizado, ocultando draft');
+    draftContainer.style.display = 'none';
+    arenaContainer.style.display = 'flex';
+});
+
+socket.on('duelo:nuevaPregunta', ({ pregunta, opciones, numeroPregunta, totalPreguntas, evento }) => {
+    console.log(`[PREGUNTA]: ${numeroPregunta}/${totalPreguntas}`);
+    
+    preguntaActualId = pregunta.id_pregunta;
+    textoPregunta.textContent = pregunta.pregunta;
+    document.getElementById('numeroPregunta').textContent = `Pregunta ${numeroPregunta} / ${totalPreguntas}`;
+    opcionesContainer.innerHTML = '';
+    
+    if (evento) {
+        const eventoDiv = document.createElement('div');
+        eventoDiv.className = 'evento-especial';
+        eventoDiv.textContent = evento.notificacion;
+        textoPregunta.parentNode.insertBefore(eventoDiv, textoPregunta);
+        setTimeout(() => eventoDiv.remove(), 3000);
+    }
+
+    if (cronometroInterval) clearInterval(cronometroInterval);
+    let tiempoRestante = evento?.duracion || 15;
+    cronometroEl.textContent = tiempoRestante;
+    cronometroInterval = setInterval(() => {
+        tiempoRestante--;
+        cronometroEl.textContent = tiempoRestante;
+        if (tiempoRestante <= 0) clearInterval(cronometroInterval);
+    }, 1000);
+
+    opciones.forEach(opcion => {
+        const btn = document.createElement('button');
+        btn.className = 'opcion-btn';
+        btn.textContent = opcion.respuesta;
+        
+        btn.onclick = () => {
+            opcionesContainer.querySelectorAll('button').forEach(b => b.disabled = true);
+            btn.classList.add('seleccionada-jugador');
+            socket.emit('duelo:responder', {
+                salaId: salaActual || salaId,
+                userId: user.id_usuario,
+                idPregunta: pregunta.id_pregunta,
+                idRespuesta: opcion.id_respuesta
+            });
+        };
+        opcionesContainer.appendChild(btn);
+    });
+});
+
+socket.on('duelo:actualizarEstado', ({ puntuaciones, rachas }) => {
+    document.getElementById('puntuacionTuya').textContent = puntuaciones[user.id_usuario];
+    document.getElementById('puntuacionOponente').textContent = puntuaciones[oponente.id_usuario];
+
+    if (rachas) {
+        tuRachaEl.textContent = `🔥 x${rachas[user.id_usuario]}`;
+        oponenteRachaEl.textContent = `🔥 x${rachas[oponente.id_usuario]}`;
+    }
+});
+
+socket.on('duelo:resultadoRespuesta', ({ esCorrecta, retroalimentacion }) => {
+    const feedback = document.createElement('div');
+    feedback.className = `feedback ${esCorrecta ? 'correcto' : 'incorrecto'}`;
+    feedback.innerHTML = `<p>${esCorrecta ? '✓ ¡Correcto!' : '✗ Incorrecto'}</p><small>${retroalimentacion}</small>`;
+    textoPregunta.parentNode.appendChild(feedback);
+    setTimeout(() => feedback.remove(), 3000);
+});
+
+socket.on('duelo:finalizado', (resultado) => {
+    console.log('[DUELO]: Finalizado', resultado);
+    
+    let mensaje = '';
+    if (resultado.ganadorId === user.id_usuario) {
+        mensaje = '¡Felicidades! Has ganado.';
+    } else if (resultado.ganadorId === null) {
+        mensaje = '¡Empate!';
+    } else {
+        mensaje = 'Has perdido.';
+    }
+    
+    setTimeout(() => {
+        alert(mensaje + ' Serás redirigido.');
+        window.location.href = '/portal';
+    }, 3000);
+});
+
+socket.on('duelo:oponenteAbandono', (data) => {
+    if (window.mostrarNotificacionTemporal) {
+        window.mostrarNotificacionTemporal(data.mensaje, 'info');
+    }
+    setTimeout(() => {
+        window.location.href = '/competitivo/portal';
+    }, 2000);
+});
+
+socket.on('duelo:oponenteRespondio', () => {
+    document.getElementById('estadoOponente').textContent = '✓ Ya respondió';
+});
+
+socket.on('duelo:error', (data) => {
+    console.error('[DUELO ERROR]:', data);
+    if (window.mostrarNotificacionTemporal) {
+        window.mostrarNotificacionTemporal('Error: ' + data.mensaje, 'error');
+    }
+});
+
+// ================================================================
+// INICIALIZACIÓN
+// ================================================================
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('[INIT]: Portal cargado');
+    
+    cargarRankingGlobal();
+    
+    try {
+        const resCarreras = await fetch('/competitivo/api/usuario/carreras');
+        const carreras = await resCarreras.json();
+        selectorCarrera.innerHTML = '<option value="">Selecciona tu carrera</option>';
+        carreras.forEach(carrera => {
+            const option = document.createElement('option');
+            option.value = carrera.id_carrera;
+            option.textContent = carrera.descripcion;
+            selectorCarrera.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error cargando carreras:', error);
+    }
+
+    selectorCarrera.addEventListener('change', (e) => {
+        cargarRankingCarrera(e.target.value);
+    });
+});
+
+// ================================================================
+// CLEANUP
+// ================================================================
+window.addEventListener('beforeunload', () => {
+    if (user?.id_usuario) {
+        socket.emit('competitivo:salirPortal', user.id_usuario);
+    }
+    if (salaActual) {
+        socket.emit('sala:salir', { salaId: salaActual });
+    }
+});
+</script>
+</body>
+</html>
