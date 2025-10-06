@@ -128,7 +128,6 @@ app.use((req, res, next) => {
 
 // Rutas
 const ligasR = require('./src/router/ligasR.js');
-const sopaR = require('./src/router/sopaR.js');
 const gatoR = require('./src/router/gatoR.js');
 const serpEscalerasR = require("./src/router/Escaleras_serpientes.js");
 const sopaLetrasR = require("./src/router/sopa_letrasR.js");
@@ -156,7 +155,6 @@ const notificacionesR = require('./src/router/notificacionesR.js');
 const rankingR = require('./src/router/rankingR.js');
 
 app.use('/', rankingR);
-app.use('/', sopaR);
 app.use('/', gatoR);
 app.use('/', serpEscalerasR);
 app.use('/', sopaLetrasR);

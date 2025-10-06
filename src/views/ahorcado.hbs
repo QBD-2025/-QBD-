@@ -1032,7 +1032,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function cargarJugadoresActivos() {
         try {
-            const res = await fetch('/competitivo');
+            const res = await fetch('/jugadores');
             const jugadores = await res.json();
             listaJugadoresEl.innerHTML = '';
             

@@ -115,11 +115,10 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
 
         // 🔥 MANEJAR TIPOS DE NOTIFICACIÓN
         if (notificacion.tipo === 'desafio_duelo') {
-            // 🔹 Usar salaId existente o generar uno nuevo
+            // ... (tu código existente para desafio_duelo se queda igual)
             const salaId = extraData.salaId || `duelo_${uuidv4()}`;
             const fechaLimite = new Date(Date.now() + 48 * 60 * 60 * 1000);
 
-            // Crear duelo en BD
             await pool.query(
                 `INSERT INTO duelos (id_duelo, id_retador, id_defensor, materia, fecha_limite, respondido_retador, respondido_oponente)
                  VALUES (?, ?, ?, ?, ?, 0, 0)
@@ -127,10 +126,8 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
                 [salaId, extraData.remitente.id_usuario, userId, extraData.materia, fechaLimite]
             );
 
-            // Borrar notificación original
             await pool.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
 
-            // Preparar notificaciones para ambos jugadores
             const notifRetadorData = JSON.stringify({ salaId, materia: extraData.materia });
             const notifDefensorData = JSON.stringify({ salaId, materia: extraData.materia });
 
@@ -156,7 +153,6 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
                 ]
             );
 
-            // Emitir eventos socket si existen
             if (req.io) {
                 req.io.to(extraData.remitente.id_usuario.toString()).emit('notificacion_recibida');
                 req.io.to(userId.toString()).emit('notificacion_recibida');
@@ -174,14 +170,23 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             });
 
         } else if (notificacion.tipo === 'invitacion') {
+            // 🔥 AQUÍ ESTÁ LA CORRECCIÓN
             const salaId = extraData.salaId || `sala_${uuidv4()}`;
             await pool.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
+
+            // Construir la URL correctamente según el modo
+            let urlRedirigir = `/${extraData.juego.toLowerCase()}/${salaId}`;
+            
+            // Si tiene modo enfrentamiento, añadir el parámetro
+            if (extraData.modo === 'enfrentamiento') {
+                urlRedirigir += '?modo=enfrentamiento';
+            }
 
             return res.json({
                 success: true,
                 tipo: 'invitacion',
                 salaId,
-                redirigir: `/${extraData.juego}/${salaId}`,
+                redirigir: urlRedirigir, // 🔥 URL corregida con el parámetro modo
                 message: '¡Invitación aceptada!',
                 extra_data: extraData
             });
