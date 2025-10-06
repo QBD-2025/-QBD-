@@ -212,21 +212,34 @@ async function obtenerDuelo(salaId) {
     return duelo[0];
 }
 
-// --- RUTA PARA LA "SALA DE DUELOS" 1V1 ---
 router.get('/portal', async (req, res) => {
     try {
+        const userId = req.session.user.id_usuario;
+
+        // Obtener la carrera principal del usuario
+        const [carreras] = await pool.query(`
+            SELECT c.id_carrera, c.descripcion 
+            FROM carrera c
+            INNER JOIN usuario_carrera uc ON c.id_carrera = uc.id_carrera
+            WHERE uc.id_usuario = ?
+            LIMIT 1
+        `, [userId]);
+
+        const carrera = carreras.length > 0 ? carreras[0] : null;
+
         const [userData] = await pool.query(
             `SELECT 
                 u.puntos,
                 COALESCE((SELECT COUNT(*) FROM historial_duelos WHERE id_retador = u.id_usuario OR id_defensor = u.id_usuario), 0) AS duelos_jugados,
                 COALESCE((SELECT COUNT(*) FROM historial_duelos WHERE id_ganador = u.id_usuario), 0) AS victorias
-            FROM usuario u WHERE u.id_usuario = ?`,
-            [req.session.user.id_usuario]
+             FROM usuario u 
+             WHERE u.id_usuario = ?`,
+            [userId]
         );
-        
+
         res.render('duelodelascenso', {
             layout: 'main',
-            user: req.session.user,
+            user: { ...req.session.user, id_carrera: carrera ? carrera.id_carrera : null }, // 👈 agregamos la carrera aquí
             stats: userData[0] || { puntos: 0, duelos_jugados: 0, victorias: 0 }
         });
 
@@ -235,6 +248,7 @@ router.get('/portal', async (req, res) => {
         res.redirect('/menu_principal');
     }
 });
+
 
 // --- RUTA PARA LA VISTA DEL ENFRENTAMIENTO ---
 router.get('/duelo/enfrentamiento/:salaId', async (req, res) => {
@@ -282,14 +296,14 @@ router.get('/api/ranking/global', async (req, res) => {
 
 router.get('/api/ranking/carrera/:id_carrera', async (req, res) => {
     try {
-        const { id_carrera } = req.params;
         const [jugadores] = await pool.query(`
-            SELECT u.id_usuario, u.username, u.foto_perfil, upc.puntos
+            SELECT u.id_usuario, u.username, u.foto_perfil, u.puntos
             FROM usuario u
-            INNER JOIN usuario_puntos_carrera upc ON u.id_usuario = upc.id_usuario
-            WHERE upc.id_carrera = ?
-            ORDER BY upc.puntos DESC LIMIT 100;
-        `, [id_carrera]);
+            INNER JOIN usuario_carrera uc ON u.id_usuario = uc.id_usuario
+            WHERE uc.id_carrera = ?
+            ORDER BY u.puntos DESC
+            LIMIT 100;
+        `, [req.params.id_carrera]);
         res.json(jugadores);
     } catch (error) {
         res.status(500).json({ error: 'Error al obtener el ranking de carrera' });
@@ -729,7 +743,6 @@ router.get('/api/usuario/historial', async (req, res) => {
         res.status(500).json({ error: 'Error al obtener historial de duelos' });
     }
 });
-
 router.get('/sala/:salaId', async (req, res, next) => {
     if (!req.session.user) {
         return res.redirect('/');
@@ -807,7 +820,7 @@ router.get('/sala/:salaId', async (req, res, next) => {
             points_needed: nextRankPoints - currentPoints
         };
         
-        res.render('matchmaking', {
+        res.render('duelodelascenso', {
             layout: 'main',
             user: req.session.user,
             stats: stats,
