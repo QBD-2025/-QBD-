@@ -144,11 +144,3 @@ button:focus-visible {
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
-
-/* Ocultar elementos globales si es necesario */
-.global-header-elements {
-  display: none !important;
-}
-.top-right-dot, .bottom-left-dot {
-  display: none !important;
-}

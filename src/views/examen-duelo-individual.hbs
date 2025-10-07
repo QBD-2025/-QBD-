@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Duelo</title>
-  <link rel="stylesheet" href="/css/examen.css">
+  <link rel="stylesheet" href="/css/examen-duelo.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -459,6 +459,7 @@ async function abandonarDuelo(razon) {
         console.error('Error al abandonar duelo:', error);
         alert('Error de conexión al abandonar duelo');  
     }
+    
 }
 
 // Listener para eventos de socket (detectar cuando el oponente abandona)
@@ -474,10 +475,59 @@ if (typeof socket !== 'undefined') {
     });
 }
 
-// Modificar la función confirmarSalida() existente:
 function confirmarSalida() {
-    // Cambiar a usar la nueva función de abandono
-    confirmarAbandonoDuelo();
+    if (confirm('¿Estás seguro de que quieres salir del duelo?\n\nEsto contará como abandono.')) {
+        abandonarDuelo();
+    }
+}
+
+// ✅ Función para abandonar duelo
+async function abandonarDuelo() {
+    const salaId = '{{duelo.id_duelo}}';
+    
+    try {
+        console.log('🚪 Abandonando duelo:', salaId);
+        
+        const response = await fetch(`/duelo/abandonar/${salaId}`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                razon: 'Salida voluntaria desde el examen' 
+            })
+        });
+        
+        console.log('📡 Respuesta del servidor:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Error del servidor:', errorText);
+            throw new Error(`Error ${response.status}: ${errorText}`);
+        }
+        
+        const data = await response.json();
+        console.log('✅ Datos recibidos:', data);
+        
+        if (data.success) {
+            alert(data.message || 'Has abandonado el duelo');
+            
+            // Limpiar intervalos
+            if (intervaloCronometro) clearInterval(intervaloCronometro);
+            if (intervaloDuelo) clearInterval(intervaloDuelo);
+            if (timerAdvertencia) clearTimeout(timerAdvertencia);
+            
+            // Redirigir
+            window.location.href = data.redirigir || '/portal';
+        } else {
+            throw new Error(data.error || 'Error desconocido al abandonar');
+        }
+        
+    } catch (error) {
+        console.error('💥 Error al abandonar duelo:', error);
+        alert('Error al abandonar el duelo. Serás redirigido al portal.');
+        window.location.href = '/portal';
+    }
 }
 </script>
 </body>

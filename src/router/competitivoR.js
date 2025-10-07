@@ -833,4 +833,136 @@ router.get('/sala/:salaId', async (req, res, next) => {
         res.redirect('/competitivo/portal');
     }
 });
+
+router.post('/duelo/abandonar/:salaId', async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ error: 'No autorizado' });
+
+    const { salaId } = req.params;
+    const { razon } = req.body;
+    const idUsuario = req.session.user.id_usuario;
+
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        // Obtener información del duelo
+        const [duelo] = await conn.query(
+            'SELECT * FROM duelos WHERE id_duelo = ? AND (id_retador = ? OR id_defensor = ?)',
+            [salaId, idUsuario, idUsuario]
+        );
+
+        if (duelo.length === 0) {
+            await conn.rollback();
+            await conn.release();
+            return res.status(404).json({ error: 'Duelo no encontrado' });
+        }
+
+        const dueloData = duelo[0];
+        const esRetador = dueloData.id_retador === idUsuario;
+        
+        // El que abandona pierde, el otro gana
+        const idGanador = esRetador ? dueloData.id_defensor : dueloData.id_retador;
+        const idPerdedor = idUsuario;
+
+        // ⚠️ OPCIÓN 1: SIN PENALIZACIÓN (ACTUAL)
+        // Solo se actualiza el estado, no se tocan los puntos
+        
+        /* ⚠️ OPCIÓN 2: CON PENALIZACIÓN (COMENTADO - DESCOMENTAR SI SE DESEA USAR)
+        
+        // Obtener rankings
+        const puestoRetador = await obtenerRankingUsuario(dueloData.id_retador);
+        const puestoDefensor = await obtenerRankingUsuario(dueloData.id_defensor);
+
+        // Calcular puntos (el que abandona pierde más puntos)
+        const { puntosRetador, puntosDefensor } = calcularPuntosSegunRanking(
+            puestoRetador,
+            puestoDefensor,
+            !esRetador // El ganador es el que NO abandonó
+        );
+
+        // Penalización extra por abandono (ajustar valor según necesidad)
+        const PENALIZACION_ABANDONO = -10; // Cambiar este valor para ajustar penalización
+        const puntosAbandonador = esRetador ? puntosRetador + PENALIZACION_ABANDONO : puntosDefensor + PENALIZACION_ABANDONO;
+        const puntosGanador = esRetador ? puntosDefensor : puntosRetador;
+
+        // Actualizar puntos (asegurarse que no baje de 0)
+        await conn.query(
+            'UPDATE usuario SET puntos = GREATEST(0, puntos + ?) WHERE id_usuario = ?',
+            [puntosAbandonador, idPerdedor]
+        );
+
+        await conn.query(
+            'UPDATE usuario SET puntos = puntos + ? WHERE id_usuario = ?',
+            [puntosGanador, idGanador]
+        );
+
+        // Registrar en historial con puntos
+        await conn.query(`
+            INSERT INTO historial_duelos 
+            (id_duelo, id_retador, id_defensor, id_ganador, puntos_retador, puntos_defensor, fecha_duelo)
+            VALUES (?, ?, ?, ?, ?, ?, NOW())
+        `, [salaId, dueloData.id_retador, dueloData.id_defensor, idGanador, 
+            esRetador ? puntosAbandonador : puntosGanador,
+            esRetador ? puntosGanador : puntosAbandonador]);
+        
+        */
+
+        // Registrar en historial SIN modificar puntos (0 puntos para ambos)
+        await conn.query(`
+            INSERT INTO historial_duelos 
+            (id_duelo, id_retador, id_defensor, id_ganador, puntos_retador, puntos_defensor, fecha_duelo)
+            VALUES (?, ?, ?, ?, 0, 0, NOW())
+        `, [salaId, dueloData.id_retador, dueloData.id_defensor, idGanador]);
+
+        // Actualizar estado del duelo a 'abandonado'
+        await conn.query(
+            'UPDATE duelos SET estado = ? WHERE id_duelo = ?',
+            ['abandonado', salaId]
+        );
+
+        // Crear notificación para el ganador
+        const [ganador] = await conn.query('SELECT username FROM usuario WHERE id_usuario = ?', [idGanador]);
+        const nombreGanador = ganador[0]?.username || 'Oponente';
+
+        await conn.query(`
+            INSERT INTO notificaciones 
+            (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data)
+            VALUES (?, ?, 'duelo_abandonado', ?, ?)
+        `, [
+            idGanador,
+            idUsuario,
+            `¡Tu oponente abandonó el duelo!`,
+            JSON.stringify({ 
+                id_duelo: salaId, 
+                razon: razon || 'Sin especificar',
+                abandonador: req.session.user.username 
+            })
+        ]);
+
+        await conn.commit();
+        await conn.release();
+
+        // Emitir evento de socket si está disponible
+        if (req.io) {
+            req.io.to(idGanador.toString()).emit('duelo_abandonado', {
+                ganaste: true,
+                mensaje: `${req.session.user.username} ha abandonado el duelo`,
+                id_duelo: salaId
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Has abandonado el duelo',
+            redirigir: '/portal'
+        });
+
+    } catch (error) {
+        await conn.rollback();
+        await conn.release();
+        console.error('Error al abandonar duelo:', error);
+        res.status(500).json({ error: 'Error al abandonar el duelo' });
+    }
+});
+
 module.exports = router;

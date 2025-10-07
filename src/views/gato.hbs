@@ -14,7 +14,6 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title">Pregunta</h3>
-                <button class="close-modal">&times;</button>
             </div>
             <div class="question-text" id="modal-question-text"></div>
             <div class="question-options-modal" id="modal-options"></div>
@@ -87,11 +86,11 @@
             modalOptions: document.getElementById('modal-options'),
             feedbackSection: document.getElementById('feedback-section'),
             feedbackText: document.getElementById('feedback-text'),
-            closeModal: document.querySelector('.close-modal')
         };
 
         let gameState = null;
         let currentQuestion = null;
+        let feedbackTimeout = null; // CORRECCIÓN: Variable para controlar el timeout
 
         const renderUI = () => {
             if (!gameState) return;
@@ -196,7 +195,6 @@
             if (type === 'system') {
                 msgDiv.innerHTML = msg;
             } else {
-                // Estilo diferente para mensajes propios vs ajenos
                 const isOwn = user === usuario.username;
                 msgDiv.style.backgroundColor = isOwn ? '#e7f3ff' : '#f1f0f0';
                 msgDiv.style.marginLeft = isOwn ? 'auto' : '0';
@@ -208,8 +206,15 @@
             elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
         };
 
+        // CORRECCIÓN: Función mejorada para mostrar preguntas
         const showQuestionInModal = (pregunta) => {
             currentQuestion = pregunta;
+            
+            // Limpiar cualquier timeout previo
+            if (feedbackTimeout) {
+                clearTimeout(feedbackTimeout);
+                feedbackTimeout = null;
+            }
             
             // Limpiar modal
             elements.modalQuestionText.textContent = pregunta.pregunta;
@@ -240,10 +245,17 @@
             elements.questionModal.classList.add('show');
         };
 
+        // CORRECCIÓN: Función mejorada para manejar el feedback
         const handleAnswerFeedback = (ultimaJugada) => {
             if (!ultimaJugada || !ultimaJugada.preguntaRespondida) return;
             
             const { esCorrecta, respuestaCorrectaTexto } = ultimaJugada;
+            
+            // Limpiar timeout anterior si existe
+            if (feedbackTimeout) {
+                clearTimeout(feedbackTimeout);
+                feedbackTimeout = null;
+            }
             
             // Mostrar retroalimentación en el modal
             elements.feedbackSection.style.display = 'block';
@@ -268,9 +280,11 @@
                 elements.feedbackText.innerHTML += `<br><small><em>${currentQuestion.retroalimentacion}</em></small>`;
             }
             
-            // Ocultar el modal después de 3 segundos
-            setTimeout(() => {
+            // CORRECCIÓN: Guardar el timeout para poder cancelarlo si es necesario
+            feedbackTimeout = setTimeout(() => {
                 elements.questionModal.classList.remove('show');
+                feedbackTimeout = null;
+                currentQuestion = null; // Limpiar la pregunta actual
             }, 3000);
         };
 
@@ -279,8 +293,6 @@
             elements.notification.classList.add('show');
             setTimeout(() => elements.notification.classList.remove('show'), 3000);
         }
-
-        // Reemplaza cargarJugadoresActivos y el addEventListener en gato.hbs con esto:
 
         async function cargarJugadoresActivos() {
             try {
@@ -297,7 +309,6 @@
                     if (jugador.id === usuario.id_usuario) return;
                     
                     const item = document.createElement('li');
-                    // Cambiado el ícono para consistencia
                     item.innerHTML = `
                         <span>${jugador.username}</span> 
                         <div class="actions">
@@ -323,11 +334,9 @@
             target.textContent = 'Enviando...';
 
             try {
-                // 1. APUNTAMOS A LA RUTA GENÉRICA DE INVITACIÓN
                 const res = await fetch(`/invitar/${idJugador}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    // 2. ENVIAMOS LA SALA ACTUAL Y EL NOMBRE DEL JUEGO
                     body: JSON.stringify({ 
                         salaId: salaId,
                         juego: 'Gato' 
@@ -341,20 +350,32 @@
                 mostrarNotificacion('Hubo un problema al enviar la invitación.');
             } finally {
                 target.disabled = false;
-                target.textContent = 'Invitar 🤝'; // Se actualiza el texto del botón
+                target.textContent = 'Invitar 🤝';
             }
         });
+
+        // CORRECCIÓN: Listener mejorado para evitar procesamiento duplicado
         const setupSocketListeners = () => {
             socket.on('gato:estado', (serverState) => {
                 const isGameOverBefore = gameState ? gameState.gameOver : false;
                 
-                if (serverState.ultimaJugada) {
+                // CORRECCIÓN: Solo manejar feedback si es una jugada nueva
+                if (serverState.ultimaJugada && gameState && 
+                    (!gameState.ultimaJugada || 
+                     serverState.ultimaJugada.timestamp !== gameState.ultimaJugada.timestamp)) {
                     handleAnswerFeedback(serverState.ultimaJugada);
                 }
+                
                 gameState = serverState;
                 renderUI();
 
                 if (gameState.gameOver && !isGameOverBefore) {
+                    // Limpiar timeout si el juego termina
+                    if (feedbackTimeout) {
+                        clearTimeout(feedbackTimeout);
+                        feedbackTimeout = null;
+                    }
+                    
                     if (gameState.ganador === 'empate') {
                         addChatMessage(null, `La partida ha terminado en empate.`, 'system');
                     } else if (gameState.ganador) {
@@ -419,38 +440,6 @@
             
             elements.chatBtn.addEventListener('click', sendChatMessage);
             elements.chatInput.addEventListener('keypress', (e) => e.key === 'Enter' && sendChatMessage());
-
-            elements.closeModal.addEventListener('click', () => {
-                elements.questionModal.classList.remove('show');
-            });
-
-            elements.listaJugadoresActivos.addEventListener('click', async (e) => {
-                const target = e.target;
-                if (!target.classList.contains('btn-invite')) return;
-                
-                const idJugador = target.dataset.id;
-                if (!idJugador) return;
-                
-                target.disabled = true;
-                target.textContent = 'Enviando...';
-
-                try {
-                    const res = await fetch(`/enfrentar_gato/${idJugador}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ salaId: salaId })
-                    });
-                    
-                    const data = await res.json();
-                    mostrarNotificacion(data.message || 'Invitación enviada');
-                } catch (error) {
-                    console.error('Error en la invitación:', error);
-                    mostrarNotificacion('Hubo un problema al enviar la invitación.');
-                } finally {
-                    target.disabled = false;
-                    target.textContent = 'Invitar ⚔️';
-                }
-            });
         };
 
         const init = () => {

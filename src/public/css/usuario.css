@@ -27,6 +27,7 @@ body {
   color: var(--texto-oscuro);
   min-height: 100vh;
   line-height: 1.6;
+  padding-top: 70px; /* Añade esto para bajar todo el contenido */
 }
 
 /* ==================================================

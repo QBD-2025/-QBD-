@@ -332,7 +332,7 @@ html, body {
 
 /* ========== EXAMEN STYLES ========== */
 body {
-  padding-top: 0; /* Añade esto para bajar todo el contenido */
+  padding-top: 300px; /* Añade esto para bajar todo el contenido */
 }
 
 header {

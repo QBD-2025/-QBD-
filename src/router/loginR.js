@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const { enviarCorreoRecuperacion } = require('../public/utils/mail.js');
 
 // ----------------- Sesiones activas -----------------
-global.sesionesActivas = new Set(); // Para saber quién está en sesión
+global.sesionesActivas = new Set();
 
 // ----------------- Middlewares -----------------
 const isAuthenticated = (req, res, next) => {
@@ -56,7 +56,7 @@ router.post('/login', async (req, res) => {
     try {
         const [rows] = await req.pool.query(
             `SELECT id_usuario, username, email, password, verificado, 
-                    id_tp_usuario, id_status, suspension_fin 
+                    id_tp_usuario, id_status, suspension_fin, foto_perfil
              FROM usuario WHERE email = ?`,
             [email]
         );
@@ -83,7 +83,6 @@ router.post('/login', async (req, res) => {
                     mensaje: `Tu cuenta está suspendida hasta el ${user.suspension_fin}`
                 });
             } else {
-                // Reactivar si ya venció la suspensión
                 await req.pool.query(
                     'UPDATE usuario SET id_status = 1, suspension_fin = NULL WHERE id_usuario = ?',
                     [user.id_usuario]
@@ -101,13 +100,27 @@ router.post('/login', async (req, res) => {
         const match = await bcrypt.compare(password, user.password);
         if (!match) return res.redirect('/login?error=Contraseña incorrecta');
 
-        // Crear sesión
+        // ⭐ OBTENER LA CARRERA DEL USUARIO
+        const [carreraResult] = await req.pool.query(
+            `SELECT c.id_carrera 
+            FROM carrera c
+            INNER JOIN usuario_carrera uc ON c.id_carrera = uc.id_carrera
+            WHERE uc.id_usuario = ?
+            LIMIT 1`,
+            [user.id_usuario]
+        );
+
+        // Crear sesión CON id_carrera
         req.session.user = {
             id_usuario: user.id_usuario,
             username: user.username,
             email: user.email,
             id_tp_usuario: user.id_tp_usuario,
+            avatarUrl: user.foto_perfil || '/media/images/default_avatar.png',
+            id_carrera: carreraResult.length > 0 ? carreraResult[0].id_carrera : null
         };
+
+        console.log('✅ Usuario logueado con carrera:', req.session.user);
 
         // Marcar usuario activo
         if (user.id_status !== 1) {
@@ -176,11 +189,7 @@ router.get('/logout', async (req, res) => {
     try {
         if (req.session.user) {
             const userId = req.session.user.id_usuario;
-
-            // Marcar usuario inactivo
             await req.pool.query('UPDATE usuario SET id_status = 2 WHERE id_usuario = ?', [userId]);
-
-            // Eliminar de sesiones activas
             global.sesionesActivas.delete(userId);
         }
 

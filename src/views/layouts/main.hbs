@@ -9,69 +9,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
-    <style>
-        .profile-icon-container {
-            position: relative;
-            display: inline-block;
-            margin-right: 15px;
-        }
-
-        .profile-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid #ddd;
-            object-fit: cover;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        .profile-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            display: none;
-            min-width: 150px;
-            z-index: 1000;
-        }
-
-        .profile-dropdown ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        .profile-dropdown li {
-            padding: 0;
-        }
-
-        .profile-dropdown a {
-            display: block;
-            padding: 10px 15px;
-            text-decoration: none;
-            color: #333;
-            border-bottom: 1px solid #eee;
-        }
-
-        .profile-dropdown a:hover {
-            background: #f5f5f5;
-        }
-
-        .profile-dropdown a.cerrar-sesion {
-            color: #e74c3c;
-            font-weight: bold;
-        }
-    </style>
 </head>
 <body>
 
@@ -88,28 +25,8 @@
         <div class="top-right-nav">
             {{#if user}}
                 <span class="nav-username">Hola, {{user.username}}</span>
-                
-                <!-- Ícono de perfil -->
-                <div class="profile-icon-container">
-                    <div class="profile-icon" id="profile-icon">
-                        {{#if user.avatarUrl}}
-                            <img src="{{user.avatarUrl}}" alt="Perfil" style="width:100%;height:100%;border-radius:50%;">
-                        {{else}}
-                            {{#if user.username}}
-                                {{user.username.[0]}}
-                            {{else}}
-                                U
-                            {{/if}}
-                        {{/if}}
-                    </div>
-                    <div class="profile-dropdown" id="profile-dropdown">
-                        <ul>
-                            <li><a href="/usuario">Mi Perfil</a></li>
-                            <li><a href="/configuracion">Configuración</a></li>
-                            <li><a href="/logout" class="cerrar-sesion">Cerrar sesión</a></li>
-                        </ul>
-                    </div>
-                </div>
+
+                <!-- Eliminado el ícono de perfil circular -->
 
                 <div class="notification-container">
                     🔔 <span id="notification-count" style="display:none;"></span>
@@ -117,11 +34,46 @@
                 <div class="notification-dropdown" id="notification-list" style="display:none;">
                     <ul id="notifications-ul"><li>Cargando...</li></ul>
                 </div>
+                
+                <!-- Menú de hamburguesa modificado para incluir perfil -->
                 <div class="kebab-menu">
-                    <button class="kebab-button">&#8942;</button>
+                    <button class="kebab-button">
+                        <!-- Mostrar avatar del usuario en el botón -->
+                        <div class="kebab-avatar">
+                            {{#if user.avatarUrl}}
+                                <img src="{{user.avatarUrl}}" alt="Perfil" style="width:100%;height:100%;border-radius:50%;">
+                            {{else}}
+                                {{#if user.username}}
+                                    {{user.username.[0]}}
+                                {{else}}
+                                    U
+                                {{/if}}
+                            {{/if}}
+                        </div>
+                        &#8942; <!-- Icono de hamburguesa -->
+                    </button>
                     <ul class="kebab-dropdown">
+                        <!-- Encabezado con información del perfil -->
+                        <li class="profile-header">
+                            <div class="profile-info">
+                                <div class="profile-avatar">
+                                    {{#if user.avatarUrl}}
+                                        <img src="{{user.avatarUrl}}" alt="Perfil">
+                                    {{else}}
+                                        <div class="avatar-placeholder">
+                                            {{user.username.[0]}}
+                                        </div>
+                                    {{/if}}
+                                </div>
+                                <div class="profile-details">
+                                    <strong>{{user.username}}</strong>
+                                    <span>{{user.email}}</span>
+                                </div>
+                            </div>
+                        </li>
                         <li><a href="/menu_principal">Menu Principal</a></li>
-                        <li><a href="/usuario">Mi cuenta</a></li>
+                        <li><a href="/usuario/editar">Mi Perfil</a></li>
+                        <li><a href="/usuario">Configuración</a></li>
                         {{#if (eq user.id_tp_usuario 3)}}
                             <li><a href="/admin">Permisos</a></li>
                             <li><a href="/editor">Editor</a></li>
@@ -133,11 +85,11 @@
                     </ul>
                 </div>
             {{else}}
-        <!-- Mostrar botón de iniciar sesión solo si NO estamos en /presentation -->
-        {{#unless (eq currentPath "/")}}
-            <a href="/login" class="header-link">Iniciar Sesión</a>
-        {{/unless}}
-        {{/if}}
+                <!-- Mostrar botón de iniciar sesión solo si NO estamos en /presentation -->
+                {{#unless (eq currentPath "/")}}
+                    <a href="/login" class="header-link">Iniciar Sesión</a>
+                {{/unless}}
+            {{/if}}
         </div>
     </div>
     <div id="mensajeExamen"></div>
@@ -166,7 +118,6 @@
                     li.innerHTML = `<span>${notif.mensaje}</span><button class="btn-aceptar" data-id="${notif.id_notificacion}">Aceptar</button>`;
                     li.innerHTML += `<button class="btn-rechazar" data-id="${notif.id_notificacion}">Rechazar</button>`;
                 } else if (notif.tipo === 'duelo_aceptado') {
-                    // Notificación de duelo aceptado - mostrar enlace al examen
                     let extraData = {};
                     try { extraData = JSON.parse(notif.extra_data || '{}'); } catch(e) { extraData = {}; }
                     li.innerHTML = `
@@ -196,14 +147,13 @@
     // ✅ CÓDIGO ORGANIZADO (se ejecuta cuando el HTML está listo)
     document.addEventListener('DOMContentLoaded', function() {
         
-        // --- Lógica de UI (GSAP y clics de menús) ---
+        // --- Lógica del menú de hamburguesa ---
         const kebabButton = document.querySelector('.kebab-button');
         if (kebabButton) {
             gsap.set('.kebab-dropdown li', { opacity: 0, y: -15 });
             kebabButton.addEventListener('click', function(e) {
                 e.stopPropagation();
                 document.getElementById('notification-list').style.display = 'none';
-                document.getElementById('profile-dropdown').style.display = 'none';
                 const menu = this.parentElement;
                 const isActive = menu.classList.toggle('active');
                 gsap.to('.kebab-dropdown', { opacity: isActive ? 1 : 0, duration: 0.2 });
@@ -211,47 +161,26 @@
             });
         }
 
-        // --- Lógica del ícono de perfil ---
-        const profileIcon = document.getElementById('profile-icon');
-        if (profileIcon) {
-            profileIcon.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const dropdown = document.getElementById('profile-dropdown');
-                const isVisible = dropdown.style.display === 'block';
-                
-                // Cerrar otros menús
-                document.getElementById('notification-list').style.display = 'none';
-                document.querySelector('.kebab-menu')?.classList.remove('active');
-                
-                // Toggle profile dropdown
-                dropdown.style.display = isVisible ? 'none' : 'block';
-            });
-        }
-
         document.querySelector('.notification-container')?.addEventListener('click', toggleNotifications);
         document.addEventListener('click', () => {
             const activeMenu = document.querySelector('.kebab-menu.active');
             if (activeMenu) activeMenu.classList.remove('active');
-            const notifList = document.getElementById('notification-list');
+            const notifList = document.getElementById("notification-list");
             if(notifList) notifList.style.display = 'none';
-            const profileDropdown = document.getElementById('profile-dropdown');
-            if(profileDropdown) profileDropdown.style.display = 'none';
         });
         document.querySelector('.kebab-dropdown')?.addEventListener('click', e => e.stopPropagation());
         document.getElementById('notification-list')?.addEventListener('click', e => e.stopPropagation());
-        document.getElementById('profile-dropdown')?.addEventListener('click', e => e.stopPropagation());
 
         // --- LÓGICA DE SOCKETS Y NOTIFICACIONES (Solo para usuarios logueados) ---
         {{#if user}}
             const socket = io();
 
-            // 1. Listener para ACEPTAR cualquier notificación - VERSIÓN CORREGIDA
+            // Listener para ACEPTAR cualquier notificación
             document.getElementById('notifications-ul')?.addEventListener('click', async (event) => {
                 if (event.target.classList.contains('btn-aceptar')) {
                     const notifId = event.target.dataset.id;
                     const button = event.target;
                     
-                    // Deshabilitar botón mientras procesa
                     button.disabled = true;
                     button.textContent = 'Procesando...';
                     
@@ -259,18 +188,12 @@
                         const response = await fetch(`/invitaciones/aceptar/${notifId}`, { method: 'POST' });
                         const data = await response.json();
                         
-                        console.log('Respuesta del servidor:', data); // DEBUG
-                        
                         if (data.success) {
-                            // Remover la notificación de la UI inmediatamente
                             const li = event.target.closest('li');
                             if (li) li.remove();
                             
-                            // Manejar según el tipo de notificación
                             if (data.tipo === 'desafio_duelo') {
                                 console.log('✅ Duelo aceptado, datos:', data);
-                                
-                                // Mostrar mensaje con opción de ir al examen
                                 const cont = document.getElementById('mensajeExamen') || document.body;
                                 const mensajeDiv = document.createElement('div');
                                 mensajeDiv.id = 'duelo-aceptado-mensaje';
@@ -291,14 +214,11 @@
                                 `;
                                 cont.appendChild(mensajeDiv);
                                 
-                                // Event listeners para los botones
                                 document.getElementById('btn-cerrar-mensaje').addEventListener('click', () => {
                                     mensajeDiv.remove();
-                                    // Recargar notificaciones después de un delay para que el backend termine de procesar
-                                    setTimeout(cargarNotificaciones, 1500); // Aumentar delay
+                                    setTimeout(cargarNotificaciones, 1500);
                                 });
                                 
-                                // Auto-cerrar después de 10 segundos
                                 setTimeout(() => {
                                     if (document.getElementById('duelo-aceptado-mensaje')) {
                                         mensajeDiv.remove();
@@ -306,14 +226,9 @@
                                 }, 10000);
                                 
                             } else if (data.tipo === 'invitacion') {
-                                // Minijuegos normales
                                 console.log('✅ Invitación aceptada, redirigiendo:', data.redirigir);
                                 window.location.href = data.redirigir;
-                                
                             } else {
-                                // Otros tipos de notificación
-                                console.log('✅ Notificación procesada:', data.message);
-                                // Solo recargar notificaciones
                                 setTimeout(cargarNotificaciones, 500);
                             }
                             
@@ -342,10 +257,8 @@
                     try {
                         const li = event.target.closest('li');
                         if (li) li.remove();
-                        
                         await fetch(`/invitaciones/rechazar/${notifId}`, { method: 'POST' });
                         console.log('✅ Notificación rechazada');
-                        
                     } catch (error) {
                         console.error("❌ Error al rechazar:", error);
                         button.disabled = false;
@@ -363,10 +276,8 @@
                     try {
                         const li = event.target.closest('li');
                         if (li) li.remove();
-                        
                         await fetch(`/invitaciones/rechazar/${notifId}`, { method: 'POST' });
                         console.log('✅ Notificación eliminada');
-                        
                     } catch (error) {
                         console.error("❌ Error al eliminar:", error);
                         button.disabled = false;
@@ -375,15 +286,14 @@
                 } 
             });
 
-            // ✅ 2. Listener GLOBAL para la orden de redirección del Duelo de Ascenso
-            // Este evento lo reciben AMBOS jugadores, estén donde estén.
+            // Listener GLOBAL para la orden de redirección del Duelo
             socket.on('duelo:iniciarDesafio', ({ salaId, mensaje }) => {
                 console.log('🚀 Recibido evento duelo:iniciarDesafio:', { salaId, mensaje });
                 if (mensaje) alert(mensaje);
                 window.location.href = `/duelo/enfrentamiento/${salaId}`;
             });
 
-            // 3. Listener para que la campanita se actualice en tiempo real
+            // Listener para que la campanita se actualice en tiempo real
             socket.on('notificacion_recibida', () => {
                 console.log('🔔 Notificación recibida, recargando...');
                 cargarNotificaciones(); 

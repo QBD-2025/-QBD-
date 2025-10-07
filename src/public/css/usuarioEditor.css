@@ -1,3 +1,6 @@
+/* ==================================================
+   VARIABLES GLOBALES
+================================================== */
 :root {
   --azul-oscuro: #1a237e;
   --azul-medio: #283593;
@@ -5,10 +8,16 @@
   --mostaza: #ffb300;
   --mostaza-claro: #ffca28;
   --blanco: #ffffff;
-  --gris-claro: #f5f5f5;
+  --gris-claro: #f8f9fa;
+  --gris-medio: #e9ecef;
+  --gris-oscuro: #495057;
   --texto-oscuro: #212121;
+  --borde: #e1e5e9;
 }
-MEEET METT MEET MEET MEEET MEET TEEM EMTE MEET MEET MEET MEET MEET METT 
+
+/* ==================================================
+   RESET Y BASE
+================================================== */
 * {
   margin: 0;
   padding: 0;
@@ -16,56 +25,163 @@ MEEET METT MEET MEET MEEET MEET TEEM EMTE MEET MEET MEET MEET MEET METT
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: var(--gris-claro);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--gris-medio);
   color: var(--texto-oscuro);
+  line-height: 1.5;
+  font-weight: 400;
   min-height: 100vh;
-  line-height: 1.6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
 }
 
+/* ==================================================
+   CONTENEDOR PRINCIPAL
+================================================== */
 .profile-full {
   width: 100%;
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 2rem;
 }
 
 .profile-card {
   background: var(--blanco);
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
   overflow: hidden;
+  border: 3px solid var(--mostaza);
 }
 
+/* ==================================================
+   ENCABEZADO
+================================================== */
 .profile-header {
   background: linear-gradient(135deg, var(--azul-oscuro), var(--azul-medio));
   color: var(--blanco);
-  padding: 2.5rem 1.5rem 2rem;
+  padding: 3rem 3rem 2rem 3rem;
   text-align: center;
+  border-bottom: 4px solid var(--mostaza);
 }
 
 .profile-title {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+.profile-subtitle {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  font-weight: 400;
+}
+
+/* ==================================================
+   CUERPO DEL FORMULARIO
+================================================== */
 .profile-body {
-  padding: 2rem 1.5rem;
+  padding: 3rem;
+  background: var(--blanco);
 }
 
-.user-subtitle {
-  color: var(--azul-oscuro);
+/* ==================================================
+   SECCIONES DEL FORMULARIO
+================================================== */
+.form-section {
+  margin-bottom: 3rem;
+}
+
+.section-title {
   font-size: 1.4rem;
   font-weight: 600;
+  color: var(--azul-oscuro);
   margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
   border-bottom: 2px solid var(--mostaza);
-  display: inline-block;
-  padding-bottom: 0.4rem;
 }
 
-.edit-form {
+/* ==================================================
+   SECCIÓN AVATAR
+================================================== */
+.avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  padding: 2rem;
+  background: var(--gris-claro);
+  border-radius: 12px;
+  border: 2px solid var(--borde);
+}
+
+.avatar-preview-container {
+  flex-shrink: 0;
+}
+
+.avatar-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--azul-oscuro), var(--azul-medio));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--blanco);
+  font-weight: 600;
+  font-size: 2.5rem;
+  border: 4px solid var(--blanco);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.avatar-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-controls {
   display: flex;
   flex-direction: column;
+  gap: 1rem;
+}
+
+.avatar-input {
+  display: none;
+}
+
+.change-avatar-btn {
+  padding: 1rem 2rem;
+  background: var(--azul-medio);
+  color: var(--blanco);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  width: fit-content;
+}
+
+.change-avatar-btn:hover {
+  background: var(--azul-claro);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(57, 73, 171, 0.3);
+}
+
+.avatar-note {
+  font-size: 0.9rem;
+  color: var(--gris-oscuro);
+  margin: 0;
+}
+
+/* ==================================================
+   FORMULARIO GRID
+================================================== */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
 }
 
@@ -74,88 +190,150 @@ body {
   flex-direction: column;
 }
 
-.form-group label {
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-weight: 600;
   color: var(--azul-medio);
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
-  padding: 0.6rem 1rem;
-  border: 1px solid #ccc;
+.label-icon {
+  font-size: 1.1rem;
+}
+
+.form-input,
+.form-textarea {
+  padding: 1rem 1.25rem;
+  border: 2px solid var(--borde);
   border-radius: 8px;
   font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  background: var(--blanco);
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  border-color: var(--mostaza);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 179, 0, 0.1);
+}
+
+.form-textarea {
   resize: vertical;
+  min-height: 120px;
 }
 
-.form-group input[disabled] {
-  background-color: #e0e0e0;
-  color: #666;
-  cursor: not-allowed;
-}
-
-.display-value {
-  font-style: italic;
-  font-size: 1.1rem;
-  color: #444;
-}
-
-.button-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.save-button,
-.back-button {
-  padding: 0.8rem 2rem;
-  font-weight: 600;
+/* Campos de solo lectura */
+.display-field {
+  padding: 1rem 1.25rem;
+  background: var(--gris-claro);
+  border: 2px solid var(--borde);
   border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  font-size: 1rem;
+  color: var(--texto-oscuro);
+  font-weight: 500;
 }
 
-.save-button {
-  background-color: var(--mostaza);
+.account-type {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   color: var(--azul-oscuro);
 }
 
-.save-button:hover {
-  background-color: var(--mostaza-claro);
+/* ==================================================
+   BOTONES DE ACCIÓN
+================================================== */
+.form-actions {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid var(--gris-medio);
 }
 
-.back-button {
-  background-color: var(--azul-medio);
-  color: white;
+.cancel-btn,
+.save-btn {
+  padding: 1.25rem 3rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.2s ease;
+  min-width: 180px;
 }
 
-.back-button:hover {
-  background-color: var(--azul-claro);
+.save-btn {
+  background: var(--mostaza);
+  color: var(--azul-oscuro);
 }
 
+.save-btn:hover {
+  background: var(--mostaza-claro);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 179, 0, 0.4);
+}
+
+.cancel-btn {
+  background: transparent;
+  color: var(--azul-medio);
+  border: 2px solid var(--azul-medio);
+}
+
+.cancel-btn:hover {
+  background: var(--azul-medio);
+  color: var(--blanco);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(57, 73, 171, 0.3);
+}
+
+/* ==================================================
+   RESPONSIVE
+================================================== */
 @media (max-width: 768px) {
+  body {
+    padding: 1rem;
+  }
+  
+  .profile-header {
+    padding: 2rem 1.5rem;
+  }
+  
+  .profile-body {
+    padding: 2rem 1.5rem;
+  }
+  
   .profile-title {
-    font-size: 1.5rem;
+    font-size: 2rem;
   }
-
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    font-size: 0.95rem;
-  }
-
-  .save-button,
-  .back-button {
-    width: 100%;
-    text-align: center;
-  }
-
-  .button-group {
+  
+  .avatar-section {
     flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .cancel-btn,
+  .save-btn {
+    width: 100%;
+    min-width: auto;
   }
 }

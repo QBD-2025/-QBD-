@@ -10,7 +10,6 @@ const session = require("express-session");
 const mailer = require('./src/public/utils/mail.js');
 const passport = require('passport');
 require('./src/config/passport-config');
-const hbs = require('hbs')
 
 // Configuración de la base de datos
 const pool = mysql.createPool({
@@ -88,9 +87,10 @@ app.engine('.hbs', exphbs.engine({
 app.set('view engine', '.hbs');
 app.set('views', path.join(__dirname, 'src', 'views'));
 
-// Middlewares
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.static(path.join(__dirname, 'src', 'public')));
 app.use(express.static(path.join(__dirname, 'src', 'media')));
 app.use('/media', express.static(path.join(__dirname, 'src', 'media')));
@@ -126,6 +126,99 @@ app.use((req, res, next) => {
     next();
 });
 
+
+app.use((req, res, next) => {
+    res.locals.user = req.session.user || null;
+    next();
+});
+
+// ✅ NUEVO: Middleware para cargar avatar del usuario
+app.use(async (req, res, next) => {
+    // Solo ejecutar si hay usuario en sesión
+    if (req.session.user && req.session.user.id_usuario) {
+        
+        // Si ya tiene avatarUrl, no hacer nada
+        if (req.session.user.avatarUrl || req.session.user.foto_perfil) {
+            return next();
+        }
+        
+        // Consultar avatar de la base de datos
+        try {
+            const [userData] = await pool.query(
+                'SELECT foto_perfil FROM usuario WHERE id_usuario = ?',
+                [req.session.user.id_usuario]
+            );
+            
+            if (userData.length > 0) {
+                const avatarPath = userData[0].foto_perfil || '/media/images/default_avatar.png';
+                
+                // Actualizar sesión con avatar
+                req.session.user.foto_perfil = avatarPath;
+                req.session.user.avatarUrl = avatarPath;
+                
+                console.log(`✅ Avatar cargado: ${avatarPath}`);
+            } else {
+                // Usuario no encontrado, usar avatar por defecto
+                req.session.user.foto_perfil = '/media/images/default_avatar.png';
+                req.session.user.avatarUrl = '/media/images/default_avatar.png';
+            }
+        } catch (error) {
+            console.error('❌ Error cargando avatar:', error);
+            // En caso de error, usar avatar por defecto
+            req.session.user.foto_perfil = '/media/images/default_avatar.png';
+            req.session.user.avatarUrl = '/media/images/default_avatar.png';
+        }
+    }
+    
+    next();
+});
+
+// Middleware existente para pool, mailer, etc.
+app.use((req, res, next) => {
+    req.pool = pool;
+    req.mailer = mailer;
+    req.bcrypt = bcrypt;
+    req.io = io;
+    next();
+});
+
+// Middleware existente para carrera
+app.use(async (req, res, next) => {
+    if (req.session.user && req.session.user.id_carrera === undefined) {
+        try {
+            const [carreras] = await pool.query(
+                `SELECT c.id_carrera 
+                 FROM carrera c
+                 INNER JOIN usuario_carrera uc ON c.id_carrera = uc.id_carrera
+                 WHERE uc.id_usuario = ?
+                 LIMIT 1`,
+                [req.session.user.id_usuario]
+            );
+
+            if (carreras.length > 0) {
+                req.session.user.id_carrera = carreras[0].id_carrera;
+                console.log(`✅ Carrera ${carreras[0].id_carrera} agregada a sesión`);
+            } else {
+                req.session.user.id_carrera = null;
+                console.log(`⚠️ Usuario sin carrera asignada`);
+            }
+
+            await new Promise((resolve, reject) => {
+                req.session.save((err) => {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+        } catch (error) {
+            console.error('Error al cargar carrera:', error);
+        }
+    }
+    next();
+});
+
+
+
+
 // Rutas
 const ligasR = require('./src/router/ligasR.js');
 const gatoR = require('./src/router/gatoR.js');
@@ -153,7 +246,9 @@ const examenR = require('./src/router/examenR');
 const competitivoR = require('./src/router/competitivoR.js');
 const notificacionesR = require('./src/router/notificacionesR.js');
 const rankingR = require('./src/router/rankingR.js');
+const clasificacionCarrera = require('./src/router/ranking_carreraR.js')
 
+app.use('/', clasificacionCarrera)
 app.use('/', rankingR);
 app.use('/', gatoR);
 app.use('/', serpEscalerasR);
@@ -193,7 +288,7 @@ require('./src/sockets/minijuegos/index.js')(io, pool); // <--- ¡CORREGIDO!
 require('./src/sockets/modo_competitivo/index.js')(io, pool);
 
 // Iniciar servidor
-const PORT = process.env.PORT || 3005;
+const PORT = process.env.PORT || 3005;  
 server.listen(PORT, () => {
     console.log(`Servidor con Socket.IO corriendo en http://localhost:${PORT}`);
 });

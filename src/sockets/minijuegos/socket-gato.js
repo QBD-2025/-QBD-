@@ -99,17 +99,22 @@ module.exports = (base) => {
             });
 
             socket.on('gato:respuesta', ({ salaId, respuestaId }) => {
-                const partida = partidasGato[salaId]; if (!partida || !partida.preguntaActual) return;
-                const jugadorActual = partida.jugadores[partida.turno]; if (jugadorActual.socketId !== socket.id) return;
+                const partida = partidasGato[salaId]; 
+                if (!partida || !partida.preguntaActual) return;
+                
+                const jugadorActual = partida.jugadores[partida.turno]; 
+                if (jugadorActual.socketId !== socket.id) return;
                 
                 const opcionCorrecta = partida.preguntaActual.opciones.find(opt => opt.correcta === 1);
                 const esCorrecta = (respuestaId == opcionCorrecta.id);
 
+                // CORRECCIÓN: Guardar la jugada con un timestamp único
                 partida.ultimaJugada = {
                     jugador: jugadorActual,
                     esCorrecta: esCorrecta,
                     preguntaRespondida: partida.preguntaActual,
-                    respuestaCorrectaTexto: opcionCorrecta.texto
+                    respuestaCorrectaTexto: opcionCorrecta.texto,
+                    timestamp: Date.now() // Añadir timestamp para identificar jugadas únicas
                 };
 
                 if (esCorrecta) {
@@ -127,6 +132,8 @@ module.exports = (base) => {
                 
                 partida.preguntaActual = null; 
                 partida.celdaPendiente = null;
+                
+                // Emitir estado solo una vez
                 emitirEstado(salaId);
             });
         },

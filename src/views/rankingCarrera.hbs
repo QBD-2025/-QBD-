@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking por Carrera</title>
+<link rel="stylesheet" href="/css/rankingCarrera.css">
+</head>
+<body>
+    <div id="rankingCarreraContainer">
+        <div class="ranking-header">
+            <h2>Tabla de Clasificación por Carrera</h2>
+            <p class="ranking-subtitle">Los mejores jugadores de tu carrera</p>
+        </div>
+        <div id="loadingMessage">Cargando ranking...</div>
+    </div>
+
+    <script>
+        // Usuario pasado desde el servidor
+        const user = {{{json user}}};
+        const rankingCarreraContainer = document.getElementById('rankingCarreraContainer');
+
+        // Función para renderizar ranking
+        function renderizarRanking(jugadores) {
+            const loadingMsg = document.getElementById('loadingMessage');
+            if (loadingMsg) loadingMsg.remove();
+
+            if (!jugadores || jugadores.length === 0) {
+                const noData = document.createElement('p');
+                noData.textContent = 'No hay jugadores en este ranking.';
+                noData.style.textAlign = 'center';
+                noData.style.padding = '20px';
+                rankingCarreraContainer.appendChild(noData);
+                return;
+            }
+
+            // Ordenar por puntos
+            jugadores.sort((a, b) => b.puntos - a.puntos);
+
+            // Encontrar la posición del usuario actual
+            const miIndex = jugadores.findIndex(j => j.id_usuario === user.id_usuario);
+
+            // Crear lista de jugadores
+            jugadores.forEach((jugador, i) => {
+                const item = document.createElement('div');
+                item.classList.add('ranking-item');
+
+                const esYo = jugador.id_usuario === user.id_usuario;
+                if (esYo) {
+                    item.classList.add('current-user');
+                }
+
+                // Mostrar botón de desafiar solo si:
+                // 1. No es el usuario actual
+                // 2. El jugador está mejor posicionado (índice menor)
+                const mostrarBotonDesafiar = !esYo && i < miIndex;
+
+                item.innerHTML = `
+                    <img src="${jugador.foto_perfil || '/media/images/default_avatar.png'}" 
+                         alt="Avatar de ${jugador.username}" 
+                         class="player-avatar"
+                         onerror="this.src='/media/images/default_avatar.png'">
+                    <div class="player-info">
+                        <div class="player-name">${jugador.username} ${esYo ? '<span class="badge-yo">(Tú)</span>' : ''}</div>
+                        <div class="player-stats">
+                            <span class="stat-item">📊 Posición #${i + 1}</span>
+                        </div>
+                    </div>
+                    <div class="score-display">${jugador.puntos} pts</div>
+                    ${mostrarBotonDesafiar ? `<button class="btn-desafiar" data-id="${jugador.id_usuario}">Desafiar ⚔️</button>` : ''}
+                `;
+                rankingCarreraContainer.appendChild(item);
+            });
+        }
+
+        // Carga el ranking por carrera
+        async function cargarRankingCarrera() {
+            try {
+                // Validar que el usuario tenga carrera
+                if (!user || !user.id_carrera) {
+                    console.error('Usuario sin carrera:', user);
+                    rankingCarreraContainer.innerHTML += '<p style="color: red; text-align: center;">No tienes carrera asignada.</p>';
+                    return;
+                }
+
+                console.log('Cargando ranking para carrera:', user.id_carrera);
+                console.log('Usuario completo:', user);
+
+                const res = await fetch(`/api/ranking/carrera/${user.id_carrera}`);
+                
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    console.error('Error del servidor:', errorText);
+                    throw new Error(`Error ${res.status}: ${errorText}`);
+                }
+
+                const jugadores = await res.json();
+                console.log('Jugadores recibidos:', jugadores);
+
+                renderizarRanking(jugadores);
+            } catch (error) {
+                console.error('Error al cargar ranking de carrera:', error);
+                const errorMsg = document.createElement('p');
+                errorMsg.style.color = 'red';
+                errorMsg.style.textAlign = 'center';
+                errorMsg.textContent = `Error al cargar el ranking: ${error.message}`;
+                rankingCarreraContainer.appendChild(errorMsg);
+            }
+        }
+
+        // Listener para desafíos
+        document.addEventListener('click', async (e) => {
+            if (e.target && e.target.classList.contains('btn-desafiar')) {
+                const idOponente = e.target.dataset.id;
+                const boton = e.target;
+                
+                // Deshabilitar botón mientras se procesa
+                boton.disabled = true;
+                boton.textContent = 'Enviando...';
+
+                try {
+                    const res = await fetch(`/desafiar/duelo/${idOponente}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ tiempoLimite: 2 * 24 * 60 * 60 }) // 2 días
+                    });
+
+                    const data = await res.json();
+                    console.log("Respuesta del servidor:", data);
+
+                    if (res.ok && data.success) {
+                        boton.textContent = '✓ Enviado';
+                        boton.style.backgroundColor = '#4CAF50';
+                        
+                        // Mostrar mensaje de éxito
+                        alert('¡Desafío enviado exitosamente!');
+                    } else {
+                        throw new Error(data.message || 'Error al enviar desafío');
+                    }
+                } catch (error) {
+                    console.error("Error al enviar desafío:", error);
+                    boton.disabled = false;
+                    boton.textContent = 'Desafiar ⚔️';
+                    alert('Error al enviar el desafío: ' + error.message);
+                }
+            }
+        });
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', cargarRankingCarrera);
+    </script>
+</body>
+</html>

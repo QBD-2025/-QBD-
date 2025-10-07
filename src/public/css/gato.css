@@ -14,6 +14,7 @@
             color: var(--text-dark);
             margin: 0;
             padding: 20px;
+            padding-top: 100px; /* Añade esto para bajar todo el contenido */
         }
         
         .gato-container { 
