@@ -249,6 +249,118 @@ router.get('/portal', async (req, res) => {
         res.redirect('/menu_principal');
     }
 });
+// ============================================================
+// 📨 RUTA: Enviar Invitación de Desafío por BD (CORREGIDA)
+// ============================================================
+router.post('/invitaciones/desafio/duelo/:idOponente', async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ 
+            success: false, 
+            message: 'No has iniciado sesión' 
+        });
+    }
+
+    const { idOponente } = req.params;
+    const { modo, dificultad } = req.body;
+    const idRemitente = req.session.user.id_usuario;
+    const usernameRemitente = req.session.user.username;
+
+    // Validar que no se desafíe a sí mismo
+    if (parseInt(idRemitente) === parseInt(idOponente)) {
+        return res.status(400).json({ 
+            success: false, 
+            message: 'No puedes desafiarte a ti mismo' 
+        });
+    }
+
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        // Verificar si ya existe un desafío pendiente reciente (últimos 5 minutos)
+        const [desafiosPendientes] = await conn.query(`
+            SELECT id_notificacion 
+            FROM notificaciones 
+            WHERE id_usuario_remitente = ? 
+            AND id_usuario_destinatario = ? 
+            AND tipo = 'desafio_duelo'
+            AND fecha_creacion > DATE_SUB(NOW(), INTERVAL 5 MINUTE)
+            AND leida = 0
+        `, [idRemitente, idOponente]);
+
+        if (desafiosPendientes.length > 0) {
+            await conn.rollback();
+            await conn.release();
+            return res.status(429).json({ 
+                success: false, 
+                message: 'Ya tienes un desafío pendiente con este usuario. Espera 5 minutos.' 
+            });
+        }
+
+        // ✅ CREAR SALA PENDIENTE usando la función global
+        const salaId = global.crearSalaPendiente(idRemitente, idOponente, req.io);
+        
+        console.log(`[BD DESAFÍO]: Sala ${salaId} creada - ${usernameRemitente} → Oponente ${idOponente}`);
+
+        // Crear notificación en la base de datos
+        const mensaje = `${usernameRemitente} te desafía a un duelo!`;
+        const extraData = {
+            salaId,
+            id_duelo: salaId,
+            modo: modo || 'general',
+            dificultad: dificultad || null,
+            remitente: {
+                id_usuario: idRemitente,
+                username: usernameRemitente,
+                foto_perfil: req.session.user.foto_perfil
+            },
+            tiempoLimite: 180 // 3 minutos en segundos
+        };
+
+        const [resultado] = await conn.query(`
+            INSERT INTO notificaciones 
+            (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data, fecha_creacion, leida)
+            VALUES (?, ?, 'desafio_duelo', ?, ?, NOW(), 0)
+        `, [idOponente, idRemitente, mensaje, JSON.stringify(extraData)]);
+
+        await conn.commit();
+        await conn.release();
+
+        console.log(`[BD DESAFÍO]: ✅ Notificación creada - ID: ${resultado.insertId}`);
+
+        // Emitir evento de socket al destinatario
+        if (req.io) {
+            const oponenteSocketId = global.usuariosConectados?.get(parseInt(idOponente));
+            if (oponenteSocketId) {
+                req.io.to(oponenteSocketId).emit('notificacion_recibida', {
+                    tipo: 'desafio_duelo',
+                    mensaje,
+                    salaId,
+                    id_notificacion: resultado.insertId
+                });
+                console.log(`[BD DESAFÍO]: Socket emitido a ${oponenteSocketId}`);
+            } else {
+                console.log(`[BD DESAFÍO]: Oponente ${idOponente} no tiene socket activo`);
+            }
+        }
+
+        res.json({
+            success: true,
+            message: 'Desafío enviado correctamente',
+            salaId,
+            id_notificacion: resultado.insertId
+        });
+
+    } catch (error) {
+        await conn.rollback();
+        await conn.release();
+        console.error('[BD DESAFÍO ERROR]:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error del servidor al enviar el desafío' 
+        });
+    }
+});
 
 // --- RUTA PARA LA VISTA DEL ENFRENTAMIENTO ---
 router.get('/duelo/enfrentamiento/:salaId', async (req, res) => {
@@ -827,7 +939,7 @@ router.get('/api/usuario/historial', async (req, res) => {
         res.status(500).json({ error: 'Error al obtener historial de duelos' });
     }
 });
-router.get('/sala/:salaId', async (req, res, next) => {
+router.get('/sala/:salaId', async (req, res) => {
     if (!req.session.user) {
         return res.redirect('/');
     }
@@ -839,85 +951,187 @@ router.get('/sala/:salaId', async (req, res, next) => {
         // Validar UUID
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         if (!uuidRegex.test(salaId)) {
-            console.log(`[ROUTER]: UUID inválido: ${salaId}`);
+            console.log(`[ROUTER SALA]: UUID inválido: ${salaId}`);
+            req.session.errorMsg = 'ID de sala inválido.';
             return res.redirect('/competitivo/portal');
         }
 
-        // ✅ VERIFICAR QUE LA SALA EXISTA EN EL SERVIDOR
-        const salasPendientes = global.salasPendientes;
+        console.log(`[ROUTER SALA]: Acceso a sala ${salaId} por usuario ${userId}`);
+
+        // ✅ Verificar si la sala existe en activeDuels (duelos en curso)
+        const activeDuels = global.activeDuels || new Map();
+        const dueloActivo = activeDuels.get(salaId);
+        
+        if (dueloActivo) {
+            console.log(`[ROUTER SALA]: ✅ Sala ${salaId} es un duelo activo`);
+            
+            // Verificar que el usuario sea parte del duelo
+            if (!dueloActivo.jugadores[userId]) {
+                req.session.errorMsg = 'No tienes acceso a este duelo.';
+                return res.redirect('/competitivo/portal');
+            }
+            
+            // Renderizar portal con flag para auto-conectar
+            const [userData] = await pool.query(
+                `SELECT 
+                    u.puntos,
+                    COALESCE(SUM(CASE WHEN h.id_ganador = u.id_usuario THEN 1 ELSE 0 END), 0) AS victorias,
+                    COALESCE(SUM(CASE WHEN h.id_ganador IS NOT NULL AND h.id_ganador != u.id_usuario THEN 1 ELSE 0 END), 0) AS derrotas
+                FROM 
+                    usuario u
+                LEFT JOIN 
+                    historial_duelos h ON u.id_usuario = h.id_retador OR u.id_usuario = h.id_defensor
+                WHERE 
+                    u.id_usuario = ?
+                GROUP BY
+                    u.id_usuario, u.puntos`,
+                [userId]
+            );
+
+            const stats = userData[0] || { puntos: 0, victorias: 0, derrotas: 0 };
+            
+            return res.render('duelodelascenso', {
+                layout: 'main',
+                user: req.session.user,
+                stats: stats,
+                salaId: salaId,
+                enSala: true,
+                autoConectar: true, // ← Flag para conectar automáticamente
+                dueloActivo: true
+            });
+        }
+
+        // ✅ Verificar en salasPendientes (invitaciones BD)
+        const salasPendientes = global.salasPendientes || new Map();
         const salasEspera = global.salasEspera || new Map();
         
-        const salaExiste = salasPendientes.has(salaId) || salasEspera.has(salaId);
+        let sala = null;
         
-        if (!salaExiste) {
-            console.log(`[ROUTER]: Sala ${salaId} no encontrada en servidor`);
-            req.session.errorMsg = 'La sala no existe o expiró. Solicita una nueva invitación.';
-            return res.redirect('/competitivo/portal');
+        for (const [key, value] of [...salasPendientes.entries(), ...salasEspera.entries()]) {
+            if (key.toLowerCase() === salaId.toLowerCase()) {
+                sala = value;
+                break;
+            }
+        }
+        
+        if (sala) {
+            console.log(`[ROUTER SALA]: ✅ Sala ${salaId} encontrada (pendiente)`);
+            
+            // Verificar que el usuario sea parte de la sala
+            const retadorId = parseInt(sala.retador || sala.idRetador);
+            const retadoId = parseInt(sala.retado || sala.idRetado);
+            const userIdInt = parseInt(userId);
+            
+            if (userIdInt !== retadorId && userIdInt !== retadoId) {
+                req.session.errorMsg = 'No tienes acceso a esta sala.';
+                return res.redirect('/competitivo/portal');
+            }
+            
+            // Renderizar portal con flag para conectar
+            const [userData] = await pool.query(
+                `SELECT 
+                    u.puntos,
+                    COALESCE(SUM(CASE WHEN h.id_ganador = u.id_usuario THEN 1 ELSE 0 END), 0) AS victorias,
+                    COALESCE(SUM(CASE WHEN h.id_ganador IS NOT NULL AND h.id_ganador != u.id_usuario THEN 1 ELSE 0 END), 0) AS derrotas
+                FROM 
+                    usuario u
+                LEFT JOIN 
+                    historial_duelos h ON u.id_usuario = h.id_retador OR u.id_usuario = h.id_defensor
+                WHERE 
+                    u.id_usuario = ?
+                GROUP BY
+                    u.id_usuario, u.puntos`,
+                [userId]
+            );
+
+            const stats = userData[0] || { puntos: 0, victorias: 0, derrotas: 0 };
+            
+            return res.render('duelodelascenso', {
+                layout: 'main',
+                user: req.session.user,
+                stats: stats,
+                salaId: salaId,
+                enSala: true,
+                autoConectar: true,
+                estadoSala: sala.estado
+            });
         }
 
-        const sala = salasPendientes.get(salaId) || salasEspera.get(salaId);
-        
-        // Verificar que el usuario sea parte de la sala
-        const retadorId = sala.retador || sala.idRetador;
-        const retadoId = sala.retado || sala.idRetado;
-        
-        if (parseInt(userId) !== parseInt(retadorId) && parseInt(userId) !== parseInt(retadoId)) {
-            console.log(`[ROUTER]: Usuario ${userId} no es parte de la sala ${salaId}`);
-            req.session.errorMsg = 'No tienes acceso a esta sala.';
-            return res.redirect('/competitivo/portal');
-        }
-
-        console.log(`[ROUTER]: ✅ Sala ${salaId} válida para usuario ${userId}`);
-
-        // CONTINUAR CON EL CÓDIGO ORIGINAL...
-        const [userData] = await pool.query(
-            `SELECT 
-                u.puntos,
-                COALESCE(SUM(CASE WHEN h.id_ganador = u.id_usuario THEN 1 ELSE 0 END), 0) AS victorias,
-                COALESCE(SUM(CASE WHEN h.id_ganador IS NOT NULL AND h.id_ganador != u.id_usuario THEN 1 ELSE 0 END), 0) AS derrotas
-            FROM 
-                usuario u
-            LEFT JOIN 
-                historial_duelos h ON u.id_usuario = h.id_retador OR u.id_usuario = h.id_defensor
-            WHERE 
-                u.id_usuario = ?
-            GROUP BY
-                u.id_usuario, u.puntos`,
-            [userId]
-        );
-
-        const [rankingData] = await pool.query(
-            `SELECT COUNT(*) + 1 as rank
-             FROM usuario 
-             WHERE puntos > (SELECT puntos FROM usuario WHERE id_usuario = ?)`,
-            [userId]
-        );
-
-        const currentPoints = userData[0]?.puntos || 0;
-        const nextRankPoints = Math.ceil((currentPoints + 100) / 100) * 100;
-        const progressPercent = ((currentPoints % 100) / 100) * 100;
-
-        const stats = {
-            ...userData[0],
-            rank: rankingData[0]?.rank || 1,
-            progress_percent: progressPercent,
-            points_needed: nextRankPoints - currentPoints
-        };
-        
-        res.render('duelodelascenso', {
-            layout: 'main',
-            user: req.session.user,
-            stats: stats,
-            salaId: salaId,
-            enSala: true
-        });
+        // ❌ Sala no encontrada
+        console.log(`[ROUTER SALA]: Sala ${salaId} no encontrada`);
+        req.session.errorMsg = 'La sala no existe o expiró.';
+        return res.redirect('/competitivo/portal');
 
     } catch (error) {
-        console.error("[ROUTER ERROR] al cargar sala:", error);
+        console.error("[ROUTER SALA ERROR]:", error);
+        req.session.errorMsg = 'Error al cargar la sala.';
         res.redirect('/competitivo/portal');
     }
 });
+// ================================================================
+// 🛡️ RUTA AUXILIAR: Verificar estado de sala (API)
+// ================================================================
+router.get('/api/sala/:salaId/estado', async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ error: 'No autorizado' });
+    }
 
+    try {
+        const { salaId } = req.params;
+        const userId = req.session.user.id_usuario;
+
+        // Buscar en activeDuels
+        const activeDuels = global.activeDuels || new Map();
+        const duelo = activeDuels.get(salaId);
+
+        if (duelo) {
+            // Verificar acceso
+            if (!duelo.jugadores[userId]) {
+                return res.status(403).json({ error: 'Sin acceso' });
+            }
+
+            return res.json({
+                existe: true,
+                tipo: 'duelo_activo',
+                estado: duelo.estado,
+                jugadores: Object.keys(duelo.jugadores).length,
+                modo: duelo.modo
+            });
+        }
+
+        // Buscar en salas pendientes
+        const salasPendientes = global.salasPendientes || new Map();
+        const salasEspera = global.salasEspera || new Map();
+        
+        let sala = salasPendientes.get(salaId) || salasEspera.get(salaId);
+
+        if (sala) {
+            // Verificar acceso
+            const retadorId = parseInt(sala.retador || sala.idRetador);
+            const retadoId = parseInt(sala.retado || sala.idRetado);
+            
+            if (parseInt(userId) !== retadorId && parseInt(userId) !== retadoId) {
+                return res.status(403).json({ error: 'Sin acceso' });
+            }
+
+            return res.json({
+                existe: true,
+                tipo: 'sala_pendiente',
+                estado: sala.estado,
+                jugadoresConectados: sala.jugadoresConectados?.size || 0
+            });
+        }
+
+        // No encontrada
+        return res.json({
+            existe: false
+        });
+
+    } catch (error) {
+        console.error('[API SALA ERROR]:', error);
+        res.status(500).json({ error: 'Error del servidor' });
+    }
+});
 router.post('/duelo/abandonar/:salaId', async (req, res) => {
     if (!req.session.user) return res.status(401).json({ error: 'No autorizado' });
 

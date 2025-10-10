@@ -16,5 +16,5 @@ router.get('/notificaciones', async (req, res) => {
         res.status(500).json([]);
     }
 });
-
+//---------------------------------------------------------------
 module.exports = router;

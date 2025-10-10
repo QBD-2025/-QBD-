@@ -1,4 +1,4 @@
-// routes/invitacionesR.js
+// router/invitacionesR.js(actual)
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const router = express.Router();
