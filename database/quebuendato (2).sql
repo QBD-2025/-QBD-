@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 06-10-2025 a las 00:19:53
+-- Tiempo de generación: 13-10-2025 a las 22:18:22
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -312,6 +312,7 @@ CREATE TABLE `duelos` (
 --
 
 INSERT INTO `duelos` (`id_duelo`, `id_retador`, `id_defensor`, `materia`, `fecha_inicio`, `fecha_limite`, `respondido_retador`, `respondido_oponente`, `ganador`, `estado_retador`, `estado_defensor`, `fecha_abandono`, `id_usuario_abandono`, `razon_abandono`, `estado`, `ganador_id`, `puntaje_retador`, `puntaje_oponente`, `respuestas_retador`, `respuestas_oponente`) VALUES
+('duelo_06e94429-3fc5-4645-81b6-9045e9af0e92', 89, 88, NULL, '2025-10-06 20:24:31', '2025-10-08 20:24:31', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'abandonado', NULL, 0, 0, NULL, NULL),
 ('duelo_15391930-5c02-4952-9799-dea3e9e88895', 89, 88, NULL, '2025-10-05 13:07:30', '2025-10-07 13:07:30', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
 ('duelo_1759638409472_g7s9lm828', 89, 88, NULL, '2025-10-04 22:26:49', '2025-10-06 22:26:49', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
 ('duelo_1759638487874_vut0pvyf0', 89, 88, NULL, '2025-10-04 22:28:07', '2025-10-06 22:28:07', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
@@ -343,7 +344,38 @@ INSERT INTO `duelos` (`id_duelo`, `id_retador`, `id_defensor`, `materia`, `fecha
 ('duelo_1759695003686_mcctucl2y', 88, 89, NULL, '2025-10-05 14:10:03', '2025-10-07 14:10:03', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
 ('duelo_1759695074039_mfkkpf90d', 88, 89, NULL, '2025-10-05 14:11:14', '2025-10-07 14:11:14', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
 ('duelo_1759696129907_c6d2bts5g', 88, 89, NULL, '2025-10-05 14:28:49', '2025-10-07 14:28:49', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759771540138_mjq9pz5zq', 88, 89, NULL, '2025-10-06 11:25:40', '2025-10-08 11:25:40', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759783498735_ju2mucxj9', 88, 89, NULL, '2025-10-06 14:44:58', '2025-10-08 14:44:58', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759791599406_j2zujmdtb', 96, 87, NULL, '2025-10-06 16:59:59', '2025-10-08 16:59:59', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759795730689_348kckyc3', 97, 87, NULL, '2025-10-06 18:08:50', '2025-10-08 18:08:50', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759795732328_he3uujcyw', 97, 77, NULL, '2025-10-06 18:08:52', '2025-10-08 18:08:52', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759795733070_bo1v91sgi', 97, 79, NULL, '2025-10-06 18:08:53', '2025-10-08 18:08:53', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759795734488_h18j1r3fr', 97, 89, NULL, '2025-10-06 18:08:54', '2025-10-08 18:08:54', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759795735214_qz1zj8uvw', 97, 88, NULL, '2025-10-06 18:08:55', '2025-10-08 18:08:55', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759795736279_y8x3fnoy2', 97, 90, NULL, '2025-10-06 18:08:56', '2025-10-08 18:08:56', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759795737948_lhcq75tf0', 97, 92, NULL, '2025-10-06 18:08:57', '2025-10-08 18:08:57', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759795738769_in9reiv78', 97, 80, NULL, '2025-10-06 18:08:58', '2025-10-08 18:08:58', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759795739778_lkp4tq9pa', 97, 83, NULL, '2025-10-06 18:08:59', '2025-10-08 18:08:59', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759795741377_vecrmg6mq', 97, 84, NULL, '2025-10-06 18:09:01', '2025-10-08 18:09:01', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759795742296_o196cp0qo', 97, 85, NULL, '2025-10-06 18:09:02', '2025-10-08 18:09:02', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759795743666_7sa6jsdga', 97, 91, NULL, '2025-10-06 18:09:03', '2025-10-08 18:09:03', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759795744808_8t2al6nb0', 97, 93, NULL, '2025-10-06 18:09:04', '2025-10-08 18:09:04', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759795747528_cnp9kt059', 97, 96, NULL, '2025-10-06 18:09:07', '2025-10-08 18:09:07', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759795747835_yjdt7am5w', 97, 95, NULL, '2025-10-06 18:09:07', '2025-10-08 18:09:07', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759795748972_d78anande', 97, 91, NULL, '2025-10-06 18:09:08', '2025-10-08 18:09:08', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759795749788_bqasvtyqx', 97, 93, NULL, '2025-10-06 18:09:09', '2025-10-08 18:09:09', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759795752368_b64t27n9v', 97, 85, NULL, '2025-10-06 18:09:12', '2025-10-08 18:09:12', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759795753436_kbir70dwv', 97, 84, NULL, '2025-10-06 18:09:13', '2025-10-08 18:09:13', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759796327209_7ajci1xr3', 96, 89, NULL, '2025-10-06 18:18:47', '2025-10-08 18:18:47', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759796338291_wdg4j19fo', 96, 88, NULL, '2025-10-06 18:18:58', '2025-10-08 18:18:58', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759796341928_1arwqtu81', 96, 89, NULL, '2025-10-06 18:19:01', '2025-10-08 18:19:01', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759801011306_bxwa0la8y', 88, 89, NULL, '2025-10-06 19:36:51', '2025-10-08 19:36:51', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759802864509_m5p7omqk5', 88, 89, NULL, '2025-10-06 20:07:44', '2025-10-08 20:07:44', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759803198257_wx81w9vdo', 92, 88, NULL, '2025-10-06 20:13:18', '2025-10-08 20:13:18', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1759803868686_017xsh38f', 89, 88, NULL, '2025-10-06 20:24:28', '2025-10-08 20:24:28', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
+('duelo_1760144022876_td049dibw', 89, 88, NULL, '2025-10-10 18:53:42', '2025-10-12 18:53:42', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'pendiente', NULL, 0, 0, NULL, NULL),
 ('duelo_1bada9a2-8b90-44a4-adb7-32616c61c51e', 89, 88, NULL, '2025-10-04 22:27:00', '2025-10-06 22:27:00', 1, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'completado', NULL, 0, 0, NULL, NULL),
+('duelo_1fec2661-b5f1-440b-b2f5-bb10b7135b29', 89, 88, NULL, '2025-10-10 18:53:51', '2025-10-12 18:53:51', 1, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'finalizado', NULL, 0, 0, NULL, NULL),
 ('duelo_21720b2a-881b-48d9-9ddd-1a4de6bf01f2', 88, 89, NULL, '2025-10-05 14:11:21', '2025-10-07 14:11:21', 1, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'finalizado', NULL, 0, 0, NULL, NULL),
 ('duelo_256926a7-e459-4865-bf2c-532fee89f51d', 89, 88, NULL, '2025-10-04 23:37:56', '2025-10-06 23:37:56', 1, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
 ('duelo_30bab5fe-1cf3-400a-8503-3dda6ba65f68', 89, 88, NULL, '2025-10-05 00:22:51', '2025-10-07 00:22:51', 0, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
@@ -351,16 +383,21 @@ INSERT INTO `duelos` (`id_duelo`, `id_retador`, `id_defensor`, `materia`, `fecha
 ('duelo_31d25256-6c19-4957-967b-6cddfdf7190b', 89, 88, NULL, '2025-10-05 13:20:57', '2025-10-07 13:20:57', 0, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
 ('duelo_32298b7b-f1ec-45ff-aa07-5684f6e150f8', 89, 88, NULL, '2025-10-04 22:28:15', '2025-10-06 22:28:15', 0, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
 ('duelo_33f02439-07ca-46fd-be01-c845dea4240e', 89, 88, NULL, '2025-10-05 00:03:18', '2025-10-07 00:03:18', 1, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
+('duelo_54e05c01-f404-4944-8e4b-0a5f31604193', 97, 88, NULL, '2025-10-06 18:10:09', '2025-10-08 18:10:09', 1, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'finalizado', NULL, 0, 0, NULL, NULL),
 ('duelo_5ab35731-6422-42e1-acd9-d5968d8f2442', 89, 88, NULL, '2025-10-05 13:11:27', '2025-10-07 13:11:27', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
 ('duelo_61bdabe1-0d32-4a75-aa83-a255e34f2e8a', 88, 89, NULL, '2025-10-05 13:49:13', '2025-10-07 13:49:13', 1, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
 ('duelo_61e801cd-1ff7-4fff-baf9-dc6d67c0e0d1', 89, 88, NULL, '2025-10-05 13:39:59', '2025-10-07 13:39:59', 1, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'finalizado', NULL, 0, 0, NULL, NULL),
+('duelo_63b58e79-2d2f-44f3-86f6-0a558d45a6f6', 88, 89, NULL, '2025-10-06 14:45:06', '2025-10-08 14:45:06', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
 ('duelo_68ff341c-2cbf-421b-aca0-119ac9ef318d', 89, 88, NULL, '2025-10-05 13:17:57', '2025-10-07 13:17:57', 1, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'finalizado', NULL, 0, 0, NULL, NULL),
 ('duelo_718e1f12-1acf-4167-ab6d-44eceb3d576a', 89, 88, NULL, '2025-10-05 00:01:42', '2025-10-07 00:01:42', 1, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
 ('duelo_741d4845-c852-4da6-974f-39fbed9da13a', 88, 89, NULL, '2025-10-05 13:43:41', '2025-10-07 13:43:41', 1, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'finalizado', NULL, 0, 0, NULL, NULL),
+('duelo_7547cb7d-c4ef-486c-b8b8-d41d56e72d9c', 92, 88, NULL, '2025-10-06 20:16:52', '2025-10-08 20:16:52', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
 ('duelo_79798834-aeec-4e06-8a9a-0e129c344a9c', 89, 88, NULL, '2025-10-05 00:29:27', '2025-10-07 00:29:27', 1, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
+('duelo_88dcdba9-3c4b-46d7-971c-07ca5af92f76', 88, 89, NULL, '2025-10-06 20:07:49', '2025-10-08 20:07:49', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'abandonado', NULL, 0, 0, NULL, NULL),
 ('duelo_95d50f7a-89e2-4aa3-9cd8-77cba0898e77', 89, 88, NULL, '2025-10-05 00:32:07', '2025-10-07 00:32:07', 1, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
 ('duelo_98fac372-3e72-42ef-861d-3031c708f0d0', 89, 88, NULL, '2025-10-05 00:23:38', '2025-10-07 00:23:38', 1, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
 ('duelo_a564106d-d0fd-4520-ada2-1a42bb64f8e8', 89, 88, NULL, '2025-10-04 22:37:40', '2025-10-06 22:37:40', 0, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
+('duelo_af842d93-a90d-487a-85a2-981be846cee9', 88, 89, NULL, '2025-10-06 11:25:44', '2025-10-08 11:25:44', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
 ('duelo_af9a0562-b17d-4d84-accc-33b4362387fb', 89, 88, NULL, '2025-10-04 23:17:35', '2025-10-06 23:17:35', 0, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
 ('duelo_b72bd6cc-3270-454e-97be-77601dc86aa7', 89, 88, NULL, '2025-10-05 00:34:09', '2025-10-07 00:34:09', 1, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'finalizado', NULL, 0, 0, NULL, NULL),
 ('duelo_b9469fbb-030c-46ba-9af9-47424da5a2bf', 89, 88, NULL, '2025-10-04 22:38:57', '2025-10-06 22:38:57', 1, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
@@ -373,9 +410,11 @@ INSERT INTO `duelos` (`id_duelo`, `id_retador`, `id_defensor`, `materia`, `fecha
 ('duelo_d6f03d00-b73f-442b-b8e4-64649c3f9a9b', 89, 88, NULL, '2025-10-05 00:14:56', '2025-10-07 00:14:56', 1, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
 ('duelo_e7cfea07-ab17-4573-b64a-2076852e4fdb', 89, 88, NULL, '2025-10-05 13:25:26', '2025-10-07 13:25:26', 0, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
 ('duelo_eb658be6-dfc5-4f31-ad14-39984ad8ec56', 88, 89, NULL, '2025-10-05 13:51:07', '2025-10-07 13:51:07', 1, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
+('duelo_ee02bdc8-038c-495e-9282-6fa4f0ad10d7', 96, 88, NULL, '2025-10-06 18:19:04', '2025-10-08 18:19:04', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
 ('duelo_f06a128d-a6c0-41ab-84de-c5447a9c1589', 88, 89, NULL, '2025-10-05 14:28:53', '2025-10-07 14:28:53', 1, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
 ('duelo_f2eacdd4-21d7-4b05-ad47-9545f7aef293', 89, 88, NULL, '2025-10-04 22:42:17', '2025-10-06 22:42:17', 0, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
-('duelo_f4251193-1ba7-4fd5-b386-594ed6ff1cd7', 89, 88, NULL, '2025-10-04 23:57:36', '2025-10-06 23:57:36', 1, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL);
+('duelo_f4251193-1ba7-4fd5-b386-594ed6ff1cd7', 89, 88, NULL, '2025-10-04 23:57:36', '2025-10-06 23:57:36', 1, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL),
+('duelo_fb9eaef4-95e2-41bd-b041-1702e190e5e1', 88, 89, NULL, '2025-10-06 19:36:56', '2025-10-08 19:36:56', 0, 0, NULL, 'activo', 'activo', NULL, NULL, NULL, 'activo', NULL, 0, 0, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -395,16 +434,16 @@ CREATE TABLE `duelos_preguntas` (
 --
 
 INSERT INTO `duelos_preguntas` (`id_duelo_pregunta`, `id_duelo`, `id_pregunta`, `orden`) VALUES
-(441, 0, 78, 1),
-(442, 0, 594, 2),
-(443, 0, 474, 3),
-(444, 0, 403, 4),
-(445, 0, 79, 5),
-(446, 0, 39, 6),
-(447, 0, 262, 7),
-(448, 0, 489, 8),
-(449, 0, 140, 9),
-(450, 0, 566, 10);
+(741, 0, 202, 1),
+(742, 0, 367, 2),
+(743, 0, 408, 3),
+(744, 0, 138, 4),
+(745, 0, 33, 5),
+(746, 0, 301, 6),
+(747, 0, 238, 7),
+(748, 0, 211, 8),
+(749, 0, 212, 9),
+(750, 0, 546, 10);
 
 -- --------------------------------------------------------
 
@@ -786,7 +825,37 @@ INSERT INTO `duelos_respuestas` (`id_respuesta_duelo`, `id_duelo`, `id_usuario`,
 (487, 0, 88, 474, 2007, NULL, '2025-10-05 14:29:08'),
 (488, 0, 88, 489, 1511, NULL, '2025-10-05 14:29:08'),
 (489, 0, 88, 566, 2324, NULL, '2025-10-05 14:29:08'),
-(490, 0, 88, 594, 2431, NULL, '2025-10-05 14:29:08');
+(490, 0, 88, 594, 2431, NULL, '2025-10-05 14:29:08'),
+(491, 0, 88, 30, 1052, NULL, '2025-10-06 18:10:25'),
+(492, 0, 88, 96, 607, NULL, '2025-10-06 18:10:25'),
+(493, 0, 88, 139, 650, NULL, '2025-10-06 18:10:25'),
+(494, 0, 88, 151, 151, NULL, '2025-10-06 18:10:25'),
+(495, 0, 88, 229, 1251, NULL, '2025-10-06 18:10:25'),
+(496, 0, 88, 365, 1898, NULL, '2025-10-06 18:10:25'),
+(497, 0, 88, 372, 1394, NULL, '2025-10-06 18:10:25'),
+(498, 0, 88, 463, 1996, NULL, '2025-10-06 18:10:25'),
+(499, 0, 88, 472, 983, NULL, '2025-10-06 18:10:25'),
+(500, 0, 88, 482, 2015, NULL, '2025-10-06 18:10:25'),
+(501, 0, 88, 33, 1566, NULL, '2025-10-10 18:56:47'),
+(502, 0, 88, 138, 1160, NULL, '2025-10-10 18:56:47'),
+(503, 0, 88, 202, 202, NULL, '2025-10-10 18:56:47'),
+(504, 0, 88, 211, 722, NULL, '2025-10-10 18:56:47'),
+(505, 0, 88, 212, 1234, NULL, '2025-10-10 18:56:47'),
+(506, 0, 88, 238, 1260, NULL, '2025-10-10 18:56:47'),
+(507, 0, 88, 301, 1834, NULL, '2025-10-10 18:56:47'),
+(508, 0, 88, 367, 878, NULL, '2025-10-10 18:56:47'),
+(509, 0, 88, 408, 1941, NULL, '2025-10-10 18:56:47'),
+(510, 0, 88, 546, 2242, NULL, '2025-10-10 18:56:47'),
+(511, 0, 89, 33, 1566, NULL, '2025-10-10 18:57:51'),
+(512, 0, 89, 138, 1160, NULL, '2025-10-10 18:57:51'),
+(513, 0, 89, 202, 202, NULL, '2025-10-10 18:57:51'),
+(514, 0, 89, 211, 722, NULL, '2025-10-10 18:57:51'),
+(515, 0, 89, 212, 1234, NULL, '2025-10-10 18:57:51'),
+(516, 0, 89, 238, 1260, NULL, '2025-10-10 18:57:51'),
+(517, 0, 89, 301, 1834, NULL, '2025-10-10 18:57:51'),
+(518, 0, 89, 367, 878, NULL, '2025-10-10 18:57:51'),
+(519, 0, 89, 408, 919, NULL, '2025-10-10 18:57:51'),
+(520, 0, 89, 546, 2242, NULL, '2025-10-10 18:57:51');
 
 -- --------------------------------------------------------
 
@@ -1648,7 +1717,19 @@ INSERT INTO `examen` (`id_examen`, `id_materia`, `fecha_inicio`, `fecha_termino`
 (19, 1, '0000-00-00 00:00:00', '0000-00-00 00:00:00', '00:00:16', NULL),
 (20, 2, '0000-00-00 00:00:00', '0000-00-00 00:00:00', '00:00:20', NULL),
 (21, 1, '0000-00-00 00:00:00', '0000-00-00 00:00:00', '00:00:09', NULL),
-(22, 1, '0000-00-00 00:00:00', '0000-00-00 00:00:00', '00:00:20', NULL);
+(22, 1, '0000-00-00 00:00:00', '0000-00-00 00:00:00', '00:00:20', NULL),
+(23, NULL, '2025-10-13 02:09:51', '2025-10-13 02:10:12', '00:00:20', NULL),
+(24, NULL, '2025-10-13 02:10:19', '2025-10-13 02:10:42', '00:00:22', NULL),
+(25, NULL, '2025-10-13 02:14:21', '2025-10-13 02:14:39', '00:00:17', NULL),
+(26, NULL, '2025-10-13 09:59:55', '2025-10-13 10:00:31', '00:00:35', NULL),
+(27, NULL, '2025-10-13 10:09:55', '2025-10-13 10:10:20', '00:00:24', NULL),
+(28, NULL, '2025-10-13 10:15:08', '2025-10-13 10:15:47', '00:00:39', NULL),
+(29, NULL, '2025-10-13 10:22:16', '2025-10-13 10:22:36', '00:00:20', NULL),
+(30, NULL, '2025-10-13 10:25:27', '2025-10-13 10:25:55', '00:00:27', NULL),
+(31, 1, '2025-10-13 10:29:19', '2025-10-13 10:29:55', '00:00:36', NULL),
+(32, 2, '2025-10-13 10:35:53', '2025-10-13 10:36:22', '00:00:28', NULL),
+(33, NULL, '2025-10-13 10:36:40', '2025-10-13 10:37:08', '00:00:27', NULL),
+(34, NULL, '0000-00-00 00:00:00', '0000-00-00 00:00:00', '00:00:16', NULL);
 
 -- --------------------------------------------------------
 
@@ -1710,6 +1791,97 @@ CREATE TABLE `historial` (
   `porcentaje` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `historial`
+--
+
+INSERT INTO `historial` (`id_examen`, `id_usuario`, `id_pregunta`, `id_respuesta`, `puntos`, `porcentaje`) VALUES
+(23, 89, 2, 1535, 0, 50),
+(23, 89, 82, 1615, 1, 50),
+(24, 89, 76, 1609, 0, 50),
+(24, 89, 77, 1610, 1, 50),
+(24, 89, 78, 1611, 0, 50),
+(24, 89, 80, 1613, 1, 50),
+(24, 89, 81, 1614, 0, 50),
+(24, 89, 82, 1615, 1, 50),
+(25, 88, 2, 1535, 0, 33),
+(25, 88, 81, 1614, 0, 33),
+(25, 88, 82, 1615, 1, 33),
+(26, 89, 2, 1535, 0, 20),
+(26, 89, 28, 1561, 0, 20),
+(26, 89, 29, 1562, 0, 20),
+(26, 89, 30, 1563, 0, 20),
+(26, 89, 67, 1600, 1, 20),
+(26, 89, 68, 1601, 0, 20),
+(26, 89, 69, 1602, 0, 20),
+(26, 89, 70, 1603, 0, 20),
+(26, 89, 71, 1604, 0, 20),
+(26, 89, 82, 1615, 1, 20),
+(27, 89, 28, 1561, 0, 25),
+(27, 89, 29, 1562, 0, 25),
+(27, 89, 30, 1563, 0, 25),
+(27, 89, 82, 1615, 1, 25),
+(31, 88, 2, 1535, 0, 15),
+(31, 88, 28, 1561, 0, 15),
+(31, 88, 29, 1562, 0, 15),
+(31, 88, 30, 1563, 0, 15),
+(31, 88, 67, 1600, 1, 15),
+(31, 88, 68, 1601, 0, 15),
+(31, 88, 69, 1602, 0, 15),
+(31, 88, 70, 1603, 0, 15),
+(31, 88, 71, 1604, 0, 15),
+(31, 88, 72, 1605, 0, 15),
+(31, 88, 73, 1606, 0, 15),
+(31, 88, 74, 1607, 1, 15),
+(31, 88, 75, 1608, 0, 15),
+(31, 88, 76, 1609, 0, 15),
+(31, 88, 77, NULL, 0, 15),
+(31, 88, 78, NULL, 0, 15),
+(31, 88, 79, NULL, 0, 15),
+(31, 88, 80, NULL, 0, 15),
+(31, 88, 81, NULL, 0, 15),
+(31, 88, 82, 1615, 1, 15),
+(32, 88, 3, 1536, 1, 20),
+(32, 88, 4, 1537, 0, 20),
+(32, 88, 31, 1564, 0, 20),
+(32, 88, 32, 1565, 0, 20),
+(32, 88, 33, 1566, 1, 20),
+(32, 88, 98, 1631, 1, 20),
+(32, 88, 99, 1632, 0, 20),
+(32, 88, 100, 1633, 0, 20),
+(32, 88, 101, 1634, 1, 20),
+(32, 88, 102, 1635, 0, 20),
+(32, 88, 103, 1636, 0, 20),
+(32, 88, 104, 1126, 0, 20),
+(32, 88, 105, 1638, 0, 20),
+(32, 88, 106, 1639, 0, 20),
+(32, 88, 107, 1640, 0, 20),
+(32, 88, 108, 1641, 0, 20),
+(32, 88, 109, 1642, 0, 20),
+(32, 88, 110, 1643, 0, 20),
+(32, 88, 111, 1644, 0, 20),
+(32, 88, 112, 1645, 0, 20),
+(33, 88, 343, 1876, 0, 15),
+(33, 88, 188, 1721, 0, 15),
+(33, 88, 576, 2365, 0, 15),
+(33, 88, 106, 1639, 0, 15),
+(33, 88, 555, 2281, 0, 15),
+(33, 88, 380, 1913, 0, 15),
+(33, 88, 269, 1802, 0, 15),
+(33, 88, 205, 1738, 0, 15),
+(33, 88, 158, 1691, 0, 15),
+(33, 88, 236, 1769, 0, 15),
+(33, 88, 357, 1890, 1, 15),
+(33, 88, 103, 1636, 0, 15),
+(33, 88, 568, 2333, 0, 15),
+(33, 88, 388, 1921, 1, 15),
+(33, 88, 16, 1549, 0, 15),
+(33, 88, 88, 1621, 0, 15),
+(33, 88, 408, 1941, 0, 15),
+(33, 88, 145, 1678, 1, 15),
+(33, 88, 290, 1823, 0, 15),
+(33, 88, 182, 1715, 0, 15);
+
 -- --------------------------------------------------------
 
 --
@@ -1744,7 +1916,11 @@ INSERT INTO `historial_duelos` (`id_duelo`, `id_retador`, `id_defensor`, `id_gan
 (11, 89, 88, 89, 5, 2, '2025-10-05 19:40:56'),
 (12, 88, 89, 89, 6, 9, '2025-10-05 19:46:35'),
 (13, 88, 89, 88, 4, 3, '2025-10-05 20:07:32'),
-(14, 88, 89, 89, 2, 4, '2025-10-05 20:12:24');
+(14, 88, 89, 89, 2, 4, '2025-10-05 20:12:24'),
+(15, 97, 88, 88, 0, 4, '2025-10-07 00:16:03'),
+(16, 88, 89, 88, 0, 0, '2025-10-07 02:21:17'),
+(17, 89, 88, 89, 0, 0, '2025-10-07 02:24:40'),
+(18, 89, 88, 89, 11, 9, '2025-10-11 00:57:51');
 
 -- --------------------------------------------------------
 
@@ -1798,6 +1974,36 @@ CREATE TABLE `notificaciones` (
   `leido` tinyint(1) DEFAULT 0,
   `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `notificaciones`
+--
+
+INSERT INTO `notificaciones` (`id_notificacion`, `id_usuario_destinatario`, `id_usuario_remitente`, `tipo`, `mensaje`, `extra_data`, `leido`, `fecha_creacion`) VALUES
+(994, 87, 97, 'desafio_duelo', 'Eduardo García te desafía a un Duelo de Ascenso!', '{\"remitente\":{\"id_usuario\":97,\"username\":\"Eduardo García\",\"email\":\"eduardogarcia080806@gmail.com\",\"id_tp_usuario\":1,\"foto_perfil\":\"https://lh3.googleusercontent.com/a/ACg8ocKg7WtQtZyJK_mHkfNOlxUb5WGI4hS3FEb7ubkCURapTgmF=s96-c\"},\"tiempoLimite\":172800,\"id_duelo\":\"duelo_1759795730689_348kckyc3\"}', 0, '2025-10-07 00:08:50'),
+(995, 77, 97, 'desafio_duelo', 'Eduardo García te desafía a un Duelo de Ascenso!', '{\"remitente\":{\"id_usuario\":97,\"username\":\"Eduardo García\",\"email\":\"eduardogarcia080806@gmail.com\",\"id_tp_usuario\":1,\"foto_perfil\":\"https://lh3.googleusercontent.com/a/ACg8ocKg7WtQtZyJK_mHkfNOlxUb5WGI4hS3FEb7ubkCURapTgmF=s96-c\"},\"tiempoLimite\":172800,\"id_duelo\":\"duelo_1759795732328_he3uujcyw\"}', 0, '2025-10-07 00:08:52'),
+(996, 79, 97, 'desafio_duelo', 'Eduardo García te desafía a un Duelo de Ascenso!', '{\"remitente\":{\"id_usuario\":97,\"username\":\"Eduardo García\",\"email\":\"eduardogarcia080806@gmail.com\",\"id_tp_usuario\":1,\"foto_perfil\":\"https://lh3.googleusercontent.com/a/ACg8ocKg7WtQtZyJK_mHkfNOlxUb5WGI4hS3FEb7ubkCURapTgmF=s96-c\"},\"tiempoLimite\":172800,\"id_duelo\":\"duelo_1759795733070_bo1v91sgi\"}', 0, '2025-10-07 00:08:53'),
+(1000, 92, 97, 'desafio_duelo', 'Eduardo García te desafía a un Duelo de Ascenso!', '{\"remitente\":{\"id_usuario\":97,\"username\":\"Eduardo García\",\"email\":\"eduardogarcia080806@gmail.com\",\"id_tp_usuario\":1,\"foto_perfil\":\"https://lh3.googleusercontent.com/a/ACg8ocKg7WtQtZyJK_mHkfNOlxUb5WGI4hS3FEb7ubkCURapTgmF=s96-c\"},\"tiempoLimite\":172800,\"id_duelo\":\"duelo_1759795737948_lhcq75tf0\"}', 0, '2025-10-07 00:08:57'),
+(1001, 80, 97, 'desafio_duelo', 'Eduardo García te desafía a un Duelo de Ascenso!', '{\"remitente\":{\"id_usuario\":97,\"username\":\"Eduardo García\",\"email\":\"eduardogarcia080806@gmail.com\",\"id_tp_usuario\":1,\"foto_perfil\":\"https://lh3.googleusercontent.com/a/ACg8ocKg7WtQtZyJK_mHkfNOlxUb5WGI4hS3FEb7ubkCURapTgmF=s96-c\"},\"tiempoLimite\":172800,\"id_duelo\":\"duelo_1759795738769_in9reiv78\"}', 0, '2025-10-07 00:08:58'),
+(1002, 83, 97, 'desafio_duelo', 'Eduardo García te desafía a un Duelo de Ascenso!', '{\"remitente\":{\"id_usuario\":97,\"username\":\"Eduardo García\",\"email\":\"eduardogarcia080806@gmail.com\",\"id_tp_usuario\":1,\"foto_perfil\":\"https://lh3.googleusercontent.com/a/ACg8ocKg7WtQtZyJK_mHkfNOlxUb5WGI4hS3FEb7ubkCURapTgmF=s96-c\"},\"tiempoLimite\":172800,\"id_duelo\":\"duelo_1759795739778_lkp4tq9pa\"}', 0, '2025-10-07 00:08:59'),
+(1003, 84, 97, 'desafio_duelo', 'Eduardo García te desafía a un Duelo de Ascenso!', '{\"remitente\":{\"id_usuario\":97,\"username\":\"Eduardo García\",\"email\":\"eduardogarcia080806@gmail.com\",\"id_tp_usuario\":1,\"foto_perfil\":\"https://lh3.googleusercontent.com/a/ACg8ocKg7WtQtZyJK_mHkfNOlxUb5WGI4hS3FEb7ubkCURapTgmF=s96-c\"},\"tiempoLimite\":172800,\"id_duelo\":\"duelo_1759795741377_vecrmg6mq\"}', 0, '2025-10-07 00:09:01'),
+(1004, 85, 97, 'desafio_duelo', 'Eduardo García te desafía a un Duelo de Ascenso!', '{\"remitente\":{\"id_usuario\":97,\"username\":\"Eduardo García\",\"email\":\"eduardogarcia080806@gmail.com\",\"id_tp_usuario\":1,\"foto_perfil\":\"https://lh3.googleusercontent.com/a/ACg8ocKg7WtQtZyJK_mHkfNOlxUb5WGI4hS3FEb7ubkCURapTgmF=s96-c\"},\"tiempoLimite\":172800,\"id_duelo\":\"duelo_1759795742296_o196cp0qo\"}', 0, '2025-10-07 00:09:02'),
+(1005, 91, 97, 'desafio_duelo', 'Eduardo García te desafía a un Duelo de Ascenso!', '{\"remitente\":{\"id_usuario\":97,\"username\":\"Eduardo García\",\"email\":\"eduardogarcia080806@gmail.com\",\"id_tp_usuario\":1,\"foto_perfil\":\"https://lh3.googleusercontent.com/a/ACg8ocKg7WtQtZyJK_mHkfNOlxUb5WGI4hS3FEb7ubkCURapTgmF=s96-c\"},\"tiempoLimite\":172800,\"id_duelo\":\"duelo_1759795743666_7sa6jsdga\"}', 0, '2025-10-07 00:09:03'),
+(1006, 93, 97, 'desafio_duelo', 'Eduardo García te desafía a un Duelo de Ascenso!', '{\"remitente\":{\"id_usuario\":97,\"username\":\"Eduardo García\",\"email\":\"eduardogarcia080806@gmail.com\",\"id_tp_usuario\":1,\"foto_perfil\":\"https://lh3.googleusercontent.com/a/ACg8ocKg7WtQtZyJK_mHkfNOlxUb5WGI4hS3FEb7ubkCURapTgmF=s96-c\"},\"tiempoLimite\":172800,\"id_duelo\":\"duelo_1759795744808_8t2al6nb0\"}', 0, '2025-10-07 00:09:04'),
+(1007, 96, 97, 'desafio_duelo', 'Eduardo García te desafía a un Duelo de Ascenso!', '{\"remitente\":{\"id_usuario\":97,\"username\":\"Eduardo García\",\"email\":\"eduardogarcia080806@gmail.com\",\"id_tp_usuario\":1,\"foto_perfil\":\"https://lh3.googleusercontent.com/a/ACg8ocKg7WtQtZyJK_mHkfNOlxUb5WGI4hS3FEb7ubkCURapTgmF=s96-c\"},\"tiempoLimite\":172800,\"id_duelo\":\"duelo_1759795747528_cnp9kt059\"}', 0, '2025-10-07 00:09:07'),
+(1008, 95, 97, 'desafio_duelo', 'Eduardo García te desafía a un Duelo de Ascenso!', '{\"remitente\":{\"id_usuario\":97,\"username\":\"Eduardo García\",\"email\":\"eduardogarcia080806@gmail.com\",\"id_tp_usuario\":1,\"foto_perfil\":\"https://lh3.googleusercontent.com/a/ACg8ocKg7WtQtZyJK_mHkfNOlxUb5WGI4hS3FEb7ubkCURapTgmF=s96-c\"},\"tiempoLimite\":172800,\"id_duelo\":\"duelo_1759795747835_yjdt7am5w\"}', 0, '2025-10-07 00:09:07'),
+(1009, 91, 97, 'desafio_duelo', 'Eduardo García te desafía a un Duelo de Ascenso!', '{\"remitente\":{\"id_usuario\":97,\"username\":\"Eduardo García\",\"email\":\"eduardogarcia080806@gmail.com\",\"id_tp_usuario\":1,\"foto_perfil\":\"https://lh3.googleusercontent.com/a/ACg8ocKg7WtQtZyJK_mHkfNOlxUb5WGI4hS3FEb7ubkCURapTgmF=s96-c\"},\"tiempoLimite\":172800,\"id_duelo\":\"duelo_1759795748972_d78anande\"}', 0, '2025-10-07 00:09:08'),
+(1010, 93, 97, 'desafio_duelo', 'Eduardo García te desafía a un Duelo de Ascenso!', '{\"remitente\":{\"id_usuario\":97,\"username\":\"Eduardo García\",\"email\":\"eduardogarcia080806@gmail.com\",\"id_tp_usuario\":1,\"foto_perfil\":\"https://lh3.googleusercontent.com/a/ACg8ocKg7WtQtZyJK_mHkfNOlxUb5WGI4hS3FEb7ubkCURapTgmF=s96-c\"},\"tiempoLimite\":172800,\"id_duelo\":\"duelo_1759795749788_bqasvtyqx\"}', 0, '2025-10-07 00:09:09'),
+(1011, 85, 97, 'desafio_duelo', 'Eduardo García te desafía a un Duelo de Ascenso!', '{\"remitente\":{\"id_usuario\":97,\"username\":\"Eduardo García\",\"email\":\"eduardogarcia080806@gmail.com\",\"id_tp_usuario\":1,\"foto_perfil\":\"https://lh3.googleusercontent.com/a/ACg8ocKg7WtQtZyJK_mHkfNOlxUb5WGI4hS3FEb7ubkCURapTgmF=s96-c\"},\"tiempoLimite\":172800,\"id_duelo\":\"duelo_1759795752368_b64t27n9v\"}', 0, '2025-10-07 00:09:12'),
+(1012, 84, 97, 'desafio_duelo', 'Eduardo García te desafía a un Duelo de Ascenso!', '{\"remitente\":{\"id_usuario\":97,\"username\":\"Eduardo García\",\"email\":\"eduardogarcia080806@gmail.com\",\"id_tp_usuario\":1,\"foto_perfil\":\"https://lh3.googleusercontent.com/a/ACg8ocKg7WtQtZyJK_mHkfNOlxUb5WGI4hS3FEb7ubkCURapTgmF=s96-c\"},\"tiempoLimite\":172800,\"id_duelo\":\"duelo_1759795753436_kbir70dwv\"}', 0, '2025-10-07 00:09:13'),
+(1018, 96, 88, 'duelo_aceptado', 'Daniel Viramontes Alfaro aceptó tu desafío de undefined. Tienes 48 horas para hacer el examen.', '{\"salaId\":\"duelo_ee02bdc8-038c-495e-9282-6fa4f0ad10d7\"}', 0, '2025-10-07 00:19:04'),
+(1020, 77, 97, 'invitacion', 'Eduardo García te ha invitado a jugar Gato', '{\"salaId\":\"f50550ec-3bc4-4750-94a1-80ae840ba8bd\",\"juego\":\"Gato\"}', 0, '2025-10-07 00:37:13'),
+(1021, 79, 97, 'invitacion', 'Eduardo García te ha invitado a jugar Gato', '{\"salaId\":\"f50550ec-3bc4-4750-94a1-80ae840ba8bd\",\"juego\":\"Gato\"}', 0, '2025-10-07 00:37:14'),
+(1022, 80, 97, 'invitacion', 'Eduardo García te ha invitado a jugar Gato', '{\"salaId\":\"f50550ec-3bc4-4750-94a1-80ae840ba8bd\",\"juego\":\"Gato\"}', 0, '2025-10-07 00:37:15'),
+(1023, 77, 97, 'invitacion', 'Eduardo García te ha invitado a jugar Gato', '{\"salaId\":\"f50550ec-3bc4-4750-94a1-80ae840ba8bd\",\"juego\":\"Gato\"}', 0, '2025-10-07 00:37:15'),
+(1031, 92, 88, 'duelo_aceptado', 'Daniel Viramontes Alfaro aceptó tu desafío de undefined. Tienes 48 horas para hacer el examen.', '{\"salaId\":\"duelo_7547cb7d-c4ef-486c-b8b8-d41d56e72d9c\"}', 0, '2025-10-07 02:16:52'),
+(1033, 88, 89, 'duelo_abandonado', '¡Has ganado! Tu oponente abandonó el duelo.', '{\"id_duelo\":\"duelo_88dcdba9-3c4b-46d7-971c-07ca5af92f76\",\"razon\":\"Salida voluntaria desde el examen\"}', 0, '2025-10-07 02:21:17'),
+(1037, 89, 88, 'duelo_abandonado', '¡Tu oponente abandonó el duelo!', '{\"id_duelo\":\"duelo_06e94429-3fc5-4645-81b6-9045e9af0e92\",\"razon\":\"Salida voluntaria desde el examen\",\"abandonador\":\"Daniel Viramontes Alfaro\"}', 0, '2025-10-07 02:24:40');
 
 -- --------------------------------------------------------
 
@@ -5328,28 +5534,31 @@ CREATE TABLE `usuario` (
   `suspension_fin` datetime DEFAULT NULL,
   `token_reseteo` datetime DEFAULT NULL,
   `token_reseteo_expira` datetime DEFAULT NULL,
-  `puntos_ranking` int(11) DEFAULT 0
+  `puntos_ranking` int(11) DEFAULT 0,
+  `ultimo_examen` decimal(5,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `usuario`
 --
 
-INSERT INTO `usuario` (`id_usuario`, `username`, `apodo`, `email`, `password`, `descripcion`, `verificado`, `token`, `actualizacion`, `token_expira`, `puntos`, `id_tp_usuario`, `id_status`, `foto_perfil`, `suspension_fin`, `token_reseteo`, `token_reseteo_expira`, `puntos_ranking`) VALUES
-(77, 'Soldado Razo Sonicko ', NULL, 'diegoleonardoportillarangel@gmail.com', '$2b$10$hYaToclDHqV5A6h8MfOWOOhWmd0TadqTNhWcMAfFZ8ziiOuECyM0.', NULL, 1, NULL, NULL, NULL, 127, 1, 1, NULL, NULL, NULL, NULL, 0),
-(79, 'Konan', NULL, 's{ds@gmail.com', '$2b$10$2LH.TvL7pA.f0f2agiRGr.teT7/XU0KoEa/.k4W2aUINjbL3dwRoK', NULL, 0, NULL, NULL, NULL, 119, 1, 1, NULL, NULL, NULL, NULL, 0),
-(80, 'KONAAAAN', NULL, 'yonoeranormal@gmail.com', '$2b$10$wQFI2VMN/ejkQeIgJKxn1O1YAGL7u0DZy02rJRsXgOIOUMCsQFa8e', NULL, 0, NULL, NULL, NULL, 0, 1, 1, NULL, NULL, NULL, NULL, 0),
-(83, 'empresas amir', NULL, 'empresasamiir@gmail.com', '', NULL, 1, NULL, NULL, NULL, 0, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocJop7S07SJZx7gcLl1BUjUjUB2JVMBQ1vIN1lZdadCl0Nf86Q=s96-c', NULL, NULL, NULL, 0),
-(84, 'jkdsbf', NULL, 'padosterreneitor@gmail.com', '$2b$10$PfEB67Ww2q0p6c7GkDYZGO0IaX04ENteaTJsqU2F42CN/sx.VGCz2', NULL, 0, 'e8a2a19330bf93a3d39ea65abc8bf151', NULL, '2025-09-13 01:21:54', 0, 1, 1, NULL, NULL, NULL, NULL, 0),
-(85, 'Gael Portilla', NULL, 'gaeloctavioportillarangel@gmail.com', '', NULL, 1, NULL, NULL, NULL, 0, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocJeQGkz96ru0mUOoamCcFutJtqSnPreQRoifGciPkqTpCxNIUX4=s96-c', NULL, NULL, NULL, 0),
-(87, 'JOSÉ JOSÉ', NULL, '23301061550112@cetis155.edu.mx', '', NULL, 1, NULL, NULL, NULL, 191, 3, 1, 'https://lh3.googleusercontent.com/a/ACg8ocKtBXwgDIhRiaDLOdXrXO4jJ2EY37zCDAfXjwEhrxzbOvkb8VU=s96-c', NULL, NULL, NULL, 0),
-(88, 'Daniel Viramontes Alfaro', NULL, 'danielviramontes562@gmail.com', '', NULL, 1, NULL, NULL, NULL, 39, 3, 2, 'https://lh3.googleusercontent.com/a/ACg8ocJxyWJcUoMUPZ-df5oIWnlV0eXaQ11iQAQD8SUSIacm3ZQ-q6pc=s96-c', NULL, NULL, NULL, 20),
-(89, 'daniel vira', NULL, 'danielcrack345673@gmail.com', '', NULL, 1, NULL, NULL, NULL, 61, 3, 2, 'https://lh3.googleusercontent.com/a/ACg8ocIRfWXrnjRXvTX8WSapETlFO_Dpg3bfQM_tJ0k7sIVaJyiGdg=s96-c', NULL, NULL, NULL, 0),
-(90, 'LARIZ ALTAMIRA AARÓN ALEXANDER', NULL, '23301061550096@cetis155.edu.mx', '', NULL, 1, NULL, NULL, NULL, 2, 3, 1, 'https://lh3.googleusercontent.com/a/ACg8ocKJfMROCP-fr5BRhRFbS3NuHx19K43EOOd4spQPKn0MzLbrf5KJ=s96-c', NULL, NULL, NULL, 0),
-(91, 'Juanjose Chavez', NULL, 'juanjose.chavez.15153@gmail.com', '', NULL, 1, NULL, NULL, NULL, 0, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocIx8ySXEjBMhn3sKkMJQzB3QWH9AChTg-qU1dgisxfEyQEzug=s96-c', NULL, NULL, NULL, 0),
-(92, 'Miguel Pedroza', NULL, 'pedrozamiguel0123@gmail.com', '', NULL, 1, NULL, NULL, NULL, 2, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocLV3y1SSaTrvqJvqrvhzwdt9Nxnojw4Fap9sp0h_ctzYzGZmxdv=s96-c', NULL, NULL, NULL, 0),
-(93, 'asdasd', NULL, 'danielviramontes762@gmail.com', '$2b$10$VLOG/18HYQ7XUyNWz8UPseJhNd47EMAjnS/5lxJNOeW4UA42192pG', NULL, 1, NULL, NULL, NULL, 0, 1, 1, NULL, NULL, NULL, NULL, 0),
-(95, 'Daniel', NULL, '23301061550137@cetis155.edu.mx', '$2b$10$qxJh4yyjCtqs8ThJxSdOhOJirq40bj7HxqXVPuf5kyctrSn9da5/.', NULL, 1, NULL, NULL, NULL, 0, 1, 1, NULL, NULL, NULL, NULL, 0);
+INSERT INTO `usuario` (`id_usuario`, `username`, `apodo`, `email`, `password`, `descripcion`, `verificado`, `token`, `actualizacion`, `token_expira`, `puntos`, `id_tp_usuario`, `id_status`, `foto_perfil`, `suspension_fin`, `token_reseteo`, `token_reseteo_expira`, `puntos_ranking`, `ultimo_examen`) VALUES
+(77, 'Soldado Razo Sonicko ', NULL, 'diegoleonardoportillarangel@gmail.com', '$2b$10$hYaToclDHqV5A6h8MfOWOOhWmd0TadqTNhWcMAfFZ8ziiOuECyM0.', NULL, 1, NULL, NULL, NULL, 127, 1, 1, NULL, NULL, NULL, NULL, 0, NULL),
+(79, 'Konan', NULL, 's{ds@gmail.com', '$2b$10$2LH.TvL7pA.f0f2agiRGr.teT7/XU0KoEa/.k4W2aUINjbL3dwRoK', NULL, 0, NULL, NULL, NULL, 119, 1, 1, NULL, NULL, NULL, NULL, 0, NULL),
+(80, 'KONAAAAN', NULL, 'yonoeranormal@gmail.com', '$2b$10$wQFI2VMN/ejkQeIgJKxn1O1YAGL7u0DZy02rJRsXgOIOUMCsQFa8e', NULL, 0, NULL, NULL, NULL, 0, 1, 1, NULL, NULL, NULL, NULL, 0, NULL),
+(83, 'empresas amir', NULL, 'empresasamiir@gmail.com', '', NULL, 1, NULL, NULL, NULL, 0, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocJop7S07SJZx7gcLl1BUjUjUB2JVMBQ1vIN1lZdadCl0Nf86Q=s96-c', NULL, NULL, NULL, 0, NULL),
+(84, 'jkdsbf', NULL, 'padosterreneitor@gmail.com', '$2b$10$PfEB67Ww2q0p6c7GkDYZGO0IaX04ENteaTJsqU2F42CN/sx.VGCz2', NULL, 0, 'e8a2a19330bf93a3d39ea65abc8bf151', NULL, '2025-09-13 01:21:54', 0, 1, 1, NULL, NULL, NULL, NULL, 0, NULL),
+(85, 'Gael Portilla', NULL, 'gaeloctavioportillarangel@gmail.com', '', NULL, 1, NULL, NULL, NULL, 0, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocJeQGkz96ru0mUOoamCcFutJtqSnPreQRoifGciPkqTpCxNIUX4=s96-c', NULL, NULL, NULL, 0, NULL),
+(87, 'JOSÉ JOSÉ', NULL, '23301061550112@cetis155.edu.mx', '', NULL, 1, NULL, NULL, NULL, 191, 3, 1, 'https://lh3.googleusercontent.com/a/ACg8ocKtBXwgDIhRiaDLOdXrXO4jJ2EY37zCDAfXjwEhrxzbOvkb8VU=s96-c', NULL, NULL, NULL, 0, NULL),
+(88, 'Daniel Viramontes Alfaro', 'as', 'danielviramontes562@gmail.com', '', '', 1, NULL, NULL, NULL, 63, 3, 2, '/uploads/avatars/88_1759802622729_optimized.webp', NULL, NULL, NULL, 20, NULL),
+(89, 'daniel vira', NULL, 'danielcrack345673@gmail.com', '', NULL, 1, NULL, NULL, NULL, 62, 3, 2, 'https://lh3.googleusercontent.com/a/ACg8ocIRfWXrnjRXvTX8WSapETlFO_Dpg3bfQM_tJ0k7sIVaJyiGdg=s96-c', NULL, NULL, NULL, 0, NULL),
+(90, 'LARIZ ALTAMIRA AARÓN ALEXANDER', 'NOSE', '23301061550096@cetis155.edu.mx', '', '', 1, NULL, NULL, NULL, 2, 3, 1, 'https://lh3.googleusercontent.com/a/ACg8ocKJfMROCP-fr5BRhRFbS3NuHx19K43EOOd4spQPKn0MzLbrf5KJ=s96-c', NULL, NULL, NULL, 0, NULL),
+(91, 'Juanjose Chavez', NULL, 'juanjose.chavez.15153@gmail.com', '', NULL, 1, NULL, NULL, NULL, 0, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocIx8ySXEjBMhn3sKkMJQzB3QWH9AChTg-qU1dgisxfEyQEzug=s96-c', NULL, NULL, NULL, 0, NULL),
+(92, 'Miguel Pedroza', NULL, 'pedrozamiguel0123@gmail.com', '', NULL, 1, NULL, NULL, NULL, 2, 1, 2, 'https://lh3.googleusercontent.com/a/ACg8ocLV3y1SSaTrvqJvqrvhzwdt9Nxnojw4Fap9sp0h_ctzYzGZmxdv=s96-c', NULL, NULL, NULL, 0, NULL),
+(93, 'asdasd', NULL, 'danielviramontes762@gmail.com', '$2b$10$VLOG/18HYQ7XUyNWz8UPseJhNd47EMAjnS/5lxJNOeW4UA42192pG', NULL, 1, NULL, NULL, NULL, 0, 1, 1, NULL, NULL, NULL, NULL, 0, NULL),
+(95, 'Daniel', NULL, '23301061550137@cetis155.edu.mx', '$2b$10$qxJh4yyjCtqs8ThJxSdOhOJirq40bj7HxqXVPuf5kyctrSn9da5/.', NULL, 1, NULL, NULL, NULL, 0, 1, 1, NULL, NULL, NULL, NULL, 0, NULL),
+(96, 'JUAN JOSE CHAVEZ SANCHEZ', NULL, '23301061550073@cetis155.edu.mx', '', NULL, 1, NULL, NULL, NULL, 0, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocJrVEJjRkCyYRgyUGwl_kUWX3OZygI5wenhihxjFdRLs8GqLw=s96-c', NULL, NULL, NULL, 0, NULL),
+(97, 'Eduardo García', 'lalo', 'eduardogarcia080806@gmail.com', '', 'ninguno', 1, NULL, NULL, NULL, -5, 2, 1, 'https://lh3.googleusercontent.com/a/ACg8ocKg7WtQtZyJK_mHkfNOlxUb5WGI4hS3FEb7ubkCURapTgmF=s96-c', NULL, NULL, NULL, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -5372,6 +5581,7 @@ INSERT INTO `usuario_carrera` (`id_usuario`, `id_carrera`) VALUES
 (87, 1),
 (88, 1),
 (89, 1),
+(92, 1),
 (95, 2);
 
 -- --------------------------------------------------------
@@ -5398,7 +5608,15 @@ INSERT INTO `usuario_examen` (`id_usuario`, `id_examen`, `maximo`, `obtenido`, `
 (77, 21, 20, 0, '2025-09-15 11:14:33', '2025-09-15 11:14:42', 0.00),
 (87, 19, 20, 0, '2025-09-13 11:26:45', '2025-09-13 11:27:01', 0.00),
 (87, 20, 20, 3, '2025-09-13 11:41:13', '2025-09-13 11:41:33', 15.00),
-(88, 22, 20, 0, '2025-10-05 15:45:41', '2025-10-05 15:46:01', 0.00);
+(88, 22, 20, 0, '2025-10-05 15:45:41', '2025-10-05 15:46:01', 0.00),
+(88, 29, 0, 0, '2025-10-13 10:22:16', '2025-10-13 10:22:36', 0.00),
+(88, 30, 0, 0, '2025-10-13 10:25:27', '2025-10-13 10:25:55', 0.00),
+(88, 31, 20, 3, '2025-10-13 10:29:19', '2025-10-13 10:29:55', 15.00),
+(88, 32, 20, 4, '2025-10-13 10:35:53', '2025-10-13 10:36:22', 20.00),
+(88, 33, 20, 3, '2025-10-13 10:36:40', '2025-10-13 10:37:08', 15.00),
+(88, 34, 100, 2, '2025-10-13 10:38:36', '2025-10-13 10:38:52', 2.00),
+(89, 27, 4, 1, '2025-10-13 10:09:55', '2025-10-13 10:10:20', 25.00),
+(89, 28, 0, 0, '2025-10-13 10:15:08', '2025-10-13 10:15:47', 0.00);
 
 -- --------------------------------------------------------
 
@@ -5702,13 +5920,13 @@ ALTER TABLE `dificultad`
 -- AUTO_INCREMENT de la tabla `duelos_preguntas`
 --
 ALTER TABLE `duelos_preguntas`
-  MODIFY `id_duelo_pregunta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=451;
+  MODIFY `id_duelo_pregunta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=751;
 
 --
 -- AUTO_INCREMENT de la tabla `duelos_respuestas`
 --
 ALTER TABLE `duelos_respuestas`
-  MODIFY `id_respuesta_duelo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=491;
+  MODIFY `id_respuesta_duelo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=521;
 
 --
 -- AUTO_INCREMENT de la tabla `duelo_respuestas`
@@ -5732,7 +5950,7 @@ ALTER TABLE `estatus_pregunta`
 -- AUTO_INCREMENT de la tabla `examen`
 --
 ALTER TABLE `examen`
-  MODIFY `id_examen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id_examen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT de la tabla `examenes_grupo`
@@ -5750,7 +5968,7 @@ ALTER TABLE `grupos`
 -- AUTO_INCREMENT de la tabla `historial_duelos`
 --
 ALTER TABLE `historial_duelos`
-  MODIFY `id_duelo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id_duelo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de la tabla `materias`
@@ -5762,7 +5980,7 @@ ALTER TABLE `materias`
 -- AUTO_INCREMENT de la tabla `notificaciones`
 --
 ALTER TABLE `notificaciones`
-  MODIFY `id_notificacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=865;
+  MODIFY `id_notificacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1065;
 
 --
 -- AUTO_INCREMENT de la tabla `opcion_pregunta`
@@ -5816,7 +6034,7 @@ ALTER TABLE `tipo_usuario`
 -- AUTO_INCREMENT de la tabla `usuario`
 --
 ALTER TABLE `usuario`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=96;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=98;
 
 --
 -- Restricciones para tablas volcadas
