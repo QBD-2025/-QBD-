@@ -4,8 +4,8 @@
   "description": "Sistem for will prepare students for the university or reforce your conociments",
   "main": "configApp.js",
   "scripts": {
-    "start": "node configApp.js",
-    "dev": "nodemon configApp.js",
+    "start": "node backend/config/configApp.js",
+    "dev": "nodemon backend/config/configApp.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Equipo dinamita",

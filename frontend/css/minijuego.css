@@ -1,0 +1,164 @@
+/* ===========================================================
+Archivo: minijuego.css
+-----------------------------------------------------------
+Este archivo contiene:
+
+  1. Reset básico y estilos generales del body
+  2. Contenedor principal (.wrapper)
+  3. Contenedor del carrusel (.carousel-container)
+  4. Carrusel 3D (.carousel)
+  5. Tarjetas del carrusel (.card)
+      - Estilos normales
+      - Hover con sombra y escala
+  6. Controles y botones
+      - Botones normales
+      - Botón aleatorio con animación arcoíris
+  7. Animaciones (background rainbow)
+  -----------------------------------------------------------
+  Todos los elementos usan transiciones y sombras para
+  lograr un efecto visual moderno y llamativo.
+Fecha: [Fecha de creación o última edición]
+=========================================================== */
+
+/* ================== Reset básico y body ================== */
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Centra todo el contenido */
+  perspective: 1200px; /* Efecto 3D para el carrusel */
+  background: linear-gradient(145deg, #ededed, #949494); /* Fondo degradado gris */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: white;
+  overflow: hidden;
+  user-select: none; /* Evita selección accidental de texto */
+}
+
+/* ================== Contenedor principal (.wrapper) ================== */
+.wrapper {
+  padding: 20px 30px;
+  border: 2px solid #999;  /* Borde gris */
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  width: max-content;
+  background: linear-gradient(135deg, #0515a8, #09012c); /* Fondo azul degradado */
+}
+
+/* ================== Contenedor del carrusel ================== */
+.carousel-container {
+  width: 1000px;
+  height: 340px;
+  position: relative;
+}
+
+/* ================== Carrusel 3D ================== */
+.carousel {
+  width: 100%;
+  height: 320px;
+  position: relative;
+  transform-style: preserve-3d; /* Mantiene el efecto 3D de las tarjetas */
+  transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: grab;
+}
+
+/* ================== Tarjetas (.card) ================== */
+.card {
+  position: absolute;
+  width: 210px;
+  height: 270px;
+  left: calc(50% - 105px); /* Centra la tarjeta horizontalmente */
+  top: 30px;
+  background: #ededed; /* Color de la tarjeta */
+  border-radius: 18px;
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.2),
+    inset 0 0 10px rgba(255, 255, 255, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #06276f; /* Contraste azul */
+  cursor: pointer;
+  transition: box-shadow 0.4s ease, transform 0.4s ease;
+  backface-visibility: hidden; /* Oculta la parte trasera al girar */
+  user-select: none;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Hover de las tarjetas */
+.card:hover {
+  box-shadow:
+    0 0 25px 8px hwb(56 0% 0%),
+    0 8px 30px rgb(255, 230, 0),
+    inset 0 0 25px rgb(255, 251, 0);
+  transform: translateY(-15px) scale(1.05);
+  z-index: 10; /* Trae la tarjeta al frente */
+}
+
+/* ================== Controles y botones ================== */
+.controls {
+  margin-top: 25px;
+  text-align: center;
+}
+
+button {
+  background: linear-gradient(135deg, #f5b70bfd, #fa9702);
+  border: none;
+  color: white;
+  padding: 14px 28px;
+  margin: 0 12px;
+  font-size: 1.15rem;
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(11, 63, 245, 0.5);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  user-select: none;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+button:hover,
+button:focus-visible {
+  background: linear-gradient(135deg, #ff6600, #8f3001);
+  box-shadow: 0 8px 25px rgba(5, 47, 156, 0.85);
+  transform: translateY(-3px);
+  outline: none;
+}
+
+/* ================== Botón Aleatorio con animación RGB ================== */
+.boton-aleatorio {
+  background: linear-gradient(270deg, #ff00cc, #3333ff, #00ffcc, #ffff00, #ff6600, #ff00cc);
+  background-size: 1200% 1200%;
+  animation: rainbowBackground 8s ease infinite; /* Animación arcoíris */
+  color: #fff;
+  border: 2px solid #ffffff55;
+  font-weight: 800;
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
+  padding: 14px 28px;
+  margin: 0 12px;
+  font-size: 1.15rem;
+  border-radius: 14px;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.2s ease;
+}
+
+.boton-aleatorio:hover,
+.boton-aleatorio:focus-visible {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 0 20px 8px rgba(255, 255, 255, 0.6);
+  outline: none;
+}
+
+/* ================== Animación arcoíris ================== */
+@keyframes rainbowBackground {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}

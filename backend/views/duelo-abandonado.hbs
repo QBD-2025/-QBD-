@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Configuración de codificación -->
+    <meta charset="UTF-8">
+    
+    <!-- Configuración para que la página se adapte a dispositivos móviles -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Título de la página -->
+    <title>Document</title>
+</head>
+<body>
+    
+<!-- Contenedor principal centrado -->
+<div style="text-align: center; padding: 50px;">
+    
+    <!-- Título principal de la página -->
+    <h1>🏆 ¡Victoria por Abandono!</h1>
+    
+    <!-- Mensaje dinámico enviado desde el servidor -->
+    <p>{{mensaje}}</p>
+    
+    <!-- Botón para regresar al portal de duelos -->
+    <div style="margin-top: 30px;">
+        <button 
+            onclick="location.href='/portal'" 
+            style="background: #28a745; color: white; padding: 15px 30px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">
+            Volver al Portal de Duelos
+        </button>
+    </div>
+</div>
+
+</body>
+</html>

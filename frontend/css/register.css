@@ -1,0 +1,134 @@
+/* ==============================
+Archivo: register.css
+Estilos para la página de registro e inicio de sesión
+Incluye contenedor principal, paneles, logos, títulos, 
+botones y toggle de contraseña
+Fecha: [Fecha de creación o última edición]
+   ============================== */
+
+/* --- Fondo y contenedor principal --- */
+body {
+    /* Fondo degradado oscuro, centrado vertical y horizontal */
+    background: linear-gradient(-135deg, #0515a8, #09012c);
+    min-height: 100vh;
+    margin: 0;
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;  /* Evita que aparezca scroll */
+}
+
+/* --- Contenedor principal de registro --- */
+.registration-container {
+    display: flex;
+    width: 80vw;
+    height: 88vh;
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: none;
+    position: relative;
+}
+
+/* --- Panel izquierdo con logos y títulos --- */
+.registration-left-panel {
+    flex: 0.7;  /* Ocupa 70% del ancho del contenedor */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+}
+
+/* Eliminamos padding no deseado para alinear contenido */
+.registration-left-panel, 
+.registration-left-panel2 {
+    padding: 0 !important;
+}
+
+/* Logo principal */
+.registration-logo {
+    width: 450px;
+    height: auto;
+    max-width: 100%; /* No excede el ancho del contenedor */
+    margin-bottom: 30px;
+    filter: drop-shadow(0 0 10px rgba(0,0,0,0.3));
+    z-index: 2; /* Se asegura que esté sobre el fondo */
+}
+
+/* Logo secundario */
+.registration-logo2 {
+    width: 350px;
+    height: auto;
+    max-width: 100%;
+    margin: 0 auto 30px; /* Centrado horizontal y margen inferior */
+    filter: drop-shadow(0 0 10px rgba(0,0,0,0.3));
+    z-index: 2;
+}
+
+/* Título de la página */
+.registration-title {
+    color: white;
+    font-size: 2.5em;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    margin: 0 20px; /* Separación horizontal del borde */
+    z-index: 2;
+}
+
+/* Fondo decorativo del panel izquierdo */
+.registration-left-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1; /* Debajo de los logos y título */
+}
+
+/* --- Panel derecho con formulario --- */
+.registration-right-panel {
+    flex: 0.6;  /* Ocupa 60% del ancho del contenedor */
+    background-color: #fbfafb;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    margin: 20px;
+    z-index: 2;
+}
+
+/* Icono para mostrar/ocultar contraseña */
+.password-toggle-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 18px; /* Ajustable según necesidad */
+    user-select: none; /* Evita que el texto se seleccione */
+}
+
+/* Botón de envío del formulario */
+button[type="submit"] {
+    width: 100%;
+    padding: 14px;
+    background-color: #FFC107; /* Color amarillo distintivo */
+    color: #212529;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s; /* Animación suave al hover */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados del Examen</title>
+    <link rel="stylesheet" href="/css/resultados.css">
+</head>
+<body>
+    <div class="resultados-contenedor">
+        <!-- Título principal -->
+        <h1>Resultados del Examen - {{materia}}</h1>
+        
+        <!-- Resumen general -->
+        <div>
+            <h2>Resumen de tu desempeño</h2>
+            <p style="color: black;">Resultado: <strong>{{porcentaje}}%</strong></p>
+            <p style="color: black;">Puntos obtenidos: <strong>{{puntosTotales}} / {{totalPreguntas}}</strong></p>
+            <h2>Detalle de Respuestas ({{totalPreguntas}} preguntas)</h2>
+        </div>
+
+
+        {{#if preguntas.length}}
+            {{#each preguntas}}
+            <div class="resultado">
+                <h3>Pregunta {{sum @index 1}}</h3>
+                <p><strong>Enunciado:</strong> {{pregunta}}</p>
+
+                <p>
+                    <strong>Tu respuesta:</strong>
+                    <span class="{{#if esCorrecta}}correcta{{else}}incorrecta{{/if}}">
+                        {{textoSeleccionado}}
+                        {{#if esCorrecta}}✅{{else}}❌{{/if}}
+                    </span>
+                </p>
+
+                {{#unless esCorrecta}}
+                <p>
+                    <strong>Respuesta correcta:</strong> 
+                    <span class="correcta">{{textoCorrecto}}</span>
+                </p>
+                {{/unless}}
+            </div>
+            {{/each}}
+        {{else}}
+            <div class="resultado">
+                <p>⚠️ No se pudieron cargar los detalles de las preguntas.</p>
+            </div>
+        {{/if}}
+
+        <!-- Botones de acción -->
+        <div style="text-align:center; margin-top: 2rem;">
+            <a href="/materias">
+                <button>Volver al menú</button>
+            </a>
+            <a href="/ranking" style="margin-left: 1rem;">
+                <button>Ver ranking</button>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

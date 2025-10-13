@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gestión de Datos</title>
+
+<!-- CSS principal del editor -->
+<link rel="stylesheet" href="/css/editor.css" />
+
+<!-- Estilos internos para modales y formularios -->
+<style>
+  /* Formulario para agregar o editar un dato */
+  #formEditarDato {
+    position: fixed; /* Se fija en la pantalla */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centrado */
+    z-index: 9999; /* Encima de todo */
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    display: none; /* Inicialmente oculto */
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    max-width: 500px;
+    width: 90%;
+  }
+
+  /* Overlay general detrás de formularios y modales */
+  #overlay, #overlay-eliminar {
+    position: fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    z-index: 9998;
+  }
+
+  /* Modal de confirmación de eliminación */
+  #modal-eliminar {
+    display:none;
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,0.3);
+    z-index:10000;
+    text-align:center;
+  }
+  #modal-eliminar button { margin: 5px; }
+</style>
+</head>
+<body>
+
+<!-- Encabezado del panel de editor -->
+<header class="editor-header">
+  <div class="header-left">
+    <a href="/"><img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image-header"></a>
+  </div>
+  <div class="header-center">
+    <h1 class="editor-title">Panel de Edición</h1>
+    <p class="editor-welcome">Bienvenido {{user.username}} (EDITOR)</p>
+  </div>
+  <div class="header-right">
+    <a href="/menu_principal" class="volver-button">Volver</a>
+  </div>
+</header>
+
+<!-- Imagen decorativa del personaje editor -->
+<img src="/media/images/stuart_recargado.png" alt="Personaje Administrador" class="character-image">
+
+<!-- Contenedor principal de gestión -->
+<div class="editor-container container mt-4">
+  <h2 class="editor-subtitle mb-4">Gestión de Datos</h2>
+  <!-- Accesos rápidos a otras gestiones -->
+  <a href="/editor/encuesta" class="editor-btn">Gestión de Encuesta</a>
+  <a href="/editor" class="editor-btn">Gestión de Examenes</a>
+
+  <!-- Tabla de datos -->
+  <table class="editor-table mt-3">
+    <thead>
+      <tr>
+        <th>ID Materia</th>
+        <th>Dato</th>
+        <th>Fuente</th>
+        <th>Imagen</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Itera sobre los datos enviados desde el servidor -->
+      {{#each datos}}
+      <tr>
+        <td>{{id_materia}} - {{nombre_materia}}</td>
+        <td>{{dato}}</td>
+        <td>{{fuente}}</td>
+        <td>
+          {{#if imagen}}
+            <img src="/datos/imagen/{{id_dato}}" alt="Imagen del dato" style="max-width: 100px;" />
+          {{else}}  
+            Sin imagen
+          {{/if}}
+        </td>
+        <td>
+          <!-- Botón editar con datos almacenados en atributos -->
+          <button class="editor-btn"
+            data-id="{{id_dato}}"
+            data-dato="{{dato}}"
+            data-fuente="{{fuente}}"
+            data-id-materia="{{id_materia}}"
+            onclick="editarDatoDesdeAtributos(this)">✏️ Editar</button>
+          <!-- Botón eliminar -->
+          <button class="editor-btn btn-danger btn-eliminar" data-id="{{id_dato}}">🗑️ Eliminar</button>
+        </td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+  <!-- Botón para agregar un nuevo dato -->
+  <button class="editor-btn mt-3" onclick="agregarDato()">➕ Agregar dato</button>
+</div>
+
+<!-- Overlay oscuro para formularios y modales -->
+<div id="overlay" onclick="cerrarForm()"></div>
+<div id="overlay-eliminar" onclick="cerrarModalEliminar()"></div>
+
+<!-- Formulario oculto para agregar o editar datos -->
+<form id="formEditarDato" action="/editor/agregar-dato" method="POST" enctype="multipart/form-data">
+  <h3 id="form-titulo">Agregar Dato</h3>
+  <input type="hidden" name="id" id="editar-id">
+  <label>Dato:</label>
+  <input type="text" name="dato" id="editar-dato" required>
+  <label>ID Materia:</label>
+  <input type="number" name="id_materia" id="editar-id-materia" required>
+  <label>Fuente:</label>
+  <input type="text" name="fuente" id="editar-fuente">
+  <label>Imagen (opcional):</label>
+  <input type="file" name="imagen" id="editar-imagen" accept="image/*">
+  <button type="submit" class="editor-btn">Guardar</button>
+  <button type="button" class="editor-btn" onclick="cerrarForm()">Cancelar</button>
+</form>
+
+<!-- Modal de confirmación de eliminación -->
+<div id="modal-eliminar">
+  <h5>¿Deseas eliminar este dato?</h5>
+  <button id="btnEliminarSi" class="editor-btn btn-danger">Sí</button>
+  <button class="editor-btn btn-secondary" onclick="cerrarModalEliminar()">No</button>
+</div>
+
+<script>
+let idEliminar = null;
+
+// Asignar modal a todos los botones eliminar
+document.querySelectorAll('.btn-eliminar').forEach(btn=>{
+  btn.addEventListener('click', function(e){
+    e.preventDefault();
+    idEliminar = this.dataset.id; // Guardar ID del dato a eliminar
+    abrirModalEliminar();
+  });
+});
+
+// Funciones para mostrar/ocultar modal eliminar
+function abrirModalEliminar(){
+  document.getElementById('overlay-eliminar').style.display = 'block';
+  document.getElementById('modal-eliminar').style.display = 'block';
+}
+
+function cerrarModalEliminar(){
+  idEliminar = null;
+  document.getElementById('overlay-eliminar').style.display = 'none';
+  document.getElementById('modal-eliminar').style.display = 'none';
+}
+
+// Confirmar eliminación
+document.getElementById('btnEliminarSi').addEventListener('click', function(){
+  if(!idEliminar) return;
+  fetch(`/editor/eliminar-dato/${idEliminar}`, { method: 'DELETE' })
+    .then(res => {
+      if(res.ok) location.reload(); // Recargar tabla
+      else alert('Error al eliminar');
+    });
+  cerrarModalEliminar();
+});
+
+// Funciones para abrir/editar formulario de datos
+function cerrarForm() {
+  document.getElementById('formEditarDato').style.display = 'none';
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('formEditarDato').reset();
+}
+
+function editarDato(id, texto, fuente, id_materia) {
+  document.getElementById('form-titulo').textContent = "Editar Dato";
+  document.getElementById('editar-id').value = id;
+  document.getElementById('editar-dato').value = texto;
+  document.getElementById('editar-fuente').value = fuente || "";
+  document.getElementById('editar-id-materia').value = id_materia || "";
+  document.getElementById('formEditarDato').style.display = 'block';
+  document.getElementById('overlay').style.display = 'block';
+  document.getElementById('formEditarDato').action = "/editor/editar-dato-binario";
+}
+
+function agregarDato() {
+  document.getElementById('form-titulo').textContent = "Agregar Dato";
+  document.getElementById('editar-id').value = "";
+  document.getElementById('editar-dato').value = "";
+  document.getElementById('editar-fuente').value = "";
+  document.getElementById('editar-id-materia').value = "";
+  document.getElementById('formEditarDato').action = "/editor/agregar-dato";
+  document.getElementById('formEditarDato').style.display = 'block';
+  document.getElementById('overlay').style.display = 'block';
+}
+
+// Editar dato a partir de los atributos del botón
+function editarDatoDesdeAtributos(btn) {
+  const id = btn.dataset.id;
+  const texto = btn.dataset.dato;
+  const fuente = btn.dataset.fuente;
+  const id_materia = btn.dataset.idMateria;
+  editarDato(id, texto, fuente, id_materia);
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,356 @@
+/* ===========================================================
+Archivo: ligas.css
+-----------------------------------------------------------
+Este archivo contiene:
+1. Variables globales de colores
+2. Estilos generales del body y contenedor principal
+3. Header y navegación entre secciones
+4. Secciones y tarjetas de universidades
+5. Recursos adicionales
+6. Footer
+7. Botón flotante con animación
+8. Responsive (adaptaciones móviles)
+9. Mejoras visuales: badges y buscador
+-----------------------------------------------------------
+Todos los elementos tienen transiciones y sombras para
+dar dinamismo y jerarquía visual.
+Fecha: [Fecha de creación o última edición]
+=========================================================== */
+
+
+/* ==================== VARIABLES GLOBALES ==================== */
+:root {
+  --color-primary: #0815c5;    /* Azul principal para títulos y elementos destacados */
+  --color-secondary: #facc15;  /* Amarillo/acento para botones y bordes */
+  --color-dark: #0c0264;       /* Azul oscuro para textos importantes */
+  --color-light: #f9f9f9;      /* Fondo general claro */
+  --color-gray: #ededed;       /* Gris neutro para contenedores y tarjetas */
+}
+
+/* ==================== BODY ==================== */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Tipografía general */
+  background-color: var(--color-light);  /* Fondo claro */
+  color: var(--color-dark);              /* Color de texto principal */
+  margin: 0;                              /* Sin margen por defecto */
+  padding: 0;                             /* Sin padding por defecto */
+  line-height: 1.6;                       /* Mejor lectura */
+}
+
+/* ==================== CONTENEDOR PRINCIPAL ==================== */
+.container {
+  max-width: 1200px;             /* Limita ancho máximo para pantallas grandes */
+  margin: 0 auto;                /* Centrado horizontal */
+  padding: 1rem 2rem 3rem 2rem;  /* Espaciado interno: top, horizontal y bottom */
+  display: flex;
+  flex-direction: column;        /* Columnas verticales */
+  min-height: 100vh;             /* Ocupa toda la altura de la pantalla */
+  box-sizing: border-box;        /* Incluye padding dentro del ancho total */
+}
+
+/* ==================== ENCABEZADO ==================== */
+header {
+  width: 100%;                    /* Ocupa todo el ancho */
+  text-align: center;             /* Texto centrado */
+  background-color: var(--color-gray); /* Fondo gris */
+  padding: 2rem;                  /* Espaciado interno */
+  border-bottom: 4px solid var(--color-secondary); /* Borde inferior amarillo */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* Sombra ligera */
+  margin-bottom: 3rem;            /* Separación con el contenido */
+  box-sizing: border-box;          /* Padding incluido en ancho */
+  border-radius: 10px;            /* Bordes redondeados */
+}
+
+header h1 {
+  font-size: 2.5rem;              /* Tamaño de título grande */
+  color: var(--color-primary);    /* Color azul principal */
+  margin-bottom: 0.5rem;          /* Espacio debajo */
+}
+
+header p {
+  font-size: 1.1rem;              /* Texto descriptivo */
+  color: var(--color-dark);       /* Azul oscuro */
+  margin: 0;                      /* Sin margen */
+}
+
+/* ==================== NAVEGACIÓN ENTRE SECCIONES ==================== */
+.nav-secciones {
+  display: flex;                  /* Layout en fila */
+  justify-content: center;        /* Centrado horizontal */
+  margin-bottom: 2rem;            /* Separación inferior */
+  flex-wrap: wrap;                /* Se ajusta en pantallas pequeñas */
+  gap: 0.5rem;                    /* Espacio entre botones */
+}
+
+.nav-btn {
+  background-color: white;          /* Fondo blanco */
+  border: 2px solid var(--color-primary); /* Borde azul */
+  color: var(--color-primary);      /* Texto azul */
+  padding: 0.7rem 1.5rem;           /* Espaciado interno */
+  border-radius: 30px;              /* Botón redondeado */
+  cursor: pointer;                  /* Indicador de clic */
+  font-weight: 600;                 /* Texto semi-negrita */
+  transition: all 0.3s;             /* Suaviza cambios de hover */
+}
+
+.nav-btn:hover, .nav-btn.active {
+  background-color: var(--color-primary); /* Fondo azul al pasar mouse o activo */
+  color: white;                            /* Texto blanco */
+}
+
+/* ==================== SECCIONES ==================== */
+.seccion {
+  display: none;                    /* Ocultas por defecto */
+  margin-bottom: 3rem;              /* Separación inferior */
+  padding: 2rem;                     /* Espaciado interno */
+  background-color: var(--color-gray); /* Fondo gris */
+  border-radius: 10px;               /* Bordes redondeados */
+  box-shadow: 0 4px 14px rgba(0,0,0,0.1); /* Sombra ligera */
+}
+
+.seccion.activa {
+  display: block;                  /* Visible solo si tiene clase 'activa' */
+}
+
+.seccion h2 {
+  text-align: center;              /* Título centrado */
+  color: var(--color-primary);     /* Azul principal */
+  font-size: 1.8rem;               /* Tamaño de subtítulo */
+  margin-bottom: 2rem;             /* Separación inferior */
+  padding-bottom: 0.5rem;          /* Padding debajo */
+  border-bottom: 2px solid var(--color-secondary); /* Línea amarilla */
+}
+
+/* ==================== LISTA DE UNIVERSIDADES ==================== */
+.universidades-lista {
+  display: grid;                          /* Layout tipo grid */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Columnas adaptables */
+  gap: 1.5rem;                            /* Espacio entre tarjetas */
+}
+
+.uni-card {
+  display: flex;                  /* Layout horizontal */
+  align-items: center;            /* Centrado vertical */
+  gap: 1rem;                      /* Separación entre elementos internos */
+  background-color: white;         /* Fondo blanco */
+  border-radius: 10px;            /* Bordes redondeados */
+  text-decoration: none;           /* Sin subrayado en links */
+  color: var(--color-dark);       /* Texto azul oscuro */
+  padding: 1.2rem;                /* Espaciado interno */
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+  transition: transform 0.2s, box-shadow 0.2s; /* Animación hover */
+  position: relative;             /* Para botón info posicionado */
+}
+
+.uni-card:hover {
+  transform: translateY(-5px);   /* Levanta tarjeta al pasar mouse */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Sombra más grande */
+}
+
+.uni-card img {
+  width: 80px;                     /* Tamaño logo */
+  height: 80px;
+  object-fit: contain;             /* Mantiene proporción */
+  flex-shrink: 0;                  /* No se reduce */
+  border-radius: 8px;              /* Bordes redondeados */
+}
+
+.uni-card h3 {
+  margin: 0;
+  font-size: 1.1rem;               /* Nombre universidad */
+  color: var(--color-primary);     /* Azul */
+}
+
+.uni-card p {
+  margin: 0;
+  font-size: 0.9rem;               /* Descripción breve */
+  color: #555;                     /* Gris oscuro */
+}
+
+/* ==================== BOTÓN INFO (?) ==================== */
+.info-btn {
+  position: absolute;           /* Posición dentro de tarjeta */
+  top: 8px;
+  right: 8px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 50%;           /* Botón redondo */
+  width: 26px;
+  height: 26px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 26px;            /* Centrado vertical */
+  text-align: center;
+}
+
+.info-btn:hover {
+  background: var(--color-dark);  /* Cambia a azul oscuro */
+}
+
+/* ==================== RECURSOS ADICIONALES ==================== */
+.recursos-lista {
+  display: grid;                          /* Grid responsive */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.recurso-card {
+  background-color: white;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.recurso-card:hover {
+  transform: translateY(-5px);  /* Levanta tarjeta */
+}
+
+.recurso-card h3 {
+  color: var(--color-primary);
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.recurso-card ul {
+  padding-left: 1.2rem;
+}
+
+.recurso-card li {
+  margin-bottom: 0.5rem;
+}
+
+.recurso-card a {
+  color: var(--color-dark);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+  display: block;
+  padding: 0.3rem 0;
+}
+
+.recurso-card a:hover {
+  color: var(--color-secondary);
+}
+
+/* ==================== FOOTER ==================== */
+footer {
+  text-align: center;
+  padding: 2rem 1rem;
+  font-size: 0.9rem;
+  color: #888;
+  border-top: 1px solid #ddd;
+  margin-top: auto;
+}
+
+/* ==================== BOTÓN FLOTANTE ==================== */
+.floating-button {
+  position: fixed;              /* Siempre visible */
+  bottom: 25px;
+  right: 25px;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;           /* Circular */
+  background-color: var(--color-secondary);
+  color: #333;
+  border: none;
+  border-bottom: 4px solid #e0a800; /* Efecto 3D */
+  font-size: 28px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+  z-index: 1000;                /* Encima de todo */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 2s infinite; /* Animación de latido */
+}
+
+.floating-button:hover {
+  background-color: #ffd44f;
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+.floating-button:active {
+  transform: translateY(2px);
+  border-bottom: 2px solid #e0a800;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+
+/* ==================== ANIMACIÓN PULSE ==================== */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  .universidades-lista,
+  .recursos-lista {
+    grid-template-columns: 1fr;  /* Una columna en móvil */
+  }
+  
+  .floating-button {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    bottom: 20px;
+    right: 20px;
+  }
+  
+  header h1 {
+    font-size: 2rem;             /* Ajuste título */
+  }
+  
+  .seccion h2 {
+    font-size: 1.6rem;           /* Ajuste subtítulo */
+  }
+  
+  .nav-secciones {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .nav-btn {
+    width: 80%;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* ==================== MEJORAS VISUALES ==================== */
+.badge {
+  display: inline-block;
+  background-color: var(--color-secondary); /* Amarillo */
+  color: var(--color-dark);                  /* Texto oscuro */
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  margin-left: 0.5rem;
+}
+
+.search-box {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;         /* Centrado de input */
+}
+
+.search-box input {
+  padding: 0.8rem 1.2rem;
+  border: 2px solid #ddd;
+  border-radius: 30px;
+  width: 100%;
+  max-width: 400px;                /* Tamaño máximo */
+  font-size: 1rem;
+}
+
+.search-box input:focus {
+  outline: none;                  /* Quita borde por defecto */
+  border-color: var(--color-primary); /* Resalta en azul al enfocar */
+}
