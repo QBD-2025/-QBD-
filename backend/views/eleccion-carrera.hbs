@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eleccion de carrera</title>
+</head>
+<body>
+    <h1>¡Vaya al parecer no tienes una carrera!</h1>
+    <br>
+    <p>No te preocupes puedes elegirla aqui mismo:</p>
+
+    <form action="/asignar-carrera" method="POST">
+        <label for="carrera">Seleccion una carrera</label>
+        <select name="id_carrera" id="carrera" required>
+            <option value="" disabled selected>Selecciona una carrera</option>
+            {{#each carreras}}
+                <option value="{{this.id_carrera}}">{{this.descripcion}}</option>
+            {{/each}}
+        </select>
+    <br><br>
+    <button type="submit">Guardar Carrera</button>
+    </form>
+
+</body>
+</html>

@@ -38,5 +38,12 @@ const isAuthenticated = (req, res, next) => {
   req.session.user ? next() : res.redirect('/login');
 };
 
+const hasCarrera = (req, res, next) => {
+  if (req.session.user?.id_carrera) {
+    return next();
+  }
+  return res.redirect('sin-carrera');
+}
+
 // Exportar el middleware y Multer
 module.exports = { isAuthenticated, upload };

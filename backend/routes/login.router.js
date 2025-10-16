@@ -49,6 +49,19 @@ router.get('/login', (req, res) => {
     });
 });
 
+router.get('/sin-carrera', async (req, res) =>{
+    try {
+        const [carreras] = await req.pool.query(
+            `SELECT id_carrera, descripcion
+            FROM carrera`
+            );
+    res.render('eleccion-carrera', {carreras, layout:false});
+    } catch (error) {
+        console.error(error)
+        res.status(500).send('Error al cargar carreras')
+    }
+})
+
 // Procesar login
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
@@ -56,8 +69,8 @@ router.post('/login', async (req, res) => {
     try {
         const [rows] = await req.pool.query(
             `SELECT id_usuario, username, email, password, verificado, 
-                    id_tp_usuario, id_status, suspension_fin, foto_perfil
-             from usuario WHERE email = ?`,
+            id_tp_usuario, id_status, suspension_fin, foto_perfil
+            from usuario WHERE email = ?`,
             [email]
         );
 
@@ -110,6 +123,26 @@ router.post('/login', async (req, res) => {
             [user.id_usuario]
         );
 
+        if (!carreraResult || carreraResult.length === 0){
+            // Guardamos sesión parcial con userId y rol
+            req.session.user = {
+                id_usuario: user.id_usuario,
+                username: user.username,
+                email: user.email,
+                id_tp_usuario: user.id_tp_usuario,
+                avatarUrl: user.foto_perfil || '/media/images/default_avatar.png',
+                id_carrera: null
+            };
+
+            // Traemos las carreras disponibles
+            const [carreras] = await req.pool.query(
+                `SELECT id_carrera, descripcion
+                FROM carrera`
+            );
+
+            return res.redirect('/sin-carrera'); // redirigimos
+        }
+
         // Crear sesión CON id_carrera
         req.session.user = {
             id_usuario: user.id_usuario,
@@ -155,7 +188,45 @@ router.post('/login', async (req, res) => {
         console.error('Error al iniciar sesión:', error);
         return res.redirect('/login?error=serverError');
     }
-});
+});+
+
+router.post('/asignar-carrera', isAuthenticated, async (req,res) =>{
+    const userId = req.session.user?.id_usuario;
+    const {id_carrera} = req.body;
+    console.log('userId:', userId, 'id_carrera:', id_carrera);
+
+    if (!userId || !id_carrera) {
+        return res.status(400).send('Usuario o carrera no definidos');
+    }
+
+
+    try{
+        await req.pool.query(
+            'INSERT INTO usuario_carrera (id_usuario, id_carrera) VALUES (?, ?)',
+            [userId, id_carrera]
+        );  
+        req.session.user.id_carrera=id_carrera;
+
+        switch (req.session.user.id_tp_usuario) {
+            case 3:
+                return res.redirect('/admin');
+            case 2:
+                return res.redirect('/editor/panel');
+            default: {
+                    const [datos] = await req.pool.query('SELECT dato, imagen FROM dato_curioso ORDER BY RAND() LIMIT 1');
+                    const datoCurioso = datos[0];
+                    return res.render('dato-sesion', {
+                        layout: false,
+                        dato: datoCurioso.dato,
+                        imagen: datoCurioso.imagen ? datoCurioso.imagen.toString('base64') : null,
+                    });
+                }
+        }
+    } catch (error) {
+        console.error('Error al guardar carrera:', error);
+        res.status(500).send('Error al asignar carrera');
+    }
+})
 
 // Presentación
 router.get('/presentacion', (req, res) => {

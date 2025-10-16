@@ -1,5 +1,4 @@
 // En tu archivo ahorcadoR.js
-
 const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
@@ -24,10 +23,6 @@ router.get('/ahorcado/materias', async (req, res) => {
         res.status(500).json([]);
     }
 });
-// ...
-
-
-// ... (El resto de tus rutas /ahorcado y /ahorcado/:salaId se quedan igual) ...
 
 router.get('/ahorcado', (req, res) => {
     const nuevaSalaId = uuidv4();

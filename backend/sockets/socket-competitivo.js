@@ -322,25 +322,6 @@ function buscarPareja(pool, modo) {
 // ================================================================
 // FUNCIÓN: Verificar colas periódicamente (NUEVA)
 // ================================================================
-function verificarColasPeriodicamente(io) {
-    setInterval(() => {
-        console.log(`[ESTADO COLAS]: 
-            General: ${poolGeneral.length}
-            Carrera Fácil: ${poolCarreraFacil.length}
-            Carrera Normal: ${poolCarreraNormal.length}
-            Carrera Difícil: ${poolCarreraDificil.length}
-            Duelos Activos: ${activeDuels.size}
-            Usuarios Conectados: ${usuariosConectados.size}`
-        );
-        
-        // Forzar búsqueda de parejas periódicamente
-        buscarPareja(poolGeneral, 'general');
-        buscarPareja(poolCarreraFacil, 'carrera');
-        buscarPareja(poolCarreraNormal, 'carrera');
-        buscarPareja(poolCarreraDificil, 'carrera');
-        
-    }, 5000); // Cada 5 segundos
-}
 
 // ================================================================
 // FUNCIÓN: Actualizar puntos de carrera
@@ -443,7 +424,6 @@ module.exports = (io, socket) => {
     
     // Iniciar verificación periódica de colas
     if (!global.colasIniciadas) {
-        verificarColasPeriodicamente(io);
         global.colasIniciadas = true;
     }
     
