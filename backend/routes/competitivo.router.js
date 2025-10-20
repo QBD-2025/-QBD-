@@ -364,8 +364,8 @@ router.get('/duelo/enfrentamiento/:salaId', async (req, res) => {
 router.get('/api/ranking/global', async (req, res) => {
     try {
         const [jugadores] = await pool.query(`
-            SELECT u.id_usuario, u.username, u.foto_perfil, u.puntos
-            FROM usuario u ORDER BY u.puntos DESC LIMIT 100;
+            SELECT u.id_usuario, u.username, u.foto_perfil, u.puntos, uc.id_carrera
+            FROM usuario u LEFT JOIN usuario_carrera uc ON u.id_usuario = uc.id_usuario ORDER BY u.puntos DESC LIMIT 100;
         `);
         res.json(jugadores);
     } catch (error) {
@@ -447,6 +447,15 @@ router.post('/desafiar/duelo/:idOponente', async (req, res) => {
     try {
         await conn.beginTransaction();
 
+        const [carreraRetador] = await conn.query('SELECT id_carrera FROM usuario_carrera WHERE id_usuario=? LIMIT 1', [idRemitente])
+        if (carreraRetador.length === 0) {
+            await conn.rollback();
+            await conn.release();
+            return res.status(400).json({message: 'No tienes carrera asignada'})
+        }
+
+        const idCarrera = carreraRetador[0].id_carrera;
+
         const id_duelo = `duelo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const fechaLimite = new Date();
         fechaLimite.setHours(fechaLimite.getHours() + 48);
@@ -460,12 +469,23 @@ router.post('/desafiar/duelo/:idOponente', async (req, res) => {
         // Limpiar preguntas por seguridad
         await conn.query(`DELETE FROM duelos_preguntas WHERE id_duelo = ?`, [id_duelo]);
 
-        // Generar preguntas aleatorias
-        const [preguntas] = await conn.query(`SELECT id_pregunta, pregunta FROM pregunta GROUP BY pregunta ORDER BY RAND() LIMIT ?`, [NUM_PREGUNTAS_POR_DUELO]);
+        // Generar preguntas de carrera aleatorias
+        const [preguntas] = await conn.query(`
+            SELECT DISTINCT p.id_pregunta, p.pregunta 
+            FROM pregunta p
+            INNER JOIN carrera_materia cm ON p.id_materia = cm.id_materia
+            WHERE cm.id_carrera = ?
+            ORDER BY RAND() 
+            LIMIT ?
+        `, [idCarrera, NUM_PREGUNTAS_POR_DUELO]);
         if (!preguntas || preguntas.length === 0) {
             await conn.rollback();
             await conn.release();
             return res.status(500).json({ message: 'No hay preguntas disponibles' });
+        }
+
+        if (preguntas.length < NUM_PREGUNTAS_POR_DUELO) {
+            console.warn (`Solo se encontraron ${preguntas.length} preguntas para la carrera ${idCarrera}`)
         }
 
         for (let i = 0; i < preguntas.length; i++) {
@@ -1046,49 +1066,6 @@ router.post('/duelo/abandonar/:salaId', async (req, res) => {
         // El que abandona pierde, el otro gana
         const idGanador = esRetador ? dueloData.id_defensor : dueloData.id_retador;
         const idPerdedor = idUsuario;
-
-        // ⚠️ OPCIÓN 1: SIN PENALIZACIÓN (ACTUAL)
-        // Solo se actualiza el estado, no se tocan los puntos
-        
-        /* ⚠️ OPCIÓN 2: CON PENALIZACIÓN (COMENTADO - DESCOMENTAR SI SE DESEA USAR)
-        
-        // Obtener rankings
-        const puestoRetador = await obtenerRankingUsuario(dueloData.id_retador);
-        const puestoDefensor = await obtenerRankingUsuario(dueloData.id_defensor);
-
-        // Calcular puntos (el que abandona pierde más puntos)
-        const { puntosRetador, puntosDefensor } = calcularPuntosSegunRanking(
-            puestoRetador,
-            puestoDefensor,
-            !esRetador // El ganador es el que NO abandonó
-        );
-
-        // Penalización extra por abandono (ajustar valor según necesidad)
-        const PENALIZACION_ABANDONO = -10; // Cambiar este valor para ajustar penalización
-        const puntosAbandonador = esRetador ? puntosRetador + PENALIZACION_ABANDONO : puntosDefensor + PENALIZACION_ABANDONO;
-        const puntosGanador = esRetador ? puntosDefensor : puntosRetador;
-
-        // Actualizar puntos (asegurarse que no baje de 0)
-        await conn.query(
-            'UPDATE usuario SET puntos = GREATEST(0, puntos + ?) WHERE id_usuario = ?',
-            [puntosAbandonador, idPerdedor]
-        );
-
-        await conn.query(
-            'UPDATE usuario SET puntos = puntos + ? WHERE id_usuario = ?',
-            [puntosGanador, idGanador]
-        );
-
-        // Registrar en historial con puntos
-        await conn.query(`
-            INSERT INTO historial_duelos 
-            (id_duelo, id_retador, id_defensor, id_ganador, puntos_retador, puntos_defensor, fecha_duelo)
-            VALUES (?, ?, ?, ?, ?, ?, NOW())
-        `, [salaId, dueloData.id_retador, dueloData.id_defensor, idGanador, 
-            esRetador ? puntosAbandonador : puntosGanador,
-            esRetador ? puntosGanador : puntosAbandonador]);
-        
-        */
 
         // Registrar en historial SIN modificar puntos (0 puntos para ambos)
         await conn.query(`

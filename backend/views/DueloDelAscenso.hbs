@@ -55,11 +55,6 @@
     // Contenedor principal del ranking
     const rankingGlobalContainer = document.getElementById('rankingGlobalContainer');
     
-    /**
-     * Función para renderizar el ranking de jugadores
-     * @param {HTMLElement} container - contenedor donde se renderiza el ranking
-     * @param {Array} jugadores - lista de jugadores con datos
-     */
     function renderizarRanking(container, jugadores) {
         // Guardar el header para mantenerlo
         const header = container.querySelector('.ranking-header');
@@ -79,12 +74,13 @@
 
         // Encontrar la posición del usuario actual
         const miIndex = jugadores.findIndex(j => j.id_usuario === user.id_usuario);
+        const miCarrera = user.id_carrera;
 
         // Crear los elementos HTML para cada jugador
         jugadores.forEach((jugador, i) => {
             const item = document.createElement('div');
             const esYo = jugador.id_usuario === user.id_usuario;
-            const puedoDesafiar = i < miIndex; // Solo puedo desafiar a jugadores por encima
+            const puedoDesafiar = i < miIndex && jugador.id_carrera === miCarrera;
 
             item.innerHTML = `
                 <img src="${jugador.foto_perfil || '/media/images/default_avatar.png'}" alt="Avatar">
@@ -105,9 +101,6 @@
         });
     }
 
-    /**
-     * Función para cargar el ranking global desde la API
-     */
     async function cargarRankingGlobal() {
         const response = await fetch('/api/ranking/global');
         const jugadores = await response.json();

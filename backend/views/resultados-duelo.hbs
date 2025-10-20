@@ -19,14 +19,19 @@
         .respuestas-comparacion { margin-top: 10px; }
         .mi-respuesta, .oponente-respuesta { margin: 8px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; }
         .info-duelo { background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .resultado-final { margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center; }
+        .puntos-ganados { font-size: 1.8em; margin: 20px 0; padding: 15px; border-radius: 8px; }
+        .puntos-positivos { background: #d4edda; color: #155724; }
+        .puntos-negativos { background: #f8d7da; color: #721c24; }
+        .puntos-empate { background: #fff3cd; color: #856404; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--gris-claro);
             color: var(--texto-oscuro);
             min-height: 100vh;
             line-height: 1.6;
-            padding-top: 100px; /* Añade esto para bajar todo el contenido */
-            }
+            padding-top: 100px;
+        }
     </style>
 </head>
 <body>
@@ -47,6 +52,7 @@
             <div class="puntaje-card">
                 <h4>Tu puntaje</h4>
                 <div class="puntaje-numero">{{miPuntaje}}/10</div>
+                <div>Preguntas correctas</div>
             </div>
             
             <div class="puntaje-card">
@@ -58,6 +64,7 @@
                         <span class="oponente-pendiente">En progreso...</span>
                     {{/if}}
                 </div>
+                <div>Preguntas correctas</div>
             </div>
         </div>
 
@@ -69,12 +76,61 @@
         </div>
         {{/unless}}
 
+        {{#if ambosTerminaron}}
+        <div class="resultado-final">
+            <h3>🏆 Resultado Final</h3>
+            
+            {{#if (eq miPuntaje oponentePuntaje)}}
+                <h4 style="color: #ffc107; font-size: 1.5em;">¡Empate!</h4>
+                <p style="font-size: 1.2em;">Ambos obtuvieron {{miPuntaje}} preguntas correctas</p>
+                <div class="puntos-ganados puntos-empate">
+                    <strong>0 puntos de ranking</strong>
+                    <p style="margin: 10px 0 0 0; font-size: 0.9em;">No hay cambios en el ranking</p>
+                </div>
+            {{else}}
+                {{#if (gt miPuntaje oponentePuntaje)}}
+                    <h4 style="color: #28a745; font-size: 1.5em;">¡Victoria! 🎉</h4>
+                    <p style="font-size: 1.2em;">{{miPuntaje}} vs {{oponentePuntaje}}</p>
+                    
+                    {{#if puntosGanados}}
+                        <div class="puntos-ganados puntos-positivos">
+                            <strong>+{{puntosGanados}} puntos de ranking</strong>
+                            {{#if infoRanking}}
+                                <p style="margin: 10px 0 0 0; font-size: 0.9em;">
+                                    Tu posición: #{{#if esRetador}}{{infoRanking.puestoRetador}}{{else}}{{infoRanking.puestoDefensor}}{{/if}} | 
+                                    Oponente: #{{#if esRetador}}{{infoRanking.puestoDefensor}}{{else}}{{infoRanking.puestoRetador}}{{/if}}
+                                </p>
+                            {{/if}}
+                        </div>
+                    {{/if}}
+                    <p style="margin-top: 15px;">¡Excelente desempeño! Sigue así 💪</p>
+                {{else}}
+                    <h4 style="color: #dc3545; font-size: 1.5em;">Derrota 😔</h4>
+                    <p style="font-size: 1.2em;">{{miPuntaje}} vs {{oponentePuntaje}}</p>
+                    
+                    {{#if puntosGanados}}
+                        <div class="puntos-ganados puntos-negativos">
+                            <strong>{{puntosGanados}} puntos de ranking</strong>
+                            {{#if infoRanking}}
+                                <p style="margin: 10px 0 0 0; font-size: 0.9em;">
+                                    Tu posición: #{{#if esRetador}}{{infoRanking.puestoRetador}}{{else}}{{infoRanking.puestoDefensor}}{{/if}} | 
+                                    Oponente: #{{#if esRetador}}{{infoRanking.puestoDefensor}}{{else}}{{infoRanking.puestoRetador}}{{/if}}
+                                </p>
+                            {{/if}}
+                        </div>
+                    {{/if}}
+                    <p style="margin-top: 15px;">No te desanimes. ¡La próxima será mejor! 💪</p>
+                {{/if}}
+            {{/if}}
+        </div>
+        {{/if}}
+
         <!-- Resultados por pregunta -->
-        <h3>Detalle de respuestas ({{respuestas.length}} preguntas)</h3>
+        <h3 style="margin-top: 40px;">📝 Detalle de respuestas ({{respuestas.length}} preguntas)</h3>
         
         {{#each respuestas}}
         <div class="pregunta-resultado">
-            <h4>Pregunta {{orden}} de 10</h4>
+            <h4>Pregunta {{orden}} de {{../respuestas.length}}</h4>
             <p><strong>{{this.pregunta}}</strong></p>
             
             <div class="respuestas-comparacion">
@@ -103,50 +159,10 @@
         </div>
         {{/each}}
 
-        {{#if ambosTerminaron}}
-        <div class="resultado-final" style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center;">
-            <h3>Resultado Final</h3>
-            {{#if (eq miPuntaje oponentePuntaje)}}
-                <h4 style="color: #ffc107;">¡Empate! Ambos obtuvieron {{miPuntaje}} puntos</h4>
-                <p>Fue un duelo muy reñido. No hay cambios en el ranking.</p>
-            {{else}}
-                {{#if (gt miPuntaje oponentePuntaje)}}
-                    <h4 style="color: #28a745;">¡Ganaste! {{miPuntaje}} vs {{oponentePuntaje}}</h4>
-                    {{#if puntosGanados}}
-                        <div style="font-size: 1.5em; margin: 15px 0;">
-                            <span style="color: #28a745; font-weight: bold;">+{{puntosGanados}} puntos</span>
-                        </div>
-                        {{#if infoRanking}}
-                            <p style="color: #6c757d;">
-                                Tu ranking: #{{infoRanking.puestoRetador}} | 
-                                Oponente: #{{infoRanking.puestoDefensor}}
-                            </p>
-                        {{/if}}
-                    {{/if}}
-                    <p>¡Excelente desempeño!</p>
-                {{else}}
-                    <h4 style="color: #dc3545;">Perdiste: {{miPuntaje}} vs {{oponentePuntaje}}</h4>
-                    {{#if puntosGanados}}
-                        <div style="font-size: 1.5em; margin: 15px 0;">
-                            <span style="color: #dc3545; font-weight: bold;">{{puntosGanados}} puntos</span>
-                        </div>
-                        {{#if infoRanking}}
-                            <p style="color: #6c757d;">
-                                Tu ranking: #{{infoRanking.puestoRetador}} | 
-                                Oponente: #{{infoRanking.puestoDefensor}}
-                            </p>
-                        {{/if}}
-                    {{/if}}
-                    <p>Mejor suerte la próxima vez. Sigue practicando.</p>
-                {{/if}}
-            {{/if}}
-        </div>
-        {{/if}}
-
         <!-- Botón para volver -->
         <div style="text-align: center; margin-top: 30px;">
             <a href="/portal" class="btn-volver">
-                Volver al Portal de Duelos
+                🏠 Volver al Portal de Duelos
             </a>
         </div>
     </div>
@@ -164,7 +180,7 @@
                 return;
             }
             
-            fetch('/duelo/estado/{{duelo.id_duelo}}')
+            fetch('/competitivo/duelo/estado/{{duelo.id_duelo}}')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('La respuesta del servidor no fue OK: ' + response.status);
