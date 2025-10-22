@@ -77,7 +77,7 @@ app.set('views', path.join(__dirname, '../views'));
 // ------------------ Middlewares ------------------
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use('/uploads', express.static(path.join(__dirname, '../../frontend/uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '../../frontend/media/uploads')));
 app.use('/media', express.static(path.join(__dirname, '../../frontend/media')));
 app.use('/css', express.static(path.join(__dirname, '../../frontend/css')));
 app.use('/js', express.static(path.join(__dirname, '../../frontend/js')));
@@ -135,8 +135,9 @@ const sopaLetrasR = require('../routes/sopa_letras.router.js');
 const usuarioR = require('../routes/usuario.router.js');
 const verificaAdminR = require('../routes/verificaAdmin.router.js');
 const verificationR = require('../routes/verification.router.js');
-
+const duelo_competitivo =require('../routes/duelo_competitivo.js')
 // Montar routers
+app.use('/',duelo_competitivo);
 app.use('/', generalR);
 app.use('/', adminR);
 app.use('/', examenR);

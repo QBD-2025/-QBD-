@@ -29,7 +29,7 @@ router.get('/auth/google/callback',
                     username: user.username,
                     email: user.email,
                     id_tp_usuario: user.id_tp_usuario,
-                    avatarUrl: user.foto_perfil || '/media/images/default_avatar.png',
+                    avatarUrl: user.foto_perfil || '/uploads/default_avatar.png',
                     id_carrera: null
                 };
                 global.sesionesActivas.add(user.id_usuario);
@@ -42,7 +42,7 @@ router.get('/auth/google/callback',
                 username: user.username,
                 email: user.email,
                 id_tp_usuario: user.id_tp_usuario,
-                avatarUrl: user.foto_perfil || '/media/images/default_avatar.png',
+                avatarUrl: user.foto_perfil || '/uploads/default_avatar.png',
                 id_carrera: carreraResult[0].id_carrera
             };
 

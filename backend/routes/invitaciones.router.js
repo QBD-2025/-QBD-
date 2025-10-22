@@ -1,21 +1,361 @@
-// router/invitacionesR.js(actual)
+// router/invitaciones.router.js - VERSIÓN CORREGIDA
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const router = express.Router();
 const pool = require('../db/conexion');
 
 // ================================================================
-// 📨 INVITAR A UNA SALA EXISTENTE (cooperativo o casual)
+// ✅ ACEPTAR NOTIFICACIÓN - VERSIÓN CORREGIDA
+// ================================================================
+router.post('/aceptar/:idNotificacion', async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ 
+            success: false, 
+            message: 'Debes iniciar sesión' 
+        });
+    }
+
+    const { idNotificacion } = req.params;
+    const userId = req.session.user.id_usuario;
+
+    console.log('===========================================');
+    console.log('[ACEPTAR] ID Notificación:', idNotificacion);
+    console.log('[ACEPTAR] Usuario:', userId);
+    console.log('===========================================');
+
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        // 1️⃣ Obtener notificación
+        const [notificaciones] = await conn.query(
+            `SELECT * FROM notificaciones WHERE id_notificacion = ? AND id_usuario_destinatario = ?`,
+            [idNotificacion, userId]
+        );
+
+        if (notificaciones.length === 0) {
+            await conn.rollback();
+            await conn.release();
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Notificación no encontrada' 
+            });
+        }
+
+        const notificacion = notificaciones[0];
+        let extraData = {};
+
+        try {
+            extraData = JSON.parse(notificacion.extra_data || '{}');
+        } catch (err) {
+            console.warn('⚠️ JSON inválido en extra_data');
+            extraData = {};
+        }
+
+        console.log('[ACEPTAR] Tipo:', notificacion.tipo);
+        console.log('[ACEPTAR] Extra Data:', extraData);
+
+        // ════════════════════════════════════════════════════════
+        // 🎯 DUELO DE ASCENSO (ASÍNCRONO 48H)
+        // ════════════════════════════════════════════════════════
+        if (notificacion.tipo === 'desafio_duelo' && extraData.id_duelo) {
+            const id_duelo = extraData.id_duelo;
+
+            console.log('[ACEPTAR DUELO ASCENSO] ID Duelo:', id_duelo);
+
+            // Verificar que el duelo existe y está pendiente
+            const [dueloInfo] = await conn.query(`
+                SELECT * FROM duelos WHERE id_duelo = ?
+            `, [id_duelo]);
+
+            if (dueloInfo.length === 0) {
+                // Duelo no existe, eliminar notificación
+                await conn.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
+                await conn.commit();
+                await conn.release();
+
+                return res.status(410).json({
+                    success: false,
+                    message: 'El duelo ya no existe o expiró'
+                });
+            }
+
+            const duelo = dueloInfo[0];
+
+            // Verificar fecha límite
+            if (new Date() > new Date(duelo.fecha_limite)) {
+                // Duelo expirado
+                await conn.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
+                await conn.query(`DELETE FROM duelos WHERE id_duelo = ?`, [id_duelo]);
+                await conn.commit();
+                await conn.release();
+
+                return res.status(410).json({
+                    success: false,
+                    message: 'El duelo ha expirado (más de 48 horas)'
+                });
+            }
+
+            // ✅ ELIMINAR LA NOTIFICACIÓN (CRÍTICO)
+            await conn.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
+
+            console.log('[ACEPTAR DUELO ASCENSO] ✅ Notificación eliminada');
+
+            // Actualizar estado del duelo a 'en_progreso' (opcional)
+            await conn.query(`
+                UPDATE duelos SET estado = 'en_progreso' WHERE id_duelo = ?
+            `, [id_duelo]);
+
+            // Notificar al retador (opcional)
+            const io = req.app.get('io');
+            if (io && extraData.remitente?.id_usuario) {
+                io.to(extraData.remitente.id_usuario.toString()).emit('duelo:aceptado', {
+                    mensaje: `${req.session.user.username} aceptó tu duelo`,
+                    id_duelo
+                });
+            }
+
+            await conn.commit();
+            await conn.release();
+
+            return res.json({
+                success: true,
+                tipo: 'desafio_duelo',
+                id_duelo,
+                message: '¡Duelo aceptado! Tienes 48h para completarlo.',
+                redirigir: `/duelo/examen/${id_duelo}`
+            });
+        }
+
+        // ════════════════════════════════════════════════════════
+        // ⚔️ DUELO RÁPIDO (TIEMPO REAL)
+        // ════════════════════════════════════════════════════════
+        if (notificacion.tipo === 'desafio_duelo' && extraData.subtipo === 'duelo_rapido') {
+            console.log('[ACEPTAR DUELO RÁPIDO] Sala:', extraData.salaId);
+
+            const salaId = extraData.salaId;
+
+            if (!salaId) {
+                await conn.rollback();
+                await conn.release();
+                return res.status(400).json({
+                    success: false,
+                    message: 'Sala no encontrada en la notificación'
+                });
+            }
+
+            // Verificar que la sala existe
+            const salasPendientes = global.salasPendientes || new Map();
+            const sala = salasPendientes.get(salaId);
+
+            if (!sala) {
+                // Sala expirada
+                await conn.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
+                await conn.commit();
+                await conn.release();
+                
+                return res.status(410).json({
+                    success: false,
+                    message: 'El desafío expiró. Solicita uno nuevo.'
+                });
+            }
+
+            // Marcar sala como aceptada
+            sala.estado = 'aceptada';
+            salasPendientes.set(salaId, sala);
+
+            // ✅ ELIMINAR NOTIFICACIÓN
+            await conn.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
+
+            console.log('[ACEPTAR DUELO RÁPIDO] ✅ Notificación eliminada');
+
+            // Notificar al retador
+            const io = req.app.get('io');
+            if (io && extraData.remitente?.id_usuario) {
+                io.to(extraData.remitente.id_usuario.toString()).emit('duelo:desafioAceptado', {
+                    mensaje: `${req.session.user.username} aceptó tu desafío`,
+                    salaId
+                });
+            }
+
+            await conn.commit();
+            await conn.release();
+
+            return res.json({
+                success: true,
+                tipo: 'desafio_duelo',
+                subtipo: 'duelo_rapido',
+                salaId,
+                message: '¡Desafío aceptado! Redirigiendo...',
+                redirigir: `/competitivo/sala/${salaId}`
+            });
+        }
+
+        // ════════════════════════════════════════════════════════
+        // 🎮 INVITACIONES A MINIJUEGOS
+        // ════════════════════════════════════════════════════════
+        if (notificacion.tipo === 'invitacion') {
+            const salaId = extraData.salaId || `sala_${uuidv4()}`;
+            
+            // ✅ ELIMINAR NOTIFICACIÓN
+            await conn.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
+
+            let urlRedirigir = `/${extraData.juego.toLowerCase()}/${salaId}`;
+            
+            await conn.commit();
+            await conn.release();
+
+            return res.json({
+                success: true,
+                tipo: 'invitacion',
+                salaId,
+                redirigir: urlRedirigir,
+                message: '¡Invitación aceptada!'
+            });
+        }
+
+        // ════════════════════════════════════════════════════════
+        // 🔹 OTROS TIPOS DE NOTIFICACIONES
+        // ════════════════════════════════════════════════════════
+        
+        // Por defecto, eliminar la notificación
+        await conn.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
+        
+        await conn.commit();
+        await conn.release();
+
+        res.json({ 
+            success: true, 
+            message: 'Notificación procesada' 
+        });
+
+    } catch (err) {
+        await conn.rollback();
+        await conn.release();
+        console.error('❌ Error al aceptar notificación:', err);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error interno del servidor: ' + err.message 
+        });
+    }
+});
+
+// ================================================================
+// 🚫 RECHAZAR NOTIFICACIÓN - VERSIÓN CORREGIDA
+// ================================================================
+router.post('/rechazar/:idNotificacion', async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ 
+            success: false, 
+            message: 'Debes iniciar sesión' 
+        });
+    }
+
+    const { idNotificacion } = req.params;
+    const userId = req.session.user.id_usuario;
+
+    console.log('[RECHAZAR] ID Notificación:', idNotificacion);
+    console.log('[RECHAZAR] Usuario:', userId);
+
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        const [rows] = await conn.query(
+            `SELECT * FROM notificaciones WHERE id_notificacion = ? AND id_usuario_destinatario = ?`,
+            [idNotificacion, userId]
+        );
+
+        if (rows.length === 0) {
+            await conn.rollback();
+            await conn.release();
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Notificación no encontrada' 
+            });
+        }
+
+        const notificacion = rows[0];
+        let extraData = {};
+
+        try {
+            extraData = JSON.parse(notificacion.extra_data || '{}');
+        } catch (e) {
+            console.warn('No se pudo parsear extra_data:', e.message);
+        }
+
+        console.log('[RECHAZAR] Tipo:', notificacion.tipo);
+        console.log('[RECHAZAR] Extra Data:', extraData);
+
+        // Si es un desafío de ascenso, podemos eliminar el duelo también
+        if (notificacion.tipo === 'desafio_duelo' && extraData.id_duelo) {
+            console.log('[RECHAZAR] Eliminando duelo:', extraData.id_duelo);
+            
+            // Eliminar duelo completo (preguntas, respuestas, duelo)
+            await conn.query(`DELETE FROM duelos_preguntas WHERE id_duelo = ?`, [extraData.id_duelo]);
+            await conn.query(`DELETE FROM duelos_respuestas WHERE id_duelo = ?`, [extraData.id_duelo]);
+            await conn.query(`DELETE FROM duelos WHERE id_duelo = ?`, [extraData.id_duelo]);
+        }
+
+        // Si es un desafío rápido, limpiar la sala pendiente
+        if (extraData.subtipo === 'duelo_rapido' && extraData.salaId) {
+            const salasPendientes = global.salasPendientes;
+            const salasEspera = global.salasEspera;
+            
+            if (salasPendientes) salasPendientes.delete(extraData.salaId);
+            if (salasEspera) salasEspera.delete(extraData.salaId);
+            
+            console.log('[RECHAZAR] Sala eliminada:', extraData.salaId);
+
+            // Notificar al retador
+            const io = req.app.get('io');
+            if (io && extraData.remitente?.id_usuario) {
+                io.to(extraData.remitente.id_usuario.toString()).emit('duelo:desafioRechazado', {
+                    mensaje: `${req.session.user.username} rechazó tu desafío`
+                });
+            }
+        }
+
+        // Eliminar notificación
+        await conn.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
+        
+        console.log('[RECHAZAR] ✅ Notificación eliminada');
+
+        await conn.commit();
+        await conn.release();
+        
+        res.json({ 
+            success: true, 
+            message: 'Notificación rechazada' 
+        });
+
+    } catch (err) {
+        await conn.rollback();
+        await conn.release();
+        console.error('❌ Error al rechazar notificación:', err);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error interno del servidor: ' + err.message 
+        });
+    }
+});
+
+// ================================================================
+// 📨 INVITACIONES A MINIJUEGOS
 // ================================================================
 router.post('/invitar/:idJugador', async (req, res) => {
-    if (!req.session.user) return res.status(401).json({ message: 'No has iniciado sesión' });
+    if (!req.session.user) {
+        return res.status(401).json({ message: 'No has iniciado sesión' });
+    }
 
     const { salaId, juego } = req.body;
     const { idJugador } = req.params;
     const { id_usuario: idRemitente, username: usernameRemitente } = req.session.user;
 
     if (!salaId || !juego) {
-        return res.status(400).json({ message: 'Error: Faltan datos en la invitación (salaId o juego).' });
+        return res.status(400).json({ 
+            message: 'Error: Faltan datos (salaId o juego)' 
+        });
     }
 
     try {
@@ -26,207 +366,135 @@ router.post('/invitar/:idJugador', async (req, res) => {
             [
                 idJugador,
                 idRemitente,
-                `${usernameRemitente} te invita a una partida de ${juego}`,
+                `${usernameRemitente} te invita a ${juego}`,
                 extraData
             ]
         );
         res.json({ message: 'Invitación enviada ✅' });
     } catch (err) {
         console.error('Error enviando invitación:', err);
-        res.status(500).json({ message: 'Error del servidor al enviar la invitación' });
+        res.status(500).json({ message: 'Error del servidor' });
     }
 });
 
 // ================================================================
-// ⚔️ CREAR NUEVA SALA DE ENFRENTAMIENTO 1vs1
+// 🎮 DESAFÍO RÁPIDO BD (DUELOS EN TIEMPO REAL)
 // ================================================================
-router.post('/enfrentar/:idJugador', async (req, res) => {
-    if (!req.session.user) return res.status(401).json({ message: 'No has iniciado sesión' });
-
-    const { juego, materia } = req.body;
-    const { idJugador } = req.params;
-    const { id_usuario: idRemitente, username: usernameRemitente } = req.session.user;
-
-    if (!juego || !materia) {
-        return res.status(400).json({ message: 'Error: Faltan datos del desafío (juego o materia).' });
+router.post('/desafio/duelo/:idOponente', async (req, res) => {
+    console.log('[DESAFIO RAPIDO] POST recibido');
+    
+    if (!req.session.user) {
+        return res.status(401).json({ 
+            success: false, 
+            message: 'No has iniciado sesión' 
+        });
     }
 
-    // Genera un ID único para la sala
-    const salaId = `duelo_${uuidv4()}`;
-    const tiempoLimite = 48 * 60 * 60 * 1000; // 48h en ms
-    const fechaExpira = Date.now() + tiempoLimite;
+    const { idOponente } = req.params;
+    const { modo, dificultad } = req.body;
+    const idRetador = req.session.user.id_usuario;
+    const usernameRetador = req.session.user.username;
+
+    if (parseInt(idRetador) === parseInt(idOponente)) {
+        return res.status(400).json({ 
+            success: false, 
+            message: 'No puedes desafiarte a ti mismo' 
+        });
+    }
 
     try {
+        // Verificar que el oponente existe
+        const [oponente] = await pool.query(
+            'SELECT id_usuario, username, foto_perfil FROM usuario WHERE id_usuario = ?',
+            [idOponente]
+        );
+
+        if (oponente.length === 0) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Usuario no encontrado' 
+            });
+        }
+
+        // Verificar límite de desafíos pendientes
+        const [desafiosPendientes] = await pool.query(`
+            SELECT COUNT(*) as total 
+            FROM notificaciones 
+            WHERE id_usuario_remitente = ? 
+            AND tipo = 'desafio_duelo' 
+            AND JSON_EXTRACT(extra_data, '$.subtipo') = 'duelo_rapido'
+            AND fecha_creacion > DATE_SUB(NOW(), INTERVAL 5 MINUTE)
+        `, [idRetador]);
+
+        if (desafiosPendientes[0].total >= 3) {
+            return res.status(429).json({
+                success: false,
+                message: 'Ya tienes desafíos pendientes. Espera 5 minutos.'
+            });
+        }
+
+        // Crear sala
+        if (!global.crearSalaPendiente) {
+            return res.status(500).json({
+                success: false,
+                message: 'Sistema de salas no inicializado'
+            });
+        }
+
+        const io = req.app.get('io');
+        const salaId = global.crearSalaPendiente(idRetador, parseInt(idOponente), io);
+
+        console.log(`[DESAFIO RAPIDO] ✅ Sala creada: ${salaId}`);
+
+        // Crear notificación
         const extraData = JSON.stringify({
             salaId,
-            juego,
-            modo: 'enfrentamiento',
-            materia,
-            remitente: req.session.user,
-            fechaExpira
+            modo: modo || 'general',
+            dificultad: dificultad || null,
+            subtipo: 'duelo_rapido',
+            remitente: {
+                id_usuario: idRetador,
+                username: usernameRetador,
+                foto_perfil: req.session.user.foto_perfil
+            }
         });
 
-        await pool.query(
-            `INSERT INTO notificaciones (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
-             VALUES (?, ?, 'desafio_duelo', ?, ?)`,
-            [
-                idJugador,
-                idRemitente,
-                `${usernameRemitente} te desafía a un duelo de ${materia}. Tienes 48h para responder.`,
-                extraData
-            ]
-        );
+        await pool.query(`
+            INSERT INTO notificaciones 
+            (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
+            VALUES (?, ?, 'desafio_duelo', ?, ?)
+        `, [
+            idOponente,
+            idRetador,
+            `⚔️ ${usernameRetador} te desafía a un duelo rápido!`,
+            extraData
+        ]);
 
-        res.json({ message: 'Desafío enviado ⚔️', salaId, modo: 'enfrentamiento' });
-    } catch (err) {
-        console.error('Error enviando desafío:', err);
-        res.status(500).json({ message: 'Error del servidor al enviar el desafío' });
-    }
-});
+        console.log(`[DESAFIO RAPIDO] ✅ Notificación creada`);
 
-// ================================================================
-// ✅ ACEPTAR INVITACIÓN O DESAFÍO
-// ================================================================
-router.post('/aceptar/:idNotificacion', async (req, res) => {
-    if (!req.session.user) return res.status(401).json({ success: false, message: 'Debes iniciar sesión' });
-
-    const { idNotificacion } = req.params;
-    const userId = req.session.user.id_usuario;
-
-    try {
-        const [notificaciones] = await pool.query(
-            `SELECT * FROM notificaciones WHERE id_notificacion = ? AND id_usuario_destinatario = ?`,
-            [idNotificacion, userId]
-        );
-
-        if (notificaciones.length === 0) {
-            return res.status(404).json({ success: false, message: 'Notificación no encontrada' });
-        }
-
-        const notificacion = notificaciones[0];
-        let extraData = {};
-
-        try {
-            extraData = JSON.parse(notificacion.extra_data || '{}');
-        } catch (err) {
-            console.warn('⚠️ JSON inválido en extra_data:', notificacion.extra_data);
-            extraData = {};
-        }
-
-        // 🔥 MANEJAR TIPOS DE NOTIFICACIÓN
-        if (notificacion.tipo === 'desafio_duelo') {
-            // ... (tu código existente para desafio_duelo se queda igual)
-            const salaId = extraData.salaId || `duelo_${uuidv4()}`;
-            const fechaLimite = new Date(Date.now() + 48 * 60 * 60 * 1000);
-
-            await pool.query(
-                `INSERT INTO duelos (id_duelo, id_retador, id_defensor, materia, fecha_limite, respondido_retador, respondido_oponente)
-                 VALUES (?, ?, ?, ?, ?, 0, 0)
-                 ON DUPLICATE KEY UPDATE fecha_limite = VALUES(fecha_limite)`,
-                [salaId, extraData.remitente.id_usuario, userId, extraData.materia, fechaLimite]
-            );
-
-            await pool.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
-
-            const notifRetadorData = JSON.stringify({ salaId, materia: extraData.materia });
-            const notifDefensorData = JSON.stringify({ salaId, materia: extraData.materia });
-
-            await pool.query(
-                `INSERT INTO notificaciones (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
-                 VALUES (?, ?, 'duelo_aceptado', ?, ?)`,
-                [
-                    extraData.remitente.id_usuario,
-                    userId,
-                    `${req.session.user.username} aceptó tu desafío de ${extraData.materia}. Tienes 48 horas para hacer el examen.`,
-                    notifRetadorData
-                ]
-            );
-
-            await pool.query(
-                `INSERT INTO notificaciones (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
-                 VALUES (?, ?, 'duelo_aceptado', ?, ?)`,
-                [
-                    userId,
-                    extraData.remitente.id_usuario,
-                    `Duelo activo contra ${extraData.remitente.username} en ${extraData.materia}. Tienes 48 horas para hacer el examen.`,
-                    notifDefensorData
-                ]
-            );
-
-            if (req.io) {
-                req.io.to(extraData.remitente.id_usuario.toString()).emit('notificacion_recibida');
-                req.io.to(userId.toString()).emit('notificacion_recibida');
-            }
-
-            return res.json({
-                success: true,
+        // Emitir socket
+        if (io) {
+            io.to(idOponente.toString()).emit('notificacion_recibida', {
                 tipo: 'desafio_duelo',
-                salaId,
-                message: `¡Desafío aceptado! Tienes 48 horas para hacer el examen de ${extraData.materia}.`,
-                mostrarEnlace: true,
-                enlaceExamen: `/duelo/examen/${salaId}`,
-                fechaLimite,
-                id_remitente: extraData.remitente.id_usuario
-            });
-
-        } else if (notificacion.tipo === 'invitacion') {
-            // 🔥 AQUÍ ESTÁ LA CORRECCIÓN
-            const salaId = extraData.salaId || `sala_${uuidv4()}`;
-            await pool.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
-
-            // Construir la URL correctamente según el modo
-            let urlRedirigir = `/${extraData.juego.toLowerCase()}/${salaId}`;
-            
-            // Si tiene modo enfrentamiento, añadir el parámetro
-            if (extraData.modo === 'enfrentamiento') {
-                urlRedirigir += '?modo=enfrentamiento';
-            }
-
-            return res.json({
-                success: true,
-                tipo: 'invitacion',
-                salaId,
-                redirigir: urlRedirigir, // 🔥 URL corregida con el parámetro modo
-                message: '¡Invitación aceptada!',
-                extra_data: extraData
+                mensaje: `${usernameRetador} te desafió`,
+                salaId
             });
         }
 
-        // Tipo desconocido
-        await pool.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
-        res.json({ success: true, message: 'Notificación procesada' });
+        res.json({
+            success: true,
+            message: `✅ Desafío enviado a ${oponente[0].username}`,
+            salaId,
+            modo,
+            oponente: oponente[0]
+        });
 
-    } catch (err) {
-        console.error('❌ Error completo en aceptar notificación:', err);
-        res.status(500).json({ success: false, message: 'Error interno al aceptar la notificación' });
-    }
-});
-
-// ================================================================
-// 🚫 RECHAZAR INVITACIÓN O DESAFÍO
-// ================================================================
-router.post('/rechazar/:idNotificacion', async (req, res) => {
-    if (!req.session.user) return res.status(401).json({ success: false, message: 'Debes iniciar sesión' });
-
-    const { idNotificacion } = req.params;
-    const userId = req.session.user.id_usuario;
-
-    try {
-        const [rows] = await pool.query(
-            `SELECT * FROM notificaciones WHERE id_notificacion = ? AND id_usuario_destinatario = ?`,
-            [idNotificacion, userId]
-        );
-
-        if (rows.length === 0) {
-            return res.status(404).json({ success: false, message: 'Notificación no encontrada' });
-        }
-
-        await pool.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
-        res.json({ success: true, message: 'Notificación rechazada y eliminada 🧹' });
-
-    } catch (err) {
-        console.error('Error al rechazar notificación:', err);
-        res.status(500).json({ success: false, message: 'Error interno al rechazar la notificación' });
+    } catch (error) {
+        console.error('[DESAFIO RAPIDO ERROR]:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error del servidor: ' + error.message
+        });
     }
 });
 

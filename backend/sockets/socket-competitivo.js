@@ -1,4 +1,3 @@
-// src/sockets/modo_competitivo/socket-competitivo.js (COMPLETO Y CORREGIDO)
 const db = require('../db/conexion');
 const { v4: uuidv4 } = require('uuid');
 
@@ -10,7 +9,8 @@ const ESTADOS_SALA = {
     EN_JUEGO: 'en_juego',
     EXPIRADA: 'expirada',
     CANCELADA: 'cancelada',
-    PENDIENTE: 'pendiente'
+    PENDIENTE: 'pendiente',
+    MATCHMAKING: 'matchmaking'
 };
 
 // Pools de matchmaking
@@ -19,7 +19,7 @@ let poolCarreraNormal = [];
 let poolCarreraDificil = [];
 let poolGeneral = [];
 
-// Maps para gestionar salas y usuarios
+// Maps globales
 const salasEspera = new Map();
 const activeDuels = new Map();
 const usuariosConectados = new Map();
@@ -33,9 +33,7 @@ global.usuariosEnPortalCompetitivo = usuariosEnPortalCompetitivo;
 global.salasPendientes = salasPendientes;
 global.salasEspera = salasEspera;
 
-// ================================================================
-// FUNCIÓN AUXILIAR: Verificar e iniciar duelo si ambos están listos
-// ================================================================
+// ✅ FUNCIÓN: Verificar e iniciar duelo si ambos están listos
 async function verificarEIniciarDuelo(salaId, io) {
     const sala = salasPendientes.get(salaId) || salasEspera.get(salaId);
     
@@ -50,8 +48,16 @@ async function verificarEIniciarDuelo(salaId, io) {
     console.log(`  - IDs conectados:`, Array.from(sala.jugadoresConectados || []));
     console.log(`  - Duelo creado: ${sala.dueloCreado}`);
 
-    // Verificar estado válido
-    const estadosValidos = ['aceptada', 'pendiente', 'esperando_aceptacion', ESTADOS_SALA.ACEPTADA, ESTADOS_SALA.PENDIENTE];
+    // ✅ FIX: Agregar 'matchmaking' a estados válidos
+    const estadosValidos = [
+        'aceptada', 
+        'pendiente', 
+        'esperando_aceptacion', 
+        'matchmaking',
+        ESTADOS_SALA.ACEPTADA, 
+        ESTADOS_SALA.PENDIENTE, 
+        ESTADOS_SALA.MATCHMAKING
+    ];
     
     if (!estadosValidos.includes(sala.estado)) {
         console.log(`[VERIFICAR DUELO]: Estado no válido: ${sala.estado}`);
@@ -70,7 +76,7 @@ async function verificarEIniciarDuelo(salaId, io) {
         return false;
     }
 
-    // Marcar como creado inmediatamente para evitar duplicados
+    // ✅ MARCAR COMO CREADO INMEDIATAMENTE
     sala.dueloCreado = true;
     sala.estado = 'en_juego';
     salasPendientes.set(salaId, sala);
@@ -86,12 +92,12 @@ async function verificarEIniciarDuelo(salaId, io) {
 
         // Cargar datos de BD
         const [retadorData] = await db.query(
-            'SELECT id_usuario, username, foto_perfil from usuario WHERE id_usuario = ?', 
+            'SELECT id_usuario, username, foto_perfil FROM usuario WHERE id_usuario = ?', 
             [retadorId]
         );
         
         const [retadoData] = await db.query(
-            'SELECT id_usuario, username, foto_perfil from usuario WHERE id_usuario = ?', 
+            'SELECT id_usuario, username, foto_perfil FROM usuario WHERE id_usuario = ?', 
             [retadoId]
         );
 
@@ -126,6 +132,7 @@ async function verificarEIniciarDuelo(salaId, io) {
         // Crear duelo en activeDuels
         activeDuels.set(salaId, {
             modo: sala.modo || 'general',
+            dificultad: sala.dificultad || null,
             jugadores: {
                 [retadorId]: { 
                     ...retadorData[0], 
@@ -143,7 +150,7 @@ async function verificarEIniciarDuelo(salaId, io) {
             estado: 'minidraft_start',
             puntuaciones: { [retadorId]: 0, [retadoId]: 0 },
             selecciones: {},
-            esInvitacion: true,
+            esInvitacion: sala.tipo === 'notificacion_bd' || sala.tipo === 'lobby_directo',
             fechaCreacion: new Date()
         });
 
@@ -153,7 +160,7 @@ async function verificarEIniciarDuelo(salaId, io) {
         if (sala.timeoutId) {
             clearTimeout(sala.timeoutId);
         }
-        
+
         // Emitir evento de duelo listo
         io.to(salaId).emit('duelo:dueloListo', { salaId });
         
@@ -178,9 +185,7 @@ async function verificarEIniciarDuelo(salaId, io) {
     }
 }
 
-// ================================================================
-// FUNCIÓN: Crear sala pendiente para notificaciones BD
-// ================================================================
+// ✅ FUNCIÓN: Crear sala pendiente para notificaciones BD
 global.crearSalaPendiente = function(idRetador, idRetado, io) {
     const salaId = uuidv4();
     
@@ -190,7 +195,7 @@ global.crearSalaPendiente = function(idRetador, idRetado, io) {
         retado: parseInt(idRetado),
         idRetador: parseInt(idRetador),
         idRetado: parseInt(idRetado),
-        estado: ESTADOS_SALA.PENDIENTE,
+        estado: 'pendiente',
         timestamp: Date.now(),
         jugadoresConectados: new Set(),
         jugadoresAceptados: new Set(),
@@ -207,7 +212,7 @@ global.crearSalaPendiente = function(idRetador, idRetado, io) {
     // Timeout de 3 minutos
     const timeoutId = setTimeout(() => {
         const sala = salasPendientes.get(salaId);
-        if (sala && (sala.estado === ESTADOS_SALA.PENDIENTE || sala.estado === ESTADOS_SALA.ESPERANDO_INVITACION)) {
+        if (sala && (sala.estado === 'pendiente' || sala.estado === 'esperando_aceptacion')) {
             salasPendientes.delete(salaId);
             salasEspera.delete(salaId);
             console.log(`[SALA PENDIENTE BD]: Expiró ${salaId}`);
@@ -234,161 +239,57 @@ global.crearSalaPendiente = function(idRetador, idRetado, io) {
     return salaId;
 };
 
-// ================================================================
-// FUNCIÓN: Crear duelo para matchmaking
-// ================================================================
-function crearDuelo(jugadorA, jugadorB, modo, io, esInvitacion = false) {
+// ✅ FUNCIÓN UNIFICADA: Crear sala para matchmaking (CORREGIDA)
+function crearSalaMatchmaking(jugadorA, jugadorB, modo, dificultad, io) {
     const salaId = uuidv4();
-    console.log(`${esInvitacion ? 'Duelo por invitación' : 'Matchmaking'} (${modo}): ${jugadorA.user.username} vs ${jugadorB.user.username}. Sala: ${salaId}`);
     
-    const socketA = io.sockets.sockets.get(jugadorA.socketId);
-    const socketB = io.sockets.sockets.get(jugadorB.socketId);
+    console.log(`[MATCHMAKING]: Creando sala ${salaId} - Modo: ${modo}, Dificultad: ${dificultad || 'N/A'}`);
+    console.log(`  Jugador A: ${jugadorA.user.username} (ID: ${jugadorA.userId})`);
+    console.log(`  Jugador B: ${jugadorB.user.username} (ID: ${jugadorB.userId})`);
     
-    if (socketA && socketB) {
-        socketA.join(salaId);
-        socketB.join(salaId);
-        
-        activeDuels.set(salaId, {
-            modo: modo,
-            jugadores: {
-                [jugadorA.userId]: { 
-                    ...jugadorA.user, 
-                    socketId: jugadorA.socketId, 
-                    listo: false, 
-                    racha: 0 
-                },
-                [jugadorB.userId]: { 
-                    ...jugadorB.user, 
-                    socketId: jugadorB.socketId, 
-                    listo: false, 
-                    racha: 0 
-                }
-            },
-            estado: 'minidraft_start',
-            puntuaciones: { [jugadorA.userId]: 0, [jugadorB.userId]: 0 },
-            selecciones: {},
-            esInvitacion: esInvitacion,
-            fechaCreacion: new Date()
-        });
-        
-        io.to(jugadorA.socketId).emit('duelo:iniciarDesafio', { salaId });
-        io.to(jugadorB.socketId).emit('duelo:iniciarDesafio', { salaId });
-        
-        console.log(`[CREAR DUELO]: ✅ Duelo ${salaId} creado y notificado a ambos jugadores`);
-    } else {
-        console.error(`[CREAR DUELO]: No se pudieron obtener los sockets para crear el duelo.`);
-        // Devolver jugadores a la pool si no se pudo crear el duelo
-        if (modo === 'general') {
-            poolGeneral.unshift(jugadorA, jugadorB);
-        } else {
-            // Determinar qué pool de carrera usar
-            let pool;
-            if (jugadorA.dificultad === 'facil') pool = poolCarreraFacil;
-            else if (jugadorA.dificultad === 'normal') pool = poolCarreraNormal;
-            else pool = poolCarreraDificil;
-            pool.unshift(jugadorA, jugadorB);
-        }
-    }
+    const sala = {
+        salaId,
+        retador: jugadorA.userId,
+        retado: jugadorB.userId,
+        idRetador: jugadorA.userId,
+        idRetado: jugadorB.userId,
+        estado: ESTADOS_SALA.MATCHMAKING,
+        timestamp: Date.now(),
+        jugadoresConectados: new Set(),
+        jugadoresAceptados: new Set([jugadorA.userId, jugadorB.userId]),
+        dueloCreado: false,
+        tipo: 'matchmaking',
+        modo: modo,
+        dificultad: dificultad
+    };
+    
+    salasPendientes.set(salaId, sala);
+    salasEspera.set(salaId, sala);
+    
+    // ✅ REDIRIGIR usuarios a la URL de la sala
+    const urlSala = `/competitivo/sala/${salaId}`;
+    
+    io.to(jugadorA.socketId).emit('matchmaking:salaCreada', { 
+        salaId,
+        urlSala,
+        mensaje: '¡Oponente encontrado! Redirigiendo...'
+    });
+    
+    io.to(jugadorB.socketId).emit('matchmaking:salaCreada', { 
+        salaId,
+        urlSala,
+        mensaje: '¡Oponente encontrado! Redirigiendo...'
+    });
+    
+    console.log(`[MATCHMAKING]: ✅ Sala ${salaId} creada, usuarios notificados para redirección`);
+    
+    return salaId;
 }
 
-// ================================================================
-// FUNCIÓN: Buscar parejas en las colas (MEJORADA)
-// ================================================================
-function buscarPareja(pool, modo) {
-    console.log(`[MATCHMAKING ${modo}]: Buscando pareja. En cola: ${pool.length}`);
-    
-    if (pool.length >= 2) {
-        const jugadorA = pool.shift();
-        const jugadorB = pool.shift();
-        
-        // Verificar que ambos sigan conectados
-        const socketA = io.sockets.sockets.get(jugadorA.socketId);
-        const socketB = io.sockets.sockets.get(jugadorB.socketId);
-        
-        if (socketA && socketB && socketA.connected && socketB.connected) {
-            console.log(`[MATCHMAKING ${modo}]: ✅ Pareja encontrada - ${jugadorA.user.username} vs ${jugadorB.user.username}`);
-            crearDuelo(jugadorA, jugadorB, modo, io);
-        } else {
-            console.log(`[MATCHMAKING ${modo}]: ❌ Uno o ambos jugadores desconectados, devolviendo a cola`);
-            // Devolver a la cola solo los que estén conectados
-            if (socketA && socketA.connected) pool.unshift(jugadorA);
-            if (socketB && socketB.connected) pool.unshift(jugadorB);
-        }
-    } else {
-        console.log(`[MATCHMAKING ${modo}]: Esperando más jugadores... (${pool.length}/2)`);
-    }
+function actualizarPuntosCarrera(userId, puntosObtenidos, modo) {
+    console.log(`[PUNTOS]: Usuario ${userId} - ${puntosObtenidos} puntos (${modo})`);
 }
 
-// ================================================================
-// FUNCIÓN: Verificar colas periódicamente (NUEVA)
-// ================================================================
-
-// ================================================================
-// FUNCIÓN: Actualizar puntos de carrera
-// ================================================================
-async function actualizarPuntosCarrera(userId, puntosObtenidos, modo) {
-    try {
-        if (modo === 'carrera') {
-            const [carreraUsuario] = await db.query(
-                'SELECT id_carrera from usuario_carrera WHERE id_usuario = ?', 
-                [userId]
-            );
-
-            if (carreraUsuario.length > 0) {
-                const idCarrera = carreraUsuario[0].id_carrera;
-                
-                const [puntosExistentes] = await db.query(
-                    'SELECT puntos from usuario_puntos_carrera WHERE id_usuario = ? AND id_carrera = ?',
-                    [userId, idCarrera]
-                );
-
-                if (puntosExistentes.length > 0) {
-                    await db.query(
-                        'UPDATE usuario_puntos_carrera SET puntos = puntos + ? WHERE id_usuario = ? AND id_carrera = ?',
-                        [puntosObtenidos, userId, idCarrera]
-                    );
-                } else {
-                    await db.query(
-                        'INSERT INTO usuario_puntos_carrera (id_usuario, id_carrera, puntos) VALUES (?, ?, ?)',
-                        [userId, idCarrera, puntosObtenidos]
-                    );
-                }
-            }
-        } else {
-            const [carrerasUsuario] = await db.query(
-                'SELECT id_carrera from usuario_carrera WHERE id_usuario = ?', 
-                [userId]
-            );
-
-            for (const carrera of carrerasUsuario) {
-                const idCarrera = carrera.id_carrera;
-                
-                const [puntosExistentes] = await db.query(
-                    'SELECT puntos from usuario_puntos_carrera WHERE id_usuario = ? AND id_carrera = ?',
-                    [userId, idCarrera]
-                );
-
-                if (puntosExistentes.length > 0) {
-                    await db.query(
-                        'UPDATE usuario_puntos_carrera SET puntos = puntos + ? WHERE id_usuario = ? AND id_carrera = ?',
-                        [puntosObtenidos, userId, idCarrera]
-                    );
-                } else {
-                    await db.query(
-                        'INSERT INTO usuario_puntos_carrera (id_usuario, id_carrera, puntos) VALUES (?, ?, ?)',
-                        [userId, idCarrera, puntosObtenidos]
-                    );
-                }
-            }
-        }
-    } catch (error) {
-        console.error(`[ERROR PUNTOS]: Usuario ${userId}:`, error);
-    }
-}
-
-// ================================================================
-// FUNCIÓN: Calcular bonus de puntos
-// ================================================================
 function calcularBonusPuntos(puntuacionFinal, totalPreguntas, esGanador) {
     let bonus = 0;
     if (esGanador) bonus += 100;
@@ -401,9 +302,7 @@ function calcularBonusPuntos(puntuacionFinal, totalPreguntas, esGanador) {
     return bonus;
 }
 
-// ================================================================
-// CLEANUP: Salas expiradas
-// ================================================================
+// Cleanup de salas expiradas
 setInterval(() => {
     const ahora = Date.now();
     const TIMEOUT = 5 * 60 * 1000;
@@ -411,25 +310,16 @@ setInterval(() => {
     for (const [salaId, sala] of salasEspera.entries()) {
         if (ahora - sala.timestamp > TIMEOUT) {
             salasEspera.delete(salaId);
+            salasPendientes.delete(salaId);
             console.log(`[CLEANUP]: Sala ${salaId} eliminada`);
         }
     }
 }, 5 * 60 * 1000);
 
-// ================================================================
-// MÓDULO PRINCIPAL - EVENTOS DE SOCKET
-// ================================================================
+// === MÓDULO PRINCIPAL ===
 module.exports = (io, socket) => {
-    console.log(`[NUEVA CONEXIÓN]: Socket ${socket.id} conectado`);
     
-    // Iniciar verificación periódica de colas
-    if (!global.colasIniciadas) {
-        global.colasIniciadas = true;
-    }
-    
-    // ============================================================
     // REGISTRO DE USUARIO
-    // ============================================================
     socket.on('usuario:registrar', (userId) => {
         if (!userId) return;
         
@@ -458,417 +348,7 @@ module.exports = (io, socket) => {
         console.log(`[PORTAL]: Usuario ${userIdInt} salió. Total: ${usuariosEnPortalCompetitivo.size}`);
     });
 
-    // ============================================================
-    // MATCHMAKING NORMAL - CORREGIDO
-    // ============================================================
-    socket.on('duelo:buscar:general', (userData) => {
-        try {
-            console.log('[MATCHMAKING GENERAL]: Usuario buscando:', userData);
-            
-            // Verificar que el usuario esté conectado
-            if (!usuariosConectados.has(userData.id_usuario)) {
-                console.error(`[MATCHMAKING GENERAL]: Usuario ${userData.id_usuario} no está conectado`);
-                return socket.emit('duelo:error', { 
-                    mensaje: 'Error de conexión. Recarga la página.' 
-                });
-            }
-
-            // Evitar duplicados
-            if (poolGeneral.some(p => p.userId === userData.id_usuario)) {
-                console.log(`[MATCHMAKING GENERAL]: Usuario ${userData.id_usuario} ya está en cola`);
-                return socket.emit('duelo:enCola', { 
-                    mensaje: 'Ya estás en cola de búsqueda.', 
-                    enCola: true 
-                });
-            }
-
-            const jugador = { 
-                userId: userData.id_usuario, 
-                user: userData, 
-                socketId: socket.id 
-            };
-
-            poolGeneral.push(jugador);
-            console.log(`[MATCHMAKING GENERAL]: ${userData.username} en cola. Total: ${poolGeneral.length}`);
-            
-            // Buscar pareja inmediatamente
-            buscarPareja(poolGeneral, 'general');
-            
-            socket.emit('duelo:enCola', { 
-                mensaje: 'Buscando oponente...', 
-                enCola: true 
-            });
-
-        } catch (error) {
-            console.error('[MATCHMAKING GENERAL ERROR]:', error);
-            socket.emit('duelo:error', { 
-                mensaje: 'Error al buscar partida: ' + error.message 
-            });
-        }
-    });
-
-    socket.on('duelo:buscar:carrera', async ({ user, dificultad }) => {
-        try {
-            console.log('[MATCHMAKING CARRERA]: Usuario buscando:', user.username, 'Dificultad:', dificultad);
-            
-            // Verificar carrera
-            const [[{ count }]] = await db.query(
-                'SELECT COUNT(*) as count from usuario_carrera WHERE id_usuario = ?', 
-                [user.id_usuario]
-            );
-            
-            if (count === 0) {
-                return socket.emit('duelo:error:sinCarrera', { 
-                    mensaje: 'Debes registrar una carrera en tu perfil.' 
-                });
-            }
-
-            let pool;
-            if (dificultad === 'facil') pool = poolCarreraFacil;
-            else if (dificultad === 'normal') pool = poolCarreraNormal;
-            else if (dificultad === 'dificil') pool = poolCarreraDificil;
-            else {
-                return socket.emit('duelo:error', { 
-                    mensaje: 'Dificultad no válida.' 
-                });
-            }
-
-            // Evitar duplicados
-            if (pool.some(p => p.userId === user.id_usuario)) {
-                console.log(`[MATCHMAKING CARRERA]: Usuario ${user.id_usuario} ya está en cola`);
-                return socket.emit('duelo:enCola', { 
-                    mensaje: `Ya estás en cola de carrera ${dificultad}.`, 
-                    enCola: true 
-                });
-            }
-
-            const jugador = { 
-                userId: user.id_usuario, 
-                user, 
-                socketId: socket.id, 
-                dificultad 
-            };
-
-            pool.push(jugador);
-            console.log(`[MATCHMAKING CARRERA]: ${user.username} en cola ${dificultad}. Total: ${pool.length}`);
-            
-            // Buscar pareja inmediatamente
-            buscarPareja(pool, 'carrera');
-            
-            socket.emit('duelo:enCola', { 
-                mensaje: `Buscando oponente en ${dificultad}...`, 
-                enCola: true 
-            });
-
-        } catch (error) {
-            console.error("[MATCHMAKING CARRERA ERROR]:", error);
-            socket.emit('duelo:error', { 
-                mensaje: 'Error al buscar partida: ' + error.message 
-            });
-        }
-    });
-    
-    socket.on('duelo:cancelarBusqueda', (userId) => {
-        const userIdInt = parseInt(userId);
-        
-        // Remover de todas las pools
-        poolCarreraFacil = poolCarreraFacil.filter(p => p.userId !== userIdInt);
-        poolCarreraNormal = poolCarreraNormal.filter(p => p.userId !== userIdInt);
-        poolCarreraDificil = poolCarreraDificil.filter(p => p.userId !== userIdInt);
-        poolGeneral = poolGeneral.filter(p => p.userId !== userIdInt);
-        
-        console.log(`[MATCHMAKING]: Usuario ${userId} canceló búsqueda`);
-        socket.emit('duelo:busquedaCancelada', { 
-            mensaje: 'Búsqueda cancelada.' 
-        });
-    });
-
-    // ============================================================
-    // 📨 INVITACIÓN DE LOBBY
-    // ============================================================
-    socket.on('duelo:invitarLobby', async ({ idOponente, usernameOponente }) => {
-        const idRetador = socket.userId;
-        
-        if (!idRetador || idRetador === parseInt(idOponente)) {
-            return socket.emit('duelo:invitacionLobbyError', { 
-                mensaje: 'No puedes desafiarte a ti mismo.' 
-            });
-        }
-
-        try {
-            // Obtener datos del retador
-            const [retadorData] = await db.query(
-                'SELECT username, foto_perfil from usuario WHERE id_usuario = ?', 
-                [idRetador]
-            );
-            
-            if (retadorData.length === 0) {
-                return socket.emit('duelo:invitacionLobbyError', { 
-                    mensaje: 'Error: Usuario no encontrado.' 
-                });
-            }
-
-            const usernameRetador = retadorData[0].username;
-            const fotoRetador = retadorData[0].foto_perfil;
-            const oponenteSocketId = usuariosConectados.get(parseInt(idOponente));
-            
-            // Verificar que el oponente esté conectado
-            if (!oponenteSocketId) {
-                return socket.emit('duelo:invitacionLobbyError', { 
-                    mensaje: `${usernameOponente} no está conectado.` 
-                });
-            }
-
-            // Verificar que el oponente esté en el portal competitivo
-            if (!usuariosEnPortalCompetitivo.has(parseInt(idOponente))) {
-                return socket.emit('duelo:invitacionLobbyError', { 
-                    mensaje: `${usernameOponente} no está en el portal competitivo.` 
-                });
-            }
-
-            const salaId = uuidv4();
-            const timestamp = Date.now();
-
-            // ✅ CREAR SALA TEMPORAL (solo para tracking)
-            const nuevaSala = {
-                salaId,
-                idRetador: parseInt(idRetador),
-                idRetado: parseInt(idOponente),
-                retador: parseInt(idRetador),
-                retado: parseInt(idOponente),
-                usernameRetador,
-                usernameRetado: usernameOponente,
-                estado: ESTADOS_SALA.ESPERANDO_INVITACION,
-                timestamp,
-                tipo: 'lobby_directo',
-                modo: 'general'
-            };
-
-            salasEspera.set(salaId, nuevaSala);
-
-            console.log(`[LOBBY]: ✅ Sala ${salaId} creada - ${usernameRetador} → ${usernameOponente}`);
-
-            // Enviar invitación al oponente
-            io.to(oponenteSocketId).emit('duelo:recibirInvitacionLobby', {
-                mensaje: `${usernameRetador} te desafía a un duelo!`,
-                id_retador: idRetador,
-                username_retador: usernameRetador,
-                foto_retador: fotoRetador,
-                salaId,
-                timestamp
-            });
-            
-            // Confirmar al retador
-            socket.emit('duelo:invitacionLobbyEnviada', { 
-                mensaje: `Invitación enviada a ${usernameOponente}. Esperando respuesta...`,
-                salaId
-            });
-
-            // Timeout de 30 segundos
-            const timeoutId = setTimeout(() => {
-                const sala = salasEspera.get(salaId);
-                if (sala && sala.estado === ESTADOS_SALA.ESPERANDO_INVITACION) {
-                    sala.estado = ESTADOS_SALA.EXPIRADA;
-                    salasEspera.delete(salaId);
-                    
-                    console.log(`[LOBBY]: Invitación ${salaId} expiró`);
-                    
-                    socket.emit('duelo:invitacionExpirada', { 
-                        mensaje: 'La invitación expiró sin respuesta (30 segundos).' 
-                    });
-                    
-                    const currentOponenteSocketId = usuariosConectados.get(parseInt(idOponente));
-                    if (currentOponenteSocketId) {
-                        io.to(currentOponenteSocketId).emit('duelo:invitacionExpirada', { 
-                            mensaje: 'Desafío expiró.' 
-                        });
-                    }
-                }
-            }, 30000);
-            
-            nuevaSala.timeoutId = timeoutId;
-
-        } catch (error) {
-            console.error('[LOBBY ERROR]:', error);
-            socket.emit('duelo:invitacionLobbyError', { 
-                mensaje: 'Error del servidor: ' + error.message 
-            });
-        }
-    });
-
-    // ============================================================
-    // ✅ ACEPTAR INVITACIÓN - SOLUCIÓN A (Iniciar duelo directo)
-    // ============================================================
-    socket.on('duelo:aceptarInvitacionLobby', async ({ salaId }) => {
-        const idRetado = socket.userId;
-        
-        if (!idRetado) {
-            return socket.emit('duelo:error', { 
-                mensaje: 'Usuario no identificado.' 
-            });
-        }
-
-        console.log(`[LOBBY]: Usuario ${idRetado} acepta invitación ${salaId}`);
-
-        const sala = salasEspera.get(salaId);
-        
-        if (!sala) {
-            return socket.emit('duelo:error', { 
-                mensaje: 'Invitación no encontrada o expiró.' 
-            });
-        }
-
-        // Verificar que el usuario sea el retado
-        if (sala.idRetado !== idRetado && sala.retado !== idRetado) {
-            return socket.emit('duelo:error', { 
-                mensaje: 'No tienes permiso para aceptar esta invitación.' 
-            });
-        }
-
-        // Verificar estado de la sala
-        if (sala.estado !== ESTADOS_SALA.ESPERANDO_INVITACION) {
-            return socket.emit('duelo:error', { 
-                mensaje: 'Esta invitación ya no está disponible.' 
-            });
-        }
-
-        try {
-            // Limpiar timeout
-            if (sala.timeoutId) {
-                clearTimeout(sala.timeoutId);
-                sala.timeoutId = null;
-            }
-
-            const retadorId = sala.idRetador || sala.retador;
-            const retadorSocketId = usuariosConectados.get(retadorId);
-            
-            // Verificar que ambos estén conectados
-            if (!retadorSocketId) {
-                console.error(`[LOBBY]: Retador ${retadorId} desconectado`);
-                return socket.emit('duelo:error', { 
-                    mensaje: 'El retador ya no está conectado.' 
-                });
-            }
-
-            // ✅ OBTENER DATOS DE BD PARA AMBOS JUGADORES
-            const [retadorData] = await db.query(
-                'SELECT id_usuario, username, foto_perfil from usuario WHERE id_usuario = ?', 
-                [retadorId]
-            );
-            
-            const [retadoData] = await db.query(
-                'SELECT id_usuario, username, foto_perfil from usuario WHERE id_usuario = ?', 
-                [idRetado]
-            );
-
-            if (retadorData.length === 0 || retadoData.length === 0) {
-                throw new Error('Usuario no encontrado en BD');
-            }
-
-            console.log(`[LOBBY]: ✅ Invitación ${salaId} aceptada - Creando duelo`);
-
-            // ✅ UNIR SOCKETS A LA SALA
-            const socketRetador = io.sockets.sockets.get(retadorSocketId);
-            const socketRetado = socket;
-
-            if (socketRetador && socketRetado) {
-                socketRetador.join(salaId);
-                socketRetado.join(salaId);
-                console.log(`[LOBBY]: Sockets unidos a sala ${salaId}`);
-            }
-
-            // ✅ CREAR DUELO EN activeDuels (igual que matchmaking)
-            activeDuels.set(salaId, {
-                modo: 'general',
-                jugadores: {
-                    [retadorId]: { 
-                        ...retadorData[0], 
-                        socketId: retadorSocketId, 
-                        listo: false, 
-                        racha: 0 
-                    },
-                    [idRetado]: { 
-                        ...retadoData[0], 
-                        socketId: socket.id, 
-                        listo: false, 
-                        racha: 0 
-                    }
-                },
-                estado: 'esperando_listos',
-                puntuaciones: { [retadorId]: 0, [idRetado]: 0 },
-                selecciones: {},
-                esInvitacion: true,
-                fechaCreacion: new Date()
-            });
-
-            console.log(`[LOBBY]: ✅ Duelo creado en activeDuels`);
-
-            // ✅ EMITIR duelo:iniciarDesafio (IGUAL QUE MATCHMAKING)
-            io.to(retadorSocketId).emit('duelo:iniciarDesafio', { salaId });
-            socket.emit('duelo:iniciarDesafio', { salaId });
-
-            console.log(`[LOBBY]: ✅ Eventos duelo:iniciarDesafio emitidos`);
-
-            // Limpiar sala temporal de salasEspera
-            salasEspera.delete(salaId);
-
-        } catch (error) {
-            console.error('[LOBBY ACEPTAR ERROR]:', error);
-            socket.emit('duelo:error', { 
-                mensaje: 'Error al aceptar la invitación: ' + error.message 
-            });
-        }
-    });
-
-    // ============================================================
-    // ❌ RECHAZAR INVITACIÓN
-    // ============================================================
-    socket.on('duelo:rechazarInvitacionLobby', ({ salaId }) => {
-        const idRetado = socket.userId;
-        
-        console.log(`[LOBBY]: Usuario ${idRetado} rechaza invitación ${salaId}`);
-
-        const sala = salasEspera.get(salaId);
-        
-        if (!sala) {
-            return socket.emit('duelo:error', { 
-                mensaje: 'Invitación no encontrada.' 
-            });
-        }
-
-        if (sala.idRetado !== idRetado && sala.retado !== idRetado) {
-            return socket.emit('duelo:error', { 
-                mensaje: 'No tienes permiso para rechazar esta invitación.' 
-            });
-        }
-
-        // Limpiar timeout
-        if (sala.timeoutId) {
-            clearTimeout(sala.timeoutId);
-        }
-
-        // Notificar al retador
-        const retadorSocketId = usuariosConectados.get(sala.idRetador);
-        if (retadorSocketId) {
-            io.to(retadorSocketId).emit('duelo:invitacionLobbyRechazada', {
-                mensaje: `${sala.usernameRetado} rechazó tu invitación.`
-            });
-        }
-
-        // Limpiar sala
-        sala.estado = ESTADOS_SALA.CANCELADA;
-        salasEspera.delete(salaId);
-
-        console.log(`[LOBBY]: Invitación ${salaId} rechazada y eliminada`);
-
-        socket.emit('duelo:invitacionRechazada', { 
-            mensaje: 'Invitación rechazada.' 
-        });
-    });
-
-    // ============================================================
-    // EVENTO CRÍTICO: sala:unirse
-    // ============================================================
+    // === EVENTO CRÍTICO: sala:unirse ===
     socket.on('sala:unirse', async ({ salaId }) => {
         const userId = socket.userId;
         
@@ -897,7 +377,7 @@ module.exports = (io, socket) => {
             return socket.emit('sala:error', { mensaje: 'Sala no existe o expiró.' });
         }
         
-        console.log(`[SALA ${salaId}]: ✅ Encontrada - Estado: ${sala.estado}`);
+        console.log(`[SALA ${salaId}]: ✅ Encontrada - Estado: ${sala.estado}, Tipo: ${sala.tipo}`);
 
         const retadorId = parseInt(sala.retador || sala.idRetador);
         const retadoId = parseInt(sala.retado || sala.idRetado);
@@ -909,7 +389,7 @@ module.exports = (io, socket) => {
             return socket.emit('sala:error', { mensaje: 'No tienes acceso a esta sala.' });
         }
 
-        // Actualizar socket ID del usuario (CRÍTICO)
+        // ✅ ACTUALIZAR SOCKET ID DEL USUARIO (CRÍTICO)
         usuariosConectados.set(userIdInt, socket.id);
         console.log(`[SALA ${salaId}]: Socket actualizado - Usuario ${userId}: ${socket.id}`);
 
@@ -937,142 +417,310 @@ module.exports = (io, socket) => {
             mensaje: `Conectado a la sala (${sala.jugadoresConectados.size}/2)`
         });
 
-       // ✅ VERIFICAR SI DEBEMOS INICIAR EL DUELO (MEJORADO)
+        // ✅ VERIFICAR SI DEBEMOS INICIAR EL DUELO
         if (sala.jugadoresConectados.size === 2) {
-            console.log(`[SALA ${salaId}]: ✅ Ambos jugadores conectados`);
-            console.log(`[SALA ${salaId}]: Tipo de sala: ${sala.tipo || 'matchmaking'}`);
+            console.log(`[SALA ${salaId}]: ✅ Ambos jugadores conectados, verificando inicio de duelo...`);
             
             // Pequeño delay para asegurar sincronización
             setTimeout(async () => {
-                const resultado = await verificarEIniciarDuelo(salaKey, io);
-                
-                if (resultado) {
-                    console.log(`[SALA ${salaId}]: ✅ Duelo iniciado correctamente`);
-                } else {
-                    console.error(`[SALA ${salaId}]: ❌ No se pudo iniciar el duelo`);
-                }
+                await verificarEIniciarDuelo(salaKey, io);
             }, 500);
-        } else {
-            console.log(`[SALA ${salaId}]: Esperando jugadores (${sala.jugadoresConectados.size}/2)`);
         }
     });
 
-    // ============================================================
-    // ACEPTAR DESAFÍO BD (NOTIFICACIÓN)
-    // ============================================================
+    // ✅ EVENTO: Aceptar desafío BD
     socket.on('duelo:aceptarDesafioBD', async ({ salaId, idRetado }) => {
-    console.log(`[DESAFÍO BD]: Usuario ${idRetado} acepta sala ${salaId}`);
-    
-    // Buscar sala (normalizar UUID)
-    const salaIdLower = salaId.toLowerCase();
-    let sala = null;
-    let salaKey = null;
-    
-    for (const [key, value] of [...salasPendientes.entries(), ...salasEspera.entries()]) {
-        if (key.toLowerCase() === salaIdLower) {
-            sala = value;
-            salaKey = key;
-            break;
+        console.log(`[DESAFÍO BD]: Usuario ${idRetado} acepta sala ${salaId}`);
+        
+        let sala = salasPendientes.get(salaId) || salasEspera.get(salaId);
+        
+        if (!sala) {
+            console.error(`[DESAFÍO BD]: Sala ${salaId} no encontrada`);
+            return socket.emit('duelo:error', { 
+                mensaje: 'El desafío expiró o es inválido.' 
+            });
         }
-    }
-    
-    if (!sala) {
-        console.error(`[DESAFÍO BD]: Sala ${salaId} no encontrada`);
-        return socket.emit('duelo:error', { 
-            mensaje: 'El desafío expiró o es inválido.' 
+        
+        const estadosAceptables = ['pendiente', 'esperando_aceptacion'];
+        if (!estadosAceptables.includes(sala.estado)) {
+            console.error(`[DESAFÍO BD]: Sala ${salaId} ya procesada (estado: ${sala.estado})`);
+            return socket.emit('duelo:error', { 
+                mensaje: 'Este desafío ya fue procesado.' 
+            });
+        }
+        
+        const retadorId = parseInt(sala.retador || sala.idRetador);
+        const retadoId = parseInt(sala.retado || sala.idRetado);
+        
+        if (parseInt(idRetado) !== retadoId) {
+            console.error(`[DESAFÍO BD]: Usuario ${idRetado} no es el retado (${retadoId})`);
+            return socket.emit('duelo:error', { mensaje: 'No puedes aceptar este desafío.' });
+        }
+        
+        const retadorSocketId = usuariosConectados.get(retadorId);
+        
+        if (!retadorSocketId) {
+            console.error(`[DESAFÍO BD]: Retador ${retadorId} no conectado`);
+            clearTimeout(sala.timeoutId);
+            salasPendientes.delete(salaId);
+            salasEspera.delete(salaId);
+            return socket.emit('duelo:error', { 
+                mensaje: 'El retador ya no está conectado.' 
+            });
+        }
+        
+        // ✅ MARCAR SALA COMO ACEPTADA
+        sala.estado = 'aceptada';
+        sala.jugadoresAceptados = sala.jugadoresAceptados || new Set();
+        sala.jugadoresAceptados.add(retadorId);
+        sala.jugadoresAceptados.add(retadoId);
+        
+        salasPendientes.set(salaId, sala);
+        salasEspera.set(salaId, sala);
+        
+        console.log(`[DESAFÍO BD]: ✅ Sala ${salaId} aceptada`);
+        
+        // Notificar al retador
+        io.to(retadorSocketId).emit('duelo:desafioAceptado', {
+            mensaje: '¡Tu desafío fue aceptado!',
+            salaId: salaId
         });
-    }
-    
-    const estadosAceptables = ['pendiente', 'esperando_aceptacion', ESTADOS_SALA.PENDIENTE];
-    if (!estadosAceptables.includes(sala.estado)) {
-        console.error(`[DESAFÍO BD]: Sala ${salaId} ya procesada (estado: ${sala.estado})`);
-        return socket.emit('duelo:error', { 
-            mensaje: 'Este desafío ya fue procesado.' 
+        
+        // Redirigir ambos usuarios
+        io.to(retadorSocketId).emit('duelo:redirigirASala', { 
+            salaId,
+            mensaje: '¡Desafío aceptado! Redirigiendo...'
         });
-    }
-    
-    const retadorId = parseInt(sala.retador || sala.idRetador);
-    const retadoId = parseInt(sala.retado || sala.idRetado);
-    const idRetadoInt = parseInt(idRetado);
-    
-    if (idRetadoInt !== retadoId) {
-        console.error(`[DESAFÍO BD]: Usuario ${idRetado} no es el retado (${retadoId})`);
-        return socket.emit('duelo:error', { mensaje: 'No puedes aceptar este desafío.' });
-    }
-    
-    const retadorSocketId = usuariosConectados.get(retadorId);
-    
-    if (!retadorSocketId) {
-        console.error(`[DESAFÍO BD]: Retador ${retadorId} no conectado`);
-        if (sala.timeoutId) clearTimeout(sala.timeoutId);
-        salasPendientes.delete(salaKey);
-        salasEspera.delete(salaKey);
-        return socket.emit('duelo:error', { 
-            mensaje: 'El retador ya no está conectado.' 
+        
+        socket.emit('duelo:redirigirASala', { 
+            salaId,
+            mensaje: 'Desafío aceptado. Redirigiendo...'
         });
-    }
-    
-    // ✅ MARCAR SALA COMO ACEPTADA
-    sala.estado = ESTADOS_SALA.ACEPTADA;
-    
-    // ✅ INICIALIZAR jugadoresConectados si no existe
-    if (!sala.jugadoresConectados) {
-        sala.jugadoresConectados = new Set();
-    }
-    
-    // ✅ AGREGAR AL RETADO (el que aceptó)
-    sala.jugadoresConectados.add(idRetadoInt);
-    usuariosConectados.set(idRetadoInt, socket.id);
-    
-    // Actualizar en ambos maps
-    salasPendientes.set(salaKey, sala);
-    salasEspera.set(salaKey, sala);
-    
-    console.log(`[DESAFÍO BD]: ✅ Sala ${salaId} aceptada`);
-    console.log(`[DESAFÍO BD]: Jugadores conectados: ${sala.jugadoresConectados.size}/2`);
-    
-    // Limpiar timeout
-    if (sala.timeoutId) {
-        clearTimeout(sala.timeoutId);
-        sala.timeoutId = null;
-    }
-    
-    // ✅ NOTIFICAR AL RETADOR
-    io.to(retadorSocketId).emit('duelo:desafioAceptado', {
-        mensaje: '¡Tu desafío fue aceptado!',
-        salaId: salaKey
+        
+        console.log(`[DESAFÍO BD]: Redirecciones enviadas para sala ${salaId}`);
+    });
+
+    // === INVITACIÓN DE LOBBY DIRECTO ===
+    socket.on('duelo:invitarLobby', async ({ idOponente, usernameOponente }) => {
+        const idRetador = socket.userId;
+        
+        if (!idRetador || idRetador === parseInt(idOponente)) {
+            return socket.emit('duelo:invitacionLobbyError', { 
+                mensaje: 'No puedes desafiarte a ti mismo.' 
+            });
+        }
+
+        try {
+            const [retadorData] = await db.query('SELECT username FROM usuario WHERE id_usuario = ?', [idRetador]);
+            if (retadorData.length === 0) {
+                return socket.emit('duelo:invitacionLobbyError', { mensaje: 'Error: Usuario no encontrado.' });
+            }
+
+            const usernameRetador = retadorData[0].username;
+            const oponenteSocketId = usuariosConectados.get(parseInt(idOponente));
+            
+            if (!oponenteSocketId) {
+                return socket.emit('duelo:invitacionLobbyError', { 
+                    mensaje: `${usernameOponente} no está conectado.` 
+                });
+            }
+
+            const salaId = uuidv4();
+            const timestamp = Date.now();
+
+            const nuevaSala = {
+                salaId,
+                idRetador: parseInt(idRetador),
+                idRetado: parseInt(idOponente),
+                retador: parseInt(idRetador),
+                retado: parseInt(idOponente),
+                usernameRetador,
+                usernameRetado: usernameOponente,
+                estado: 'esperando_aceptacion',
+                timestamp,
+                jugadoresConectados: new Set(),
+                jugadoresAceptados: new Set([parseInt(idRetador)]),
+                dueloCreado: false,
+                tipo: 'lobby_directo',
+                modo: 'general'
+            };
+
+            salasEspera.set(salaId, nuevaSala);
+            salasPendientes.set(salaId, nuevaSala);
+
+            console.log(`[LOBBY]: Sala ${salaId} creada - ${usernameRetador} → ${usernameOponente}`);
+
+            io.to(oponenteSocketId).emit('duelo:recibirInvitacionLobby', {
+                mensaje: `${usernameRetador} te desafía a un duelo!`,
+                id_retador: idRetador,
+                username_retador: usernameRetador,
+                salaId,
+                timestamp
+            });
+            
+            socket.emit('duelo:invitacionLobbyEnviada', { 
+                mensaje: `Invitación enviada a ${usernameOponente}.`,
+                salaId
+            });
+
+            // Timeout de 30 segundos
+            const timeoutId = setTimeout(() => {
+                const sala = salasEspera.get(salaId);
+                if (sala && sala.estado === 'esperando_aceptacion') {
+                    sala.estado = 'expirada';
+                    salasEspera.delete(salaId);
+                    salasPendientes.delete(salaId);
+                    
+                    socket.emit('duelo:invitacionExpirada', { mensaje: 'Invitación expiró.' });
+                    
+                    const currentOponenteSocketId = usuariosConectados.get(parseInt(idOponente));
+                    if (currentOponenteSocketId) {
+                        io.to(currentOponenteSocketId).emit('duelo:invitacionExpirada', { 
+                            mensaje: 'Desafío expiró.' 
+                        });
+                    }
+                }
+            }, 30000);
+            
+            nuevaSala.timeoutId = timeoutId;
+
+        } catch (error) {
+            console.error('[LOBBY ERROR]:', error);
+            socket.emit('duelo:invitacionLobbyError', { 
+                mensaje: 'Error del servidor: ' + error.message 
+            });
+        }
+    });
+
+    // === ACEPTAR INVITACIÓN DE LOBBY ===
+    socket.on('duelo:aceptarInvitacionLobby', ({ salaId }) => {
+        const id_retado = socket.userId;
+        if (!id_retado) return;
+
+        const sala = salasEspera.get(salaId);
+        if (!sala || (sala.idRetado !== id_retado && sala.retado !== id_retado)) {
+            return socket.emit('duelo:error', { mensaje: 'Invitación inválida.' });
+        }
+
+        sala.estado = 'aceptada';
+        salasEspera.set(salaId, sala);
+        salasPendientes.set(salaId, sala);
+
+        console.log(`[LOBBY]: Invitación aceptada en sala ${salaId}`);
+
+        const retadorId = sala.idRetador || sala.retador;
+        const retadorSocketId = usuariosConectados.get(retadorId);
+        
+        if (retadorSocketId) {
+            io.to(retadorSocketId).emit('duelo:redirigirASala', { 
+                salaId,
+                mensaje: '¡Invitación aceptada! Redirigiendo...'
+            });
+        }
+        
+        socket.emit('duelo:redirigirASala', { 
+            salaId,
+            mensaje: 'Invitación aceptada. Redirigiendo...'
+        });
+    });
+
+    socket.on('duelo:rechazarInvitacionLobby', ({ salaId }) => {
+        const sala = salasEspera.get(salaId);
+        if (sala) {
+            const retadorSocketId = usuariosConectados.get(sala.idRetador);
+            if (retadorSocketId) {
+                io.to(retadorSocketId).emit('duelo:invitacionLobbyRechazada', {
+                    mensaje: 'Tu invitación fue rechazada.'
+                });
+            }
+            salasEspera.delete(salaId);
+            salasPendientes.delete(salaId);
+        }
+    });
+
+    // === MATCHMAKING UNIFICADO ===
+    const buscarPareja = (pool, modo, dificultad = null) => {
+        if (pool.length < 2) {
+            console.log(`[MATCHMAKING ${modo}]: Solo ${pool.length} jugador(es) en cola`);
+            return;
+        }
+        
+        const jugadorA = pool.shift();
+        const jugadorB = pool.shift();
+        
+        console.log(`[MATCHMAKING ${modo}]: ✅ Pareja encontrada!`);
+        
+        // ✅ USAR SISTEMA DE SALAS UNIFICADO
+        crearSalaMatchmaking(jugadorA, jugadorB, modo, dificultad, io);
+    };
+
+    socket.on('duelo_com:buscar:carrera', async ({ user, dificultad }) => {
+        try {
+            const [[{ count }]] = await db.query(
+                'SELECT COUNT(*) as count FROM usuario_carrera WHERE id_usuario = ?', 
+                [user.id_usuario]
+            );
+            
+            if (count === 0) {
+                return socket.emit('duelo:error:sinCarrera', { 
+                    mensaje: 'Debes registrar una carrera en tu perfil.' 
+                });
+            }
+
+            let pool;
+            if (dificultad === 'facil') pool = poolCarreraFacil;
+            else if (dificultad === 'normal') pool = poolCarreraNormal;
+            else pool = poolCarreraDificil;
+
+            if (!pool.some(p => p.userId === user.id_usuario)) {
+                pool.push({ 
+                    userId: user.id_usuario, 
+                    user, 
+                    socketId: socket.id, 
+                    dificultad 
+                });
+                console.log(`[MATCHMAKING]: ${user.username} en cola Carrera ${dificultad}. Total: ${pool.length}`);
+                buscarPareja(pool, 'carrera', dificultad);
+            }
+        } catch (error) {
+            console.error("[MATCHMAKING ERROR]:", error);
+            socket.emit('duelo:error', { mensaje: 'Error al buscar pareja' });
+        }
+    });
+
+    socket.on('duelo_com:buscar:general', (user) => {
+        if (!poolGeneral.some(p => p.userId === user.id_usuario)) {
+            poolGeneral.push({ 
+                userId: user.id_usuario, 
+                user, 
+                socketId: socket.id 
+            });
+            console.log(`[MATCHMAKING]: ${user.username} en cola General. Total: ${poolGeneral.length}`);
+            buscarPareja(poolGeneral, 'general');
+        }
     });
     
-    // ✅ REDIRIGIR AMBOS USUARIOS A LA SALA
-    io.to(retadorSocketId).emit('duelo:redirigirASala', { 
-        salaId: salaKey,
-        mensaje: '¡Desafío aceptado! Redirigiendo...'
+    socket.on('duelo:cancelarBusqueda', (userId) => {
+        poolCarreraFacil = poolCarreraFacil.filter(p => p.userId !== userId);
+        poolCarreraNormal = poolCarreraNormal.filter(p => p.userId !== userId);
+        poolCarreraDificil = poolCarreraDificil.filter(p => p.userId !== userId);
+        poolGeneral = poolGeneral.filter(p => p.userId !== userId);
+        console.log(`[MATCHMAKING]: Usuario ${userId} canceló búsqueda`);
     });
-    
-    socket.emit('duelo:redirigirASala', { 
-        salaId: salaKey,
-        mensaje: 'Desafío aceptado. Redirigiendo...'
-    });
-    
-    console.log(`[DESAFÍO BD]: Redirecciones enviadas para sala ${salaKey}`);
-});
 
     socket.on('sala:salir', ({ salaId }) => {
         const sala = salasEspera.get(salaId);
         if (sala && socket.userId) {
             sala.jugadoresConectados.delete(socket.userId);
-            console.log(`[SALA]: Usuario ${socket.userId} salió de sala ${salaId}`);
-            
             if (sala.jugadoresConectados.size === 0) {
                 salasEspera.delete(salaId);
-                console.log(`[SALA]: Sala ${salaId} eliminada (sin jugadores)`);
+                salasPendientes.delete(salaId);
+                console.log(`[SALA]: ${salaId} eliminada (sin jugadores)`);
             }
         }
     });
     
-    // ============================================================
-    // EVENTOS DEL JUEGO
-    // ============================================================
+    // === EVENTOS DEL JUEGO ===
     socket.on('duelo:clienteListo', async ({ salaId, userId }) => {
         const duelo = activeDuels.get(salaId);
         if (!duelo) {
@@ -1082,12 +730,11 @@ module.exports = (io, socket) => {
 
         console.log(`[CLIENT READY]: Usuario ${userId} listo en sala ${salaId}`);
 
-        // Verificar si el jugador existe en el duelo
         if (!duelo.jugadores[userId] || !duelo.jugadores[userId].username) {
             console.log(`[CLIENT READY]: Cargando datos de usuario ${userId} desde BD`);
             try {
                 const [userData] = await db.query(
-                    'SELECT id_usuario, username, foto_perfil from usuario WHERE id_usuario = ?', 
+                    'SELECT id_usuario, username, foto_perfil FROM usuario WHERE id_usuario = ?', 
                     [userId]
                 );
                 if (userData.length > 0) {
@@ -1108,7 +755,6 @@ module.exports = (io, socket) => {
             }
         }
 
-        // Actualizar socket ID por si cambió
         duelo.jugadores[userId].socketId = socket.id;
         duelo.jugadores[userId].listo = true;
         
@@ -1120,7 +766,6 @@ module.exports = (io, socket) => {
         if (todosListos && jugadoresIds.length === 2) {
             console.log(`[DUELO ${salaId}]: ✅ TODOS LISTOS! Iniciando Mini-Draft...`);
             
-            // Enviar info del oponente a cada jugador
             jugadoresIds.forEach(playerId => {
                 const oponenteId = jugadoresIds.find(id => id !== playerId);
                 const oponenteData = duelo.jugadores[oponenteId];
@@ -1148,7 +793,7 @@ module.exports = (io, socket) => {
                         FROM tematica t
                         INNER JOIN pregunta p ON t.id_tematica = p.id_tematica
                         WHERE t.id_carrera IN (
-                            SELECT uc1.id_carrera from usuario_carrera uc1
+                            SELECT uc1.id_carrera FROM usuario_carrera uc1
                             INNER JOIN usuario_carrera uc2 ON uc1.id_carrera = uc2.id_carrera
                             WHERE uc1.id_usuario = ? AND uc2.id_usuario = ?
                         )
@@ -1208,7 +853,7 @@ module.exports = (io, socket) => {
             duelo.estado = 'en_juego';
             io.to(salaId).emit('duelo:miniDraftFinalizado', { selecciones: duelo.selecciones });
             
-            // Limpiar las salas temporales AHORA que el duelo comenzó
+            // Limpiar salas temporales
             salasPendientes.delete(salaId);
             salasEspera.delete(salaId);
             console.log(`[DRAFT ${salaId}]: Salas temporales limpiadas`);
@@ -1481,17 +1126,14 @@ module.exports = (io, socket) => {
 
     socket.on('disconnect', () => {
         if (socket.userId) {
-            const userId = socket.userId;
-            
-            // Remover de todas las pools de matchmaking
-            poolCarreraFacil = poolCarreraFacil.filter(p => p.userId !== userId);
-            poolCarreraNormal = poolCarreraNormal.filter(p => p.userId !== userId);
-            poolCarreraDificil = poolCarreraDificil.filter(p => p.userId !== userId);
-            poolGeneral = poolGeneral.filter(p => p.userId !== userId);
-            
-            usuariosConectados.delete(userId);
-            usuariosEnPortalCompetitivo.delete(userId);
-            console.log(`Usuario ${userId} desconectado`);
+            usuariosConectados.delete(socket.userId);
+            usuariosEnPortalCompetitivo.delete(socket.userId);
+            console.log(`Usuario ${socket.userId} desconectado`);
         }
+        
+        poolCarreraFacil = poolCarreraFacil.filter(p => p.socketId !== socket.id);
+        poolCarreraNormal = poolCarreraNormal.filter(p => p.socketId !== socket.id);
+        poolCarreraDificil = poolCarreraDificil.filter(p => p.socketId !== socket.id);
+        poolGeneral = poolGeneral.filter(p => p.socketId !== socket.id);
     });
 };

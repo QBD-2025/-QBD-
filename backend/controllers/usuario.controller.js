@@ -68,7 +68,7 @@ async function verPerfil(req, res) {
     const userProfile = {
       ...userData[0],
       role: roles[userData[0].id_tp_usuario] || 'USUARIO',
-      avatarUrl: userData[0].foto_perfil || '/media/images/default_avatar.png'
+      avatarUrl: userData[0].foto_perfil || '/media/uploads/default_avatar.png'
     };
 
     res.render('usuario', { layout: 'main', title: 'Perfil de Usuario', user: userProfile });
@@ -91,7 +91,7 @@ async function vistaEditarUsuario(req, res) {
       user: {
         ...userData[0],
         role: roles[userData[0].id_tp_usuario] || 'USUARIO',
-        avatarUrl: userData[0].foto_perfil || '/media/images/default_avatar.png'
+        avatarUrl: userData[0].foto_perfil || '/uploads/default_avatar.png'
       }
     });
   } catch (error) {

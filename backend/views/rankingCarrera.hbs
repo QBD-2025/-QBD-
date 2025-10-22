@@ -63,10 +63,10 @@
                 const mostrarBotonDesafiar = !esYo && i < miIndex;
 
                 item.innerHTML = `
-                    <img src="${jugador.foto_perfil || '/media/images/default_avatar.png'}" 
-                         alt="Avatar de ${jugador.username}" 
-                         class="player-avatar"
-                         onerror="this.src='/media/images/default_avatar.png'">
+                    <img src="${jugador.foto_perfil || '/uploads/default_avatar.png'}" 
+                        alt="Avatar de ${jugador.username}" 
+                        class="player-avatar"
+                        onerror="this.src='/uploads/default_avatar.png'">
                     <div class="player-info">
                         <div class="player-name">${jugador.username} ${esYo ? '<span class="badge-yo">(Tú)</span>' : ''}</div>
                         <div class="player-stats">

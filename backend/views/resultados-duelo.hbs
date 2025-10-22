@@ -51,7 +51,7 @@
         <div class="puntajes">
             <div class="puntaje-card">
                 <h4>Tu puntaje</h4>
-                <div class="puntaje-numero">{{miPuntaje}}/10</div>
+                <div class="puntaje-numero">{{correctas}}/{{totalPreguntas}}</div>
                 <div>Preguntas correctas</div>
             </div>
             
@@ -59,7 +59,7 @@
                 <h4>{{#if nombreOponente}}{{nombreOponente}}{{else}}Oponente{{/if}}</h4>
                 <div class="puntaje-numero">
                     {{#if ambosTerminaron}}
-                        {{oponentePuntaje}}/10
+                        {{oponentePuntaje}}/{{totalPreguntas}}
                     {{else}}
                         <span class="oponente-pendiente">En progreso...</span>
                     {{/if}}
@@ -161,9 +161,9 @@
 
         <!-- Botón para volver -->
         <div style="text-align: center; margin-top: 30px;">
-            <a href="/portal" class="btn-volver">
+            <button id="btnVolver" class="btn-volver" data-duelo-id="{{duelo.id_duelo}}">
                 🏠 Volver al Portal de Duelos
-            </a>
+            </button>
         </div>
     </div>
 
@@ -200,6 +200,37 @@
                     console.error('Error verificando estado:', error);
                     setTimeout(verificarEstado, 60000);
                 });
+        }
+
+        const btnVolver = document.getElementById('btnVolver');
+            btnVolver.addEventListener('click', function(e) {
+                e.preventDefault(); // Evita que navegue inmediatamente
+
+                fetch('/competitivo/duelo/volver/{{duelo.id_duelo}}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ jugador: '{{esRetador}}' ? 'retador' : 'defensor' })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.ambosVolvieron) {
+                        // Ambos hicieron clic en "volver", ejecutar función
+                        ejecutarFuncionEspecial();
+                    } else {
+                        // Solo este usuario hizo clic, podemos redirigir igual
+                        window.location.href = '/portal';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error notificando clic:', err);
+                    window.location.href = '/portal'; // fallback
+                });
+            });
+
+        function ejecutarFuncionEspecial() {
+            alert("¡Ambos jugadores volvieron al portal! Ejecutando función...");
+            // Aquí pones la función que quieras ejecutar
+            window.location.href = '/portal';
         }
 
         // Iniciar verificación después de 10 segundos

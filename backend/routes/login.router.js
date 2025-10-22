@@ -130,7 +130,7 @@ router.post('/login', async (req, res) => {
                 username: user.username,
                 email: user.email,
                 id_tp_usuario: user.id_tp_usuario,
-                avatarUrl: user.foto_perfil || '/media/images/default_avatar.png',
+                avatarUrl: user.foto_perfil || '/uploads/default_avatar.png',
                 id_carrera: null
             };
 
@@ -149,7 +149,7 @@ router.post('/login', async (req, res) => {
             username: user.username,
             email: user.email,
             id_tp_usuario: user.id_tp_usuario,
-            avatarUrl: user.foto_perfil || '/media/images/default_avatar.png',
+            avatarUrl: user.foto_perfil || '/uploads/default_avatar.png',
             id_carrera: carreraResult.length > 0 ? carreraResult[0].id_carrera : null
         };
 
