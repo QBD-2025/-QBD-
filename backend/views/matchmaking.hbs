@@ -1,0 +1,2352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Duelos de Ascenso - QBD</title>
+    <link rel="stylesheet" href="/css/competitivo-duelos.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ============================================ */
+        /* ESTILOS DEL MODAL DE RESULTADOS */
+        /* ============================================ */
+        
+        #modalResultadoDetallado {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        #modalResultadoDetallado.visible {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.5s forwards;
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        .resultado-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .resultado-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .resultado-icono {
+            font-size: 80px;
+            margin-bottom: 15px;
+            animation: bounceIn 0.8s ease;
+        }
+        
+        @keyframes bounceIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .resultado-titulo {
+            font-size: 42px;
+            font-weight: bold;
+            color: white;
+            margin: 0;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .resultado-subtitulo {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 10px;
+        }
+        
+        /* ============================================ */
+        /* SECCIÓN DE JUGADORES */
+        /* ============================================ */
+        
+        .jugadores-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .jugador-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            animation: slideInFromSide 0.7s ease;
+        }
+        
+        .jugador-card.ganador {
+            border-color: #ffd700;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+        }
+        
+        .jugador-card:nth-child(1) {
+            animation-name: slideInLeft;
+        }
+        
+        .jugador-card:nth-child(2) {
+            animation-name: slideInRight;
+        }
+        
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .jugador-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .jugador-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .jugador-info h3 {
+            margin: 0;
+            color: white;
+            font-size: 22px;
+        }
+        
+        .jugador-stats {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+        
+        /* ============================================ */
+        /* DESGLOSE DE PUNTOS CON ANIMACIÓN */
+        /* ============================================ */
+        
+        .puntos-desglose {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .puntos-inicial {
+            font-size: 18px;
+            color: white;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .puntos-inicial .valor {
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        .desglose-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            color: white;
+            opacity: 0;
+            transform: translateX(-20px);
+            animation: slideInItem 0.4s ease forwards;
+        }
+        
+        .desglose-item:nth-child(1) { animation-delay: 0.1s; }
+        .desglose-item:nth-child(2) { animation-delay: 0.2s; }
+        .desglose-item:nth-child(3) { animation-delay: 0.3s; }
+        .desglose-item:nth-child(4) { animation-delay: 0.4s; }
+        .desglose-item:nth-child(5) { animation-delay: 0.5s; }
+        .desglose-item:nth-child(6) { animation-delay: 0.6s; }
+        
+        @keyframes slideInItem {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .desglose-concepto {
+            font-size: 14px;
+        }
+        
+        .desglose-valor {
+            font-weight: bold;
+            font-size: 16px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            animation: pulse 1s ease infinite;
+        }
+        
+        .desglose-valor.positivo {
+            color: #4ade80;
+            background: rgba(74, 222, 128, 0.2);
+        }
+        
+        .desglose-valor.negativo {
+            color: #f87171;
+            background: rgba(248, 113, 113, 0.2);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        /* ============================================ */
+        /* TOTAL ANIMADO */
+        /* ============================================ */
+        
+        .puntos-total {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .total-label {
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .total-cambio {
+            font-size: 28px;
+            font-weight: bold;
+            animation: scaleIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            animation-delay: 0.7s;
+            animation-fill-mode: backwards;
+        }
+        
+        .total-cambio.positivo {
+            color: #4ade80;
+            text-shadow: 0 0 20px rgba(74, 222, 128, 0.5);
+        }
+        
+        .total-cambio.negativo {
+            color: #f87171;
+        }
+        
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+        
+        .puntos-final {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .puntos-final .valor-final {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffd700;
+            display: block;
+            margin-top: 5px;
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% {
+                text-shadow: 0 0 10px rgba(255, 215, 0, 0.5),
+                             0 0 20px rgba(255, 215, 0, 0.3);
+            }
+            50% {
+                text-shadow: 0 0 20px rgba(255, 215, 0, 0.8),
+                             0 0 30px rgba(255, 215, 0, 0.5),
+                             0 0 40px rgba(255, 215, 0, 0.3);
+            }
+        }
+        
+        /* ============================================ */
+        /* ESTADÍSTICAS RÁPIDAS */
+        /* ============================================ */
+        
+        .stats-rapidas {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .stat-badge {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-valor {
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 2px;
+        }
+        
+        /* ============================================ */
+        /* BOTÓN DE ACCIÓN */
+        /* ============================================ */
+        
+        .btn-volver-portal {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 30px auto 0;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: 2px solid white;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-volver-portal:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+        
+        /* ============================================ */
+        /* RESPONSIVE */
+        /* ============================================ */
+        
+        @media (max-width: 768px) {
+            .jugadores-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .resultado-container {
+                padding: 20px;
+            }
+            
+            .resultado-titulo {
+                font-size: 32px;
+            }
+            
+            .resultado-icono {
+                font-size: 60px;
+            }
+        }
+        .negociacion-apuesta-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px auto;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideInFromTop 0.5s ease;
+        }
+
+        @keyframes slideInFromTop {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .negociacion-header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .negociacion-header h3 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+        }
+
+        .negociacion-ronda {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .negociacion-body {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 200px;
+        }
+
+        .propuesta-actual {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .avatar-propuesta img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid white;
+        }
+
+        .texto-propuesta {
+            flex: 1;
+            color: white;
+        }
+
+        .texto-propuesta p {
+            margin: 5px 0;
+        }
+
+        .cantidad-propuesta {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .tu-turno {
+            text-align: center;
+        }
+
+        .instruccion {
+            color: white;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .selector-cantidad {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .btn-cantidad-rapida {
+            padding: 10px 20px;
+            border: 2px solid white;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cantidad-rapida:hover {
+            background: white;
+            color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .btn-cantidad-rapida.selected {
+            background: #ffd700;
+            color: #333;
+            border-color: #ffd700;
+        }
+
+        .input-custom-cantidad {
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .input-custom-cantidad label {
+            display: block;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .input-custom-cantidad input {
+            width: 120px;
+            padding: 8px;
+            border: 2px solid white;
+            border-radius: 8px;
+            font-size: 18px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .limite-puntos {
+            display: block;
+            margin-top: 5px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .btn-enviar-propuesta {
+            width: 100%;
+            padding: 12px;
+            background: #ffd700;
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-enviar-propuesta:hover {
+            background: #ffed4e;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .esperando-respuesta {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .esperando-respuesta p {
+            color: white;
+            font-size: 16px;
+        }
+
+        .responder-propuesta {
+            text-align: center;
+        }
+
+        .pregunta {
+            color: white;
+            font-size: 18px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .botones-respuesta {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn-aceptar-apuesta,
+        .btn-contraoferta {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-aceptar-apuesta {
+            background: #4ade80;
+            color: white;
+        }
+
+        .btn-aceptar-apuesta:hover {
+            background: #22c55e;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 222, 128, 0.4);
+        }
+
+        .btn-contraoferta {
+            background: #f87171;
+            color: white;
+        }
+
+        .btn-contraoferta:hover {
+            background: #ef4444;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(248, 113, 113, 0.4);
+        }
+
+        .negociacion-footer {
+            margin-top: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .info-timeout {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .info-default {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* Animación de pulsación para cantidad */
+        .cantidad-propuesta {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            }
+            50% {
+                text-shadow: 0 0 20px rgba(255, 215, 0, 0.8),
+                            0 0 30px rgba(255, 215, 0, 0.5);
+            }
+        }
+        /* ============================================ */
+        .resultado-container.ganador {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .resultado-container.ganador .resultado-icono {
+            color: #ffd700;
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+        }
+
+        .resultado-container.ganador .jugador-card.mi-card {
+            border-color: #ffd700;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
+            background: rgba(255, 215, 0, 0.15);
+        }
+
+        /* Variante PERDEDOR */
+        .resultado-container.perdedor {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .resultado-container.perdedor .resultado-icono {
+            color: #fca5a5;
+        }
+
+        .resultado-container.perdedor .jugador-card.mi-card {
+            border-color: #fca5a5;
+            box-shadow: 0 0 30px rgba(252, 165, 165, 0.4);
+        }
+
+        /* Variante EMPATE */
+        .resultado-container.empate {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .resultado-container.empate .resultado-icono {
+            color: #93c5fd;
+        }
+
+        .resultado-container.empate .jugador-card {
+            border-color: #93c5fd;
+        }
+
+        /* Efecto de brillo en cambio positivo */
+        .total-cambio.positivo {
+            animation: pulse-success 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-success {
+            0%, 100% {
+                text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+            }
+            50% {
+                text-shadow: 0 0 30px rgba(74, 222, 128, 1),
+                            0 0 40px rgba(74, 222, 128, 0.7);
+            }
+        }
+
+        /* Marcador de "Mi Card" */
+        .jugador-card.mi-card::before {
+            content: "TÚ";
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: #ffd700;
+            color: #333;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Animación de confetti para victoria */
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ffd700;
+            animation: confetti-fall 3s linear;
+        }
+    </style>
+</head>
+<body>
+    <!-- ============================================================ -->
+    <!-- VISTA DE MATCHMAKING/PORTAL -->
+    <!-- ============================================================ -->
+    <div id="matchmakingView" class="duelo-container">
+        <aside class="player-card">
+            <img src="{{user.foto_perfil}}" alt="Tu avatar" class="player-avatar">
+            <h2>{{user.username}}</h2>
+            <div class="player-rank">
+                <p>Rango: #{{stats.rank}}</p>
+                <span id="puntosUsuario">{{stats.puntos}} Puntos</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress" style="width: {{stats.progress_percent}}%;"></div>
+            </div>
+            <p class="next-rank-info">Faltan {{stats.points_needed}} puntos para el siguiente rango</p>
+            <hr>
+            <div class="player-stats">
+                <p><i class="fas fa-fist-raised"></i> Récord: {{stats.victorias}}V - {{stats.derrotas}}D</p>
+                <p><i class="fas fa-fire"></i> Racha Actual: {{stats.racha}} Victorias</p>
+            </div>
+        </aside>
+
+        <main class="matchmaking-center">
+            <h1>Duelos de Ascenso</h1>
+            <p class="subtitle">Elige tu arena y demuestra tu conocimiento.</p>
+            
+            <!-- Selector de Apuesta -->
+            <div id="apuestaContainer" class="apuesta-container" style="margin: 20px 0;">
+                <label for="selectorApuesta">
+                    <i class="fas fa-coins"></i> Apuesta del Duelo:
+                </label>
+                <input type="range" id="selectorApuesta" min="10" max="100" step="10" value="20">
+                <span id="valorApuesta" class="valor-apuesta">20 Puntos</span>
+                <p class="info-apuesta">
+                    <i class="fas fa-info-circle"></i> 
+                    El ganador se lleva el bote (x2) + recompensas adicionales
+                </p>
+            </div>
+            
+            <div id="actionContainer" class="action-container">
+                <button id="btnBuscarCarrera" class="btn-buscar-duelo btn-carrera">
+                    <i class="fas fa-user-graduate"></i> DUELO POR CARRERA
+                </button>
+                <button id="btnBuscarGeneral" class="btn-buscar-duelo btn-general">
+                    <i class="fas fa-globe"></i> DUELO GENERAL
+                </button>
+                <button id="btnCancelarBusqueda" class="btn-cancelar-duelo" style="display: none;">
+                    <i class="fas fa-times"></i> CANCELAR
+                </button>
+            </div>
+
+            <p id="statusText" class="status-text">Compite en tu área de especialidad o en cultura general.</p>
+        </main>
+
+        <aside class="info-panel">
+            <div class="tabs-container">
+                <div class="tabs">
+                    <button class="tab-link active" data-tab="tab-global">🌍 Global</button>
+                    <button class="tab-link" data-tab="tab-carrera">🎓 Carrera</button>
+                </div>
+
+                <div id="tab-global" class="tab-content active">
+                    <div id="rankingGlobalContainer" class="ranking-list"></div>
+                </div>
+
+                <div id="tab-carrera" class="tab-content">
+                    <select id="selectorCarrera">
+                        <option value="">Selecciona tu carrera</option>
+                    </select>
+                    <div id="rankingCarreraContainer" class="ranking-list"></div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- VISTA DE DUELO -->
+    <!-- ============================================================ -->
+    <div id="dueloView" class="duelo-body" style="display: none;">
+        <header class="duelo-header">
+            <div id="infoDuelo" class="info-duelo">
+                <span id="apuestaActual" class="apuesta-info">🎰 Bote: 0 pts</span>
+                <span id="dificultadActual" class="dificultad-info">📊 Dificultad: Normal</span>
+            </div>
+            <div id="marcador" class="marcador">
+                <span id="puntuacionTuya">0</span> - <span id="puntuacionOponente">0</span>
+            </div>
+            <div id="preguntaContainer" class="pregunta-container">
+                <p id="numeroPregunta">Pregunta 1 / 5</p>
+                <h2 id="textoPregunta">¡Duelo encontrado! Preparando la primera pregunta...</h2>
+            </div>
+            <div id="cronometro" class="cronometro">10</div>
+        </header>
+
+        <!-- FASE DE SELECCIÓN (DRAFT) -->
+        <div id="draftContainer" class="draft-container">
+            <h2 id="draftTitle">Selección de Campo de Batalla</h2>
+            <p id="draftInstruction">Esperando al oponente...</p>
+            
+            <!-- Botón de Gambito -->
+            <div id="gambitoContainer" class="gambito-container">
+                <button id="btnGambito" class="btn-gambito">
+                    <i class="fas fa-dice"></i> ACTIVAR GAMBITO
+                </button>
+                <p class="gambito-info">
+                    Si ganas todas las respuestas de tu categoría: <strong>+50% bonus</strong><br>
+                    Si fallas alguna: <strong>-25% de puntos</strong>
+                </p>
+            </div>
+            <div id="negociacionApuestaContainer" class="negociacion-apuesta-container" style="display: none;">
+                <div class="negociacion-header">
+                    <h3>💰 Negociación de Apuesta</h3>
+                    <p class="negociacion-ronda">Ronda <span id="rondaNegociacion">1</span>/3</p>
+                </div>
+                
+                <div class="negociacion-body">
+                    <div id="propuestaActual" class="propuesta-actual">
+                        <div class="avatar-propuesta">
+                            <img id="avatarProponente" src="" alt="Avatar">
+                        </div>
+                        <div class="texto-propuesta">
+                            <p id="textoProponente">Esperando propuesta...</p>
+                            <p class="cantidad-propuesta" id="cantidadPropuesta">-- pts</p>
+                        </div>
+                    </div>
+                    
+                    <div id="tuTurno" class="tu-turno" style="display: none;">
+                        <p class="instruccion">Es tu turno de proponer</p>
+                        <div class="selector-cantidad">
+                            <button class="btn-cantidad-rapida" data-cantidad="10">10</button>
+                            <button class="btn-cantidad-rapida" data-cantidad="20">20</button>
+                            <button class="btn-cantidad-rapida" data-cantidad="50">50</button>
+                            <button class="btn-cantidad-rapida" data-cantidad="100">100</button>
+                        </div>
+                        <div class="input-custom-cantidad">
+                            <label for="inputCantidadCustom">O elige cantidad:</label>
+                            <input type="number" id="inputCantidadCustom" min="10" max="100" step="10" value="20">
+                            <span class="limite-puntos">Máximo: <span id="maxApuesta">100</span> pts</span>
+                        </div>
+                        <button id="btnEnviarPropuesta" class="btn-enviar-propuesta">
+                            Proponer Apuesta
+                        </button>
+                    </div>
+                    
+                    <div id="esperandoRespuesta" class="esperando-respuesta" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>Esperando respuesta del oponente...</p>
+                    </div>
+                    
+                    <div id="responderPropuesta" class="responder-propuesta" style="display: none;">
+                        <p class="pregunta">¿Aceptas esta apuesta?</p>
+                        <div class="botones-respuesta">
+                            <button id="btnAceptarApuesta" class="btn-aceptar-apuesta">
+                                ✓ Aceptar
+                            </button>
+                            <button id="btnContraoferta" class="btn-contraoferta">
+                                ✗ Contraoferta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="negociacion-footer">
+                    <p class="info-timeout">Tiempo restante: <span id="tiempoNegociacion">60</span>s</p>
+                    <p class="info-default">Si no hay acuerdo, se usará apuesta por defecto (20 pts)</p>
+                </div>
+            </div>
+            <div id="materiasGrid" class="materias-grid"></div>
+        </div>
+
+        <!-- ARENA DE COMBATE -->
+        <main id="arenaContainer" class="arena-container" style="display: none;">
+            <section id="zonaJugador" class="zona-jugador">
+                <div class="info-jugador">
+                    <img src="{{user.foto_perfil}}" alt="Tu Avatar" class="avatar">
+                    <h3>{{user.username}}</h3>
+                    <div class="jugador-stats">
+                        <span class="racha" id="tuRacha">🔥 x0</span>
+                        <span class="powerup" id="tuPowerUp" style="display: none;">
+                            <button id="btnUsarPowerUp" class="btn-powerup"></button>
+                        </span>
+                    </div>
+                </div>
+                <div id="opcionesContainer" class="opciones-container"></div>
+            </section>
+
+            <section id="zonaOponente" class="zona-jugador oponente">
+                <div class="info-jugador">
+                    <img id="oponenteAvatar" src="/uploads/default_avatar.png" alt="Avatar Oponente" class="avatar">
+                    <h3 id="oponenteUsername">Oponente</h3>
+                    <div class="jugador-stats">
+                        <span class="racha" id="oponenteRacha">🔥 x0</span>
+                        <span class="powerup" id="oponentePowerUp" style="display: none;"></span>
+                    </div>
+                </div>
+                <div id="estadoOponente" class="estado-oponente"></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MODAL DE DIFICULTAD -->
+    <!-- ============================================================ -->
+    <div id="modalDificultad" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Elige la Dificultad</h2>
+            <p>Las preguntas serán más difíciles, ¡pero la recompensa será mayor!</p>
+            <div class="dificultad-opciones">
+                <button data-dificultad="facil" class="dif-facil">
+                    <i class="fas fa-smile"></i> Fácil
+                    <small>Recompensa: 20 pts</small>
+                </button>
+                <button data-dificultad="normal" class="dif-normal">
+                    <i class="fas fa-meh"></i> Normal
+                    <small>Recompensa: 30 pts</small>
+                </button>
+                <button data-dificultad="dificil" class="dif-dificil">
+                    <i class="fas fa-fire"></i> Difícil
+                    <small>Recompensa: 50 pts</small>
+                </button>
+            </div>
+            <button id="cerrarModalDificultad" class="btn-cerrar-modal">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="modalResultadoDetallado" class="modal-resultado-overlay">
+        <div id="resultadoContainer" class="resultado-container">
+            <!-- Canvas para confetti (solo victoria) -->
+            <canvas id="confettiCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;"></canvas>
+            
+            <div style="position: relative; z-index: 2;">
+                <div class="resultado-header">
+                    <div class="resultado-icono" id="resultIcono">🏆</div>
+                    <h1 class="resultado-titulo" id="resultTitulo">¡VICTORIA!</h1>
+                    <p class="resultado-subtitulo" id="resultSubtitulo">Has demostrado tu conocimiento</p>
+                </div>
+                
+                <div class="jugadores-row" id="jugadoresContainer">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+                
+                <button class="btn-volver-portal" id="btnVolverPortal">
+                    🚪 Volver al Portal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+// ================================================================
+// CONFIGURACIÓN INICIAL Y VARIABLES GLOBALES
+// ================================================================
+const socket = io();
+const user = {{{json user}}};
+const urlParams = new URLSearchParams(window.location.search);
+const desdeNotificacion = urlParams.get('origen') === 'notificacion';
+
+let salaId = null;
+let salaActual = null;
+let oponente = null;
+let cronometroInterval = null;
+let preguntaActualId = null;
+let socketRegistrado = false;
+let apuestaSeleccionada = 20;
+let gambitoActivado = false;
+let miPowerUp = null;
+let escudoActivo = false;
+let estadoNegociacion = {
+    activa: false,
+    rondaActual: 1,
+    propuestaActual: null,
+    esProponente: false,
+    tiempoRestante: 60,
+    intervalTimer: null
+};
+// Elementos del DOM
+const matchmakingView = document.getElementById('matchmakingView');
+const dueloView = document.getElementById('dueloView');
+const btnBuscarCarrera = document.getElementById('btnBuscarCarrera');
+const btnBuscarGeneral = document.getElementById('btnBuscarGeneral');
+const btnCancelarBusqueda = document.getElementById('btnCancelarBusqueda');
+const statusText = document.getElementById('statusText');
+const modalDificultad = document.getElementById('modalDificultad');
+const selectorApuesta = document.getElementById('selectorApuesta');
+const valorApuesta = document.getElementById('valorApuesta');
+const draftContainer = document.getElementById('draftContainer');
+const arenaContainer = document.getElementById('arenaContainer');
+const materiasGrid = document.getElementById('materiasGrid');
+const btnGambito = document.getElementById('btnGambito');
+const textoPregunta = document.getElementById('textoPregunta');
+const opcionesContainer = document.getElementById('opcionesContainer');
+const cronometroEl = document.getElementById('cronometro');
+const tuRachaEl = document.getElementById('tuRacha');
+const oponenteRachaEl = document.getElementById('oponenteRacha');
+const tuPowerUpEl = document.getElementById('tuPowerUp');
+const btnUsarPowerUp = document.getElementById('btnUsarPowerUp');
+const apuestaActualEl = document.getElementById('apuestaActual');
+const dificultadActualEl = document.getElementById('dificultadActual');
+const modalResultado = document.getElementById('modalResultado');
+
+console.log('[DUELO INIT]: Portal iniciado para usuario:', user.id_usuario);
+
+// ================================================================
+// SELECTOR DE APUESTA
+// ================================================================
+selectorApuesta.addEventListener('input', (e) => {
+    apuestaSeleccionada = parseInt(e.target.value);
+    valorApuesta.textContent = `${apuestaSeleccionada} Puntos`;
+    
+    const bote = apuestaSeleccionada * 2;
+    document.querySelector('.info-apuesta').innerHTML = `
+        <i class="fas fa-trophy"></i> 
+        Bote total: <strong>${bote} pts</strong> para el ganador
+    `;
+});
+
+// ================================================================
+// REGISTRO DE SOCKET
+// ================================================================
+socket.userId = user?.id_usuario ? parseInt(user.id_usuario) : null;
+
+if (user?.id_usuario) {
+    console.log('[SOCKET]: Registrando usuario...');
+    socket.emit('usuario:registrar', user.id_usuario);
+    socket.emit('competitivo:entrarPortal', user.id_usuario);
+    
+    setTimeout(() => {
+        socketRegistrado = true;
+        console.log('[SOCKET]: ✅ Usuario registrado');
+    }, 500);
+}
+
+// ================================================================
+// LISTENERS DE SALA
+// ================================================================
+socket.on('sala:conectado', (data) => {
+    console.log('[SALA]: ✅ Conectado:', data.mensaje);
+    statusText.innerHTML = `<i class="fas fa-check-circle"></i> ${data.mensaje}`;
+    salaActual = data.salaId;
+});
+
+socket.on('sala:error', (data) => {
+    console.error('[SALA ERROR]:', data.mensaje);
+    statusText.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${data.mensaje}`;
+    btnCancelarBusqueda.textContent = 'Volver al Portal';
+    
+    setTimeout(() => {
+        window.location.href = '/matchmaking';
+    }, 3000);
+});
+
+// ================================================================
+// DUELO: Información inicial
+// ================================================================
+socket.on('duelo:informacionInicial', ({ apuesta, bote, recompensaBase, dificultad }) => {
+    console.log('[DUELO]: Info inicial recibida');
+    apuestaActualEl.textContent = `🎰 Bote: ${bote} pts`;
+    dificultadActualEl.textContent = `📊 Dificultad: ${dificultad || 'Normal'}`;
+});
+
+// ================================================================
+// DUELO: Listo para iniciar
+// ================================================================
+socket.on('duelo:dueloListo', ({ salaId }) => {
+    console.log('[DUELO]: ✅ Duelo listo!');
+    statusText.innerHTML = '<i class="fas fa-swords"></i> ¡Duelo listo! Entrando a la arena...';
+    btnCancelarBusqueda.style.display = 'none';
+    
+    setTimeout(() => {
+        matchmakingView.style.opacity = '0';
+        
+        setTimeout(() => {
+            matchmakingView.style.display = 'none';
+            dueloView.style.display = 'flex';
+            
+            socket.emit('duelo:clienteListo', { 
+                salaId, 
+                userId: user.id_usuario 
+            });
+            
+            setTimeout(() => {
+                dueloView.style.opacity = '1';
+            }, 100);
+        }, 500);
+    }, 1500);
+});
+
+// ================================================================
+// DUELO: Info del oponente
+// ================================================================
+socket.on('duelo:oponenteInfo', ({ oponenteId, oponente: oponenteData }) => {
+    console.log('[DUELO]: Oponente:', oponenteData.username);
+    document.getElementById('oponenteUsername').textContent = oponenteData.username;
+    document.getElementById('oponenteAvatar').src = oponenteData.foto_perfil || '/uploads/default_avatar.png';
+    oponente = { ...oponenteData, id_usuario: oponenteId };
+});
+
+// ================================================================
+// DRAFT: Selección de categorías
+// ================================================================
+socket.on('duelo:iniciarMiniDraft', ({ categorias, permitirGambito }) => {
+    console.log('[DRAFT]: Recibidas', categorias.length, 'categorías');
+    
+    document.getElementById('draftTitle').textContent = "ELIGE TU CAMPO DE BATALLA";
+    document.getElementById('draftInstruction').textContent = "Selecciona una categoría.";
+    materiasGrid.innerHTML = '';
+
+    if (permitirGambito) {
+        document.getElementById('gambitoContainer').style.display = 'block';
+    }
+
+    categorias.forEach(categoria => {
+        const card = document.createElement('div');
+        card.className = 'materia-card';
+        card.dataset.id = categoria.id;
+        card.textContent = categoria.descripcion;
+        
+        card.onclick = () => {
+            document.querySelectorAll('.materia-card').forEach(c => {
+                c.onclick = null;
+                if (c !== card) c.classList.add('deshabilitada');
+            });
+            card.classList.add('seleccionada');
+            document.getElementById('draftInstruction').textContent = "Esperando oponente...";
+            
+            socket.emit('duelo:seleccionarCategoria', { 
+                salaId: salaActual || salaId, 
+                userId: user.id_usuario, 
+                idCategoria: categoria.id,
+                gambitoActivado: gambitoActivado
+            });
+        };
+        
+        materiasGrid.appendChild(card);
+    });
+});
+
+// Botón de Gambito
+btnGambito.addEventListener('click', () => {
+    gambitoActivado = !gambitoActivado;
+    
+    if (gambitoActivado) {
+        btnGambito.classList.add('activo');
+        btnGambito.innerHTML = '<i class="fas fa-dice"></i> GAMBITO ACTIVADO';
+    } else {
+        btnGambito.classList.remove('activo');
+        btnGambito.innerHTML = '<i class="fas fa-dice"></i> ACTIVAR GAMBITO';
+    }
+});
+
+socket.on('duelo:oponenteSelecciono', ({ gambitoActivado }) => {
+    if (gambitoActivado) {
+        console.log('[DRAFT]: ⚠️ El oponente activó GAMBITO');
+    }
+});
+
+socket.on('duelo:miniDraftFinalizado', () => {
+    console.log('[DRAFT]: ✅ Finalizado');
+    draftContainer.style.display = 'none';
+    arenaContainer.style.display = 'flex';
+});
+
+// ================================================================
+// DUELO: Nueva pregunta
+// ================================================================
+socket.on('duelo:nuevaPregunta', ({ pregunta, opciones, numeroPregunta, totalPreguntas, evento, duracion, efectoVisual, tiempoEfecto }) => {
+    console.log(`[PREGUNTA]: ${numeroPregunta}/${totalPreguntas}`);
+    
+    preguntaActualId = pregunta.id_pregunta;
+    textoPregunta.textContent = pregunta.pregunta;
+    document.getElementById('numeroPregunta').textContent = `Pregunta ${numeroPregunta} / ${totalPreguntas}`;
+    opcionesContainer.innerHTML = '';
+    
+    // Mostrar evento especial
+    if (evento) {
+        const eventoDiv = document.createElement('div');
+        eventoDiv.className = 'evento-especial';
+        eventoDiv.innerHTML = `<strong>${evento.notificacion}</strong>`;
+        textoPregunta.parentNode.insertBefore(eventoDiv, textoPregunta);
+        
+        setTimeout(() => eventoDiv.remove(), 3000);
+    }
+
+    // Aplicar efecto visual si existe
+    if (efectoVisual === 'blur') {
+        opcionesContainer.style.filter = 'blur(5px)';
+        setTimeout(() => {
+            opcionesContainer.style.filter = 'none';
+        }, tiempoEfecto || 2000);
+    }
+
+    // Cronómetro
+    if (cronometroInterval) clearInterval(cronometroInterval);
+    let tiempoRestante = duracion || 10;
+    cronometroEl.textContent = tiempoRestante;
+    
+    const inicioTiempo = Date.now();
+    
+    cronometroInterval = setInterval(() => {
+        tiempoRestante--;
+        cronometroEl.textContent = tiempoRestante;
+        if (tiempoRestante <= 0) clearInterval(cronometroInterval);
+    }, 1000);
+
+    // Crear opciones
+    opciones.forEach(opcion => {
+        const btn = document.createElement('button');
+        btn.className = 'opcion-btn';
+        btn.textContent = opcion.respuesta;
+        
+        btn.onclick = () => {
+            const tiempoRespuesta = (Date.now() - inicioTiempo) / 1000;
+            
+            opcionesContainer.querySelectorAll('button').forEach(b => b.disabled = true);
+            btn.classList.add('seleccionada-jugador');
+            
+            socket.emit('duelo:responder', {
+                salaId: salaActual || salaId,
+                userId: user.id_usuario,
+                idPregunta: pregunta.id_pregunta,
+                idRespuesta: opcion.id_respuesta,
+                tiempoRespuesta: tiempoRespuesta
+            });
+        };
+        
+        opcionesContainer.appendChild(btn);
+    });
+});
+
+// ================================================================
+// DUELO: Actualizar estado (puntos, rachas, power-ups)
+// ================================================================
+socket.on('duelo:actualizarEstado', ({ puntuaciones, rachas, powerUps }) => {
+    document.getElementById('puntuacionTuya').textContent = puntuaciones[user.id_usuario] || 0;
+    document.getElementById('puntuacionOponente').textContent = puntuaciones[oponente.id_usuario] || 0;
+
+    if (rachas) {
+        tuRachaEl.textContent = `🔥 x${rachas[user.id_usuario]}`;
+        oponenteRachaEl.textContent = `🔥 x${rachas[oponente.id_usuario]}`;
+    }
+
+    if (powerUps) {
+        // Actualizar mi power-up
+        if (powerUps[user.id_usuario]) {
+            tuPowerUpEl.style.display = 'inline-block';
+            miPowerUp = powerUps[user.id_usuario];
+            // El icono y nombre se actualizarán en duelo:powerUpObtenido
+        } else {
+            tuPowerUpEl.style.display = 'none';
+            miPowerUp = null;
+        }
+
+        // Actualizar power-up del oponente (solo mostrar que tiene uno)
+        if (powerUps[oponente.id_usuario]) {
+            document.getElementById('oponentePowerUp').style.display = 'inline-block';
+            document.getElementById('oponentePowerUp').textContent = '⚡';
+        } else {
+            document.getElementById('oponentePowerUp').style.display = 'none';
+        }
+    }
+});
+
+// ================================================================
+// POWER-UPS
+// ================================================================
+socket.on('duelo:powerUpObtenido', ({ powerUp, mensaje }) => {
+    console.log('[POWER-UP]:', mensaje);
+    
+    miPowerUp = powerUp.id;
+    tuPowerUpEl.style.display = 'inline-block';
+    
+    const iconos = {
+        'congelar': '❄️',
+        '50_50': '🎯',
+        'escudo': '🛡️',
+        'tiempo_extra': '⏱️'
+    };
+    
+    btnUsarPowerUp.innerHTML = `${iconos[powerUp.id]} ${powerUp.nombre}`;
+    btnUsarPowerUp.title = powerUp.descripcion;
+    
+    // Notificación visual
+    const notif = document.createElement('div');
+    notif.className = 'notif-powerup';
+    notif.textContent = mensaje;
+    document.body.appendChild(notif);
+    
+    setTimeout(() => notif.remove(), 3000);
+});
+
+btnUsarPowerUp.addEventListener('click', () => {
+    if (miPowerUp) {
+        socket.emit('duelo:activarPowerUp', {
+            salaId: salaActual || salaId,
+            userId: user.id_usuario,
+            idPowerUp: miPowerUp
+        });
+        
+        tuPowerUpEl.style.display = 'none';
+        miPowerUp = null;
+    }
+});
+
+// Efectos de power-ups
+socket.on('duelo:efectoCongelamiento', ({ duracion, mensaje }) => {
+    console.log('[POWER-UP]:', mensaje);
+    
+    opcionesContainer.style.pointerEvents = 'none';
+    opcionesContainer.style.opacity = '0.5';
+    
+    setTimeout(() => {
+        opcionesContainer.style.pointerEvents = 'auto';
+        opcionesContainer.style.opacity = '1';
+    }, duracion);
+});
+
+socket.on('duelo:escudoActivado', ({ mensaje }) => {
+    escudoActivo = true;
+    tuPowerUpEl.innerHTML = '🛡️ Escudo Activo';
+});
+
+socket.on('duelo:powerUpBloqueado', ({ mensaje }) => {
+    console.log('[POWER-UP]:', mensaje);
+    escudoActivo = false;
+});
+
+// ================================================================
+// DUELO: Resultado de respuesta
+// ================================================================
+socket.on('duelo:resultadoRespuesta', ({ esCorrecta, retroalimentacion, puntosGanados, racha, tiempoRespuesta }) => {
+    const feedback = document.createElement('div');
+    feedback.className = `feedback ${esCorrecta ? 'correcto' : 'incorrecto'}`;
+    feedback.innerHTML = `
+        <p>${esCorrecta ? '✓ ¡Correcto!' : '✗ Incorrecto'}</p>
+        <small>${retroalimentacion}</small>
+        ${puntosGanados ? `<strong>+${puntosGanados} pts (${tiempoRespuesta}s)</strong>` : ''}
+    `;
+    textoPregunta.parentNode.appendChild(feedback);
+    
+    setTimeout(() => feedback.remove(), 3000);
+});
+
+// Gambito
+socket.on('duelo:gambitoExitoso', ({ mensaje, bonus }) => {
+    console.log('[GAMBITO]: ✅', mensaje);
+    
+    const notif = document.createElement('div');
+    notif.className = 'notif-gambito-exito';
+    notif.textContent = mensaje;
+    document.body.appendChild(notif);
+    
+    setTimeout(() => notif.remove(), 4000);
+});
+
+socket.on('duelo:oponenteRespondio', () => {
+    document.getElementById('estadoOponente').textContent = '✓ Ya respondió';
+});
+
+// ================================================================
+// DUELO: Finalizado
+// ================================================================
+
+function mostrarResultadoDetallado(data) {
+    console.log('[RESULTADO DETALLADO]:', data);
+    
+    const modal = document.getElementById('modalResultadoDetallado');
+    const iconoEl = document.getElementById('resultIcono');
+    const tituloEl = document.getElementById('resultTitulo');
+    const subtituloEl = document.getElementById('resultSubtitulo');
+    const jugadoresContainer = document.getElementById('jugadoresContainer');
+    
+    const miUserId = user.id_usuario;
+    const esGanador = data.ganadorId === miUserId;
+    const esEmpate = data.esEmpate;
+    
+    // Configurar título e icono
+    if (esEmpate) {
+        iconoEl.textContent = '🤝';
+        tituloEl.textContent = '¡EMPATE!';
+        subtituloEl.textContent = 'Ambos jugadores demostraron gran conocimiento';
+    } else if (esGanador) {
+        iconoEl.textContent = '🏆';
+        tituloEl.textContent = '¡VICTORIA!';
+        subtituloEl.textContent = 'Has demostrado ser el mejor';
+    } else {
+        iconoEl.textContent = '💪';
+        tituloEl.textContent = 'Derrota';
+        subtituloEl.textContent = 'Sigue practicando para mejorar';
+    }
+    
+    // Limpiar contenedor
+    jugadoresContainer.innerHTML = '';
+    
+    // Crear cards para cada jugador
+    data.jugadores.forEach(jugador => {
+        const esMiCard = jugador.userId === miUserId;
+        const esGanadorCard = !esEmpate && jugador.userId === data.ganadorId;
+        
+        const card = document.createElement('div');
+        card.className = `jugador-card ${esGanadorCard ? 'ganador' : ''}`;
+        
+        card.innerHTML = `
+            <div class="jugador-header">
+                <img src="${jugador.foto_perfil || '/uploads/default_avatar.png'}" 
+                     alt="${jugador.username}" 
+                     class="jugador-avatar">
+                <div class="jugador-info">
+                    <h3>${esMiCard ? '👤 ' : ''}${jugador.username}</h3>
+                    <div class="jugador-stats">
+                        ${jugador.respuestasCorrectas}/${jugador.respuestasCorrectas + jugador.respuestasIncorrectas} correctas 
+                        (${jugador.porcentaje}%)
+                    </div>
+                </div>
+            </div>
+            
+            <div class="puntos-desglose">
+                <div class="puntos-inicial">
+                    Puntos iniciales: <span class="valor">${jugador.puntosIniciales}</span>
+                </div>
+                
+                <div id="desglose-${jugador.userId}">
+                    <!-- Se llenará con animación -->
+                </div>
+                
+                <div class="puntos-total">
+                    <span class="total-label">Cambio Total:</span>
+                    <span class="total-cambio ${jugador.cambioTotal >= 0 ? 'positivo' : 'negativo'}" 
+                          id="cambio-${jugador.userId}">
+                        ${jugador.cambioTotal >= 0 ? '+' : ''}${jugador.cambioTotal}
+                    </span>
+                </div>
+                
+                <div class="puntos-final">
+                    Puntos finales:
+                    <span class="valor-final" id="final-${jugador.userId}">
+                        ${jugador.puntosFinal}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="stats-rapidas">
+                <div class="stat-badge">
+                    <div class="stat-valor">${jugador.puntuacionFinal}</div>
+                    <div class="stat-label">Pts. Partida</div>
+                </div>
+                <div class="stat-badge">
+                    <div class="stat-valor">${jugador.racha || 0}</div>
+                    <div class="stat-label">Racha</div>
+                </div>
+                <div class="stat-badge">
+                    <div class="stat-valor">${jugador.porcentaje}%</div>
+                    <div class="stat-label">Precisión</div>
+                </div>
+            </div>
+        `;
+        
+        jugadoresContainer.appendChild(card);
+        
+        // Animar el desglose con delay
+        setTimeout(() => {
+            animarDesglose(jugador.userId, jugador.desglose);
+        }, 500);
+    });
+    
+    // Mostrar modal
+    modal.classList.add('visible');
+    
+    // Reproducir sonido según resultado (opcional)
+    if (esGanador) {
+        reproducirSonido('victoria');
+    } else if (!esEmpate) {
+        reproducirSonido('derrota');
+    }
+}
+
+// ============================================
+// FUNCIÓN PARA ANIMAR DESGLOSE
+// ============================================
+
+function animarDesglose(userId, desglose) {
+    const container = document.getElementById(`desglose-${userId}`);
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    desglose.forEach((item, index) => {
+        setTimeout(() => {
+            const itemEl = document.createElement('div');
+            itemEl.className = 'desglose-item';
+            itemEl.style.animationDelay = `${index * 0.1}s`;
+            
+            const signo = item.esPositivo ? '+' : '-';
+            const clase = item.esPositivo ? 'positivo' : 'negativo';
+            
+            itemEl.innerHTML = `
+                <span class="desglose-concepto">${item.concepto}</span>
+                <span class="desglose-valor ${clase}">${signo}${Math.abs(item.valor)}</span>
+            `;
+            
+            container.appendChild(itemEl);
+        }, index * 100);
+    });
+}
+
+// ============================================
+// FUNCIÓN AUXILIAR: Reproducir sonido
+// ============================================
+
+function reproducirSonido(tipo) {
+    // Implementar si tienes archivos de audio
+    console.log(`[AUDIO]: Reproducir sonido de ${tipo}`);
+}
+
+// ============================================
+// EVENT LISTENER DEL SOCKET
+// ============================================
+
+socket.on('duelo:finalizado', (resultado) => {
+    console.log('[DUELO]: ✅ Resultado recibido');
+    
+    // Detener cronómetros
+    if (cronometroInterval) clearInterval(cronometroInterval);
+    
+    // Mostrar modal de resultados detallado
+    setTimeout(() => {
+        mostrarResultadoDetallado(resultado);
+    }, 1000);
+});
+
+// ============================================
+// BOTÓN VOLVER AL PORTAL
+// ============================================
+
+document.getElementById('btnVolverPortal').addEventListener('click', () => {
+    window.location.href = '/matchmaking';
+});
+
+// ================================================================
+// MATCHMAKING
+// ================================================================
+btnBuscarCarrera.addEventListener('click', () => {
+    modalDificultad.classList.add('visible');
+});
+
+btnBuscarGeneral.addEventListener('click', () => {
+    iniciarBusqueda('general', null, apuestaSeleccionada);
+});
+
+btnCancelarBusqueda.addEventListener('click', () => {
+    if (salaActual) {
+        window.location.href = '/matchmaking';
+    } else {
+        socket.emit('duelo:cancelarBusqueda', user.id_usuario);
+        restaurarBusqueda("Búsqueda cancelada.");
+    }
+});
+
+modalDificultad.querySelectorAll('.dificultad-opciones button').forEach(btn => {
+    if (btn.dataset.dificultad) {
+        btn.onclick = () => iniciarBusqueda('carrera', btn.dataset.dificultad, apuestaSeleccionada);
+    }
+});
+
+document.getElementById('cerrarModalDificultad').onclick = () => {
+    modalDificultad.classList.remove('visible');
+};
+
+function iniciarBusqueda(modo, dificultad = null, apuesta = 20) {
+    console.log(`[MATCHMAKING]: Iniciando - Modo: ${modo}, Dificultad: ${dificultad}, Apuesta: ${apuesta}`);
+    
+    modalDificultad.classList.remove('visible');
+    btnBuscarCarrera.style.display = 'none';
+    btnBuscarGeneral.style.display = 'none';
+    btnCancelarBusqueda.style.display = 'inline-block';
+    statusText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando oponente...';
+    
+    const evento = `duelo_com:buscar:${modo}`;
+    const payload = modo === 'carrera' 
+        ? { user, dificultad, apuesta } 
+        : { user, apuesta };
+    
+    socket.emit(evento, payload);
+}
+
+function restaurarBusqueda(mensaje) {
+    btnBuscarCarrera.style.display = 'inline-block';
+    btnBuscarGeneral.style.display = 'inline-block';
+    btnCancelarBusqueda.style.display = 'none';
+    statusText.textContent = mensaje;
+}
+
+socket.on('matchmaking:salaCreada', ({ salaId, urlSala, mensaje, apuesta, bote, delay }) => {
+    console.log('[MATCHMAKING]: ✅ Sala creada!', salaId);
+    
+    if (document.body.classList.contains('in-transition')) return;
+    document.body.classList.add('in-transition');
+    
+    sessionStorage.setItem('fromMatchmaking', 'true');
+    sessionStorage.setItem('matchmakingSalaId', salaId);
+    
+    statusText.innerHTML = `<i class="fas fa-check-circle"></i> ${mensaje}`;
+    btnCancelarBusqueda.style.display = 'none';
+    
+    salaActual = salaId;
+    
+    const delayTotal = (delay || 0) + 1000;
+    
+    setTimeout(() => {
+        window.location.href = urlSala;
+    }, delayTotal);
+});
+
+// ================================================================
+// DETECCIÓN DE SALA EN URL
+// ================================================================
+const urlPath = window.location.pathname;
+const salaMatch = urlPath.match(/\/competitivo\/sala\/([a-f0-9-]{36})/i);
+const fromMatchmaking = sessionStorage.getItem('fromMatchmaking') === 'true';
+const matchmakingSalaId = sessionStorage.getItem('matchmakingSalaId');
+
+if (fromMatchmaking && matchmakingSalaId) {
+    salaActual = matchmakingSalaId;
+    console.log('[SALA]: Sala de MATCHMAKING:', salaActual);
+    
+    sessionStorage.removeItem('fromMatchmaking');
+    sessionStorage.removeItem('matchmakingSalaId');
+    
+    btnBuscarCarrera.style.display = 'none';
+    btnBuscarGeneral.style.display = 'none';
+    btnCancelarBusqueda.style.display = 'inline-block';
+    statusText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando a la sala...';
+    
+    const conectarASalaMatchmaking = async () => {
+        console.log('[SALA]: Iniciando conexión...');
+        
+        let esperaRegistro = 0;
+        while (!socketRegistrado && esperaRegistro < 50) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            esperaRegistro++;
+        }
+        
+        if (!socketRegistrado) {
+            console.error('[SALA]: Timeout esperando registro');
+            statusText.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error de conexión. Recargando...';
+            setTimeout(() => window.location.reload(), 2000);
+            return;
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 4000));
+        
+        if (!socket.connected) {
+            console.error('[SALA]: Socket no conectado');
+            statusText.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error de conexión. Recargando...';
+            setTimeout(() => window.location.reload(), 2000);
+            return;
+        }
+        
+        let intentos = 0;
+        const maxIntentos = 5;
+        
+        const emitirUnirse = async () => {
+            intentos++;
+            console.log(`[SALA]: Intento ${intentos}/${maxIntentos}`);
+            
+            socket.emit('sala:unirse', { salaId: salaActual });
+            socket.hasJoinedSala = true;
+            
+            let recibioRespuesta = false;
+            
+            const timeoutPromise = new Promise(resolve => {
+                setTimeout(() => resolve(false), 5000);
+            });
+            
+            const responsePromise = new Promise(resolve => {
+                const handler = () => {
+                    recibioRespuesta = true;
+                    socket.off('sala:conectado', handler);
+                    socket.off('sala:error', handler);
+                    resolve(true);
+                };
+                socket.once('sala:conectado', handler);
+                socket.once('sala:error', handler);
+            });
+            
+            const resultado = await Promise.race([responsePromise, timeoutPromise]);
+            
+            if (!resultado && intentos < maxIntentos) {
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                return emitirUnirse();
+            } else if (!resultado) {
+                console.error('[SALA]: Error después de todos los intentos');
+                statusText.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error de conexión. Recargando...';
+                setTimeout(() => window.location.reload(), 2000);
+            } else {
+                console.log('[SALA]: ✅ Conexión exitosa');
+            }
+        };
+        
+        await emitirUnirse();
+    };
+    
+    conectarASalaMatchmaking();
+    
+    socket.on('connect', () => {
+        if (salaActual && !socket.hasJoinedSala) {
+            console.log('[SALA]: Reconexión detectada');
+            setTimeout(() => {
+                socket.hasJoinedSala = true;
+                socket.emit('sala:unirse', { salaId: salaActual });
+            }, 1000);
+        }
+    });
+} else if (salaMatch) {
+    salaActual = salaMatch[1];
+    console.log('[SALA]: Sala detectada en URL:', salaActual);
+    
+    btnBuscarCarrera.style.display = 'none';
+    btnBuscarGeneral.style.display = 'none';
+    btnCancelarBusqueda.style.display = 'inline-block';
+    statusText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando...';
+    
+    const conectarASala = async () => {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        let intentos = 0;
+        const maxIntentos = 20;
+        
+        const intentarConexion = async () => {
+            intentos++;
+            
+            if (socket.connected && socket.userId) {
+                console.log('[SALA]: Socket listo, conectando...');
+                socket.emit('sala:unirse', { salaId: salaActual });
+                socket.hasJoinedSala = true;
+                return true;
+            } else {
+                if (intentos >= maxIntentos) {
+                    console.error('[SALA]: Timeout');
+                    statusText.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error. Recargando...';
+                    setTimeout(() => window.location.reload(), 2000);
+                    return false;
+                }
+                
+                await new Promise(resolve => setTimeout(resolve, 400));
+                return intentarConexion();
+            }
+        };
+        
+        await intentarConexion();
+    };
+    
+    conectarASala();
+}
+
+// ================================================================
+// INVITACIONES DE LOBBY
+// ================================================================
+function buscarJugadorEnLobby(idOponente, username) {
+    if (idOponente === user.id_usuario) {
+        if (window.mostrarNotificacionTemporal) {
+            window.mostrarNotificacionTemporal('No puedes desafiarte a ti mismo', 'error');
+        }
+        return;
+    }
+    
+    console.log(`[LOBBY]: Invitando a ${username}`);
+    
+    statusText.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Invitando a <strong>${username}</strong>...`;
+    btnBuscarCarrera.style.display = 'none';
+    btnBuscarGeneral.style.display = 'none';
+    btnCancelarBusqueda.style.display = 'inline-block';
+
+    socket.emit('duelo:invitarLobby', { 
+        idOponente: idOponente,
+        usernameOponente: username
+    });
+}
+
+window.buscarJugadorEnLobby = buscarJugadorEnLobby;
+
+socket.on('duelo:invitacionLobbyEnviada', (data) => {
+    console.log('[LOBBY]: Invitación enviada');
+    statusText.innerHTML = `<i class="fas fa-clock"></i> ${data.mensaje}`;
+});
+
+socket.on('duelo:recibirInvitacionLobby', (data) => {
+    console.log('[LOBBY]: Invitación recibida de', data.username_retador);
+    
+    const modal = document.createElement('div');
+    modal.id = 'modal-invitacion-lobby';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
+    
+    modal.innerHTML = `
+        <div style="
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        ">
+            <h2 style="margin: 0 0 20px 0; color: #333;">🎮 ¡Desafío Recibido!</h2>
+            
+            <div style="margin: 20px 0;">
+                ${data.foto_retador ? `<img src="${data.foto_retador}" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 10px;">` : ''}
+                <p style="font-size: 18px; color: #555; margin: 10px 0;">
+                    <strong>${data.username_retador}</strong> te desafía!
+                </p>
+            </div>
+            
+            <div style="margin-top: 30px; display: flex; gap: 10px; justify-content: center;">
+                <button id="btn-aceptar-lobby" style="
+                    background: #28a745;
+                    color: white;
+                    border: none;
+                    padding: 12px 30px;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    cursor: pointer;
+                ">✓ Aceptar</button>
+                <button id="btn-rechazar-lobby" style="
+                    background: #dc3545;
+                    color: white;
+                    border: none;
+                    padding: 12px 30px;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    cursor: pointer;
+                ">✗ Rechazar</button>
+            </div>
+            
+            <p id="countdown-lobby" style="margin-top: 15px; color: #999; font-size: 14px;">
+                Expira en 30 segundos
+            </p>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    let segundos = 30;
+    const countdownEl = document.getElementById('countdown-lobby');
+    const countdownInterval = setInterval(() => {
+        segundos--;
+        if (countdownEl) {
+            countdownEl.textContent = `Expira en ${segundos} segundos`;
+        }
+        if (segundos <= 0) {
+            clearInterval(countdownInterval);
+            if (modal.parentNode) modal.remove();
+        }
+    }, 1000);
+    
+    document.getElementById('btn-aceptar-lobby').addEventListener('click', () => {
+        clearInterval(countdownInterval);
+        modal.remove();
+        
+        socket.emit('duelo:aceptarInvitacionLobby', { salaId: data.salaId });
+        statusText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Aceptando desafío...';
+    });
+    
+    document.getElementById('btn-rechazar-lobby').addEventListener('click', () => {
+        clearInterval(countdownInterval);
+        modal.remove();
+        
+        socket.emit('duelo:rechazarInvitacionLobby', { salaId: data.salaId });
+        
+        if (window.mostrarNotificacionTemporal) {
+            window.mostrarNotificacionTemporal('Invitación rechazada', 'info');
+        }
+    });
+});
+
+socket.on('duelo:redirigirASala', ({ salaId, mensaje }) => {
+    console.log('[REDIRECCIÓN]:', mensaje);
+    
+    const currentPath = window.location.pathname;
+    const expectedPath = `/competitivo/sala/${salaId}`;
+    
+    if (currentPath !== expectedPath) {
+        statusText.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${mensaje}`;
+        
+        setTimeout(() => {
+            window.location.href = `${expectedPath}?origen=socket`;
+        }, 1500);
+    }
+});
+
+socket.on('duelo:invitacionExpirada', (data) => {
+    const modal = document.getElementById('modal-invitacion-lobby');
+    if (modal) modal.remove();
+    
+    if (window.mostrarNotificacionTemporal) {
+        window.mostrarNotificacionTemporal(data.mensaje, 'info');
+    }
+    
+    if (statusText && statusText.textContent.includes('Esperando')) {
+        statusText.textContent = 'Compite en tu área de especialidad o en cultura general.';
+    }
+});
+
+socket.on('duelo:invitacionLobbyRechazada', (data) => {
+    if (window.mostrarNotificacionTemporal) {
+        window.mostrarNotificacionTemporal(data.mensaje, 'error');
+    }
+    restaurarBusqueda(data.mensaje);
+});
+
+socket.on('duelo:invitacionLobbyError', (data) => {
+    if (window.mostrarNotificacionTemporal) {
+        window.mostrarNotificacionTemporal(data.mensaje, 'error');
+    }
+    restaurarBusqueda(data.mensaje);
+});
+
+// ================================================================
+// DESAFÍOS BD
+// ================================================================
+async function enviarDesafioBD(idOponente, usernameOponente, btnElement) {
+    if (parseInt(idOponente) === parseInt(user.id_usuario)) {
+        if (window.mostrarNotificacionTemporal) {
+            window.mostrarNotificacionTemporal('No puedes desafiarte a ti mismo', 'error');
+        }
+        return;
+    }
+
+    console.log(`[BD DESAFÍO]: Enviando a ${usernameOponente}`);
+    
+    if (btnElement) {
+        btnElement.disabled = true;
+        btnElement.textContent = 'Enviando...';
+    }
+    
+    try {
+        const response = await fetch(`/desafio/duelo/${idOponente}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                modo: 'general',
+                dificultad: null
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `Error ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.salaId) {
+            console.log(`[BD DESAFÍO]: ✅ Enviado. Sala: ${data.salaId}`);
+            
+            if (window.mostrarNotificacionTemporal) {
+                window.mostrarNotificacionTemporal(
+                    `✅ Desafío enviado a ${usernameOponente}`, 
+                    'success'
+                );
+            }
+            
+            statusText.innerHTML = `<i class="fas fa-paper-plane"></i> Desafío enviado a <strong>${usernameOponente}</strong>`;
+            setTimeout(() => {
+                statusText.textContent = 'Compite en tu área de especialidad o en cultura general.';
+            }, 5000);
+        } else {
+            throw new Error(data.message || 'Respuesta inválida');
+        }
+        
+    } catch (error) {
+        console.error('[BD DESAFÍO ERROR]:', error);
+        
+        let mensajeError = error.message;
+        
+        if (error.message.includes('Ya tienes un desafío pendiente')) {
+            mensajeError = '⏱️ Ya enviaste un desafío. Espera 5 minutos.';
+        }
+        
+        if (window.mostrarNotificacionTemporal) {
+            window.mostrarNotificacionTemporal(mensajeError, 'error');
+        }
+        
+    } finally {
+        if (btnElement) {
+            btnElement.disabled = false;
+            btnElement.textContent = 'Invitar Notif 📧';
+        }
+    }
+}
+
+window.enviarDesafioBD = enviarDesafioBD;
+
+socket.on('duelo:desafioAceptado', ({ mensaje, salaId }) => {
+    console.log('[BD]: Desafío aceptado por el oponente');
+    
+    if (window.mostrarNotificacionTemporal) {
+        window.mostrarNotificacionTemporal(mensaje, 'success');
+    }
+    
+    statusText.innerHTML = `<i class="fas fa-check-circle"></i> ${mensaje}`;
+    
+    btnBuscarCarrera.style.display = 'none';
+    btnBuscarGeneral.style.display = 'none';
+    btnCancelarBusqueda.style.display = 'inline-block';
+    btnCancelarBusqueda.textContent = 'Conectando...';
+    btnCancelarBusqueda.disabled = true;
+});
+
+socket.on('duelo:desafioRechazado', ({ mensaje }) => {
+    if (window.mostrarNotificacionTemporal) {
+        window.mostrarNotificacionTemporal(mensaje, 'error');
+    }
+    
+    if (salaActual) {
+        statusText.innerHTML = `<i class="fas fa-times-circle"></i> ${mensaje}`;
+        
+        setTimeout(() => {
+            window.location.href = '/matchmaking';
+        }, 2000);
+    }
+});
+// Botones de cantidad rápida
+document.querySelectorAll('.btn-cantidad-rapida').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.btn-cantidad-rapida').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        document.getElementById('inputCantidadCustom').value = btn.dataset.cantidad;
+    });
+});
+
+// Enviar propuesta
+document.getElementById('btnEnviarPropuesta').addEventListener('click', () => {
+    const cantidad = parseInt(document.getElementById('inputCantidadCustom').value);
+    
+    // Validar cantidad
+    if (isNaN(cantidad) || cantidad < 10 || cantidad > 100) {
+        alert('La apuesta debe estar entre 10 y 100 puntos');
+        return;
+    }
+    
+    // Verificar que el usuario tenga suficientes puntos
+    const puntosUsuario = parseInt(document.getElementById('puntosUsuario').textContent);
+    if (cantidad > puntosUsuario) {
+        alert('No tienes suficientes puntos para esta apuesta');
+        return;
+    }
+    
+    console.log('[NEGOCIACIÓN]: Enviando propuesta de', cantidad, 'puntos');
+    
+    socket.emit('duelo:propuestaApuesta', {
+        salaId: salaActual || salaId,
+        userId: user.id_usuario,
+        cantidad: cantidad,
+        ronda: estadoNegociacion.rondaActual
+    });
+    
+    // Cambiar a estado de espera
+    document.getElementById('tuTurno').style.display = 'none';
+    document.getElementById('esperandoRespuesta').style.display = 'block';
+});
+
+// Aceptar apuesta
+document.getElementById('btnAceptarApuesta').addEventListener('click', () => {
+    console.log('[NEGOCIACIÓN]: Aceptando apuesta de', estadoNegociacion.propuestaActual, 'puntos');
+    
+    socket.emit('duelo:respuestaApuesta', {
+        salaId: salaActual || salaId,
+        userId: user.id_usuario,
+        acepta: true
+    });
+    
+    document.getElementById('responderPropuesta').style.display = 'none';
+    document.getElementById('esperandoRespuesta').style.display = 'block';
+    document.getElementById('esperandoRespuesta').querySelector('p').textContent = 'Apuesta acordada. Iniciando duelo...';
+});
+
+// Contraoferta
+document.getElementById('btnContraoferta').addEventListener('click', () => {
+    console.log('[NEGOCIACIÓN]: Preparando contraoferta');
+    
+    // Incrementar ronda
+    estadoNegociacion.rondaActual++;
+    
+    if (estadoNegociacion.rondaActual > 3) {
+        alert('Máximo de rondas alcanzado. Se usará apuesta por defecto.');
+        return;
+    }
+    
+    socket.emit('duelo:respuestaApuesta', {
+        salaId: salaActual || salaId,
+        userId: user.id_usuario,
+        acepta: false
+    });
+    
+    // Mostrar interfaz para contraoferta
+    document.getElementById('responderPropuesta').style.display = 'none';
+    document.getElementById('tuTurno').style.display = 'block';
+    document.getElementById('rondaNegociacion').textContent = estadoNegociacion.rondaActual;
+});
+
+// Iniciar timer de negociación
+function iniciarTimerNegociacion() {
+    if (estadoNegociacion.intervalTimer) {
+        clearInterval(estadoNegociacion.intervalTimer);
+    }
+    
+    estadoNegociacion.tiempoRestante = 60;
+    
+    estadoNegociacion.intervalTimer = setInterval(() => {
+        estadoNegociacion.tiempoRestante--;
+        document.getElementById('tiempoNegociacion').textContent = estadoNegociacion.tiempoRestante;
+        
+        if (estadoNegociacion.tiempoRestante <= 0) {
+            clearInterval(estadoNegociacion.intervalTimer);
+            console.log('[NEGOCIACIÓN]: Timeout - usando apuesta por defecto');
+        }
+    }, 1000);
+}
+
+// Detener timer
+function detenerTimerNegociacion() {
+    if (estadoNegociacion.intervalTimer) {
+        clearInterval(estadoNegociacion.intervalTimer);
+        estadoNegociacion.intervalTimer = null;
+    }
+}
+// ================================================================
+// RANKINGS
+// ================================================================
+function renderizarRanking(container, jugadores) {
+    container.innerHTML = '';
+    
+    if (!jugadores || jugadores.length === 0) {
+        container.innerHTML = '<p>No hay jugadores en este ranking.</p>';
+        return;
+    }
+
+    jugadores.forEach(jugador => {
+        if (jugador.id_usuario === user.id_usuario) return;
+
+        const item = document.createElement('div');
+        item.className = 'player-item';
+        item.innerHTML = `
+            <img src="${jugador.foto_perfil || '/uploads/default_avatar.png'}" alt="Avatar" class="avatar">
+            <div class="player-info">
+                <strong>${jugador.username}</strong>
+                <p>${jugador.puntos} puntos</p>
+            </div>
+            <div class="player-actions">
+                <button class="btn-buscar" onclick="buscarJugadorEnLobby(${jugador.id_usuario}, '${jugador.username}')">
+                    Invitar Lobby 👤
+                </button>
+                <button class="btn-notificar" onclick="enviarDesafioBD(${jugador.id_usuario}, '${jugador.username}', this)">
+                    Invitar Notif 📧
+                </button>
+            </div>
+        `;
+        
+        container.appendChild(item);
+    });
+}
+
+async function cargarRankingGlobal() {
+    try {
+        const response = await fetch('/api/ranking/global/com');
+        const jugadores = await response.json();
+        renderizarRanking(document.getElementById('rankingGlobalContainer'), jugadores);
+    } catch (error) {
+        console.error('Error cargando ranking global:', error);
+    }
+}
+
+async function cargarRankingCarrera(idCarrera) {
+    if (!idCarrera) {
+        document.getElementById('rankingCarreraContainer').innerHTML = '<p>Selecciona una carrera.</p>';
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/com/api/ranking/carrera/${idCarrera}`);
+        const jugadores = await response.json();
+        renderizarRanking(document.getElementById('rankingCarreraContainer'), jugadores);
+    } catch (error) {
+        console.error('Error cargando ranking de carrera:', error);
+    }
+}
+
+// Pestañas
+document.querySelectorAll('.tab-link').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        const target = document.getElementById(tab.dataset.tab);
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        target.classList.add('active');
+        
+        if (tab.dataset.tab === 'tab-carrera') {
+            cargarRankingCarrera(document.getElementById('selectorCarrera').value);
+        } else {
+            cargarRankingGlobal();
+        }
+    });
+});
+
+document.getElementById('selectorCarrera').addEventListener('change', (e) => {
+    cargarRankingCarrera(e.target.value);
+});
+
+// ================================================================
+// OTROS EVENTOS
+// ================================================================
+socket.on('duelo:oponenteAbandono', (data) => {
+    if (window.mostrarNotificacionTemporal) {
+        window.mostrarNotificacionTemporal(data.mensaje, 'info');
+    }
+    setTimeout(() => {
+        window.location.href = '/matchmaking';
+    }, 2000);
+});
+
+socket.on('duelo:error', (data) => {
+    console.error('[DUELO ERROR]:', data);
+    if (window.mostrarNotificacionTemporal) {
+        window.mostrarNotificacionTemporal('Error: ' + data.mensaje, 'error');
+    }
+});
+
+socket.on('duelo:error:sinCarrera', (data) => {
+    if (window.mostrarNotificacionTemporal) {
+        window.mostrarNotificacionTemporal(data.mensaje, 'error');
+    }
+    restaurarBusqueda(data.mensaje);
+});
+
+socket.on('disconnect', () => {
+    console.log('[SOCKET]: Desconectado');
+});
+
+// ================================================================
+// INICIALIZACIÓN
+// ================================================================
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('[INIT]: Portal cargado');
+    
+    cargarRankingGlobal();
+    
+    try {
+        const resCarreras = await fetch('/com/api/usuario/carreras');
+        const carreras = await resCarreras.json();
+        const selectorCarrera = document.getElementById('selectorCarrera');
+        
+        selectorCarrera.innerHTML = '<option value="">Selecciona tu carrera</option>';
+        
+        carreras.forEach(carrera => {
+            const option = document.createElement('option');
+            option.value = carrera.id_carrera;
+            option.textContent = carrera.descripcion;
+            selectorCarrera.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error cargando carreras:', error);
+    }
+});
+
+// ================================================================
+// CLEANUP
+// ================================================================
+window.addEventListener('beforeunload', () => {
+    if (user?.id_usuario) {
+        socket.emit('competitivo:salirPortal', user.id_usuario);
+    }
+    if (salaActual) {
+        socket.emit('sala:salir', { salaId: salaActual });
+    }
+});
+
+console.log('[DUELO]: ✅ Sistema completamente inicializado');
+    </script>
+</body>
+</html>

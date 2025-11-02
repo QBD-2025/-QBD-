@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"> <!-- Codificación de caracteres -->
+  <title>Resultados del Examen</title> <!-- Título de la página -->
+  <link rel="stylesheet" href="/css/resultados.css" /> <!-- Estilos externos -->
+</head>
+<body>
+  <!-- Contenedor principal de resultados -->
+  <div class="resultados-contenedor">
+    <h1>Resultados del examen admisión</h1>
+
+    <!-- Mostrar porcentaje y puntos obtenidos -->
+    <h2>Resultado: {{porcentaje}}% ({{puntosTotales}} / {{totalPreguntas}})</h2>
+
+    <!-- Iterar sobre cada pregunta del examen -->
+    {{#each preguntas}}
+      <div class="resultado">
+        <h3>{{pregunta}}</h3>  <!-- Mostrar el texto de la pregunta -->
+
+        <!-- Verificar si la respuesta del usuario fue correcta -->
+        {{#if esCorrecta}}
+          <p>✅ Tu respuesta: <strong>{{textoSeleccionado}}</strong> (Correcta)</p>
+        {{else}}
+          <!-- Respuesta incorrecta: mostrar lo que eligió y la correcta -->
+          <p>❌ Tu respuesta: <strong>{{textoSeleccionado}}</strong> (Incorrecta)</p>
+          <p>✅ Respuesta correcta:
+            {{#each respuestas}}
+              {{#if correcta}}
+                <strong>{{respuesta}}</strong>
+              {{/if}}
+            {{/each}}
+          </p>
+        {{/if}}
+      </div>
+    {{/each}}
+
+    <!-- Botón para volver al menú principal o simulador -->
+    <div style="margin-top: 40px;">
+      <a href="/simulador">
+        <button style="padding: 10px 20px; font-size: 16px;">Volver al menú</button>
+      </a>
+    </div>
+  </div>
+</body>
+</html>

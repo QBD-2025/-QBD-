@@ -1,0 +1,51 @@
+/* ================================================================
+Archivo: dato-sesion.css
+Descripción: Estilos para la presentación de un dato curioso dentro de la sesión del usuario.
+Autor: Equipo de desarrollo
+Última modificación: 12 de octubre de 2025
+================================================================ */
+
+/* ===== ESTILOS GENERALES ===== */
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(-135deg, #0515a8, #09012c); /* Fondo degradado */
+  display: flex;
+  justify-content: center; /* Centra el contenedor horizontalmente */
+  align-items: center;     /* Centra el contenedor verticalmente */
+  height: 100vh;
+  margin: 0;
+}
+
+/* ===== CONTENEDOR DEL DATO ===== */
+.dato-container {
+  padding: 2em;
+  border-radius: 10px;
+  max-width: 500px;
+  text-align: center;
+}
+
+/* Imagen dentro del contenedor */
+.dato-container img {
+  max-width: 100%;
+  margin-top: 1em;
+  border-radius: 8px;
+}
+
+/* ===== TITULO DEL DATO ===== */
+.title {
+  color: #FFC107; /* Color destacado para el título */
+  font-size: 2.5em;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); /* Sombra para resaltar sobre el fondo */
+  margin: 0 20px; /* Margen horizontal para separar de los bordes */
+  z-index: 2;
+}
+
+/* ===== TEXTO DEL DATO ===== */
+.texto-dato {
+  color: white;
+  font-size: 1.3em;
+  line-height: 1.6;
+  margin-top: 1em;
+}

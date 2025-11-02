@@ -1,0 +1,78 @@
+/* ================================================================
+Archivo: competitivo.css
+Descripción: Estilos del panel lateral de jugadores activos y botones de invitación.
+Autor: Equipo de desarrollo
+Última modificación: 12 de octubre de 2025
+================================================================ */
+
+/* ===== CONTENEDOR PRINCIPAL ===== */
+.competitivo-container {
+    display: flex;
+    justify-content: flex-end; /* Alinea el panel a la derecha */
+    padding: 20px;
+}
+
+  /* ===== PANEL DE JUGADORES ACTIVOS ===== */
+.jugadores-activos {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    width: 250px;
+    padding: 15px;
+    position: fixed; /* Mantiene el panel visible al hacer scroll */
+    right: 20px;
+    top: 80px;
+    max-height: 70vh;
+    overflow-y: auto; /* Scroll si hay muchos jugadores */
+}
+
+  /* Título del panel */
+.jugadores-activos h3 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+  /* Lista de jugadores sin estilos de lista predeterminados */
+#lista-jugadores {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+  /* Elemento individual de jugador */
+.jugador-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+}
+
+  /* Nombre del jugador resaltado */
+.jugador-nombre {
+    font-weight: bold;
+    color: #333;
+}
+
+  /* ===== BOTÓN DE INVITAR ===== */
+.btn-invitar {
+    background: #4cafef;
+    border: none;
+    color: white;
+    padding: 5px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: background 0.2s ease;
+}
+
+  /* Estado hover */
+.btn-invitar:hover {
+    background: #3399dd;
+}
+
+  /* Estado deshabilitado */
+.btn-invitar:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}  

@@ -1,0 +1,748 @@
+/* ==================================================
+   VARIABLES GLOBALES - PALETA CORPORATIVA CON AURORA
+================================================== */
+:root {
+  /* Colores primarios - Azules corporativos */
+  --azul-electrico: #0815c5;
+  --azul-marino: #0c0264;
+  --azul-violeta: #5926e4;
+  --azul-claro: #667eea;
+  
+  /* Colores de acento - Mostaza */
+  --mostaza: #FFC107;
+  --mostaza-oscuro: #ffb300;
+  --mostaza-hover: #e0a800;
+  --mostaza-claro: #ffecb3;
+  
+  /* Colores Aurora - Nuevos */
+  --verde-fosforescente: #00ff9d;
+  --verde-aurora: #00cc7a;
+  --azul-aurora: #0099ff;
+  --purpura-aurora: #bd00ff;
+  --fondo-oscuro: #0a1128;
+  
+  /* Escala de grises */
+  --blanco: #ffffff;
+  --gris-claro: #f8f9fa;
+  --gris-medio: #e9ecef;
+  --gris-oscuro: #495057;
+  --gris-texto: #6c757d;
+  --texto-oscuro: #212529;
+  
+  /* Colores de estado */
+  --verde-exito: #28a745;
+  --rojo-error: #dc3545;
+  --naranja-alerta: #fd7e14;
+  
+  /* Bordes y sombras */
+  --borde: #dee2e6;
+  --sombra-suave: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --sombra-media: 0 4px 20px rgba(0, 0, 0, 0.12);
+  --sombra-intensa: 0 8px 40px rgba(0, 0, 0, 0.18);
+  
+  /* Transiciones */
+  --transicion-rapida: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transicion-media: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transicion-lenta: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==================================================
+   RESET MODERNO Y BASE TIPOGRÁFICA
+================================================== */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+  color: var(--texto-oscuro);
+  background: linear-gradient(135deg, var(--azul-electrico) 0%, var(--azul-marino) 50%, var(--azul-violeta) 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ==================================================
+   FONDO AURORA BOREAL MEJORADO
+================================================== */
+.body-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: 0.8;
+}
+
+.body-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(ellipse at 20% 20%, rgba(0, 255, 157, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(189, 0, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 40% 80%, rgba(0, 153, 255, 0.1) 0%, transparent 50%),
+    linear-gradient(to right, var(--fondo-oscuro), #000000);
+  animation: auroraMovement 15s infinite alternate;
+}
+
+.body-bg::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    linear-gradient(to bottom, transparent 0%, rgba(10, 17, 40, 0.1) 100%),
+    radial-gradient(ellipse at 30% 10%, rgba(0, 255, 157, 0.1) 0%, transparent 40%),
+    radial-gradient(ellipse at 70% 10%, rgba(189, 0, 255, 0.1) 0%, transparent 40%);
+  pointer-events: none;
+  animation: auroraFloat 20s infinite alternate;
+}
+
+@keyframes auroraMovement {
+  0% {
+    background-position: 0% 0%, 0% 0%, 0% 0%;
+    opacity: 0.5;
+  }
+  100% {
+    background-position: 0% 50%, 10% 30%, 20% 40%;
+    opacity: 0.8;
+  }
+}
+
+@keyframes auroraFloat {
+  0%, 100% { 
+    transform: translateY(0px) rotate(0deg); 
+    opacity: 0.6;
+  }
+  50% { 
+    transform: translateY(-20px) rotate(1deg); 
+    opacity: 0.8;
+  }
+}
+
+/* Partículas de Aurora */
+.aurora-particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.particle {
+  position: absolute;
+  background: var(--verde-fosforescente);
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: float 8s infinite ease-in-out;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translateY(-20px) translateX(10px);
+    opacity: 0.4;
+  }
+}
+
+/* ==================================================
+   CONTENEDOR PRINCIPAL - CARD ELEVADA CON AURORA
+================================================== */
+.career-selection-container {
+  max-width: 480px;
+  width: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(15, 23, 111, 0.95) 0%,
+    rgba(26, 35, 126, 0.95) 50%,
+    rgba(63, 81, 181, 0.9) 100%
+  );
+  border-radius: 24px;
+  box-shadow:
+    0 0 25px rgba(255, 179, 0, 0.3),
+    inset 0 0 40px rgba(255, 255, 255, 0.05),
+    0 0 60px rgba(0, 255, 157, 0.2);
+  padding: 3.5rem;
+  border: 2px solid transparent;
+  background-clip: padding-box, border-box;
+  background-origin: border-box;
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+  animation: slideInUp 0.8s ease-out;
+}
+
+/* Bordes con brillo aurora-mezclado */
+.career-selection-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  padding: 2px;
+  background: linear-gradient(
+    135deg,
+    var(--mostaza-brillo),
+    var(--verde-fosforescente),
+    var(--azul-aurora),
+    var(--purpura-aurora),
+    var(--mostaza-brillo)
+  );
+  background-size: 300% 300%;
+  animation: borderAuroraGlow 8s linear infinite;
+  -webkit-mask:
+  linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes borderAuroraGlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ==================================================
+   ENCABEZADO CON ICONO ANIMADO AURORA
+================================================== */
+.career-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  position: relative;
+}
+
+.career-icon-wrapper {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 1.5rem;
+}
+
+.career-icon {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--azul-electrico), var(--azul-violeta));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  color: var(--blanco);
+  box-shadow: 
+    0 8px 32px rgba(8, 21, 197, 0.3),
+    inset 0 2px 4px rgba(255, 255, 255, 0.2),
+    0 0 30px rgba(0, 255, 157, 0.3);
+  border: 3px solid var(--mostaza);
+  position: relative;
+  z-index: 2;
+  animation: iconFloatAurora 4s ease-in-out infinite;
+}
+
+.career-icon::before {
+  content: '🎓';
+}
+
+.career-icon-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, 
+    rgba(255, 193, 7, 0.2) 0%, 
+    rgba(0, 255, 157, 0.3) 50%,
+    transparent 70%);
+  border-radius: 50%;
+  animation: pulseAuroraGlow 3s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes iconFloatAurora {
+  0%, 100% { 
+    transform: translateY(0px) rotate(0deg);
+    box-shadow: 
+      0 8px 32px rgba(8, 21, 197, 0.3),
+      inset 0 2px 4px rgba(255, 255, 255, 0.2),
+      0 0 30px rgba(0, 255, 157, 0.3);
+  }
+  50% { 
+    transform: translateY(-8px) rotate(3deg);
+    box-shadow: 
+      0 12px 40px rgba(8, 21, 197, 0.4),
+      inset 0 2px 4px rgba(255, 255, 255, 0.2),
+      0 0 40px rgba(0, 255, 157, 0.5);
+  }
+}
+
+@keyframes pulseAuroraGlow {
+  0%, 100% { 
+    opacity: 0.6; 
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% { 
+    opacity: 0.9; 
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+}
+
+.career-title {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #fff, #ffecb3, var(--verde-fosforescente));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 30px rgba(0, 255, 157, 0.3);
+  margin-bottom: 0.75rem;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+.career-subtitle {
+  font-size: 1.125rem;
+  color: var(--gris-texto);
+  font-weight: 500;
+  line-height: 1.5;
+  max-width: 320px;
+  margin: 0 auto;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+/* ==================================================
+   FORMULARIO PROFESIONAL CON TOQUES AURORA
+================================================== */
+.career-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.form-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--blanco);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: var(--transicion-rapida);
+  text-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
+}
+
+.form-label::before {
+  content: '📚';
+  font-size: 1.2rem;
+  filter: grayscale(0.3);
+  transition: var(--transicion-rapida);
+}
+
+.form-label:hover::before {
+  filter: grayscale(0);
+  transform: scale(1.1);
+  text-shadow: 0 0 15px var(--verde-fosforescente);
+}
+
+/* Contenedor del select con diseño aurora */
+.select-container {
+  position: relative;
+  width: 100%;
+}
+
+.select-container::after {
+  content: '';
+  position: absolute;
+  right: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300ff9d'%3E%3Cpath d='M7.41 8.84L12 13.42l4.59-4.58L18 10.25l-6 6-6-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  pointer-events: none;
+  transition: var(--transicion-media);
+  z-index: 5;
+  filter: drop-shadow(0 0 5px rgba(0, 255, 157, 0.5));
+}
+
+.select-container:focus-within::after {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.career-select {
+  width: 100%;
+  padding: 1.25rem 3rem 1.25rem 1.5rem;
+  border: 2px solid rgba(255, 179, 0, 0.4);
+  border-radius: 16px;
+  font-size: 1rem;
+  font-family: inherit;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--blanco);
+  cursor: pointer;
+  transition: var(--transicion-media);
+  appearance: none;
+  position: relative;
+  z-index: 2;
+  box-shadow: 
+    var(--sombra-suave),
+    inset 0 0 20px rgba(0, 255, 157, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.career-select:focus {
+  outline: none;
+  border-color: var(--verde-fosforescente);
+  box-shadow: 
+    0 0 0 4px rgba(0, 255, 157, 0.15),
+    var(--sombra-media),
+    inset 0 0 30px rgba(0, 255, 157, 0.2);
+  transform: translateY(-2px);
+}
+
+.career-select:hover {
+  border-color: var(--azul-aurora);
+  box-shadow: 
+    var(--sombra-media),
+    inset 0 0 25px rgba(0, 153, 255, 0.2);
+}
+
+.career-select:valid {
+  border-color: var(--verde-aurora);
+  background: linear-gradient(to right, rgba(0, 255, 157, 0.1), rgba(255, 255, 255, 0.1));
+}
+
+.career-select:invalid {
+  border-color: rgba(255, 179, 0, 0.4);
+}
+
+/* Opciones del select con diseño aurora */
+.career-select option {
+  padding: 1rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  background: var(--azul-marino);
+  color: var(--blanco);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: var(--transicion-rapida);
+}
+
+.career-select option:checked {
+  background: linear-gradient(135deg, var(--azul-electrico), var(--azul-violeta));
+  color: var(--blanco);
+  font-weight: 600;
+}
+
+.career-select option:hover {
+  background: var(--mostaza-claro) !important;
+  color: var(--azul-marino) !important;
+}
+
+/* ==================================================
+   BOTÓN DE ACCIÓN PRINCIPAL AURORA
+================================================== */
+.btn-container {
+  text-align: center;
+  margin-top: 1rem;
+  position: relative;
+}
+
+.btn-save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.375rem 3rem;
+  background: linear-gradient(135deg, 
+    var(--mostaza), 
+    var(--verde-fosforescente),
+    var(--azul-aurora));
+  color: var(--azul-marino);
+  border: none;
+  border-radius: 16px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transicion-media);
+  box-shadow: 
+    0 6px 20px rgba(255, 179, 0, 0.4),
+    0 0 30px rgba(0, 255, 157, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 240px;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn-save::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  transition: var(--transicion-lenta);
+  z-index: -1;
+}
+
+.btn-save:hover {
+  background: linear-gradient(135deg, 
+    var(--verde-fosforescente),
+    var(--azul-aurora),
+    var(--mostaza-oscuro));
+  transform: translateY(-3px);
+  box-shadow: 
+    0 12px 30px rgba(255, 179, 0, 0.6),
+    0 0 40px rgba(0, 255, 157, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.btn-save:hover::before {
+  left: 100%;
+}
+
+.btn-save:active {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 4px 15px rgba(255, 179, 0, 0.4),
+    0 0 20px rgba(0, 255, 157, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btn-save:disabled {
+  background: var(--gris-medio);
+  color: var(--gris-texto);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-save:disabled:hover {
+  background: var(--gris-medio);
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-icon {
+  font-size: 1.375rem;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
+  transition: var(--transicion-rapida);
+}
+
+.btn-save:hover .btn-icon {
+  transform: scale(1.1) translateX(2px);
+  filter: drop-shadow(0 0 8px rgba(0, 255, 157, 0.5));
+}
+
+/* ==================================================
+   ANIMACIONES DE ENTRADA AURORA
+================================================== */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.career-selection-container {
+  animation: slideInUp 0.8s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.career-header {
+  animation: fadeIn 0.8s ease-out 0.3s both;
+}
+
+.career-form {
+  animation: fadeIn 0.8s ease-out 0.5s both;
+}
+
+/* ==================================================
+   SCROLLBAR AURORA PERSONALIZADA
+================================================== */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(10, 17, 40, 0.8);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, var(--verde-fosforescente), var(--verde-aurora));
+  border-radius: 10px;
+  border: 2px solid rgba(10, 17, 40, 0.8);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, var(--verde-aurora), var(--azul-aurora));
+  box-shadow: 0 0 10px rgba(0, 255, 157, 0.5);
+}
+
+/* Para Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--verde-fosforescente) rgba(10, 17, 40, 0.8);
+}
+
+/* ==================================================
+   DISEÑO RESPONSIVE
+================================================== */
+@media (max-width: 768px) {
+  .career-selection-container {
+    padding: 2.5rem 2rem;
+    margin: 1rem;
+    border-radius: 20px;
+  }
+  
+  .career-title {
+    font-size: 1.75rem;
+  }
+  
+  .career-subtitle {
+    font-size: 1.05rem;
+  }
+  
+  .career-icon-wrapper {
+    width: 85px;
+    height: 85px;
+  }
+  
+  .career-icon {
+    font-size: 2rem;
+  }
+  
+  .btn-save {
+    padding: 1.25rem 2.5rem;
+    font-size: 1.05rem;
+    min-width: 220px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 0.5rem;
+  }
+  
+  .career-selection-container {
+    padding: 2rem 1.5rem;
+    border-radius: 16px;
+  }
+  
+  .career-title {
+    font-size: 1.5rem;
+  }
+  
+  .career-subtitle {
+    font-size: 1rem;
+  }
+  
+  .career-icon-wrapper {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 1.25rem;
+  }
+  
+  .career-icon {
+    font-size: 1.75rem;
+  }
+  
+  .career-select {
+    padding: 1.125rem 2.5rem 1.125rem 1.25rem;
+    font-size: 0.95rem;
+  }
+  
+  .btn-save {
+    padding: 1.125rem 2rem;
+    font-size: 1rem;
+    min-width: 200px;
+  }
+}
+
+/* ==================================================
+   MEJORAS DE ACCESIBILIDAD
+================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus visible para navegación con teclado */
+.career-select:focus-visible,
+.btn-save:focus-visible {
+  outline: 3px solid var(--verde-fosforescente);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --borde: #000000;
+    --sombra-suave: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  
+  .career-selection-container {
+    border: 2px solid var(--borde);
+  }
+}
+

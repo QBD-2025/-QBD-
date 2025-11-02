@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" /> <!-- Codificación de caracteres UTF-8 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" /> <!-- Responsive en móviles -->
+  <title>Prueba de Examen de Admisión EXANI</title> <!-- Título en la pestaña -->
+  <link rel="stylesheet" href="/css/simulador.css" /> <!-- Hoja de estilos externa -->
+</head>
+<body>
+  <!-- Contenedor principal -->
+  <div class="container">
+    <!-- Encabezado con título y descripción -->
+    <header>
+      <h1>Prueba de Examen de Admisión EXANI</h1>
+      <p>Simula y practica tu examen de admisión con preguntas reales del EXANI.</p>
+    </header>
+
+    <!-- Sección de práctica del simulador -->
+    <section class="practica">
+      <h2>📝 Inicia tu simulador</h2>
+      <p>
+        Esta es una versión de prueba del examen EXANI. 
+        Al presionar el botón, comenzarás el simulador con preguntas seleccionadas.
+      </p>
+      <!-- Botón que redirige al inicio del simulador -->
+      <button onclick="location.href='/examen-exani'">Comenzar examen</button>
+    </section>
+
+    <!-- Pie de página -->
+    <footer>
+      <p>© 2025 QueBuenDato.com</p>
+    </footer>
+  </div>
+
+  <!-- Botón flotante circular con emoji 🧷 -->
+  <button class="floating-button" onclick="location.href='/ligas'">🧷</button>
+
+  <script>
+    // Seleccionamos el botón flotante
+    const floatingBtn = document.querySelector('.floating-button');
+
+    // Al pasar el cursor, detenemos la animación "pulse"
+    floatingBtn.addEventListener('mouseenter', function() {
+      this.style.animation = 'none';
+    });
+    
+    // Al salir el cursor, reiniciamos la animación "pulse" infinita de 2s
+    floatingBtn.addEventListener('mouseleave', function() {
+      this.style.animation = 'pulse 2s infinite';
+    });
+  </script>
+</body>
+</html>

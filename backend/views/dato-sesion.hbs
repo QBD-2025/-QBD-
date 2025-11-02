@@ -1,0 +1,58 @@
+<!-- views/dato-sesion.hbs -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Configuración de codificación de caracteres -->
+    <meta charset="UTF-8">
+    
+    <!-- Configuración para que la página sea responsive en dispositivos móviles -->
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    
+    <!-- Título de la página -->
+    <title> QueBuenDato.com </title>
+    
+    <!-- Vinculación del archivo CSS específico para esta vista -->
+    <link rel="stylesheet" href="/css/dato-sesion.css">
+</head>
+<body>
+  <!-- Contenedor principal para mostrar el dato curioso -->
+  <div class="dato-container">
+    
+    <!-- Título de la sección -->
+    <h2 class="title">¡Que buenos datos!</h2>
+    
+    <!-- Mostrar el dato curioso que proviene del servidor -->
+    <p class="texto-dato">{{dato}}</p>
+    
+    <!-- Si hay imagen asociada al dato, se renderiza -->
+    {{#if imagen}}
+      <img src="data:image/jpeg;base64,{{imagen}}" alt="Imagen del dato curioso">
+    {{/if}}
+    
+    <!-- Mensaje de aviso de redirección -->
+    <p style="margin-top: 1.5em; color: #888;">Redirigiendo a tu perfil...</p>
+  </div>
+  
+  <!-- Reproducción automática de sonido asociado al dato -->
+  <audio id="sonidoCurioso" src="/audio/curioso.mp3" preload="auto" autoplay></audio>
+
+  <script>
+    // Ejecutar cuando el contenido del DOM haya cargado
+    window.addEventListener('DOMContentLoaded', () => {
+      
+      // Obtener referencia al elemento de audio
+      const sonido = document.getElementById('sonidoCurioso');
+      
+      // Intentar reproducir el audio automáticamente
+      sonido.play().catch(err => {
+        console.warn("El sonido no se pudo reproducir automáticamente:", err);
+      });
+
+      // Redirigir al usuario al menú principal al hacer clic en cualquier parte de la página
+      document.body.addEventListener('click', () => {
+        window.location.href = "/menu_principal";
+      });
+    });
+  </script> 
+</body>
+</html>

@@ -1,0 +1,240 @@
+/* ==============================
+Archivo: rankingCarrera.css
+Estilos completos del ranking, 
+incluyendo contenedor, items, avatares,
+botones, badges y responsive.
+Fecha: [Fecha de creación o última edición]
+============================== */
+
+/* --- Fondo y contenedor principal --- */
+body {
+    /* Fondo degradado oscuro para destacar el ranking */
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #ffffff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 100px 20px 20px 20px;
+    min-height: 100vh;
+}
+
+#rankingCarreraContainer {
+    /* Contenedor central del ranking con bordes, sombras y gradiente */
+    max-width: 800px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, rgba(26,35,126,0.2) 0%, rgba(40,53,147,0.15) 50%, rgba(26,35,126,0.2) 100%);
+    border-radius: 25px;
+    padding: 30px;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.1);
+    border: 2px solid rgb(255, 179, 0);
+}
+
+/* --- Header del ranking --- */
+.ranking-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    border-radius: 15px;
+    /* Fondo semi-transparente con degradado y borde dorado */
+    background: linear-gradient(135deg, rgba(57,73,171,0.15), rgba(255,179,0,0.1));
+    border-bottom: 3px solid #ffca28;
+}
+
+.ranking-header h2 {
+    /* Texto con degradado, clip y sombra para resaltar */
+    font-size: 2.4em;
+    font-weight: 800;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #ffca28, #ffdd00, #3949ab);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 4px 15px rgb(255, 179, 0);
+}
+
+.ranking-subtitle {
+    color: #cccccc;
+    font-size: 1.1em;
+    margin-top: 8px;
+    font-weight: 500;
+    text-shadow: 0 0 5px #ffca28;
+}
+
+/* --- Mensaje de carga o vacío --- */
+#rankingCarreraContainer > p {
+    text-align: center;
+    font-size: 1.3em;
+    color: #cccccc;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, rgba(26,35,126,0.15), rgba(40,53,147,0.1));
+    border-radius: 20px;
+    border: 3px dashed #ffca28;
+    font-weight: 500;
+    text-shadow: 0 0 5px #ffca28;
+}
+
+/* --- Item de jugador --- */
+.ranking-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    margin-bottom: 15px;
+    /* Fondo, bordes y sombras LED */
+    background: linear-gradient(135deg, rgba(40,53,147,0.2), rgba(57,73,171,0.15));
+    border-radius: 20px;
+    border: 2px solid #ffca28;
+    box-shadow:
+        0 0 10px #ffca28,
+        0 0 20px #3949ab,
+        inset 0 1px 3px rgba(255,255,255,0.2);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s ease;
+}
+
+.ranking-item:hover {
+    /* Efecto hover: levantamiento y sombras LED más intensas */
+    transform: translateY(-3px) scale(1.02);
+    box-shadow:
+        0 0 20px #ffca28,
+        0 0 30px #3949ab,
+        inset 0 1px 3px rgba(255,255,255,0.3);
+}
+
+/* --- Avatar del jugador --- */
+.player-avatar {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    border: 3px solid #00028f;
+    object-fit: cover;
+    margin-right: 20px;
+    box-shadow:
+        0 0 10px #ffca28,
+        0 0 20px #3949ab,
+        inset 0 1px 3px rgba(255,255,255,0.2);
+    transition: all 0.4s ease;
+}
+
+.ranking-item:hover .player-avatar {
+    transform: scale(1.15) rotate(5deg);
+    border-color: #ffbb00;
+    box-shadow:
+        0 0 15px #e7bc00,
+        0 0 30px #3949ab;
+}
+
+/* --- Información del jugador --- */
+.player-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.player-name {
+    font-size: 1.25em;
+    font-weight: 700;
+    margin-bottom: 6px;
+    text-shadow: 0 0 5px #ffca28, 0 0 10px #3949ab;
+}
+
+.player-stats {
+    display: flex;
+    gap: 20px;
+    font-size: 0.9em;
+    color: #cccccc;
+    text-shadow: 0 0 5px #ffca28;
+}
+
+/* --- Puntuación --- */
+.score-display {
+    background: linear-gradient(135deg, rgba(57,73,171,0.3), rgba(255,179,0,0.3));
+    padding: 12px 22px;
+    border-radius: 30px;
+    font-weight: 800;
+    text-align: center;
+    border: 2px solid #ffca28;
+    min-width: 90px;
+    color: #ffffff;
+}
+
+/* --- Botón de desafiar --- */
+.btn-desafiar {
+    background: linear-gradient(135deg, #0033fd6d, #0039f663);
+    color: #ffffff;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow:
+        0 0 10px #ffca28,
+        0 0 20px #3949ab;
+    transition: all 0.3s ease;
+}
+
+.btn-desafiar:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow:
+        0 0 20px #ffca28,
+        0 0 40px #3949ab,
+        0 0 60px #ffb300;
+}
+
+/* --- Badge de “Tú” --- */
+.badge-yo {
+    background: linear-gradient(135deg, #3949ab, #283593);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.75em;
+    font-weight: 700;
+    text-shadow: 0 0 3px #ffca28;
+}
+
+/* --- Posición destacada del usuario --- */
+.ranking-item.current-user {
+    border: 2px solid #ffb300;
+    box-shadow:
+        0 0 15px #ffca28,
+        0 0 25px #3949ab,
+        inset 0 0 10px #ffb300;
+    animation: pulseLed 2s infinite;
+}
+
+/* --- Iconos de podio --- */
+.ranking-item:nth-child(1)::before {
+    content: "👑";
+    position: absolute;
+    top: -15px;
+    left: -15px;
+    font-size: 2em;
+    background: linear-gradient(135deg, #ffb300, #ffca28);
+    border-radius: 50%;
+    padding: 10px;
+    box-shadow:
+        0 0 15px #ffca28,
+        0 0 30px #3949ab;
+}
+
+/* --- Animación LED pulsante --- */
+@keyframes pulseLed {
+    0%, 100% { box-shadow: 0 0 10px #ffca28, 0 0 20px #3949ab; }
+    50% { box-shadow: 0 0 20px #ffca28, 0 0 40px #3949ab; }
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .ranking-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .player-avatar, .score-display, .btn-desafiar {
+        margin-bottom: 10px;
+    }
+}

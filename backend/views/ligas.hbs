@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ligas de Universidades - QueBuenDato</title>
+  <link rel="stylesheet" href="/css/ligas.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Sitios de Interes</h1>
+      <p>Todo lo que necesitas para prepararte y tomar decisiones informadas sobre tu futuro académico</p>
+    </header>
+
+    <!-- Navegación entre secciones -->
+    <div class="nav-secciones">
+      <button class="nav-btn active" data-target="universidades">🏫 Universidades</button>
+      <button class="nav-btn" data-target="recursos">📚 Recursos de Estudio</button>
+      <button class="nav-btn" data-target="orientacion">🧭 Orientación </button>
+    </div>
+
+    <!-- Sección de Universidades -->
+    <section id="universidades" class="seccion activa">
+      <h2>Universidades de Aguascalientes</h2>
+      
+      <div class="search-box">
+        <input type="text" id="buscarUniversidad" placeholder="Buscar universidades...">
+      </div>
+      
+      <div class="universidades-lista" id="listaUniversidades">
+        <!-- Las tarjetas de universidades se generarán con JavaScript -->
+      </div>
+    </section>
+
+    <!-- Sección de Recursos de Estudio -->
+    <section id="recursos" class="seccion">
+      <h2>Recursos de Estudio para el EXANI</h2>
+      
+      <div class="recursos-lista">
+        <div class="recurso-card">
+          <h3>📺 Video Tutoriales</h3>
+          <ul>
+            <li><a href="https://www.youtube.com/watch?v=pDtINc8-bbk" target="_blank">Guía completa para el EXANI</a></li>
+            <li><a href="https://www.youtube.com/watch?v=CsQiXZPkl_s" target="_blank">Consejos para el día del examen</a></li>
+            <li><a href="https://www.youtube.com/playlist?list=PLx4MenJqyL9JwqY3-UrpnUq2wHdgZfSwZ" target="_blank">Resolución de ejercicios tipo EXANI</a></li>
+          </ul>
+        </div>
+        
+        <div class="recurso-card">
+          <h3>📖 Guías y Materiales</h3>
+          <ul>
+            <li><a href="https://online.flippingbook.com/view/278435445/" target="_blank">Guía oficial EXANI II 2025</a></li>
+            <li><a href="http://evaluacion.iea.edu.mx/exani-ii/" target="_blank">Sitio oficial de evaluación IEA</a></li>
+            <li><a href="https://www.unitips.mx/blog/exani-ii" target="_blank">Tips y estrategias Unitips</a></li>
+          </ul>
+        </div>
+        
+        <div class="recurso-card">
+          <h3>📝 Práctica y Simuladores</h3>
+          <ul>
+            <li><a href="/simulador">Simulador EXANI de QueBuenDato</a></li>
+            <li><a href="https://www.ceneval.edu.mx/exani-ii" target="_blank">Portal oficial CENEVAL</a></li>
+            <li><a href="https://www.cursoexani.com/" target="_blank">Curso EXANI en línea</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección de Orientación -->
+    <section id="orientacion" class="seccion">
+      <h2>Orientación </h2>
+      
+      <div class="recursos-lista">
+        <div class="recurso-card">
+          <h3>📊 Información de Carreras</h3>
+          <ul>
+            <li><a href="https://idconline.mx/laboral/2024/12/10/que-estudiar-10-carreras-mejor-pagadas-en-mexico" target="_blank">Carreras Mejor Pagadas </a></li>
+            <li><a href="https://exani.com.mx/blog/carreras-internacionales-oportunidades-y-proyecciones-para-estudiar-y-trabajar-en-el-extranjero/" target="_blank">Guía de Carreras Internacional</a></li>
+          </ul>
+        </div>
+    
+      </div>
+    </section>
+
+    <footer>
+      <p>© 2025 QueBuenDato.com</p>
+    </footer>
+  </div>
+
+  <!-- Botón flotante para volver al simulador -->
+  <button class="floating-button" onclick="location.href='/simulador'">📝</button>
+
+  <script>
+    // Datos de universidades
+    const universidades = [
+      {
+        nombre: "Universidad Autónoma de Aguascalientes",
+        logo: "/media/images/uaa.png",
+        descripcion: "Institución pública con programas de excelencia académica.",
+        nivel: "Licenciatura y Posgrado",
+        carreras: "Medicina, Derecho, Ingeniería Civil, Psicología",
+        recomendacion: "Ideal para quienes buscan una formación integral en una universidad pública.",
+        link: "https://www.uaa.mx",
+        tipo: "Pública"
+      },
+      {
+        nombre: "Instituto Tecnológico de Aguascalientes",
+        logo: "/media/images/ita.jpeg",
+        descripcion: "Enfoque en ingeniería, tecnología y ciencias aplicadas.",
+        nivel: "Licenciatura y Maestría",
+        carreras: "Ingeniería Mecánica, Sistemas Computacionales, Industrial, Electrónica",
+        recomendacion: "Perfecta para estudiantes con vocación tecnológica.",
+        link: "https://www.ita.mx",
+        tipo: "Pública"
+      },
+      {
+        nombre: "Universidad Panamericana Campus Bonaterra",
+        logo: "/media/images/panamericana.png",
+        descripcion: "Educación privada con calidad internacional.",
+        nivel: "Licenciatura y Posgrado",
+        carreras: "Administración, Derecho, Ingeniería, Comunicación",
+        recomendacion: "Enfocada en formación integral y valores.",
+        link: "https://www.up.edu.mx/es/campus-aguascalientes",
+        tipo: "Privada"
+      },
+      {
+        nombre: "Universidad del Valle de México",
+        logo: "/media/images/uvm.jpeg",
+        descripcion: "Educación privada con enfoque tecnológico y empresarial.",
+        nivel: "Licenciatura y Maestría",
+        carreras: "Negocios, Ingeniería, Salud",
+        recomendacion: "Flexible y con amplia oferta educativa.",
+        link: "https://www.universidaduvm.mx/campus-aguascalientes",
+        tipo: "Privada"
+      },
+      {
+        nombre: "Universidad Tecnológica de Aguascalientes",
+        logo: "/media/images/uta.jpeg",
+        descripcion: "Formación técnica y tecnológica para el sector productivo.",
+        nivel: "TSU y Licenciatura",
+        carreras: "Mecatrónica, Procesos Industriales, TIC",
+        recomendacion: "Especializada en formación técnica de alta empleabilidad.",
+        link: "https://www.utags.edu.mx/",
+        tipo: "Pública"
+      },
+      {
+        nombre: "Universidad TecMilenio",
+        logo: "/media/images/tecmilenio.jpeg",
+        descripcion: "Enfoque en innovación y aprendizaje personalizado.",
+        nivel: "Licenciatura y Maestría",
+        carreras: "Negocios, Ingeniería, Psicología",
+        recomendacion: "Ideal para quienes buscan flexibilidad y formación empresarial.",
+        link: "https://www.tecmilenio.mx",
+        tipo: "Privada"
+      }
+    ];
+
+    // Inicializar la página
+    document.addEventListener('DOMContentLoaded', function() {
+      // Generar tarjetas de universidades
+      const listaUniversidades = document.getElementById('listaUniversidades');
+      universidades.forEach(u => {
+        listaUniversidades.appendChild(crearCardUniversidad(u));
+      });
+
+      // Configurar navegación entre secciones
+      const navButtons = document.querySelectorAll('.nav-btn');
+      navButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Quitar clase active de todos los botones
+          navButtons.forEach(btn => btn.classList.remove('active'));
+          // Agregar clase active al botón clickeado
+          this.classList.add('active');
+          
+          // Ocultar todas las secciones
+          document.querySelectorAll('.seccion').forEach(sec => {
+            sec.classList.remove('activa');
+          });
+          
+          // Mostrar la sección correspondiente
+          const targetSection = document.getElementById(this.dataset.target);
+          targetSection.classList.add('activa');
+        });
+      });
+
+      // Configurar búsqueda de universidades
+      const buscarInput = document.getElementById('buscarUniversidad');
+      buscarInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const cards = document.querySelectorAll('.uni-card');
+        
+        cards.forEach(card => {
+          const nombre = card.querySelector('h3').textContent.toLowerCase();
+          const descripcion = card.querySelector('p').textContent.toLowerCase();
+          
+          if (nombre.includes(searchTerm) || descripcion.includes(searchTerm)) {
+            card.style.display = 'flex';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // Función para crear tarjeta de universidad
+    function crearCardUniversidad(u) {
+      const card = document.createElement('a');
+      card.href = u.link;
+      card.target = '_blank';
+      card.className = 'uni-card';
+      card.innerHTML = `
+        <img src="${u.logo}" alt="${u.nombre}">
+        <div>
+          <h3>${u.nombre} <span class="badge">${u.tipo}</span></h3>
+          <p>${u.descripcion}</p>
+        </div>
+        <button class="info-btn" onclick="event.preventDefault(); mostrarInfo('${u.nombre}', '${u.nivel}', '${u.carreras}', '${u.recomendacion}')">?</button>
+      `;
+      return card;
+    }
+
+    // Función para mostrar información de la universidad
+    function mostrarInfo(nombre, nivel, carreras, recomendacion) {
+      alert(`${nombre}\n\nNivel: ${nivel}\n\nCarreras: ${carreras}\n\nRecomendación: ${recomendacion}`);
+    }
+  </script>
+</body>
+</html>

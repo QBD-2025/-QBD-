@@ -1,0 +1,50 @@
+{{!-- ESTA VISTA SERÁ INYECTADA EN UN LAYOUT (auth-layout.hbs) --}}
+{{!-- No necesita <html>, <head> ni <body> porque se renderiza dentro del layout principal --}}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"> <!-- Codificación de caracteres UTF-8 -->
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"> <!-- Ajuste de tamaño para móviles -->
+    <title>QueBuenDato.com</title> <!-- Título de la página -->
+    <!-- Estilos específicos para la página de verificación / éxito de login -->
+    <link rel="stylesheet" href="/css/verification.css">
+</head>
+
+<!-- Contenedor principal de la verificación -->
+<div class="verification-main-wrapper">
+
+    <!-- Contenedor de elementos visuales (GIFs y videos) -->
+    <div class="verification-visuals-container">
+
+        <!-- Primera figura: GIF de Stuart bailando -->
+        <div class="verification-figure2">
+            <img src="/media/videos/stuart_dance.gif" 
+                 alt="Stuart bailando" 
+                 class="verification-character">
+        </div>
+
+        <!-- Segunda figura: Video de Octavio bailando -->
+        <div class="verification-figure">
+            <video src="/media/videos/octavio_dance.mp4" 
+                   autoplay 
+                   loop 
+                   muted 
+                   class="verification-character">
+            </video>
+        </div>
+
+    </div> <!-- Cierre de container de visuales -->
+
+    <!-- Contenedor del mensaje de éxito y botón de regreso -->
+    <div class="verification-text-content">
+        <!-- Mensaje de éxito en inicio de sesión -->
+        <h1 class="verification-headline-success">¡Inicio de sesion exitoso!</h1>
+
+        <!-- Botón de regreso al inicio -->
+        <c class="btn-register2">
+            <a href="/">Volver al incio</a>
+        </c>
+    </div> <!-- Cierre de texto y botón -->
+
+</div> <!-- Cierre del contenedor principal -->

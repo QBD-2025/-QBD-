@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <!-- Configuración de codificación -->
+  <meta charset="UTF-8">
+  
+  <!-- Título dinámico de la página según la materia -->
+  <title>Datos Curiosos - {{materias}}</title>
+  
+  <!-- Vinculación de la hoja de estilos específica para la vista -->
+  <link rel="stylesheet" href="/css/dato.css">
+</head>
+<body>
+  <!-- Contenedor principal de la página -->
+  <div class="contenedor-datos">
+    
+    <!-- Botón para regresar a la selección de materias -->
+    <div>
+      <button class="boton-volver" onclick="location.href='/eleccion-dato'">Regresar</button>
+    </div>
+    
+    <!-- Título principal con el nombre de la materia -->
+    <h1 class="titulo">{{materias}}</h1>
+
+    <!-- Verifica si hay datos curiosos para mostrar -->
+    {{#if datos.length}}
+      <!-- Contenedor de la lista de datos -->
+      <div class="lista-datos">
+        
+        <!-- Itera sobre cada dato curioso -->
+        {{#each datos}}
+        <div class="tarjeta-dato">
+          <!-- Muestra el texto del dato -->
+          <p class="texto-dato">{{texto}}</p>
+          
+          <!-- Si existe una imagen en Base64, la muestra -->
+          {{#if imagenBase64}}
+            <img src="data:image/jpeg;base64,{{imagenBase64}}" alt="Imagen del dato curioso" class="imagen-dato">
+          {{/if}}
+        </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <!-- Mensaje si no hay datos curiosos para la materia -->
+      <p class="sin-datos">No hay datos curiosos para esta materia.</p>
+    {{/if}}
+
+    <!-- Script para un carrusel 3D de tarjetas (aunque en tu HTML actual no se ve el contenedor "carousel") -->
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Selecciona todas las tarjetas
+        const cards = document.querySelectorAll(".card");
+        
+        // Contenedor del carrusel
+        const carousel = document.querySelector(".carousel");
+        
+        // Número total de tarjetas
+        const total = cards.length;
+        
+        // Ángulo entre cada tarjeta en grados
+        const angleStep = 360 / total;
+        
+        // Distancia radial del carrusel 3D
+        const radius = 350;
+        
+        // Índice de la tarjeta actual
+        let currentIndex = 0;
+
+        // Distribuye las cartas en círculo 3D
+        cards.forEach((card, i) => {
+          const angle = i * angleStep;
+          card.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
+        });
+
+        // Función para rotar el carrusel y resaltar la tarjeta activa
+        function rotateCarousel() {
+          const angle = currentIndex * -angleStep;
+          carousel.style.transform = `translateZ(-${radius}px) rotateY(${angle}deg)`;
+
+          // Quita el resaltado de todas las tarjetas
+          cards.forEach(card => card.classList.remove('highlight'));
+          
+          // Resalta la tarjeta actual
+          cards[currentIndex].classList.add('highlight');
+        }
+
+        // Botón "Siguiente" del carrusel
+        document.getElementById("next").addEventListener("click", () => {
+          currentIndex = (currentIndex + 1) % total;
+          rotateCarousel();
+        });
+
+        // Botón "Anterior" del carrusel
+        document.getElementById("prev").addEventListener("click", () => {
+          currentIndex = (currentIndex - 1 + total) % total;
+          rotateCarousel();
+        });
+
+        // Inicializa la rotación del carrusel
+        rotateCarousel();
+      });
+    </script>
+
+  </div>
+</body>
+</html>

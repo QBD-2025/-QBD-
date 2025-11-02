@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/css/sopa-letras.css" />
+  <title>Sopa de Letras Multijugador</title>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div class="title">🧩 Sopa de Letras Multijugador</div>
+      <div class="pill">
+        Jugador: <strong>{{#if user}}{{user.username}}{{else}}Invitado{{/if}}</strong>
+      </div>
+      <button onclick="location.href='/minijuegos'"> ← Regresar</button>
+    </div>
+
+    <div class="layout">
+      <section class="game card">
+        <!-- ========== MODO NORMAL (INDIVIDUAL/COOPERATIVO) ========== -->
+        <div id="normal-mode">
+          <div class="status panel">
+            <div>
+              <div class="small">Progreso</div>
+              <div id="progressText"><strong>0</strong>/<strong id="totalWords">0</strong> palabras</div>
+            </div>
+            <div class="badge" id="errorsBadge">0 / 4</div>
+          </div>
+          
+          <div class="controls">
+            <label for="categoria-select">Categoría:</label>
+            <select id="categoria-select">
+              <option>Cargando categorías...</option>
+            </select>
+            <button id="btnClear">Limpiar selección</button>
+            <button id="btnRestart" class="primary">Reiniciar</button>
+          </div>
+          
+          <div id="board" class="board" aria-label="Tablero de sopa de letras"></div>
+          <div id="gameMessage" class="message" role="status" aria-live="polite"></div>
+        </div>
+
+        <!-- ========== MODO ENFRENTAMIENTO ========== -->
+        <div id="confrontation-mode" style="display: none;">
+          
+          <!-- PANEL DE VOTACIÓN DE CATEGORÍA -->
+          <div id="voting-panel" class="panel" style="display: none; text-align: center; margin-bottom: 20px; padding: 20px; background: #f0f9ff; border-radius: 8px; border: 2px solid #3b82f6;">
+            <h4 style="margin-bottom: 15px; color: #1e40af;">🗳️ Selección de Categoría</h4>
+            
+            <!-- ÁREA 1: Muestra el estado actual de la votación -->
+            <div id="propuesta-actual" style="margin-bottom: 15px; padding: 10px; background: white; border-radius: 6px;">
+              <p style="margin: 0;">Esperando que un jugador proponga una categoría...</p>
+            </div>
+            
+            <!-- ÁREA 2: Formulario para PROPONER una categoría (solo visible cuando puedes proponer) -->
+            <div id="area-proponer" style="display: none; margin-bottom: 15px;">
+              <label for="confrontation-categoria-select" style="display: block; margin-bottom: 8px; font-weight: 600;">Elige una categoría:</label>
+              <select id="confrontation-categoria-select" style="padding: 8px; margin-bottom: 10px; width: 100%; max-width: 300px;">
+                <option>Cargando...</option>
+              </select>
+              <button id="propose-category-btn" class="primary" style="padding: 10px 20px;">📤 Proponer</button>
+            </div>
+
+            <!-- ÁREA 3: Botones para VOTAR (solo visible cuando recibes una propuesta) -->
+            <div id="area-votar" style="display: none; margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+              <button id="aceptar-categoria-btn" class="primary" style="padding: 10px 20px; background: #10b981;">✅ Aceptar</button>
+              <button id="rechazar-categoria-btn" style="padding: 10px 20px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer;">❌ Rechazar</button>
+            </div>
+          </div>
+          
+          <!-- TEMPORIZADOR DEL JUEGO -->
+          <div class="timer-container" id="confrontation-timer" style="display: none;">00:00</div>
+          
+          <!-- TABLEROS DE AMBOS JUGADORES -->
+          <div class="confrontation-boards-container" style="display: none;">
+            <!-- MI TABLERO (Interactivo) -->
+            <div class="player-board" id="my-board">
+              <div class="player-header">
+                <div class="player-name" id="my-name">Tú</div>
+                <div class="player-stats">
+                  <div class="stat">
+                    <div class="stat-value" id="my-words">0</div> 
+                    <div class="stat-label">Palabras</div>
+                  </div>
+                  <div class="stat">
+                    <div class="stat-value" id="my-errors">0</div> 
+                    <div class="stat-label">Errores</div>
+                  </div>
+                </div>
+              </div>
+              <div id="my-board-grid" class="board"></div>
+            </div>
+            
+            <!-- TABLERO DEL OPONENTE (Solo visual) -->
+            <div class="player-board" id="opponent-board">
+              <div class="player-header">
+                <div class="player-name" id="opponent-name">Rival</div>
+                <div class="player-stats">
+                  <div class="stat">
+                    <div class="stat-value" id="opponent-words">0</div> 
+                    <div class="stat-label">Palabras</div>
+                  </div>
+                  <div class="stat">
+                    <div class="stat-value" id="opponent-errors">0</div> 
+                    <div class="stat-label">Errores</div>
+                  </div>
+                </div>
+              </div>
+              <div id="opponent-board-grid" class="board"></div>
+            </div>
+          </div>
+          
+          <div id="confrontation-message" class="message" role="status" aria-live="polite"></div>
+        </div>
+
+        <!-- PANEL LATERAL: Palabras e Instrucciones -->
+        <aside>
+          <div class="panel">
+            <h3>Palabras a encontrar</h3>
+            <ul id="clues" class="clues"></ul>
+          </div>
+          <div class="panel">
+            <h3>Instrucciones</h3>
+            <div class="small">
+              • Arrastra el mouse en recta horizontal o vertical.<br>
+              • Si no coincide con ninguna palabra, cuenta como error.<br>
+              • Con <strong>4 errores</strong> pierdes y el juego se reinicia.
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <!-- PANEL LATERAL DERECHO: Jugadores y Chat -->
+      <aside class="side">
+        <div class="panel card" id="jugadores-panel">
+          <h3>🟢 Jugadores activos</h3>
+          <ul id="lista-jugadores"></ul>
+        </div>
+
+        <div class="panel card" id="chat-panel">
+          <h3>💬 Chat</h3>
+          <div id="chatBox"></div>
+          <div class="chat-input">
+            <input id="chatInput" type="text" placeholder="Escribe un mensaje…">
+            <button id="chatBtn" class="chat-send">Enviar</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- PANTALLA DE RESULTADOS -->
+  <div id="results-screen" class="results-screen" style="display: none;">
+    <div class="results-content">
+      <h2 class="results-title" id="results-title">Resultados del Enfrentamiento</h2>
+      <div class="results-stats">
+        <div class="result-player" id="result-player1">
+          <h3 id="result-name1">Jugador 1</h3>
+          <div class="stat">
+            <div class="stat-value" id="result-words1">0</div>
+            <div class="stat-label">Palabras encontradas</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="result-errors1">0</div>
+            <div class="stat-label">Errores</div>
+          </div>
+        </div>
+        <div class="result-player" id="result-player2">
+          <h3 id="result-name2">Jugador 2</h3>
+          <div class="stat">
+            <div class="stat-value" id="result-words2">0</div>
+            <div class="stat-label">Palabras encontradas</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="result-errors2">0</div>
+            <div class="stat-label">Errores</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- CONTROLES DE REVANCHA -->
+      <div id="rematch-controls" style="margin-top: 20px;">
+        <button id="rematch-btn" class="primary">⚔️ Revancha</button>
+        <button id="back-to-lobby-btn">Ir al Lobby</button>
+      </div>
+      <div id="rematch-status" style="display: none; margin-top: 15px;"></div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // ==================== CONFIGURACIÓN INICIAL ====================
+    const ROWS = 14;
+    const COLS = 14;
+    const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const MAX_ERRORS = 4;
+    let WORDS = [];
+    
+    // Variables de estado del juego
+    let grid = [];
+    let cellEls = [];
+    let foundWords = new Set();
+    let errors = 0;
+    let isDragging = false;
+    let start = null;
+    let dir = null;
+    let dragPath = [];
+    let myCellEls = [];
+    let confrontationMode = false;
+
+    // Variables para el modo enfrentamiento
+    let confrontationData = null;
+    let timerInterval = null;
+    
+    // ===== ELEMENTOS DEL DOM - MODO NORMAL =====
+    const boardEl = document.getElementById('board');
+    const cluesEl = document.getElementById('clues');
+    const errorsBadge = document.getElementById('errorsBadge');
+    const gameMessage = document.getElementById('gameMessage');
+    const btnClear = document.getElementById('btnClear');
+    const btnRestart = document.getElementById('btnRestart');
+    const totalWords = document.getElementById('totalWords');
+    const progressText = document.getElementById('progressText');
+    const categoriaSelect = document.getElementById('categoria-select');
+
+    // ===== ELEMENTOS DEL DOM - MODO ENFRENTAMIENTO =====
+    const normalModeEl = document.getElementById('normal-mode');
+    const confrontationModeEl = document.getElementById('confrontation-mode');
+    const timerEl = document.getElementById('confrontation-timer');
+    const confrontationMessageEl = document.getElementById('confrontation-message');
+    const resultsScreenEl = document.getElementById('results-screen');
+
+    // ===== ELEMENTOS DEL PANEL DE VOTACIÓN =====
+    const votingPanel = document.getElementById('voting-panel');
+    const propuestaActualDiv = document.getElementById('propuesta-actual');
+    const areaProponerDiv = document.getElementById('area-proponer');
+    const areaVotarDiv = document.getElementById('area-votar');
+    const confrontationCategoriaSelect = document.getElementById('confrontation-categoria-select');
+    const proposeCategoryBtn = document.getElementById('propose-category-btn');
+    const aceptarCategoriaBtn = document.getElementById('aceptar-categoria-btn');
+    const rechazarCategoriaBtn = document.getElementById('rechazar-categoria-btn');
+
+    // ===== ELEMENTOS DE REVANCHA =====
+    const rematchControls = document.getElementById('rematch-controls');
+    const rematchBtn = document.getElementById('rematch-btn');
+    const rematchStatus = document.getElementById('rematch-status');
+    const backToLobbyBtn = document.getElementById('back-to-lobby-btn');
+
+    // ==================== SISTEMA DE CHAT Y SALA ====================
+    const socket = io();
+    const salaId = "{{salaId}}";
+    const usuario = {{{json user}}};
+    const chatBox = document.getElementById('chatBox');
+    const chatInput = document.getElementById('chatInput');
+    const chatBtn = document.getElementById('chatBtn');
+    const listaJugadoresEl = document.getElementById('lista-jugadores');
+
+    function mostrarMensaje(user, msg) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'msg';
+      msgDiv.innerHTML = `<span class="u">${user}:</span> <span>${msg}</span>`;
+      chatBox.appendChild(msgDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function enviarMensaje() {
+      const mensaje = chatInput.value.trim();
+      if (mensaje && salaId) {
+        socket.emit('mensajeChat', { salaId, mensaje, usuario: usuario.username });
+        chatInput.value = '';
+      }
+    }
+
+    chatBtn.addEventListener('click', enviarMensaje);
+    chatInput.addEventListener('keypress', (e) => e.key === 'Enter' && enviarMensaje());
+
+    socket.on('nuevoMensaje', (data) => {
+      if (data.usuario && data.mensaje) mostrarMensaje(data.usuario, data.mensaje);
+    });
+
+    // ==================== SISTEMA DE INVITACIONES ====================
+    async function cargarJugadoresActivos() {
+      try {
+        const res = await fetch('/jugadores');
+        const jugadores = await res.json();
+        listaJugadoresEl.innerHTML = '';
+        
+        jugadores.forEach(jugador => {
+          if (jugador.id === usuario.id_usuario) return;
+          const item = document.createElement('li');
+          item.innerHTML = `
+            <span>${jugador.username}</span>
+            <div class="actions">
+              <button class="btn-invite" data-id="${jugador.id}">Invitar 🤝</button>
+              <button class="btn-challenge" data-id="${jugador.id}">Enfrentar ⚔️</button>
+            </div>
+          `;
+          listaJugadoresEl.appendChild(item);
+        });
+      } catch (error) { 
+        console.error('Error al cargar jugadores:', error);
+        mostrarMensaje('Sistema', 'Error al cargar lista de jugadores');
+      }
+    }
+
+    listaJugadoresEl.addEventListener('click', async (e) => {
+      const target = e.target;
+      const idJugador = target.dataset.id;
+      if (!idJugador) return;
+
+      try {
+        if (target.classList.contains('btn-invite')) {
+          const response = await fetch(`/invitar/${idJugador}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ salaId: salaId, juego: 'Sopa' })
+          });
+          const data = await response.json();
+          mostrarMensaje('Sistema', data.message || 'Invitación enviada');
+
+        } else if (target.classList.contains('btn-challenge')) {
+          const response = await fetch(`/enfrentar/${idJugador}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ juego: 'Sopa' })
+          });
+          const data = await response.json();
+          if (data.salaId) {
+            mostrarMensaje('Sistema', '¡Desafío enviado! Redirigiendo...');
+            setTimeout(() => {
+              window.location.href = `/sopa/${data.salaId}?modo=enfrentamiento`; 
+            }, 1500);
+          } else {
+            mostrarMensaje('Sistema', data.message || 'Error al desafiar');
+          }
+        }
+      } catch (error) {
+        console.error('Error en acción de jugador:', error);
+        mostrarMensaje('Sistema', 'Error al procesar la solicitud');
+      }
+    });
+
+    // ==================== LÓGICA DEL JUEGO ====================
+    const inBounds = (r,c) => r>=0 && c>=0 && r<ROWS && c<COLS;
+    const randInt = n => Math.floor(Math.random()*n);
+    
+    const directions = [
+      { dr: 0,  dc: 1 }, { dr: 0,  dc: -1 }, { dr: 1,  dc: 0 }, { dr: -1, dc: 0 },
+      { dr: 1,  dc: 1 }, { dr: 1,  dc: -1 }, { dr: -1, dc: 1 }, { dr: -1, dc: -1 },
+    ];
+
+    function emptyGrid() {
+      grid = Array.from({length: ROWS}, () => Array(COLS).fill(""));
+    }
+
+    function canPlace(word, r, c, dr, dc) {
+      for (let i=0; i<word.length; i++){
+        const rr = r + dr*i, cc = c + dc*i;
+        if (!inBounds(rr,cc)) return false;
+        const cell = grid[rr][cc];
+        if (cell !== "" && cell !== word[i]) return false;
+      }
+      return true;
+    }
+
+    function placeWord(word) {
+      const tries = 300;
+      for (let t=0; t<tries; t++){
+        const {dr,dc} = directions[randInt(directions.length)];
+        const startR = randInt(ROWS);
+        const startC = randInt(COLS);
+        if (canPlace(word, startR, startC, dr, dc)) {
+          for (let i=0; i<word.length; i++){
+            grid[startR + dr*i][startC + dc*i] = word[i];
+          }
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function fillRandom() {
+      for (let r=0; r<ROWS; r++){
+        for (let c=0; c<COLS; c++){
+          if (grid[r][c]==="") grid[r][c] = ALPHABET[randInt(ALPHABET.length)];
+        }
+      }
+    }
+
+    function renderBoard(boardElement, gridData, isInteractive) {
+      boardElement.innerHTML = "";
+      const currentCellElements = Array.from({ length: ROWS }, () => Array(COLS));
+
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const d = document.createElement('div');
+          d.className = 'cell';
+          d.textContent = gridData[r][c];
+          d.dataset.r = r;
+          d.dataset.c = c;
+
+          if (isInteractive) {
+            d.addEventListener('mousedown', (e) => {
+              e.preventDefault();
+              startDrag(r, c);
+            });
+            d.addEventListener('mouseenter', () => continueDrag(r, c));
+          }
+          
+          boardElement.appendChild(d);
+          currentCellElements[r][c] = d;
+        }
+      }
+
+      if (isInteractive) {
+        myCellEls = currentCellElements;
+        document.addEventListener('mouseup', endDrag);
+        boardElement.addEventListener('dragstart', e => e.preventDefault());
+      }
+    }
+
+    function renderClues() {
+      cluesEl.innerHTML = "";
+      WORDS.forEach(({word, hint}) => {
+        const li = document.createElement('li');
+        li.id = `clue-${word}`;
+        li.innerHTML = `<div class="word">${word}</div><div class="hint">${hint}</div>`;
+        cluesEl.appendChild(li);
+      });
+      updateClues();
+    }
+
+    function updateClues() {
+      WORDS.forEach(({word}) => {
+        const li = document.getElementById(`clue-${word}`);
+        if (li) li.classList.toggle('done', foundWords.has(word));
+      });
+      progressText.innerHTML = `<strong>${foundWords.size}</strong>/<strong>${WORDS.length}</strong> palabras`;
+    }
+
+    function setErrors(n) {
+      errors = n;
+      errorsBadge.textContent = `${errors} / ${MAX_ERRORS}`;
+      errorsBadge.style.background = errors ? '#fee2e2' : '#e5e7eb';
+    }
+
+    function message(text, kind='') {
+      gameMessage.className = `message ${kind}`;
+      gameMessage.textContent = text;
+    }
+
+    function clearPathVisual(dragPath) {
+      if (dragPath) {
+        dragPath.forEach(p => p.el.classList.remove('selected'));
+      }
+    }
+
+    function startDrag(r, c) {
+      if (isDragging) return;
+      isDragging = true;
+      start = { r, c };
+      dir = null;
+      clearPathVisual(dragPath);
+      dragPath = [];
+
+      const el = myCellEls[r][c];
+      if (el.classList.contains('found')) {
+        isDragging = false;
+        return;
+      }
+      el.classList.add('selected');
+      dragPath.push({ r, c, el, letter: el.textContent });
+      if (!confrontationMode) message("");
+    }
+
+    function continueDrag(r, c) {
+      if (!isDragging || !start) return;
+
+      const drRaw = r - start.r;
+      const dcRaw = c - start.c;
+
+      if (drRaw === 0 && dcRaw === 0) return;
+
+      if (!dir) {
+        const stepR = drRaw === 0 ? 0 : drRaw / Math.abs(drRaw);
+        const stepC = dcRaw === 0 ? 0 : dcRaw / Math.abs(dcRaw);
+        dir = { dr: stepR, dc: stepC };
+      }
+
+      const expectedSteps = Math.max(
+        dir.dr !== 0 ? Math.abs((r - start.r) / dir.dr) : 0,
+        dir.dc !== 0 ? Math.abs((c - start.c) / dir.dc) : 0
+      );
+
+      if ( (r - start.r) !== (expectedSteps * dir.dr) && (c - start.c) !== (expectedSteps * dir.dc) ) {
+        if(Math.abs(drRaw) !== Math.abs(dcRaw) && drRaw !== 0 && dcRaw !== 0) return;
+      }
+
+      const length = expectedSteps + 1;
+      const maxLen = Math.max(...WORDS.map(w => w.word.length));
+      const cappedLen = Math.min(length, maxLen);
+
+      const newPath = [];
+      for (let i = 0; i < cappedLen; i++) {
+        const rr = start.r + dir.dr * i;
+        const cc = start.c + dir.dc * i;
+        if (!inBounds(rr, cc)) break;
+        
+        const el = myCellEls[rr][cc];
+        if (el.classList.contains('found')) break;
+        newPath.push({ r: rr, c: cc, el, letter: el.textContent });
+      }
+
+      clearPathVisual(dragPath);
+      dragPath = newPath;
+      dragPath.forEach(p => p.el.classList.add('selected'));
+    }
+
+    function endDrag() {
+      if (!isDragging) return;
+      isDragging = false;
+      validateDrag();
+      start = null;
+      dir = null;
+    }
+
+    function validateDrag() {
+      if (!dragPath || dragPath.length === 0) return;
+      
+      const text = dragPath.map(p => p.letter).join("");
+      const reversedText = [...text].reverse().join("");
+      
+      clearPathVisual(dragPath);
+
+      const palabraEncontrada = WORDS.find(w => w.word === text || w.word === reversedText);
+
+      if (palabraEncontrada) {
+        if (!foundWords.has(palabraEncontrada.word)) {
+          dragPath.forEach(p => p.el.classList.add('found'));
+          
+          if (confrontationMode) {
+            socket.emit('sopa:palabraEncontradaEnfrentamiento', { salaId, usuario, palabra: palabraEncontrada.word });
+          } else {
+            foundWords.add(palabraEncontrada.word);
+            updateClues();
+            message(`¡Encontraste "${palabraEncontrada.word}"! 🎉`, 'win');
+            if (foundWords.size === WORDS.length) {
+              message("🥳 ¡Ganaste! Has encontrado todas las palabras.", 'win');
+            }
+          }
+        }
+      } else {
+        if (confrontationMode) {
+          socket.emit('sopa:errorEnfrentamiento', { salaId, usuario });
+          dragPath.forEach(p => p.el.classList.add('error'));
+          setTimeout(() => {
+            dragPath.forEach(p => p.el.classList.remove('error'));
+          }, 500);
+        } else {
+          setErrors(errors + 1);
+          message(`❌ Selección incorrecta. Te quedan ${MAX_ERRORS - errors} intentos.`, 'lose');
+          if (errors >= MAX_ERRORS) {
+            message("💥 ¡Perdiste! Reiniciando la sopa…", 'lose');
+            setTimeout(initGame, 1100);
+          }
+        }
+      }
+      dragPath = [];
+    }
+
+    // ==================== MODO ENFRENTAMIENTO ====================
+    function iniciarEnfrentamiento(data) {
+      confrontationMode = true;
+      confrontationData = data;
+
+      normalModeEl.style.display = 'none';
+      confrontationModeEl.style.display = 'block';
+      document.querySelector('.confrontation-boards-container').style.display = 'grid';    
+      votingPanel.style.display = 'none'; 
+      timerEl.style.display = 'block';
+      
+      WORDS = data.palabras;
+      renderClues();
+
+      const yoSoyPlayer1 = data.player1.id === usuario.id_usuario;
+      const miData = yoSoyPlayer1 ? data.player1 : data.player2;
+      const oponenteData = yoSoyPlayer1 ? data.player2 : data.player1;
+
+      document.getElementById('my-name').textContent = miData.username;
+      document.getElementById('opponent-name').textContent = oponenteData.username;
+      
+      const myBoardEl = document.getElementById('my-board-grid');
+      const opponentBoardEl = document.getElementById('opponent-board-grid');
+      renderBoard(myBoardEl, miData.tablero, true);
+      renderBoard(opponentBoardEl, oponenteData.tablero, false);
+
+      document.getElementById('my-board').classList.add('my-turn');
+      document.getElementById('opponent-board').classList.add('opponent-turn');
+      
+      confrontationMessageEl.textContent = "¡Que comience la partida!";
+    }
+
+    function mostrarResultados(data) {
+      document.removeEventListener('mouseup', endDrag);
+      resultsScreenEl.style.display = 'flex';
+
+      document.getElementById('result-name1').textContent = data.player1.username;
+      document.getElementById('result-words1').textContent = data.player1.palabrasEncontradas.length;
+      document.getElementById('result-errors1').textContent = data.player1.errores;
+      document.getElementById('result-player1').classList.remove('winner');
+
+      document.getElementById('result-name2').textContent = data.player2.username;
+      document.getElementById('result-words2').textContent = data.player2.palabrasEncontradas.length;
+      document.getElementById('result-errors2').textContent = data.player2.errores;
+      document.getElementById('result-player2').classList.remove('winner');
+
+      const tituloResultados = document.getElementById('results-title');
+      tituloResultados.textContent = data.razon || "Resultados del Enfrentamiento";
+      
+      if (data.ganador) {
+        if (data.ganador.id === data.player1.id) {
+          document.getElementById('result-player1').classList.add('winner');
+        } else {
+          document.getElementById('result-player2').classList.add('winner');
+        }
+      }
+    }
+
+    // ==================== SISTEMA DE VOTACIÓN DE CATEGORÍAS ====================
+    
+    // Cuando esperamos oponente
+    socket.on('sopa:esperandoOponente', () => {
+      console.log('⏳ [VOTACIÓN] Recibido: sopa:esperandoOponente');
+      votingPanel.style.display = 'block';
+      propuestaActualDiv.innerHTML = `<p>Esperando a tu oponente...</p>`;
+      areaProponerDiv.style.display = 'none';
+      areaVotarDiv.style.display = 'none';
+      console.log('✅ [VOTACIÓN] Panel mostrado en estado de espera');
+    });
+
+    // Cuando ambos jugadores están listos para iniciar votación
+    socket.on('sopa:iniciarVotacion', async () => {
+      console.log('🗳️ [VOTACIÓN] Recibido: sopa:iniciarVotacion');
+      await cargarCategorias(); 
+      confrontationCategoriaSelect.innerHTML = categoriaSelect.innerHTML;
+      
+      votingPanel.style.display = 'block';
+      propuestaActualDiv.innerHTML = `<p>¡Oponente conectado! Por favor, propone una categoría.</p>`;
+      areaProponerDiv.style.display = 'block';
+      areaVotarDiv.style.display = 'none';
+      
+      console.log('✅ [VOTACIÓN] Panel de votación mostrado');
+      console.log('📋 [VOTACIÓN] Categorías cargadas:', confrontationCategoriaSelect.options.length);
+      
+      mostrarMensaje('Sistema', '¡Oponente conectado! Pueden proponer una categoría para jugar.');
+    });
+
+    // Botón para proponer categoría
+    proposeCategoryBtn.addEventListener('click', () => {
+      const idMateria = confrontationCategoriaSelect.value;
+      const materiaTexto = confrontationCategoriaSelect.options[confrontationCategoriaSelect.selectedIndex].text;
+      
+      console.log('📤 [PROPUESTA] Enviando propuesta:', { salaId, idMateria, materiaTexto });
+      socket.emit('sopa:proponerCategoria', { salaId, idMateria, materiaTexto });
+      
+      propuestaActualDiv.innerHTML = `<p>Has propuesto: <strong>${materiaTexto}</strong>. Esperando respuesta...</p>`;
+      areaProponerDiv.style.display = 'none';
+      console.log('✅ [PROPUESTA] Propuesta enviada');
+    });
+
+    // Cuando llega una nueva propuesta
+    socket.on('sopa:nuevaPropuesta', ({ proponente, materiaTexto }) => {
+      console.log('📥 [PROPUESTA] Recibida propuesta de:', proponente, '- Categoría:', materiaTexto);
+      votingPanel.style.display = 'block';
+      propuestaActualDiv.innerHTML = `<p><strong>${proponente}</strong> ha propuesto: <strong>${materiaTexto}</strong></p>`;
+      areaProponerDiv.style.display = 'none';
+      
+      // Si yo NO soy el proponente, muestro los botones de votación
+      if (proponente !== usuario.username) {
+        areaVotarDiv.style.display = 'flex';
+        console.log('🗳️ [PROPUESTA] Mostrando botones de votación (no soy el proponente)');
+      } else {
+        areaVotarDiv.style.display = 'none';
+        console.log('⏳ [PROPUESTA] Esperando voto (soy el proponente)');
+      }
+    });
+
+    // Botones de aceptar/rechazar
+    aceptarCategoriaBtn.addEventListener('click', () => {
+      console.log('✅ [VOTO] Usuario acepta la categoría');
+      socket.emit('sopa:votarCategoria', { salaId, voto: 'aceptado' });
+      areaVotarDiv.style.display = 'none';
+      propuestaActualDiv.innerHTML = `<p>Has aceptado la propuesta. Iniciando partida...</p>`;
+    });
+
+    rechazarCategoriaBtn.addEventListener('click', () => {
+      console.log('❌ [VOTO] Usuario rechaza la categoría');
+      socket.emit('sopa:votarCategoria', { salaId, voto: 'rechazado' });
+      areaVotarDiv.style.display = 'none';
+      propuestaActualDiv.innerHTML = `<p>Has rechazado la propuesta.</p>`;
+    });
+
+    // Cuando se rechaza una propuesta
+    socket.on('sopa:propuestaRechazada', ({ votante }) => {
+      console.log('❌ [PROPUESTA] Rechazada por:', votante);
+      mostrarMensaje('Sistema', `${votante} ha rechazado la propuesta. ¡Vuelvan a proponer!`);
+      propuestaActualDiv.innerHTML = `<p>Propuesta rechazada. Esperando nueva propuesta...</p>`;
+      areaProponerDiv.style.display = 'block';
+      areaVotarDiv.style.display = 'none';
+    });
+
+    // ==================== CONTROL DEL JUEGO ====================
+    async function cargarCategorias() {
+      try {
+        const response = await fetch('/sopa/materias');
+        if (!response.ok) throw new Error('No se pudieron cargar categorías');
+        const materias = await response.json();
+        
+        categoriaSelect.innerHTML = '';
+        materias.forEach(materia => {
+          const option = document.createElement('option');
+          option.value = materia.id_materia;
+          option.textContent = materia.descripcion;
+          categoriaSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error("Error al cargar categorías:", error);
+        categoriaSelect.innerHTML = '<option>Error al cargar categorías</option>';
+      }
+    }
+
+    async function cargarPalabrasPorCategoria(idMateria) {
+      try {
+        const response = await fetch(`/sopa/palabras/${idMateria}`);
+        if (!response.ok) throw new Error('Error al cargar palabras');
+        return await response.json();
+      } catch (error) {
+        console.error("Error al cargar palabras:", error);
+        return [];
+      }
+    }
+
+    async function initGame() {
+      const idMateria = categoriaSelect.value || 1;
+      WORDS = await cargarPalabrasPorCategoria(idMateria);
+      
+      if (WORDS.length === 0) {
+        WORDS = [
+          { word: "ERROR", hint: "No se pudieron cargar palabras" },
+          { word: "CARGA", hint: "Intenta recargar la página" }
+        ];
+      }
+
+      message("");
+      setErrors(0);
+      foundWords.clear();
+      dragPath = [];
+      start = null; dir = null;
+      totalWords.textContent = WORDS.length;
+
+      for (let safety=0; safety<60; safety++){
+        emptyGrid();
+        let ok = true;
+        for (const {word} of WORDS) {
+          if (!placeWord(word)) { ok = false; break; }
+        }
+        if (ok) break;
+      }
+      fillRandom();
+      renderBoard(boardEl, grid, true);
+      renderClues();
+    }
+
+    // ==================== SOCKET EVENT LISTENERS ====================
+    
+    socket.on('sopa:mensajeSistema', (mensaje) => {
+      confrontationMessageEl.textContent = mensaje;
+    });
+
+    socket.on('sopa:enfrentamientoIniciado', (data) => {
+      console.log('¡Enfrentamiento iniciado! Datos recibidos:', data);
+
+      if (!data || !data.player1 || !data.player2 || !data.palabras) {
+        console.error("Error: datos del servidor incompletos.");
+        confrontationMessageEl.textContent = "Error al recibir datos del servidor.";
+        return;
+      }
+
+      iniciarEnfrentamiento(data);
+    });
+
+    socket.on('sopa:tick', ({ tiempoRestante }) => {
+      const minutos = Math.floor(tiempoRestante / 60);
+      const segundos = tiempoRestante % 60;
+      timerEl.textContent = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+    });
+
+    socket.on('sopa:actualizarEnfrentamiento', (data) => {
+      const yoSoyPlayer1 = data.player1.id === usuario.id_usuario;
+      const miData = yoSoyPlayer1 ? data.player1 : data.player2;
+      const oponenteData = yoSoyPlayer1 ? data.player2 : data.player1;
+
+      document.getElementById('my-words').textContent = miData.palabrasEncontradas.length;
+      document.getElementById('my-errors').textContent = miData.errores;
+
+      document.getElementById('opponent-words').textContent = oponenteData.palabrasEncontradas.length;
+      document.getElementById('opponent-errors').textContent = oponenteData.errores;
+
+      foundWords = new Set(miData.palabrasEncontradas);
+      updateClues();
+    });
+
+    socket.on('sopa:enfrentamientoFinalizado', (data) => {
+      document.removeEventListener('mouseup', endDrag);
+      
+      document.getElementById('result-name1').textContent = data.player1.username;
+      document.getElementById('result-words1').textContent = data.player1.palabrasEncontradas.length;
+      document.getElementById('result-errors1').textContent = data.player1.errores;
+
+      document.getElementById('result-name2').textContent = data.player2.username;
+      document.getElementById('result-words2').textContent = data.player2.palabrasEncontradas.length;
+      document.getElementById('result-errors2').textContent = data.player2.errores;
+      
+      const tituloResultados = document.getElementById('results-title');
+      if (data.ganador) {
+        tituloResultados.textContent = `¡El ganador es ${data.ganador.username}!`;
+        if(data.ganador.id === data.player1.id) {
+          document.getElementById('result-player1').classList.add('winner');
+        } else {
+          document.getElementById('result-player2').classList.add('winner');
+        }
+      } else {
+        tituloResultados.textContent = "¡Es un empate!";
+      }
+      
+      resultsScreenEl.style.display = 'flex';
+    });
+
+    socket.on('sopa:oponenteDesconectado', ({ ganador }) => {
+      document.removeEventListener('mouseup', endDrag);
+      confrontationMessageEl.textContent = `Tu oponente se ha desconectado. ¡Has ganado!`;
+      confrontationMessageEl.className = 'message win';
+    });
+
+    // ==================== SISTEMA DE REVANCHA ====================
+    
+    rematchBtn.addEventListener('click', () => {
+      socket.emit('sopa:solicitarRevancha', { salaId, usuario });
+      rematchControls.style.display = 'none';
+      rematchStatus.style.display = 'block';
+      rematchStatus.textContent = 'Solicitud de revancha enviada. Esperando al oponente...';
+    });
+
+    backToLobbyBtn.addEventListener('click', () => {
+      window.location.href = '/minijuegos';
+    });
+
+    socket.on('sopa:revanchaSolicitada', ({ solicitante }) => {
+      rematchControls.style.display = 'none';
+      rematchStatus.style.display = 'block';
+
+      if (solicitante.id !== usuario.id_usuario) {
+        rematchStatus.innerHTML = `
+          <span>${solicitante.username} quiere la revancha. ¿Aceptas?</span>
+          <div class="vote-buttons" style="margin-top: 10px; display: flex; gap: 10px; justify-content: center;">
+            <button id="accept-rematch-btn" class="primary">Aceptar</button>
+            <button id="reject-rematch-btn">Rechazar</button>
+          </div>
+        `;
+      }
+    });
+
+    resultsScreenEl.addEventListener('click', (e) => {
+      if (e.target.id === 'accept-rematch-btn') {
+        socket.emit('sopa:responderRevancha', { salaId, respuesta: 'aceptada' });
+        rematchStatus.textContent = '¡Revancha aceptada! Reiniciando...';
+      }
+      if (e.target.id === 'reject-rematch-btn') {
+        socket.emit('sopa:responderRevancha', { salaId, respuesta: 'rechazada' });
+        rematchStatus.textContent = 'Has rechazado la revancha.';
+      }
+    });
+
+    socket.on('sopa:revanchaRechazada', () => {
+      rematchStatus.textContent = 'Tu oponente ha rechazado la revancha.';
+      setTimeout(() => {
+        rematchControls.style.display = 'flex';
+        rematchStatus.style.display = 'none';
+      }, 3000);
+    });
+
+    socket.on('sopa:reiniciarParaVotacion', () => {
+      resultsScreenEl.style.display = 'none';
+      rematchControls.style.display = 'flex';
+      rematchStatus.style.display = 'none';
+      
+      document.querySelector('.confrontation-boards-container').style.display = 'none';
+      timerEl.style.display = 'none';
+      
+      confrontationMessageEl.textContent = ""; 
+    });
+
+    // ==================== INICIALIZACIÓN ====================
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const esEnfrentamiento = urlParams.get('modo') === 'enfrentamiento';
+      const idMateria = urlParams.get('materia') || 1;
+
+      console.log('🚀 [INIT] Iniciando aplicación...');
+      console.log('📍 [INIT] Sala ID:', salaId);
+      console.log('👤 [INIT] Usuario:', usuario);
+      console.log('🎮 [INIT] Modo:', esEnfrentamiento ? 'ENFRENTAMIENTO' : 'INDIVIDUAL');
+
+      // PASO 1: Unirse al chat (SIEMPRE)
+      socket.emit('chat:unirse', { salaId, usuario: usuario.username });
+      mostrarMensaje('Sistema', `¡Bienvenido, ${usuario.username}!`);
+      console.log('💬 [CHAT] Unido a sala:', salaId);
+
+      if (esEnfrentamiento) {
+        // --- MODO ENFRENTAMIENTO ---
+        console.log('⚔️ [ENFRENTAMIENTO] Iniciando modo enfrentamiento...');
+        confrontationMode = true;
+        normalModeEl.style.display = 'none';
+        confrontationModeEl.style.display = 'block';
+        
+        if(document.getElementById('jugadores-panel')) {
+          document.getElementById('jugadores-panel').style.display = 'none';
+        }
+        
+        confrontationMessageEl.textContent = "Buscando oponente...";
+        console.log('🔌 [SOCKET] Emitiendo sopa:unirseEnfrentamiento...');
+        
+        socket.emit('sopa:unirseEnfrentamiento', { salaId, usuario });
+        console.log('✅ [SOCKET] Evento sopa:unirseEnfrentamiento emitido con datos:', { salaId, usuario });
+
+      } else {
+        // --- MODO INDIVIDUAL ---
+        console.log('🎯 [INDIVIDUAL] Iniciando modo individual...');
+        confrontationMode = false;
+        await cargarCategorias();
+        await initGame();
+        await cargarJugadoresActivos();
+        setInterval(cargarJugadoresActivos, 15000);
+
+        btnClear.addEventListener('click', () => {
+          clearPathVisual(dragPath);
+          dragPath = [];
+        });
+        btnRestart.addEventListener('click', initGame);
+        categoriaSelect.addEventListener('change', initGame);
+        
+        socket.emit('sopa:unirseIndividual', { salaId, usuario, idMateria });
+        console.log('✅ [INDIVIDUAL] Unido a sala individual');
+      }
+    });
+  </script>
+</body>
+</html>

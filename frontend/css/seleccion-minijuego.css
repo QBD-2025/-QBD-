@@ -1,0 +1,105 @@
+/* ==============================
+Archivo seleccion-minijuego.css
+  Contenedor principal, tarjetas (cards) con efecto 3D,
+  botones de control y estilo general de la página
+  Fecha: [Fecha de creación o última edición]
+============================== */
+
+/* --- Estilo general del body --- */
+body {
+  margin: 0; 
+  padding: 0;
+  background: linear-gradient(135deg, #0515a8, #09012c); /* Fondo degradado azul-oscuro */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;            /* Ocupa toda la altura de la ventana */
+  perspective: 1200px;      /* Profundidad para efecto 3D */
+  font-family: Arial, sans-serif;
+  color: white;
+  overflow: hidden;         /* Evita scroll horizontal o vertical */
+  user-select: none;        /* Desactiva selección de texto */
+}
+
+/* --- Contenedor del carrusel --- */
+.carousel-container {
+  width: 600px;
+  height: 330px;
+  position: relative;       /* Para posicionar las tarjetas */
+}
+
+/* --- Carrusel (padre de las tarjetas) --- */
+.carousel {
+  width: 100%;
+  height: 320px;
+  position: relative;
+  transform-style: preserve-3d; /* Mantiene las tarjetas en 3D */
+  transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1); /* Animación suave al girar */
+}
+
+/* --- Tarjetas individuales --- */
+.card {
+  position: absolute;      /* Posicionamiento dentro del carrusel */
+  width: 200px;
+  height: 260px;
+  left: calc(50% - 80px);  /* Centrado horizontal */
+  top: 30px;                /* Separación desde arriba */
+  background: #ffffff;      /* Fondo blanco */
+  border-radius: 15px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.2); /* Sombra sutil */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1.4rem;
+  color: #0a2472;           /* Texto azul oscuro */
+  cursor: pointer;
+  transition: box-shadow 0.3s ease, transform 0.3s ease; /* Animación al hover */
+  backface-visibility: hidden; /* Evita mostrar el reverso de la tarjeta */
+  user-select: none;
+}
+
+/* --- Efecto al pasar el mouse sobre la tarjeta --- */
+.card:hover {
+  box-shadow: 0 0 15px 5px rgb(0, 217, 255); /* Brillo azul */
+  transform: translateY(-10px);              /* Eleva la tarjeta */
+}
+
+/* --- Contenedor de botones de control del carrusel --- */
+.controls {
+  margin-top: 20px;
+  text-align: center;
+}
+
+/* --- Botones estándar --- */
+button {
+  background: #f59e0b;        /* Naranja brillante */
+  border: none;
+  color: white;
+  padding: 12px 25px;
+  margin: 0 15px;
+  font-size: 1.1rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  user-select: none;
+}
+
+button:hover {
+  background: #ac6700;        /* Naranja más oscuro al hover */
+}
+
+/* --- Botón aleatorio con estilo destacado --- */
+.boton-aleatorio {
+  background-color: #ff8800;  
+  color: #000;               
+  border: 2px solid #e66f00;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.boton-aleatorio:hover {
+  background-color: rgb(216, 7, 7);          /* Rojo intenso al hover */
+  box-shadow: 0 0 10px rgba(255, 72, 0, 0.6); /* Brillo adicional */
+}

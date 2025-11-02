@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" /> <!-- Define codificación de caracteres -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- Ajusta la vista en dispositivos móviles -->
+  <title>Login</title> <!-- Título de la página -->
+  
+  <!-- Estilos externos -->
+  <link rel="stylesheet" href="/css/login.css" />
+
+  <!-- Estilos internos específicos para mostrar/ocultar contraseña -->
+  <style>
+    /* Contenedor relativo para posicionar el botón de mostrar contraseña */
+    .password-container {
+      position: relative;
+    }
+
+    /* Botón de toggle para mostrar/ocultar contraseña */
+    .toggle-password {
+      position: absolute;
+      right: 5px;
+      top: 44px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-size: 1.2em;
+    }
+
+    /* Ajuste de ancho del input considerando espacio para el botón toggle */
+    input[type="password"],
+    input[type="text"] {
+      padding-right: 37px;
+      width: calc(100% - 43px);
+    }
+  </style>
+</head>
+<body>
+  <!-- Contenedor principal del login -->
+  <div class="login-container">
+
+    <!-- Sección del logo -->
+    <div class="logo-section">
+      <img src="/media/images/logo.png" class="logo" /> <!-- Logo de la plataforma -->
+    </div>
+
+    <!-- Sección del formulario de login -->
+    <div class="form-section">
+      <h2>Iniciar Sesión</h2>
+
+      <!-- Formulario con method POST y action al endpoint /login -->
+      <form id="loginForm" method="POST" action="/login" novalidate>
+        <!-- Campo de correo electrónico -->
+        <label for="email">Correo electrónico:</label>
+        <input type="email" id="email" name="email" />
+
+        <!-- Contenedor de contraseña con botón toggle -->
+        <div class="password-container">
+          <label for="password">Contraseña:</label>
+          <input type="password" id="password" name="password" />
+          <!-- Botón para mostrar/ocultar contraseña -->
+          <button type="button" class="toggle-password" onclick="togglePassword('password', this)">👁</button>
+        </div>
+
+        <!-- Link de "Olvidé mi contraseña" -->
+        <p class="login-link">
+          <a href="/buscar-correo">¿Olvidaste tu contraseña?</a>
+        </p>
+
+        <!-- Span para mostrar errores de validación -->
+        <span id="login-error" style="color: red;"></span>
+
+        <!-- Mensaje de error enviado desde el servidor con Handlebars -->
+        {{#if error}}
+          <p style="color:red;">{{error}}</p>
+        {{/if}}
+
+        <!-- Botón de submit del formulario -->
+        <button type="submit">Ingresar</button>
+
+        <!-- Link para registrarse si no tiene cuenta -->
+        <p class="login-link">
+          ¿No tienes cuenta? <a href="/register">Regístrate</a>
+        </p>
+
+        <!-- Botón de login con Google -->
+        <a href="/auth/google" style="text-decoration: none;">
+            <button type="button" style="background-color: white; color: #444; border: 1px solid #ccc; padding: 10px 15px; font-size: 16px; display: flex; align-items: center; margin-bottom: 15px; width: 70%;">
+                <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo" style="width: 20px; height: 20px; margin-right: 10px;">
+                Continua con Google
+            </button>
+        </a>
+      </form>
+    </div> <!-- Cierre de sección de formulario -->
+  </div> <!-- Cierre del contenedor principal -->
+
+  <script>
+    // Validación del formulario antes de enviarlo
+    document.getElementById("loginForm").addEventListener("submit", function (event) {
+      const email = document.getElementById("email");
+      const password = document.getElementById("password");
+      const errorSpan = document.getElementById("login-error");
+
+      // Limpiar errores anteriores
+      errorSpan.textContent = "";
+      email.style.border = "";
+      password.style.border = "";
+
+      // Verifica que ambos campos no estén vacíos
+      if (!email.value || !password.value) {
+        errorSpan.textContent = "Todos los campos son obligatorios";
+        email.style.border = "2px solid red";
+        password.style.border = "2px solid red";
+        event.preventDefault();
+        return;
+      }
+
+      // Validación simple del correo electrónico
+      const emailRegex = /^[^\s@]+@[^\s@]+\.(com|mx)$/i;
+      if (!emailRegex.test(email.value)) {
+        errorSpan.textContent = "El correo no es válido";
+        email.style.border = "2px solid red";
+        event.preventDefault();
+        return;
+      }
+    });
+
+    // Función para mostrar u ocultar la contraseña
+    function togglePassword(inputId, buttonElement) {
+      const input = document.getElementById(inputId);
+      if (input.type === "password") {
+        input.type = "text";
+        buttonElement.textContent = "🔒"; // Icono cuando está visible
+      } else {
+        input.type = "password";
+        buttonElement.textContent = "👁"; // Icono cuando está oculto
+      }
+    }
+  </script>
+</body>
+</html>

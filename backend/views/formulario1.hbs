@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QueBuenDato.com.mx</title>
+
+  <!-- Estilos externos para el formulario de usuario -->
+  <link rel="stylesheet" href="/css/formulario1.css" />
+</head>
+<body class="page-usuario">
+
+  <!-- Contenedor principal del formulario -->
+  <div class="main-form-container">
+
+    <!-- Columna lateral para imagen u otro contenido decorativo -->
+    <div class="image-column"></div> <!-- Columna oculta -->
+
+    <!-- Columna principal donde se muestra el formulario -->
+    <div class="form-column">
+      <!-- Formulario que envía los datos al servidor mediante POST -->
+      <form action="/procesar-formulario" method="POST">
+
+        <!-- Iterar sobre cada pregunta usando Handlebars -->
+        {{#each preguntas}}
+          <div class="pregunta">
+            <!-- Mostrar el texto de la pregunta -->
+            <p><strong>{{pregunta}}</strong></p>
+
+            <!-- Iterar sobre las opciones de respuesta de cada pregunta -->
+            {{#each opciones}}
+              <label>
+                <!-- Input tipo radio, obligatorio (required), agrupado por id de pregunta -->
+                <input type="radio" name="respuesta_{{../id_pregunta}}" value="{{id_opcion}}" required />
+                <!-- Mostrar texto de la opción -->
+                {{texto_opcion}}
+              </label>
+            {{/each}}
+          </div>
+
+          <!-- Separador visual entre preguntas -->
+          <hr>
+        {{/each}}
+
+        <!-- Botón para enviar el formulario y pasar a la siguiente sección -->
+        <button type="submit" class="button">Siguiente</button>
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"> <!-- Codificación de caracteres -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Vista responsive -->
+  <title>Examenes de Carrera</title> <!-- Título de la página -->
+  
+  <!-- Estilos externos -->
+  <link rel="stylesheet" href="/css/eleccion-examen.css" />
+
+  <!-- Estilos internos para las tarjetas -->
+  <style>
+    /* Tarjeta de cada materia */
+    .card {
+      width: 200px;
+      height: 250px;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      padding: 1rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Imagen GIF de cada materia dentro de la tarjeta */
+    .gif-materia {
+      width: 100%;
+      max-height: 150px;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Contenedor del carrusel -->
+  <div class="carousel-container">
+    <div class="carousel" id="carousel"></div> <!-- Carrusel vacío que se llenará con JS -->
+
+    <!-- Botones de control -->
+    <div class="controls">
+      <button onclick="location.href='/examen-aleatorio'">Aleatorio 🎲</button>
+      <button onclick="location.href='/materias'">Regresar</button>
+    </div>
+  </div>
+
+  <!-- Zonas invisibles para detectar clicks a izquierda y derecha -->
+  <div id="leftZone" class="zone-click izquierda"></div>
+  <div id="rightZone" class="zone-click derecha"></div>
+
+<script>
+  // Array de materias pasado desde el servidor como JSON
+  const materias = {{{json materias}}}; 
+
+  const carousel = document.getElementById('carousel'); // Contenedor del carrusel
+  const cardCount = materias.length; // Número total de tarjetas
+  const theta = 360 / cardCount; // Ángulo entre cada tarjeta
+  const radius = 820; // Distancia de las tarjetas al centro del carrusel
+  let currIndex = 0; // Índice de la tarjeta activa
+  let currentRotation = 0; // Rotación acumulada del carrusel
+
+  // Crear tarjetas dinámicamente
+  materias.forEach((materia, i) => {
+    const card = document.createElement('div'); 
+    card.className = 'card';
+
+    // GIF de la materia
+    const gif = document.createElement('img');
+    gif.src = `/media/videos/${materia.descripcion}.gif`;
+    gif.alt = materia.descripcion;
+    gif.className = 'gif-materia';
+
+    // Texto de la materia
+    const texto = document.createElement('div');
+    texto.textContent = materia.descripcion;
+
+    // Agregar GIF y texto a la tarjeta
+    card.appendChild(gif);
+    card.appendChild(texto);
+
+    // Posicionar tarjeta en círculo
+    const angle = theta * i;
+    card.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
+
+    // Click en tarjeta: redirige al examen de esa materia
+    card.onclick = () => {
+      currIndex = i;
+      rotateCarousel();
+      window.location.href = `/examen/${materia.id_materia}`;
+    };
+
+    carousel.appendChild(card); // Añadir tarjeta al carrusel
+  });
+
+  // Función para rotar el carrusel
+  function rotateCarousel() {
+    const angle = currIndex * -theta;
+    carousel.style.transition = 'transform 1.5s ease-in-out'; // Animación suave
+    carousel.style.transform = `translateZ(-${radius}px) rotateY(${currentRotation}deg)`;
+  }
+
+  // Click en zona izquierda: girar carrusel hacia la izquierda
+  document.getElementById('leftZone').addEventListener('click', () => {
+    currIndex = Math.max(currIndex - 1, 0); // No pasar del índice 0
+    currentRotation += theta; // Incrementar rotación
+    rotateCarousel();
+  });
+
+  // Click en zona derecha: girar carrusel hacia la derecha
+  document.getElementById('rightZone').addEventListener('click', () => {
+    currIndex = Math.min(currIndex + 1, cardCount - 1); // No pasar del último índice
+    currentRotation -= theta; // Decrementar rotación
+    rotateCarousel();
+  });
+</script>
+</body>
+</html>
