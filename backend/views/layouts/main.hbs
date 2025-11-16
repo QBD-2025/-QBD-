@@ -64,6 +64,7 @@
             animation: spin 1s linear infinite;
             margin: 0 auto;
         }
+        
     </style>
 </head>
 <body>
@@ -156,7 +157,16 @@
         const activeMenu = document.querySelector('.kebab-menu.active');
         if (activeMenu) activeMenu.classList.remove('active');
     }
-
+    function handleImageError(img) {
+            // Evitar loop infinito si la imagen default también falla
+            if (img.src.includes('default_avatar.png')) {
+                console.warn('Imagen default también falló');
+                return;
+            }
+            img.onerror = null; // Prevenir loop infinito
+            img.src = '/uploads/default_avatar.png'; // Cambiar a imagen por defecto
+            img.alt = 'Avatar por defecto';
+        }
     {{#if user}}
         // ═══════════════════════════════════════════════════════════
         // FUNCIÓN DE PARSING PARA EXTRA_DATA
@@ -581,6 +591,13 @@
             
             // Recargar periódicamente
             setInterval(cargarNotificaciones, 30000);
+        });
+
+        // Aplicar manejo de errores a todas las imágenes de perfil al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('img[src*="foto_perfil"], img.player-avatar, img.jugador-avatar, img.avatar, img.profile-avatar').forEach(img => {
+                img.onerror = function() { handleImageError(this); };
+            });
         });
     {{/if}} 
 </script>

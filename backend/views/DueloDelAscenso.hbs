@@ -9,7 +9,7 @@
     <title>Duelos de Ascenso</title>
     
     <!-- Enlace al CSS específico de esta vista -->
-    <link rel="stylesheet" href="/css/DueloDelAscenso.css">
+    <link rel="stylesheet" href="/css/competitivo-duelos.css">
 </head>
 <body>
 
@@ -132,7 +132,11 @@
             item.className = esYo ? 'ranking-item ranking-item-current' : 'ranking-item';
 
             item.innerHTML = `
-                <img src="${jugador.foto_perfil || '/uploads/default_avatar.png'}" alt="Avatar" class="player-avatar">
+                <img src="${jugador.foto_perfil || '/uploads/default_avatar.png'}" 
+                alt="Avatar de ${jugador.username}" 
+                class="player-avatar"
+                onerror="handleImageError(this)">
+
                 <div class="player-info">
                     <div class="player-name">${jugador.username} ${esYo ? '(Tú)' : ''}</div>
                     <div class="player-stats">

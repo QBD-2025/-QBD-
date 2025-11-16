@@ -1,530 +1,642 @@
 // ================================================================
-// ROUTER: duelo-puntos-router.js
-// Sistema completo de puntuación y recompensas para Duelos Rápidos
+// SISTEMA UNIFICADO DE PUNTUACIÓN - DUELOS RÁPIDOS
+// Versión: 2.0 - Corrige duplicados y centraliza lógica
 // ================================================================
 
-const express = require('express');
-const router = express.Router();
-const pool = require('../db/conexion'); // Tu conexión a BD
+const db = require('../db/conexion');
 
 // ================================================================
-// CONSTANTES DEL SISTEMA DE PUNTUACIÓN
+// CONSTANTES CENTRALIZADAS (FUENTE ÚNICA DE VERDAD)
 // ================================================================
 
 const SISTEMA_PUNTOS = {
+    // Apuestas
+    APUESTA: {
+        MIN: 10,
+        MAX: 100,
+        DEFAULT: 20
+    },
+    
     // Recompensas base por dificultad
-    RECOMPENSA_BASE: {
+    RECOMPENSA: {
         facil: 20,
         normal: 30,
         dificil: 50
     },
     
     // Multiplicadores de velocidad
-    MULTIPLICADOR_VELOCIDAD: {
-        RAPIDA: 1.25,    // 0-3 segundos
-        NORMAL: 1.0,     // 3-6 segundos
-        LENTA: 0.75      // 6-10 segundos
+    VELOCIDAD: {
+        RAPIDA: 1.25,   // <= 3s
+        NORMAL: 1.0,    // 3-6s
+        LENTA: 0.75     // >= 6s
     },
     
-    // Bonificaciones especiales
-    BONUS_VICTORIA: 100,
-    BONUS_RENDIMIENTO: {
-        EXCELENTE: 50,   // 90%+ correctas
-        BUENO: 30,       // 75-89% correctas
-        ACEPTABLE: 15    // 50-74% correctas
+    // Bonificaciones
+    BONUS: {
+        VICTORIA: 100,
+        RENDIMIENTO_EXCELENTE: 50,  // >= 90%
+        RENDIMIENTO_BUENO: 30,      // >= 75%
+        RENDIMIENTO_ACEPTABLE: 15,  // >= 50%
+        RACHA_POR_RESPUESTA: 10
     },
     
-    // Sistema de gambito
+    // Gambito
     GAMBITO: {
-        BONUS_EXITO: 0.50,    // +50% si cumple
-        PENALIZACION_FALLA: 0.25  // -25% si falla
+        BONUS_EXITO: 0.50,        // +50%
+        PENALIZACION_FALLA: 0.25  // -25%
     },
-    
-    // Bonus de racha
-    BONUS_RACHA: 10,  // Puntos adicionales por cada respuesta en racha
     
     // Penalizaciones
-    PENALIZACION_TIMEOUT: -25,
-    PENALIZACION_ERROR_CRITICA: -50,
+    PENALIZACION: {
+        TIMEOUT: -25,
+        ERROR_CRITICO: -50
+    },
     
-    // Modificadores de ronda especial
-    MODIFICADORES_RONDA: {
-        'Pregunta Rápida': { multiplicador: 2.0, nombre: 'Ronda Rápida' },
-        'Pregunta Segura': { multiplicador: 1.0, penalizacion: 0, nombre: 'Ronda Segura' },
-        'Pregunta Crítica': { multiplicador: 1.5, nombre: 'Ronda Crítica' }
+    // Eventos especiales
+    EVENTOS: {
+        'rapida': { mult: 2.0, nombre: 'Ronda Rápida' },
+        'critica': { mult: 1.5, nombre: 'Ronda Crítica' },
+        'riesgo': { mult: 1.0, penalizacion: -50 }
     }
 };
 
 // ================================================================
-// FUNCIÓN AUXILIAR: Calcular puntos por pregunta individual
+// CLASE PRINCIPAL: GestorPuntuacion
 // ================================================================
 
-function calcularPuntosPregunta(respuesta, preguntaData) {
-    const {
-        esCorrecta,
-        tiempoRespuesta,    // en segundos
-        esGambito = false,
-        cumplioGambito = false,
-        racha = 0,
-        eventoEspecial = null
-    } = respuesta;
+class GestorPuntuacion {
     
-    const {
-        puntos: puntosBase,
-        puntos_carrera: puntosCarreraBase = 0
-    } = preguntaData;
-    
-    let puntosTotales = 0;
-    let puntosCarrera = 0;
-    let desglose = [];
-    
-    // 1. PUNTOS BASE
-    if (!esCorrecta) {
-        // Respuesta incorrecta
-        let penalizacion = 0;
+    /**
+     * Calcula puntos de una pregunta individual
+     * @param {Object} respuestaData - Datos de la respuesta
+     * @param {Object} preguntaData - Datos de la pregunta
+     * @returns {Object} { puntosTotales, puntosCarrera, desglose }
+     */
+    static calcularPuntosPregunta(respuestaData, preguntaData) {
+        const {
+            esCorrecta,
+            tiempoRespuesta,
+            racha = 0,
+            eventoEspecial = null
+        } = respuestaData;
         
-        if (eventoEspecial === 'Pregunta Segura') {
-            // No hay penalización en ronda segura
-            desglose.push({ concepto: 'Respuesta incorrecta (Ronda Segura)', puntos: 0 });
-        } else if (eventoEspecial === 'Pregunta Crítica') {
-            penalizacion = SISTEMA_PUNTOS.PENALIZACION_ERROR_CRITICA;
-            desglose.push({ concepto: 'Error en pregunta crítica', puntos: penalizacion });
-        } else {
-            // Penalización normal: 0 puntos
-            desglose.push({ concepto: 'Respuesta incorrecta', puntos: 0 });
+        const { 
+            puntos: puntosBase, 
+            puntos_carrera: puntosCarreraBase = 0 
+        } = preguntaData;
+        
+        let desglose = [];
+        
+        // ❌ RESPUESTA INCORRECTA
+        if (!esCorrecta) {
+            let penalizacion = 0;
+            
+            if (eventoEspecial === 'riesgo') {
+                penalizacion = SISTEMA_PUNTOS.PENALIZACION.ERROR_CRITICO;
+                desglose.push({ 
+                    concepto: '💀 Error en Ronda de Riesgo', 
+                    valor: penalizacion, 
+                    esPositivo: false 
+                });
+            } else {
+                desglose.push({ 
+                    concepto: '❌ Respuesta Incorrecta', 
+                    valor: 0, 
+                    esPositivo: false 
+                });
+            }
+            
+            return {
+                puntosTotales: penalizacion,
+                puntosCarrera: 0,
+                desglose
+            };
         }
         
-        // Penalización de gambito si aplica
-        if (esGambito) {
-            const penalizacionGambito = Math.floor(puntosBase * SISTEMA_PUNTOS.GAMBITO.PENALIZACION_FALLA);
-            penalizacion -= penalizacionGambito;
-            desglose.push({ concepto: 'Penalización Gambito Fallido', puntos: -penalizacionGambito });
-        }
+        // ✅ RESPUESTA CORRECTA
         
-        puntosTotales = penalizacion;
-        
-    } else {
-        // 2. RESPUESTA CORRECTA - Aplicar multiplicador de velocidad
-        let multiplicadorVelocidad = SISTEMA_PUNTOS.MULTIPLICADOR_VELOCIDAD.NORMAL;
+        // 1. Calcular multiplicador de velocidad
+        let multVelocidad = SISTEMA_PUNTOS.VELOCIDAD.NORMAL;
+        let etiquetaVelocidad = 'Normal';
         
         if (tiempoRespuesta <= 3) {
-            multiplicadorVelocidad = SISTEMA_PUNTOS.MULTIPLICADOR_VELOCIDAD.RAPIDA;
+            multVelocidad = SISTEMA_PUNTOS.VELOCIDAD.RAPIDA;
+            etiquetaVelocidad = '⚡ Rápida';
         } else if (tiempoRespuesta >= 6) {
-            multiplicadorVelocidad = SISTEMA_PUNTOS.MULTIPLICADOR_VELOCIDAD.LENTA;
+            multVelocidad = SISTEMA_PUNTOS.VELOCIDAD.LENTA;
+            etiquetaVelocidad = '🐌 Lenta';
         }
         
-        let puntosConVelocidad = Math.floor(puntosBase * multiplicadorVelocidad);
+        let puntos = Math.floor(puntosBase * multVelocidad);
         desglose.push({ 
-            concepto: `Puntos base (${tiempoRespuesta.toFixed(1)}s)`, 
-            puntos: puntosConVelocidad 
+            concepto: `✅ Respuesta ${etiquetaVelocidad} (${tiempoRespuesta.toFixed(1)}s)`, 
+            valor: puntos,
+            esPositivo: true
         });
         
-        // 3. APLICAR MODIFICADOR DE EVENTO ESPECIAL
-        if (eventoEspecial && SISTEMA_PUNTOS.MODIFICADORES_RONDA[eventoEspecial]) {
-            const modificador = SISTEMA_PUNTOS.MODIFICADORES_RONDA[eventoEspecial];
-            const puntosEvento = Math.floor(puntosConVelocidad * (modificador.multiplicador - 1));
-            if (puntosEvento > 0) {
+        // 2. Bonus de evento especial
+        if (eventoEspecial && SISTEMA_PUNTOS.EVENTOS[eventoEspecial]) {
+            const evento = SISTEMA_PUNTOS.EVENTOS[eventoEspecial];
+            const bonusEvento = Math.floor(puntos * (evento.mult - 1));
+            
+            if (bonusEvento > 0) {
                 desglose.push({ 
-                    concepto: `Bonus ${modificador.nombre}`, 
-                    puntos: puntosEvento 
+                    concepto: `🔥 ${evento.nombre}`, 
+                    valor: bonusEvento,
+                    esPositivo: true
                 });
-                puntosConVelocidad += puntosEvento;
+                puntos += bonusEvento;
             }
         }
         
-        puntosTotales = puntosConVelocidad;
-        
-        // 4. BONUS DE RACHA
+        // 3. Bonus de racha
         if (racha > 0) {
-            const bonusRacha = racha * SISTEMA_PUNTOS.BONUS_RACHA;
-            desglose.push({ concepto: `Bonus Racha x${racha}`, puntos: bonusRacha });
-            puntosTotales += bonusRacha;
+            const bonusRacha = racha * SISTEMA_PUNTOS.BONUS.RACHA_POR_RESPUESTA;
+            desglose.push({ 
+                concepto: `🔥 Racha x${racha}`, 
+                valor: bonusRacha,
+                esPositivo: true
+            });
+            puntos += bonusRacha;
         }
         
-        // 5. BONUS DE GAMBITO EXITOSO
-        if (esGambito && cumplioGambito) {
-            const bonusGambito = Math.floor(puntosTotales * SISTEMA_PUNTOS.GAMBITO.BONUS_EXITO);
-            desglose.push({ concepto: 'Bonus Gambito Exitoso (+50%)', puntos: bonusGambito });
-            puntosTotales += bonusGambito;
-        }
-        
-        // 6. PUNTOS DE CARRERA (si aplica)
+        // 4. Puntos de carrera
+        let puntosCarrera = 0;
         if (puntosCarreraBase > 0) {
-            puntosCarrera = Math.floor(puntosCarreraBase * multiplicadorVelocidad);
-            desglose.push({ concepto: 'Puntos Carrera', puntos: puntosCarrera });
-        }
-    }
-    
-    return {
-        puntosTotales: Math.max(0, puntosTotales),
-        puntosCarrera,
-        desglose
-    };
-}
-
-// ================================================================
-// ENDPOINT PRINCIPAL: Guardar resultados del duelo
-// ================================================================
-
-router.post('/api/duelo/finalizar', async (req, res) => {
-    const connection = await pool.getConnection();
-    
-    try {
-        await connection.beginTransaction();
-        
-        const {
-            salaId,
-            jugadores,           // Array: [{ userId, respuestas: [...] }, ...]
-            modo,                // 'carrera' o 'general'
-            dificultad,          // 'facil', 'normal', 'dificil'
-            apuesta = 0,         // Puntos apostados por jugador
-            categorias,          // IDs de categorías/temáticas seleccionadas
-            idCarrera = null     // ID de carrera (si modo === 'carrera')
-        } = req.body;
-        
-        console.log(`[FINALIZAR DUELO]: Sala ${salaId} - Modo ${modo}`);
-        
-        // ================================================================
-        // PASO 1: Cargar datos de las preguntas
-        // ================================================================
-        
-        const preguntasIds = [...new Set(
-            jugadores.flatMap(j => j.respuestas.map(r => r.idPregunta))
-        )];
-        
-        const [preguntasData] = await connection.query(
-            `SELECT 
-                id_pregunta, 
-                puntos, 
-                puntos_carrera, 
-                id_dificultad,
-                id_tematica,
-                id_materia
-            FROM pregunta 
-            WHERE id_pregunta IN (?)`,
-            [preguntasIds]
-        );
-        
-        const mapPreguntas = new Map(
-            preguntasData.map(p => [p.id_pregunta, p])
-        );
-        
-        // ================================================================
-        // PASO 2: Calcular puntuación de cada jugador
-        // ================================================================
-        
-        const resultadosJugadores = [];
-        
-        for (const jugador of jugadores) {
-            const { userId, respuestas, gambitoActivado = false } = jugador;
-            
-            let puntosPartida = 0;
-            let puntosCarrera = 0;
-            let respuestasCorrectas = 0;
-            let respuestasIncorrectas = 0;
-            let rachaActual = 0;
-            let rachaMaxima = 0;
-            let detallePreguntas = [];
-            
-            // Procesar cada respuesta
-            for (let i = 0; i < respuestas.length; i++) {
-                const resp = respuestas[i];
-                const preguntaData = mapPreguntas.get(resp.idPregunta);
-                
-                if (!preguntaData) {
-                    console.warn(`Pregunta ${resp.idPregunta} no encontrada`);
-                    continue;
-                }
-                
-                // Actualizar racha
-                if (resp.esCorrecta) {
-                    rachaActual++;
-                    rachaMaxima = Math.max(rachaMaxima, rachaActual);
-                    respuestasCorrectas++;
-                } else {
-                    rachaActual = 0;
-                    respuestasIncorrectas++;
-                }
-                
-                // Calcular puntos de esta pregunta
-                const resultado = calcularPuntosPregunta({
-                    esCorrecta: resp.esCorrecta,
-                    tiempoRespuesta: resp.tiempoRespuesta,
-                    esGambito: gambitoActivado,
-                    cumplioGambito: gambitoActivado && resp.esCorrecta,
-                    racha: rachaActual,
-                    eventoEspecial: resp.eventoEspecial
-                }, preguntaData);
-                
-                puntosPartida += resultado.puntosTotales;
-                puntosCarrera += resultado.puntosCarrera;
-                
-                detallePreguntas.push({
-                    numeroPregunta: i + 1,
-                    idPregunta: resp.idPregunta,
-                    esCorrecta: resp.esCorrecta,
-                    tiempoRespuesta: resp.tiempoRespuesta,
-                    puntos: resultado.puntosTotales,
-                    puntosCarrera: resultado.puntosCarrera,
-                    desglose: resultado.desglose
-                });
-            }
-            
-            // Calcular bonificaciones finales
-            const porcentajeCorrectas = (respuestasCorrectas / respuestas.length) * 100;
-            let bonusRendimiento = 0;
-            
-            if (porcentajeCorrectas >= 90) {
-                bonusRendimiento = SISTEMA_PUNTOS.BONUS_RENDIMIENTO.EXCELENTE;
-            } else if (porcentajeCorrectas >= 75) {
-                bonusRendimiento = SISTEMA_PUNTOS.BONUS_RENDIMIENTO.BUENO;
-            } else if (porcentajeCorrectas >= 50) {
-                bonusRendimiento = SISTEMA_PUNTOS.BONUS_RENDIMIENTO.ACEPTABLE;
-            }
-            
-            resultadosJugadores.push({
-                userId,
-                puntosPartida,
-                puntosCarrera,
-                bonusRendimiento,
-                respuestasCorrectas,
-                respuestasIncorrectas,
-                rachaMaxima,
-                porcentajeCorrectas,
-                detallePreguntas
+            puntosCarrera = Math.floor(puntosCarreraBase * multVelocidad);
+            desglose.push({ 
+                concepto: '🎓 Puntos de Carrera', 
+                valor: puntosCarrera,
+                esPositivo: true
             });
         }
         
-        // ================================================================
-        // PASO 3: Determinar ganador y calcular recompensas
-        // ================================================================
+        return {
+            puntosTotales: Math.max(0, puntos),
+            puntosCarrera,
+            desglose
+        };
+    }
+    
+    /**
+     * Procesa resultado completo de un jugador
+     * @param {Object} jugadorData - Datos del jugador con respuestas
+     * @param {Map} preguntasMap - Mapa de preguntas por ID
+     * @param {Boolean} gambito - Si activó gambito
+     * @returns {Object} Resultado procesado
+     */
+    static procesarResultadoJugador(jugadorData, preguntasMap, gambito = false) {
+        const { respuestas } = jugadorData;
         
-        resultadosJugadores.sort((a, b) => b.puntosPartida - a.puntosPartida);
+        let puntosPartida = 0;
+        let puntosCarrera = 0;
+        let respuestasCorrectas = 0;
+        let rachaActual = 0;
+        let rachaMaxima = 0;
+        let detallePreguntas = [];
+        let cumplioGambito = gambito;
         
-        const ganador = resultadosJugadores[0];
-        const perdedor = resultadosJugadores[1] || null;
-        const esEmpate = perdedor && (ganador.puntosPartida === perdedor.puntosPartida);
-        
-        // Calcular recompensa base según dificultad
-        const recompensaBase = dificultad 
-            ? SISTEMA_PUNTOS.RECOMPENSA_BASE[dificultad] 
-            : SISTEMA_PUNTOS.RECOMPENSA_BASE.normal;
-        
-        // Bote de apuestas
-        const boteApuestas = apuesta * 2;
-        
-        console.log(`[FINALIZAR DUELO]: Ganador: ${ganador.userId} (${ganador.puntosPartida} pts)`);
-        if (esEmpate) {
-            console.log(`[FINALIZAR DUELO]: ¡EMPATE! Ambos jugadores recibirán recompensas reducidas`);
-        }
-        
-        // ================================================================
-        // PASO 4: Actualizar puntos en la base de datos
-        // ================================================================
-        
-        for (const resultado of resultadosJugadores) {
-            const esGanadorDuelo = !esEmpate && resultado.userId === ganador.userId;
+        // Procesar cada respuesta
+        for (let i = 0; i < respuestas.length; i++) {
+            const resp = respuestas[i];
+            const pregunta = preguntasMap.get(resp.idPregunta);
             
-            // Calcular puntos totales a otorgar
-            let puntosGlobalesGanados = resultado.puntosPartida + resultado.bonusRendimiento;
+            if (!pregunta) continue;
             
-            if (esGanadorDuelo) {
-                // GANADOR: Recibe bote + recompensa base + bonus victoria
-                puntosGlobalesGanados += boteApuestas + recompensaBase + SISTEMA_PUNTOS.BONUS_VICTORIA;
-            } else if (esEmpate) {
-                // EMPATE: Devuelve su apuesta + recompensa reducida
-                puntosGlobalesGanados += apuesta + Math.floor(recompensaBase / 2);
+            // Actualizar racha
+            if (resp.esCorrecta) {
+                rachaActual++;
+                rachaMaxima = Math.max(rachaMaxima, rachaActual);
+                respuestasCorrectas++;
             } else {
-                // PERDEDOR: Pierde su apuesta pero recibe puntos de la partida
-                puntosGlobalesGanados -= apuesta;
+                rachaActual = 0;
+                if (gambito) cumplioGambito = false; // Gambito falla con 1 error
             }
             
-            // No permitir saldo negativo
-            puntosGlobalesGanados = Math.max(0, puntosGlobalesGanados);
+            // Calcular puntos
+            const resultado = this.calcularPuntosPregunta({
+                esCorrecta: resp.esCorrecta,
+                tiempoRespuesta: resp.tiempoRespuesta,
+                racha: rachaActual,
+                eventoEspecial: resp.eventoEspecial
+            }, pregunta);
             
-            // Actualizar puntos globales (usuario.puntos)
-            await connection.query(
-                `UPDATE usuario 
-                SET puntos = puntos + ?,
-                    racha_victorias = CASE 
-                        WHEN ? THEN racha_victorias + 1 
-                        ELSE 0 
-                    END
-                WHERE id_usuario = ?`,
-                [puntosGlobalesGanados, esGanadorDuelo, resultado.userId]
+            puntosPartida += resultado.puntosTotales;
+            puntosCarrera += resultado.puntosCarrera;
+            
+            detallePreguntas.push({
+                numero: i + 1,
+                idPregunta: resp.idPregunta,
+                esCorrecta: resp.esCorrecta,
+                tiempo: resp.tiempoRespuesta,
+                puntos: resultado.puntosTotales,
+                puntosCarrera: resultado.puntosCarrera,
+                desglose: resultado.desglose
+            });
+        }
+        
+        // Calcular bonus de rendimiento
+        const porcentaje = (respuestasCorrectas / respuestas.length) * 100;
+        let bonusRendimiento = 0;
+        
+        if (porcentaje >= 90) {
+            bonusRendimiento = SISTEMA_PUNTOS.BONUS.RENDIMIENTO_EXCELENTE;
+        } else if (porcentaje >= 75) {
+            bonusRendimiento = SISTEMA_PUNTOS.BONUS.RENDIMIENTO_BUENO;
+        } else if (porcentaje >= 50) {
+            bonusRendimiento = SISTEMA_PUNTOS.BONUS.RENDIMIENTO_ACEPTABLE;
+        }
+        
+        return {
+            puntosPartida,
+            puntosCarrera,
+            bonusRendimiento,
+            respuestasCorrectas,
+            respuestasIncorrectas: respuestas.length - respuestasCorrectas,
+            rachaMaxima,
+            porcentaje: porcentaje.toFixed(1),
+            detallePreguntas,
+            cumplioGambito
+        };
+    }
+    
+    /**
+     * Finaliza duelo y guarda puntos en BD (TRANSACCIÓN ATÓMICA)
+     * @param {String} salaId - ID de la sala
+     * @param {Object} duelo - Objeto del duelo completo
+     * @returns {Object} Resultado para emitir a clientes
+     */
+    static async finalizarDuelo(salaId, duelo) {
+        const connection = await db.getConnection();
+        
+        try {
+            await connection.beginTransaction();
+            
+            const jugadoresIds = Object.keys(duelo.jugadores);
+            const [jugadorA_id, jugadorB_id] = jugadoresIds;
+            
+            console.log(`[FINALIZAR ${salaId}]: 🏁 Iniciando...`);
+            
+            // ================================================================
+            // PASO 1: Cargar datos de preguntas
+            // ================================================================
+            
+            const preguntasIds = duelo.examen.map(p => p.id_pregunta);
+            const [preguntasData] = await connection.query(
+                `SELECT id_pregunta, puntos, puntos_carrera, id_dificultad 
+                FROM pregunta WHERE id_pregunta IN (?)`,
+                [preguntasIds]
             );
             
-            console.log(`[FINALIZAR DUELO]: Usuario ${resultado.userId} - Global: +${puntosGlobalesGanados} pts`);
+            const preguntasMap = new Map(
+                preguntasData.map(p => [p.id_pregunta, p])
+            );
             
-            // Actualizar puntos de carrera (si aplica)
-            if (idCarrera && resultado.puntosCarrera > 0) {
+            // ================================================================
+            // PASO 2: Obtener puntos iniciales (con lock para evitar race conditions)
+            // ================================================================
+            
+            const [[puntosA]] = await connection.query(
+                'SELECT puntos FROM usuario WHERE id_usuario = ? FOR UPDATE',
+                [jugadorA_id]
+            );
+            const [[puntosB]] = await connection.query(
+                'SELECT puntos FROM usuario WHERE id_usuario = ? FOR UPDATE',
+                [jugadorB_id]
+            );
+            
+            console.log(`[FINALIZAR]: Puntos iniciales - A: ${puntosA.puntos}, B: ${puntosB.puntos}`);
+            
+            // ================================================================
+            // PASO 3: ✅ VALIDACIÓN FINAL DE APUESTA (PREVENIR TRAMPAS)
+            // ================================================================
+            
+            const apuesta = duelo.apuesta || SISTEMA_PUNTOS.APUESTA.DEFAULT;
+            
+            if (puntosA.puntos < apuesta || puntosB.puntos < apuesta) {
+                console.error(`[FINALIZAR]: ❌ Puntos insuficientes para apuesta`);
+                
+                await connection.rollback();
+                
+                throw new Error(
+                    `ERROR_APUESTA_INVALIDA: Jugador sin puntos suficientes. ` +
+                    `A=${puntosA.puntos}, B=${puntosB.puntos}, Apuesta=${apuesta}`
+                );
+            }
+            
+            // ================================================================
+            // PASO 4: Procesar respuestas de cada jugador
+            // ================================================================
+            
+            const resultados = {};
+            
+            for (const jId of jugadoresIds) {
+                const respuestasJugador = [];
+                
+                // Reconstruir array de respuestas
+                for (const pregunta of duelo.examen) {
+                    const respData = duelo.respuestas[pregunta.id_pregunta]?.[jId];
+                    const tiempo = duelo.tiemposRespuesta[pregunta.id_pregunta]?.[jId] || 10;
+                    
+                    respuestasJugador.push({
+                        idPregunta: pregunta.id_pregunta,
+                        esCorrecta: respData?.esCorrecta || false,
+                        tiempoRespuesta: tiempo,
+                        eventoEspecial: pregunta.evento?.id || null
+                    });
+                }
+                
+                resultados[jId] = this.procesarResultadoJugador({
+                    respuestas: respuestasJugador
+                }, preguntasMap, duelo.jugadores[jId].gambitoActivado);
+            }
+            
+            // ================================================================
+            // PASO 5: Determinar ganador
+            // ================================================================
+            
+            const ptsA = resultados[jugadorA_id].puntosPartida;
+            const ptsB = resultados[jugadorB_id].puntosPartida;
+            
+            const esEmpate = ptsA === ptsB;
+            const ganadorId = esEmpate ? null : (ptsA > ptsB ? jugadorA_id : jugadorB_id);
+            
+            console.log(`[FINALIZAR]: Puntos A=${ptsA}, B=${ptsB}, Ganador=${ganadorId || 'EMPATE'}`);
+            
+            // ================================================================
+            // PASO 6: Calcular recompensas finales
+            // ================================================================
+            
+            const bote = apuesta * 2;
+            const recompensaBase = SISTEMA_PUNTOS.RECOMPENSA[duelo.dificultad] || 
+                                  SISTEMA_PUNTOS.RECOMPENSA.normal;
+            
+            const desgloseCompleto = {};
+            
+            for (const jId of jugadoresIds) {
+                const esGanador = !esEmpate && jId === ganadorId;
+                const resultado = resultados[jId];
+                const puntosIniciales = jId === jugadorA_id ? puntosA.puntos : puntosB.puntos;
+                
+                let desglose = [];
+                let cambioTotal = 0;
+                
+                // 1. Puntos de partida
+                desglose.push({
+                    concepto: '🎮 Puntos de Partida',
+                    valor: resultado.puntosPartida,
+                    esPositivo: true
+                });
+                cambioTotal += resultado.puntosPartida;
+                
+                // 2. Bonus de rendimiento
+                if (resultado.bonusRendimiento > 0) {
+                    desglose.push({
+                        concepto: `⭐ Bonus Rendimiento (${resultado.porcentaje}%)`,
+                        valor: resultado.bonusRendimiento,
+                        esPositivo: true
+                    });
+                    cambioTotal += resultado.bonusRendimiento;
+                }
+                
+                // 3. Recompensas por resultado
+                if (esGanador) {
+                    desglose.push({ 
+                        concepto: '🎰 Bote de Apuesta', 
+                        valor: bote, 
+                        esPositivo: true 
+                    });
+                    desglose.push({ 
+                        concepto: '💎 Recompensa Base', 
+                        valor: recompensaBase, 
+                        esPositivo: true 
+                    });
+                    desglose.push({ 
+                        concepto: '👑 Bonus Victoria', 
+                        valor: SISTEMA_PUNTOS.BONUS.VICTORIA, 
+                        esPositivo: true 
+                    });
+                    cambioTotal += bote + recompensaBase + SISTEMA_PUNTOS.BONUS.VICTORIA;
+                    
+                } else if (esEmpate) {
+                    desglose.push({ 
+                        concepto: '🤝 Devolución Apuesta', 
+                        valor: apuesta, 
+                        esPositivo: true 
+                    });
+                    const recompensaEmpate = Math.floor(recompensaBase / 2);
+                    desglose.push({ 
+                        concepto: '💰 Recompensa Empate', 
+                        valor: recompensaEmpate, 
+                        esPositivo: true 
+                    });
+                    cambioTotal += apuesta + recompensaEmpate;
+                    
+                } else {
+                    // Perdedor
+                    desglose.push({ 
+                        concepto: '💔 Pérdida Apuesta', 
+                        valor: apuesta, 
+                        esPositivo: false 
+                    });
+                    cambioTotal -= apuesta;
+                }
+                
+                // 4. Bonus/Penalización de Gambito
+                if (duelo.jugadores[jId].gambitoActivado) {
+                    if (resultado.cumplioGambito) {
+                        const bonusGambito = Math.floor(
+                            resultado.puntosPartida * SISTEMA_PUNTOS.GAMBITO.BONUS_EXITO
+                        );
+                        desglose.push({ 
+                            concepto: '🎲 Bonus Gambito Exitoso (+50%)', 
+                            valor: bonusGambito, 
+                            esPositivo: true 
+                        });
+                        cambioTotal += bonusGambito;
+                    } else {
+                        const penalizacionGambito = Math.floor(
+                            resultado.puntosPartida * SISTEMA_PUNTOS.GAMBITO.PENALIZACION_FALLA
+                        );
+                        desglose.push({ 
+                            concepto: '🎲 Penalización Gambito Fallido (-25%)', 
+                            valor: penalizacionGambito, 
+                            esPositivo: false 
+                        });
+                        cambioTotal -= penalizacionGambito;
+                    }
+                }
+                
+                // No permitir puntos negativos totales
+                cambioTotal = Math.max(-puntosIniciales, cambioTotal);
+                
+                desgloseCompleto[jId] = {
+                    ...resultado,
+                    puntosIniciales,
+                    desglose,
+                    cambioTotal,
+                    puntosFinal: puntosIniciales + cambioTotal
+                };
+                
+                // ================================================================
+                // PASO 7: ACTUALIZAR BASE DE DATOS
+                // ================================================================
+                
+                // 7.1 Puntos globales
                 await connection.query(
-                    `INSERT INTO usuario_puntos_carrera (id_usuario, id_carrera, puntos)
-                    VALUES (?, ?, ?)
-                    ON DUPLICATE KEY UPDATE puntos = puntos + VALUES(puntos)`,
-                    [resultado.userId, idCarrera, resultado.puntosCarrera]
+                    `UPDATE usuario 
+                    SET puntos = GREATEST(0, puntos + ?),
+                        racha_victorias = CASE 
+                            WHEN ? THEN racha_victorias + 1 
+                            ELSE 0 
+                        END
+                    WHERE id_usuario = ?`,
+                    [cambioTotal, esGanador, jId]
                 );
                 
-                console.log(`[FINALIZAR DUELO]: Usuario ${resultado.userId} - Carrera ${idCarrera}: +${resultado.puntosCarrera} pts`);
+                console.log(`[BD]: Usuario ${jId}: ${puntosIniciales} → ${puntosIniciales + cambioTotal} (${cambioTotal > 0 ? '+' : ''}${cambioTotal})`);
+                
+                // 7.2 Puntos de carrera (si aplica)
+                if (duelo.modo === 'carrera' && resultado.puntosCarrera > 0) {
+                    const [[carreraData]] = await connection.query(
+                        'SELECT id_carrera FROM usuario_carrera WHERE id_usuario = ? LIMIT 1',
+                        [jId]
+                    );
+                    
+                    if (carreraData) {
+                        await connection.query(
+                            `INSERT INTO usuario_puntos_carrera (id_usuario, id_carrera, puntos)
+                            VALUES (?, ?, ?)
+                            ON DUPLICATE KEY UPDATE puntos = puntos + VALUES(puntos)`,
+                            [jId, carreraData.id_carrera, resultado.puntosCarrera]
+                        );
+                        
+                        console.log(`[BD]: Usuario ${jId} Carrera ${carreraData.id_carrera}: +${resultado.puntosCarrera} pts`);
+                    }
+                }
             }
-        }
-        
-        // ================================================================
-        // PASO 5: Registrar en historial_duelos
-        // ================================================================
-        
-        const [insertResult] = await connection.query(
-            `INSERT INTO historial_duelos 
-            (id_retador, id_defensor, id_ganador, puntos_retador, puntos_defensor, fecha_duelo)
-            VALUES (?, ?, ?, ?, ?, NOW())`,
-            [
-                resultadosJugadores[0].userId,
-                resultadosJugadores[1]?.userId || null,
-                esEmpate ? null : ganador.userId,
-                resultadosJugadores[0].puntosPartida,
-                resultadosJugadores[1]?.puntosPartida || 0
-            ]
-        );
-        
-        const idDuelo = insertResult.insertId;
-        
-        console.log(`[FINALIZAR DUELO]: Registrado en historial con ID ${idDuelo}`);
-        
-        // ================================================================
-        // PASO 6: Commit y preparar respuesta
-        // ================================================================
-        
-        await connection.commit();
-        
-        // Preparar respuesta completa
-        const respuestaFinal = {
-            success: true,
-            idDuelo,
-            ganador: {
-                userId: ganador.userId,
-                puntosPartida: ganador.puntosPartida,
-                puntosGlobalesGanados: ganador.puntosPartida + ganador.bonusRendimiento + 
-                    (esEmpate ? 0 : (boteApuestas + recompensaBase + SISTEMA_PUNTOS.BONUS_VICTORIA)),
-                puntosCarreraGanados: ganador.puntosCarrera,
-                respuestasCorrectas: ganador.respuestasCorrectas,
-                respuestasIncorrectas: ganador.respuestasIncorrectas,
-                rachaMaxima: ganador.rachaMaxima,
-                porcentajeCorrectas: ganador.porcentajeCorrectas.toFixed(1)
-            },
-            empate: esEmpate,
-            recompensas: {
-                boteApuestas,
+            
+            // ================================================================
+            // PASO 8: Registrar en historial
+            // ================================================================
+            
+            await connection.query(
+                `INSERT INTO historial_duelos 
+                (id_retador, id_defensor, id_ganador, puntos_retador, puntos_defensor, fecha_duelo)
+                VALUES (?, ?, ?, ?, ?, NOW())`,
+                [jugadorA_id, jugadorB_id, ganadorId, ptsA, ptsB]
+            );
+            
+            // ✅ COMMIT ATÓMICO
+            await connection.commit();
+            
+            console.log(`[FINALIZAR]: ✅ Duelo ${salaId} finalizado y guardado exitosamente`);
+            
+            // ================================================================
+            // PASO 9: Preparar respuesta para clientes
+            // ================================================================
+            
+            return {
+                ganadorId,
+                esEmpate,
+                puntuaciones: { 
+                    [jugadorA_id]: ptsA, 
+                    [jugadorB_id]: ptsB 
+                },
+                apuesta,
+                bote,
                 recompensaBase,
-                bonusVictoria: esEmpate ? 0 : SISTEMA_PUNTOS.BONUS_VICTORIA
-            },
-            detalleJugadores: resultadosJugadores.map(r => ({
-                userId: r.userId,
-                puntosPartida: r.puntosPartida,
-                puntosCarrera: r.puntosCarrera,
-                bonusRendimiento: r.bonusRendimiento,
-                respuestasCorrectas: r.respuestasCorrectas,
-                respuestasIncorrectas: r.respuestasIncorrectas,
-                rachaMaxima: r.rachaMaxima,
-                porcentajeCorrectas: r.porcentajeCorrectas.toFixed(1),
-                preguntas: r.detallePreguntas
-            }))
-        };
-        
-        res.json(respuestaFinal);
-        
-    } catch (error) {
-        await connection.rollback();
-        console.error('[FINALIZAR DUELO ERROR]:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Error al procesar resultados del duelo',
-            details: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
-    } finally {
-        connection.release();
-    }
-});
-
-// ================================================================
-// ENDPOINT: Obtener desglose de puntos de un duelo
-// ================================================================
-
-router.get('/api/duelo/:idDuelo/desglose', async (req, res) => {
-    try {
-        const { idDuelo } = req.params;
-        
-        const [duelo] = await pool.query(
-            `SELECT 
-                h.*,
-                u1.username as retador_username,
-                u1.foto_perfil as retador_foto,
-                u2.username as defensor_username,
-                u2.foto_perfil as defensor_foto,
-                ug.username as ganador_username
-            FROM historial_duelos h
-            LEFT JOIN usuario u1 ON h.id_retador = u1.id_usuario
-            LEFT JOIN usuario u2 ON h.id_defensor = u2.id_usuario
-            LEFT JOIN usuario ug ON h.id_ganador = ug.id_usuario
-            WHERE h.id_duelo = ?`,
-            [idDuelo]
-        );
-        
-        if (duelo.length === 0) {
-            return res.status(404).json({ error: 'Duelo no encontrado' });
+                jugadores: jugadoresIds.map(jId => ({
+                    userId: jId,
+                    username: duelo.jugadores[jId].username,
+                    foto_perfil: duelo.jugadores[jId].foto_perfil || '/uploads/default_avatar.png',
+                    puntuacionFinal: resultados[jId].puntosPartida,
+                    racha: resultados[jId].rachaMaxima,
+                    ...desgloseCompleto[jId]
+                }))
+            };
+            
+        } catch (error) {
+            await connection.rollback();
+            console.error(`[FINALIZAR ERROR]:`, error);
+            throw error;
+        } finally {
+            connection.release();
         }
-        
-        res.json(duelo[0]);
-        
-    } catch (error) {
-        console.error('[DESGLOSE DUELO ERROR]:', error);
-        res.status(500).json({ error: 'Error al obtener desglose del duelo' });
     }
-});
+    
+    /**
+     * Valida si jugadores tienen puntos suficientes para apuesta
+     * @param {Number} idJugadorA 
+     * @param {Number} idJugadorB 
+     * @param {Number} cantidad 
+     * @returns {Object} { valido, mensaje, puntosMaximos }
+     */
+    static async validarApuesta(idJugadorA, idJugadorB, cantidad) {
+        try {
+            // Validar rango
+            if (cantidad < SISTEMA_PUNTOS.APUESTA.MIN || 
+                cantidad > SISTEMA_PUNTOS.APUESTA.MAX) {
+                return {
+                    valido: false,
+                    mensaje: `La apuesta debe estar entre ${SISTEMA_PUNTOS.APUESTA.MIN} y ${SISTEMA_PUNTOS.APUESTA.MAX} puntos`,
+                    puntosMaximos: 0
+                };
+            }
+            
+            // Consultar puntos actuales
+            const [[puntosA]] = await db.query(
+                'SELECT puntos FROM usuario WHERE id_usuario = ?',
+                [idJugadorA]
+            );
+            const [[puntosB]] = await db.query(
+                'SELECT puntos FROM usuario WHERE id_usuario = ?',
+                [idJugadorB]
+            );
+            
+            if (!puntosA || !puntosB) {
+                return {
+                    valido: false,
+                    mensaje: 'Error al consultar puntos de los jugadores',
+                    puntosMaximos: 0
+                };
+            }
+            
+            const puntosJugadorA = puntosA.puntos;
+            const puntosJugadorB = puntosB.puntos;
+            const puntosMaximos = Math.min(puntosJugadorA, puntosJugadorB, SISTEMA_PUNTOS.APUESTA.MAX);
+            
+            // Validar que ambos tengan suficientes puntos
+            if (puntosJugadorA < cantidad || puntosJugadorB < cantidad) {
+                return {
+                    valido: false,
+                    mensaje: `Uno de los jugadores no tiene suficientes puntos. Máximo disponible: ${puntosMaximos}`,
+                    puntosMaximos
+                };
+            }
+            
+            return {
+                valido: true,
+                mensaje: 'Apuesta válida',
+                puntosMaximos
+            };
+            
+        } catch (error) {
+            console.error('[VALIDAR APUESTA ERROR]:', error);
+            return {
+                valido: false,
+                mensaje: 'Error al validar apuesta',
+                puntosMaximos: 0
+            };
+        }
+    }
+}
 
 // ================================================================
-// ENDPOINT: Estadísticas de rendimiento de un jugador
+// EXPORTAR
 // ================================================================
 
-router.get('/api/usuario/:userId/estadisticas-duelos', async (req, res) => {
-    try {
-        const { userId } = req.params;
-        
-        const [estadisticas] = await pool.query(
-            `SELECT 
-                COUNT(*) as duelos_totales,
-                SUM(CASE WHEN id_ganador = ? THEN 1 ELSE 0 END) as victorias,
-                SUM(CASE WHEN id_ganador != ? AND id_ganador IS NOT NULL THEN 1 ELSE 0 END) as derrotas,
-                SUM(CASE WHEN id_ganador IS NULL THEN 1 ELSE 0 END) as empates,
-                AVG(CASE 
-                    WHEN id_retador = ? THEN puntos_retador 
-                    WHEN id_defensor = ? THEN puntos_defensor 
-                END) as promedio_puntos,
-                MAX(CASE 
-                    WHEN id_retador = ? THEN puntos_retador 
-                    WHEN id_defensor = ? THEN puntos_defensor 
-                END) as mejor_puntuacion
-            FROM historial_duelos
-            WHERE id_retador = ? OR id_defensor = ?`,
-            [userId, userId, userId, userId, userId, userId, userId, userId]
-        );
-        
-        const [racha] = await pool.query(
-            'SELECT racha_victorias FROM usuario WHERE id_usuario = ?',
-            [userId]
-        );
-        
-        res.json({
-            ...estadisticas[0],
-            racha_actual: racha[0]?.racha_victorias || 0,
-            porcentaje_victorias: estadisticas[0].duelos_totales > 0 
-                ? ((estadisticas[0].victorias / estadisticas[0].duelos_totales) * 100).toFixed(1)
-                : 0
-        });
-        
-    } catch (error) {
-        console.error('[ESTADÍSTICAS DUELOS ERROR]:', error);
-        res.status(500).json({ error: 'Error al obtener estadísticas' });
-    }
-});
-
-module.exports = router;
+module.exports = {
+    GestorPuntuacion,
+    SISTEMA_PUNTOS
+};
