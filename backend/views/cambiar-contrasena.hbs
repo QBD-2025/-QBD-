@@ -10,30 +10,6 @@
 
     <!-- CSS externo principal para la página de verificación/restablecimiento -->
     <link rel="stylesheet" href="/css/verification.css">
-
-    <!-- Estilos internos específicos para los campos de contraseña -->
-    <style>
-        /* Contenedor relativo para el input de contraseña y el icono de mostrar/ocultar */
-        .password-wrapper {
-            position: relative;
-        }
-
-        /* Estilo general de los inputs (anchura completa y espacio a la derecha para el icono) */
-        .form-control {
-            width: 100%;
-            padding-right: 40px; /* espacio para el icono de ojo 🔍 */
-        }
-
-        /* Estilo del icono de mostrar/ocultar contraseña */
-        .password-toggle-icon {
-            position: absolute;   /* posición relativa al contenedor padre */
-            right: 10px;          /* margen derecho */
-            top: 50%;             /* centrado vertical */
-            transform: translateY(-50%); /* ajuste exacto vertical */
-            cursor: pointer;      /* indica que se puede clicar */
-            font-size: 18px;      /* tamaño del icono */
-        }
-    </style>
 </head>
 <body>
     <!-- Contenedor principal de toda la sección -->
@@ -100,29 +76,6 @@
     </div>
 
     <!-- Script para validar y controlar inputs de contraseña -->
-    <script>
-        // Validación de que las contraseñas coincidan antes de enviar el formulario
-        document.getElementById('reset-form').addEventListener('submit', function(event) {
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-
-            if (password !== confirmPassword) {
-                alert('Las contraseñas no coinciden.');
-                event.preventDefault(); // evita que el formulario se envíe
-            }
-        });
-
-        // Función para mostrar u ocultar la contraseña al hacer clic en el icono
-        function togglePassword(idCampo, iconElement) {
-            let input = document.getElementById(idCampo);
-            if (input.type === "password") {
-                input.type = "text"; // mostrar texto
-                iconElement.textContent = "🔒"; // cambiar icono a candado
-            } else {
-                input.type = "password"; // ocultar texto
-                iconElement.textContent = "👁"; // volver a icono de ojo
-            }
-        }
-    </script>
+    <script src="/public/js/cambiarContra.controller.js" defer></script>
 </body>
 </html>

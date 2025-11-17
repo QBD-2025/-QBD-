@@ -1,0 +1,415 @@
+    document.addEventListener('DOMContentLoaded', () => {
+        const socket = io();
+        const salaId = "{{salaId}}";
+        const usuario = window.DATA_USER;
+        const materiasPrecargadas = window.DATA_MATERIAS;
+        
+        const elements = {
+            board: document.getElementById('board'),
+            gameStatusDisplay: document.getElementById('game-status-display'),
+            lobbyPanel: document.getElementById('lobby-panel'),
+            lobbyState: document.getElementById('lobby-state'),
+            startGameControls: document.getElementById('start-game-controls'),
+            materiasSelect: document.getElementById('materias-select'),
+            proposeStartBtn: document.getElementById('propose-start-btn'),
+            voteControls: document.getElementById('vote-controls'),
+            voteProposalText: document.getElementById('vote-proposal-text'),
+            voteYesBtn: document.getElementById('vote-yes-btn'),
+            voteNoBtn: document.getElementById('vote-no-btn'),
+            playersList: document.getElementById('players-list'),
+            chatBox: document.getElementById('chatBox'),
+            chatInput: document.getElementById('chatInput'),
+            chatBtn: document.getElementById('chatBtn'),
+            notification: document.getElementById('notification'),
+            listaJugadoresActivos: document.getElementById('lista-jugadores-activos'),
+            questionModal: document.getElementById('question-modal'),
+            modalQuestionText: document.getElementById('modal-question-text'),
+            modalOptions: document.getElementById('modal-options'),
+            feedbackSection: document.getElementById('feedback-section'),
+            feedbackText: document.getElementById('feedback-text'),
+        };
+
+        let gameState = null;
+        let currentQuestion = null;
+        let feedbackTimeout = null; // CORRECCIÓN: Variable para controlar el timeout
+
+        const renderUI = () => {
+            if (!gameState) return;
+            renderPlayersList();
+            renderBoard();
+            if (gameState.gameStarted) {
+                elements.lobbyPanel.classList.add('hidden');
+                renderGameStatus();
+            } else {
+                elements.lobbyPanel.classList.remove('hidden');
+                renderLobbyStatus();
+            }
+        };
+
+        const renderPlayersList = () => {
+            elements.playersList.innerHTML = '';
+            if (gameState && gameState.jugadores) {
+                gameState.jugadores.forEach(p => {
+                    const li = document.createElement('li');
+                    li.textContent = `${p.username} (${p.simbolo})`;
+                    elements.playersList.appendChild(li);
+                });
+            }
+        };
+        
+        const renderBoard = () => {
+            elements.board.innerHTML = '';
+            if (!gameState || !gameState.jugadores) return;
+            const jugadorEnTurno = gameState.jugadores[gameState.turno];
+            const esMiTurno = !gameState.gameOver && jugadorEnTurno?.id === usuario.id_usuario;
+            elements.board.classList.toggle('turno-activo', esMiTurno);
+            gameState.tablero.forEach((simbolo, index) => {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.index = index;
+                if (simbolo) {
+                    cell.textContent = simbolo;
+                    cell.classList.add(simbolo === 'X' ? 'symbol-x' : 'symbol-o', 'disabled');
+                } else if (gameState.gameOver || !esMiTurno || !gameState.gameStarted) {
+                    cell.classList.add('disabled');
+                }
+                elements.board.appendChild(cell);
+            });
+        };
+
+        const renderGameStatus = () => {
+             if (!gameState || !gameState.jugadores) return;
+            if (gameState.gameOver) {
+                if (gameState.ganador === 'empate') {
+                    elements.gameStatusDisplay.textContent = "¡Juego terminado en empate!";
+                } else if (gameState.ganador) {
+                    const esGanador = gameState.ganador.id === usuario.id_usuario;
+                    elements.gameStatusDisplay.textContent = esGanador 
+                        ? "¡Felicidades, has ganado!" 
+                        : `Perdiste. El ganador es ${gameState.ganador.username}.`;
+                } else {
+                     elements.gameStatusDisplay.textContent = "Juego terminado por desconexión.";
+                }
+            } else {
+                const jugadorEnTurno = gameState.jugadores[gameState.turno];
+                if (jugadorEnTurno) {
+                    elements.gameStatusDisplay.textContent = jugadorEnTurno.id === usuario.id_usuario 
+                        ? "¡Es tu turno! Elige una casilla." 
+                        : `Turno de ${jugadorEnTurno.username}...`;
+                }
+            }
+        };
+
+        const renderLobbyStatus = () => {
+            if (!gameState || !gameState.jugadores) return;
+            const numJugadores = gameState.jugadores.length;
+            const esAnfitrion = numJugadores > 0 && gameState.jugadores[0].id === usuario.id_usuario;
+            elements.startGameControls.classList.add('hidden');
+            elements.voteControls.classList.add('hidden');
+            
+            if (numJugadores < 2) {
+                elements.lobbyState.textContent = "Esperando a otro jugador...";
+            } else {
+                if (gameState.votacionEnProgreso) {
+                    const proponente = gameState.propuestaPor;
+                    const materiaTexto = gameState.propuestaMateriaTexto;
+                    elements.lobbyState.textContent = `Votación iniciada por ${proponente}...`;
+                    
+                    if (proponente !== usuario.username) {
+                        elements.voteControls.classList.remove('hidden');
+                        elements.voteProposalText.innerHTML = `<strong>${proponente}</strong> propone jugar con la categoría:<br><strong>"${materiaTexto}"</strong><br>¿Aceptas?`;
+                    }
+                } else {
+                    elements.lobbyState.textContent = "¡Listos para empezar!";
+                    if (esAnfitrion) {
+                        elements.startGameControls.classList.remove('hidden');
+                    }
+                }
+            }
+        };
+
+        const addChatMessage = (user, msg, type) => {
+            const msgDiv = document.createElement('div');
+            const messageType = type || 'normal';
+            msgDiv.classList.add('chat-message', messageType);
+            
+            if (type === 'system') {
+                msgDiv.innerHTML = msg;
+            } else {
+                const isOwn = user === usuario.username;
+                msgDiv.style.backgroundColor = isOwn ? '#e7f3ff' : '#f1f0f0';
+                msgDiv.style.marginLeft = isOwn ? 'auto' : '0';
+                msgDiv.style.marginRight = isOwn ? '0' : 'auto';
+                msgDiv.innerHTML = `<strong>${user}:</strong> ${msg}`;
+            }
+            
+            elements.chatBox.appendChild(msgDiv);
+            elements.chatBox.scrollTop = elements.chatBox.scrollHeight;
+        };
+
+        // CORRECCIÓN: Función mejorada para mostrar preguntas
+        const showQuestionInModal = (pregunta) => {
+            currentQuestion = pregunta;
+            
+            // Limpiar cualquier timeout previo
+            if (feedbackTimeout) {
+                clearTimeout(feedbackTimeout);
+                feedbackTimeout = null;
+            }
+            
+            // Limpiar modal
+            elements.modalQuestionText.textContent = pregunta.pregunta;
+            elements.modalOptions.innerHTML = '';
+            elements.feedbackSection.style.display = 'none';
+            
+            // Agregar opciones
+            pregunta.opciones.forEach(opcion => {
+                const btn = document.createElement('button');
+                btn.classList.add('option-btn');
+                btn.textContent = opcion.texto;
+                btn.dataset.respuestaId = opcion.id;
+                
+                btn.addEventListener('click', (e) => {
+                    // Deshabilitar todos los botones
+                    elements.modalOptions.querySelectorAll('.option-btn').forEach(b => {
+                        b.disabled = true;
+                    });
+                    
+                    // Enviar respuesta
+                    socket.emit('gato:respuesta', { salaId, respuestaId: opcion.id });
+                });
+                
+                elements.modalOptions.appendChild(btn);
+            });
+            
+            // Mostrar modal
+            elements.questionModal.classList.add('show');
+        };
+
+        // CORRECCIÓN: Función mejorada para manejar el feedback
+        const handleAnswerFeedback = (ultimaJugada) => {
+            if (!ultimaJugada || !ultimaJugada.preguntaRespondida) return;
+            
+            const { esCorrecta, respuestaCorrectaTexto } = ultimaJugada;
+            
+            // Limpiar timeout anterior si existe
+            if (feedbackTimeout) {
+                clearTimeout(feedbackTimeout);
+                feedbackTimeout = null;
+            }
+            
+            // Mostrar retroalimentación en el modal
+            elements.feedbackSection.style.display = 'block';
+            
+            if (esCorrecta) {
+                elements.feedbackSection.className = 'feedback-section feedback-correct';
+                elements.feedbackText.innerHTML = '<strong>¡Respuesta correcta!</strong>';
+            } else {
+                elements.feedbackSection.className = 'feedback-section feedback-incorrect';
+                elements.feedbackText.innerHTML = `<strong>Respuesta incorrecta.</strong> La opción correcta era: <strong>"${respuestaCorrectaTexto}"</strong>.`;
+                
+                // Resaltar respuesta correcta
+                elements.modalOptions.querySelectorAll('.option-btn').forEach(btn => {
+                    if (btn.textContent === respuestaCorrectaTexto) {
+                        btn.classList.add('correct');
+                    }
+                });
+            }
+            
+            // Añadir retroalimentación si existe
+            if (currentQuestion && currentQuestion.retroalimentacion) {
+                elements.feedbackText.innerHTML += `<br><small><em>${currentQuestion.retroalimentacion}</em></small>`;
+            }
+            
+            // CORRECCIÓN: Guardar el timeout para poder cancelarlo si es necesario
+            feedbackTimeout = setTimeout(() => {
+                elements.questionModal.classList.remove('show');
+                feedbackTimeout = null;
+                currentQuestion = null; // Limpiar la pregunta actual
+            }, 3000);
+        };
+
+        function mostrarNotificacion(mensaje) {
+            elements.notification.textContent = mensaje;
+            elements.notification.classList.add('show');
+            setTimeout(() => elements.notification.classList.remove('show'), 3000);
+        }
+
+        async function cargarJugadoresActivos() {
+            try {
+                const res = await fetch('/jugadores');
+                if (!res.ok) throw new Error('No se pudo obtener la lista de jugadores');
+                const jugadores = await res.json();
+                
+                elements.listaJugadoresActivos.innerHTML = '';
+                if(jugadores.length <= 1) {
+                    elements.listaJugadoresActivos.innerHTML = '<li>No hay otros jugadores activos.</li>';
+                }
+
+                jugadores.forEach(jugador => {
+                    if (jugador.id === usuario.id_usuario) return;
+                    
+                    const item = document.createElement('li');
+                    item.innerHTML = `
+                        <span>${jugador.username}</span> 
+                        <div class="actions">
+                            <button class="btn-invite" data-id="${jugador.id}">Invitar 🤝</button>
+                        </div>
+                    `;
+                    elements.listaJugadoresActivos.appendChild(item);
+                });
+            } catch (error) {
+                console.error('Error al cargar jugadores:', error);
+                elements.listaJugadoresActivos.innerHTML = '<li>Error al cargar jugadores.</li>';
+            }
+        }
+
+        elements.listaJugadoresActivos.addEventListener('click', async (e) => {
+            const target = e.target;
+            if (!target.classList.contains('btn-invite')) return;
+            
+            const idJugador = target.dataset.id;
+            if (!idJugador) return;
+            
+            target.disabled = true;
+            target.textContent = 'Enviando...';
+
+            try {
+                const res = await fetch(`/invitar/${idJugador}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        salaId: salaId,
+                        juego: 'Gato' 
+                    })
+                });
+                
+                const data = await res.json();
+                mostrarNotificacion(data.message || 'Invitación enviada');
+            } catch (error) {
+                console.error('Error en la invitación:', error);
+                mostrarNotificacion('Hubo un problema al enviar la invitación.');
+            } finally {
+                target.disabled = false;
+                target.textContent = 'Invitar 🤝';
+            }
+        });
+
+        // CORRECCIÓN: Listener mejorado para evitar procesamiento duplicado
+        const setupSocketListeners = () => {
+            socket.on('gato:estado', (serverState) => {
+                const isGameOverBefore = gameState ? gameState.gameOver : false;
+                
+                // CORRECCIÓN: Solo manejar feedback si es una jugada nueva
+                if (serverState.ultimaJugada && gameState && 
+                    (!gameState.ultimaJugada || 
+                     serverState.ultimaJugada.timestamp !== gameState.ultimaJugada.timestamp)) {
+                    handleAnswerFeedback(serverState.ultimaJugada);
+                }
+                
+                gameState = serverState;
+                renderUI();
+
+                if (gameState.gameOver && !isGameOverBefore) {
+                    // Limpiar timeout si el juego termina
+                    if (feedbackTimeout) {
+                        clearTimeout(feedbackTimeout);
+                        feedbackTimeout = null;
+                    }
+                    
+                    if (gameState.ganador === 'empate') {
+                        addChatMessage(null, `La partida ha terminado en empate.`, 'system');
+                    } else if (gameState.ganador) {
+                        addChatMessage(null, `¡Partida finalizada! El ganador es ${gameState.ganador.username}.`, 'system');
+                    }
+                }
+            });
+            
+            socket.on('gato:votacionCancelada', ({ motivo }) => { 
+                addChatMessage(null, `Votación cancelada: ${motivo}`, 'system'); 
+            });
+            
+            socket.on('gato:mostrarPregunta', (pregunta) => { 
+                showQuestionInModal(pregunta); 
+            });
+            
+            socket.on('nuevoMensaje', (data) => { 
+                addChatMessage(data.usuario, data.mensaje); 
+            });
+            
+            socket.on('gato:error', ({ message }) => { 
+                addChatMessage(null, `Error: ${message}`, 'system'); 
+            });
+
+            socket.on('jugadorUnido', (data) => {
+                mostrarNotificacion(`${data.username} se unió a la red`);
+                cargarJugadoresActivos();
+            });
+            
+            socket.on('jugadorAbandono', (data) => {
+                mostrarNotificacion(`${data.username} abandonó la red`);
+                cargarJugadoresActivos();
+            });
+        };
+        
+        const setupEventListeners = () => {
+            elements.proposeStartBtn.addEventListener('click', () => {
+                const select = elements.materiasSelect;
+                const idMateria = select.value;
+                if (!idMateria) { alert('Por favor, selecciona una categoría para jugar.'); return; }
+                const textoMateria = select.options[select.selectedIndex].text;
+                socket.emit('gato:proponerInicio', { salaId, idMateria, textoMateria });
+            });
+            
+            elements.voteYesBtn.addEventListener('click', () => socket.emit('gato:votar', { salaId, voto: true }));
+            elements.voteNoBtn.addEventListener('click', () => socket.emit('gato:votar', { salaId, voto: false }));
+            
+            elements.board.addEventListener('click', (e) => { 
+                const cell = e.target.closest('.cell'); 
+                if (cell && !cell.classList.contains('disabled')) { 
+                    socket.emit('gato:movimiento', { salaId, celda: cell.dataset.index }); 
+                } 
+            });
+            
+            const sendChatMessage = () => { 
+                const mensaje = elements.chatInput.value.trim(); 
+                if (mensaje) { 
+                    socket.emit('mensajeChat', { salaId, mensaje, usuario: usuario.username }); 
+                    elements.chatInput.value = ''; 
+                } 
+            };
+            
+            elements.chatBtn.addEventListener('click', sendChatMessage);
+            elements.chatInput.addEventListener('keypress', (e) => e.key === 'Enter' && sendChatMessage());
+        };
+
+        const init = () => {
+            try {
+                if (!materiasPrecargadas || materiasPrecargadas.length === 0) {
+                    elements.materiasSelect.innerHTML = '<option value="">No hay materias</option>';
+                    elements.proposeStartBtn.disabled = true;
+                    addChatMessage(null, 'No se encontraron materias con preguntas.', 'system');
+                } else {
+                    elements.materiasSelect.innerHTML = '';
+                    materiasPrecargadas.forEach(m => {
+                        const option = document.createElement('option');
+                        option.value = m.id_materia;
+                        option.textContent = m.descripcion;
+                        elements.materiasSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error("Error al procesar materias:", error);
+                addChatMessage(null, `Error al procesar materias: ${error.message}`, 'system');
+            }
+            
+            setupEventListeners();
+            setupSocketListeners();
+            socket.emit('gato:unirse', { salaId, usuario });
+
+            cargarJugadoresActivos();
+            setInterval(cargarJugadoresActivos, 15000);
+        };
+        
+        init();
+    });

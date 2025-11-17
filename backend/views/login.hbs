@@ -7,32 +7,6 @@
   
   <!-- Estilos externos -->
   <link rel="stylesheet" href="/css/login.css" />
-
-  <!-- Estilos internos específicos para mostrar/ocultar contraseña -->
-  <style>
-    /* Contenedor relativo para posicionar el botón de mostrar contraseña */
-    .password-container {
-      position: relative;
-    }
-
-    /* Botón de toggle para mostrar/ocultar contraseña */
-    .toggle-password {
-      position: absolute;
-      right: 5px;
-      top: 44px;
-      cursor: pointer;
-      background: none;
-      border: none;
-      font-size: 1.2em;
-    }
-
-    /* Ajuste de ancho del input considerando espacio para el botón toggle */
-    input[type="password"],
-    input[type="text"] {
-      padding-right: 37px;
-      width: calc(100% - 43px);
-    }
-  </style>
 </head>
 <body>
   <!-- Contenedor principal del login -->
@@ -93,48 +67,6 @@
     </div> <!-- Cierre de sección de formulario -->
   </div> <!-- Cierre del contenedor principal -->
 
-  <script>
-    // Validación del formulario antes de enviarlo
-    document.getElementById("loginForm").addEventListener("submit", function (event) {
-      const email = document.getElementById("email");
-      const password = document.getElementById("password");
-      const errorSpan = document.getElementById("login-error");
-
-      // Limpiar errores anteriores
-      errorSpan.textContent = "";
-      email.style.border = "";
-      password.style.border = "";
-
-      // Verifica que ambos campos no estén vacíos
-      if (!email.value || !password.value) {
-        errorSpan.textContent = "Todos los campos son obligatorios";
-        email.style.border = "2px solid red";
-        password.style.border = "2px solid red";
-        event.preventDefault();
-        return;
-      }
-
-      // Validación simple del correo electrónico
-      const emailRegex = /^[^\s@]+@[^\s@]+\.(com|mx)$/i;
-      if (!emailRegex.test(email.value)) {
-        errorSpan.textContent = "El correo no es válido";
-        email.style.border = "2px solid red";
-        event.preventDefault();
-        return;
-      }
-    });
-
-    // Función para mostrar u ocultar la contraseña
-    function togglePassword(inputId, buttonElement) {
-      const input = document.getElementById(inputId);
-      if (input.type === "password") {
-        input.type = "text";
-        buttonElement.textContent = "🔒"; // Icono cuando está visible
-      } else {
-        input.type = "password";
-        buttonElement.textContent = "👁"; // Icono cuando está oculto
-      }
-    }
-  </script>
+  <script src="/public/js/login.controller.js" defer></script>
 </body>
 </html>

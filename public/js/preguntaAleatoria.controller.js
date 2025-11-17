@@ -1,0 +1,140 @@
+const preguntas = document.querySelectorAll('.contenedor-pregunta');
+let actual = 0;
+let respuestasUsuario = [];
+let estadoPreguntas = []; // "respondida", "pendiente", "suspenso"
+
+// Advertencia por “enfrascado”
+const TIEMPO_ADVERTENCIA = 60; // segundos para aviso
+let timerAdvertencia = null;
+
+// Inicializamos estadoPreguntas como pendiente
+for (let i = 0; i < preguntas.length; i++) {
+  estadoPreguntas[i] = "pendiente";
+}
+
+// Función para mostrar pregunta
+function mostrarPregunta(index) {
+  if (index < 0 || index >= preguntas.length) return;
+  preguntas.forEach(p => p.classList.remove('activa'));
+  preguntas[index].classList.add('activa');
+  actual = index;
+
+  // Mostrar pendientes solo si es la última pregunta
+  const cont = document.getElementById('pendientesContainer');
+  const hayPendientes = estadoPreguntas.some(e => e === "pendiente");
+  const haySuspensos = estadoPreguntas.some(e => e === "suspenso");
+
+  if (actual === preguntas.length - 1 && (hayPendientes || haySuspensos)) {
+    cont.style.display = 'block';
+    actualizarPendientesUI();
+  } else {
+    cont.style.display = 'none';
+  }
+
+  reiniciarTimerAdvertencia(); // reinicia el temporizador de advertencia
+}
+
+// Función para reiniciar el temporizador de advertencia
+function reiniciarTimerAdvertencia() {
+  if (timerAdvertencia) clearTimeout(timerAdvertencia);
+  timerAdvertencia = setTimeout(() => {
+    alert(`¡Ojo! Llevas mucho tiempo en la pregunta ${actual + 1}. Considera avanzar o marcarla para después.`);
+  }, TIEMPO_ADVERTENCIA * 1000);
+}
+
+// Actualizar pendientes y suspensos en UI
+function actualizarPendientesUI() {
+  const cont = document.getElementById('pendientesContainer');
+  cont.innerHTML = "";
+
+  estadoPreguntas.forEach((e, i) => {
+    if (e === "pendiente") {
+      const div = document.createElement('div');
+      div.textContent = `Dejaste la pregunta ${i + 1} en pendiente.`;
+      div.style.cursor = "pointer";
+      div.addEventListener('click', () => mostrarPregunta(i));
+      cont.appendChild(div);
+    }
+    if (e === "suspenso") {
+      const div = document.createElement('div');
+      div.textContent = `Pregunta ${i + 1} marcada como "para después".`;
+      div.style.cursor = "pointer";
+      div.addEventListener('click', () => mostrarPregunta(i));
+      cont.appendChild(div);
+    }
+  });
+}
+
+// Botón "Para después"
+document.querySelectorAll('.btnNoSeguro').forEach((btn, indexPregunta) => {
+  btn.addEventListener('click', () => {
+    estadoPreguntas[indexPregunta] = "suspenso";
+    mostrarPregunta(actual + 1);
+  });
+});
+
+// Selección de respuestas
+document.querySelectorAll('.opciones').forEach((opcionesDiv, preguntaIndex) => {
+  const botones = opcionesDiv.querySelectorAll('button');
+  botones.forEach((btn, respuestaIndex) => {
+    btn.addEventListener('click', () => {
+      botones.forEach(b => b.classList.remove('seleccionada'));
+      btn.classList.add('seleccionada');
+      respuestasUsuario[preguntaIndex] = respuestaIndex;
+      estadoPreguntas[preguntaIndex] = "respondida";
+    });
+  });
+});
+
+// Botón Siguiente
+document.querySelectorAll('.btn-siguiente').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (estadoPreguntas[actual] !== "respondida" && estadoPreguntas[actual] !== "suspenso") {
+      estadoPreguntas[actual] = "pendiente";
+    }
+    mostrarPregunta(actual + 1);
+  });
+});
+
+// Botón Volver
+document.querySelectorAll('.btn-volver').forEach(btn => {
+  btn.addEventListener('click', () => mostrarPregunta(actual - 1));
+});
+
+// Botón Finalizar
+document.querySelectorAll('.btn-finalizar').forEach(btn => {
+  btn.addEventListener('click', () => {
+    estadoPreguntas.forEach((e,i) => {
+      if (respuestasUsuario[i] === undefined && e !== "suspenso") {
+        estadoPreguntas[i] = "pendiente";
+      }
+    });
+    document.getElementById('inputRespuestas').value = JSON.stringify(respuestasUsuario);
+    document.getElementById('inputPendientes').value = JSON.stringify(
+      estadoPreguntas.map((e,i) => e==="pendiente"?i:null).filter(i=>i!==null)
+    );
+    document.getElementById('inputSuspensos').value = JSON.stringify(
+      estadoPreguntas.map((e,i) => e==="suspenso"?i:null).filter(i=>i!==null)
+    );
+    document.getElementById('formResultados').submit();
+  });
+});
+
+// Cronómetro global
+let tiempoRestante = 10 * 60; // 10 minutos
+function actualizarCronometro() {
+  const minutos = Math.floor(tiempoRestante / 60);
+  const segundos = tiempoRestante % 60;
+  const texto = `${minutos.toString().padStart(2,'0')}:${segundos.toString().padStart(2,'0')}`;
+  document.querySelectorAll('.cronometro').forEach(c => c.textContent = texto);
+  if (tiempoRestante > 0) tiempoRestante--;
+  else {
+    clearInterval(intervalo);
+    alert('¡Tiempo terminado!');
+    window.location.href = '/menu_principal';
+  }
+}
+const intervalo = setInterval(actualizarCronometro, 1000);
+
+// Inicia examen
+mostrarPregunta(0);

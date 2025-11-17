@@ -2457,4 +2457,540 @@ button:disabled {
     }
 }
 
+.modal-abandono-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(10px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .modal-abandono-overlay.visible {
+        display: flex;
+    }
+
+    .modal-abandono-content {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border-radius: 20px;
+        max-width: 500px;
+        width: 90%;
+        padding: 0;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        animation: scaleIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        border: 2px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .modal-abandono-header {
+        text-align: center;
+        padding: 30px 30px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .icono-advertencia-grande {
+        font-size: 4rem;
+        margin-bottom: 15px;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    .modal-abandono-header h2 {
+        color: #ef4444;
+        font-size: 1.8rem;
+        margin: 0;
+    }
+
+    .modal-abandono-body {
+        padding: 30px;
+    }
+
+    .mensaje-salida {
+        color: #cbd5e1;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin: 0 0 20px;
+        white-space: pre-line;
+    }
+
+    .penalizacion-info {
+        background: rgba(239, 68, 68, 0.1);
+        border: 2px solid rgba(239, 68, 68, 0.3);
+        border-radius: 12px;
+        padding: 15px;
+        margin-top: 20px;
+    }
+
+    .penalizacion-box {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .penalizacion-icono {
+        font-size: 2rem;
+    }
+
+    .penalizacion-texto {
+        flex: 1;
+    }
+
+    .penalizacion-texto strong {
+        display: block;
+        color: #ef4444;
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+    }
+
+    .cantidad-penalizacion {
+        display: block;
+        color: #fff;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+    .modal-abandono-footer {
+        padding: 20px 30px;
+        display: flex;
+        gap: 15px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-cancelar-salida,
+    .btn-confirmar-salida {
+        flex: 1;
+        padding: 15px;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-cancelar-salida {
+        background: rgba(148, 163, 184, 0.2);
+        color: #cbd5e1;
+        border: 2px solid rgba(148, 163, 184, 0.3);
+    }
+
+    .btn-cancelar-salida:hover {
+        background: rgba(148, 163, 184, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .btn-confirmar-salida {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+
+    .btn-confirmar-salida:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+    }
+
+    /* Pantallas de resultado de abandono */
+    .pantalla-resultado-abandono {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        animation: fadeIn 0.5s ease;
+    }
+
+    .pantalla-resultado-abandono.visible {
+        display: flex;
+    }
+
+    .pantalla-resultado-abandono.victoria {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(0, 0, 0, 0.95) 100%);
+    }
+
+    .pantalla-resultado-abandono.error {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(0, 0, 0, 0.95) 100%);
+    }
+
+    .resultado-abandono-content {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border-radius: 25px;
+        max-width: 600px;
+        width: 90%;
+        padding: 40px;
+        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+        position: relative;
+        animation: slideInUp 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .confetti-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .resultado-abandono-header {
+        text-align: center;
+        margin-bottom: 30px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .icono-resultado-abandono {
+        font-size: 5rem;
+        margin-bottom: 20px;
+        animation: bounceIn 0.8s ease;
+    }
+
+    .resultado-abandono-header h1 {
+        color: #fff;
+        font-size: 2.5rem;
+        margin: 0;
+    }
+
+    .resultado-abandono-body {
+        text-align: center;
+        margin-bottom: 30px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .mensaje-resultado-abandono {
+        color: #cbd5e1;
+        font-size: 1.2rem;
+        line-height: 1.6;
+        margin: 0 0 25px;
+    }
+
+    .detalles-abandono {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 15px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+
+    .detalle-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .detalle-item:last-child {
+        border-bottom: none;
+    }
+
+    .detalle-item.positivo {
+        border: 2px solid rgba(16, 185, 129, 0.3);
+        border-radius: 10px;
+        padding: 15px;
+        background: rgba(16, 185, 129, 0.1);
+    }
+
+    .detalle-label {
+        color: #94a3b8;
+        font-size: 1rem;
+    }
+
+    .detalle-valor {
+        font-size: 1.3rem;
+        font-weight: bold;
+    }
+
+    .detalle-valor.negativo {
+        color: #ef4444;
+    }
+
+    .detalle-valor.positivo {
+        color: #10b981;
+    }
+
+    .btn-volver-portal-abandono {
+        width: 100%;
+        padding: 18px;
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 2;
+    }
+
+    .btn-volver-portal-abandono:hover {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Código de error */
+    .codigo-error {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 8px;
+        padding: 10px 15px;
+        margin-top: 20px;
+        font-family: 'Courier New', monospace;
+        color: #ef4444;
+        font-size: 0.9rem;
+    }
+
+    .acciones-error {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .btn-reportar-error {
+        flex: 1;
+        padding: 15px;
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        border: 2px solid rgba(239, 68, 68, 0.3);
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-reportar-error:hover {
+        background: rgba(239, 68, 68, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Indicador de desconexión */
+    .indicador-desconexion {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
+        z-index: 9998;
+        display: none;
+        animation: slideInRight 0.5s ease;
+    }
+
+    .indicador-desconexion.visible {
+        display: block;
+    }
+
+    .indicador-contenido {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .spinner-desconexion {
+        width: 30px;
+        height: 30px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    .texto-desconexion {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .texto-desconexion strong {
+        font-size: 1rem;
+    }
+
+    .tiempo-restante {
+        font-size: 0.85rem;
+        opacity: 0.9;
+    }
+
+    /* Notificación de reconexión */
+    .notificacion-reconexion {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+        z-index: 9998;
+        display: none;
+        animation: slideInRight 0.5s ease;
+    }
+
+    .notificacion-reconexion.visible {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .notificacion-icono {
+        font-size: 1.5rem;
+    }
+
+    .notificacion-texto {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .notificacion-texto strong {
+        font-size: 1rem;
+    }
+
+    .notificacion-texto span {
+        font-size: 0.85rem;
+        opacity: 0.9;
+    }
+
+    /* Botón abandonar duelo */
+    .btn-abandonar-duelo {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        padding: 12px 20px;
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        border: 2px solid rgba(239, 68, 68, 0.3);
+        border-radius: 10px;
+        font-size: 0.95rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+
+    .btn-abandonar-duelo:hover {
+        background: rgba(239, 68, 68, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+    }
+
+    /* Animaciones */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes scaleIn {
+        from {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes bounceIn {
+        0% {
+            opacity: 0;
+            transform: scale(0.3);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+        70% {
+            transform: scale(0.9);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.1);
+        }
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .modal-abandono-content {
+            width: 95%;
+            padding: 0;
+        }
+        
+        .resultado-abandono-content {
+            width: 95%;
+            padding: 25px;
+        }
+        
+        .icono-resultado-abandono {
+            font-size: 4rem;
+        }
+        
+        .resultado-abandono-header h1 {
+            font-size: 2rem;
+        }
+        
+        .indicador-desconexion,
+        .notificacion-reconexion {
+            top: 10px;
+            right: 10px;
+            left: 10px;
+            width: auto;
+        }
+        
+        .btn-abandonar-duelo {
+            top: 10px;
+            left: 10px;
+            font-size: 0.85rem;
+            padding: 10px 15px;
+        }
+    }
+
 /* ================== FIN DEL CSS ================== */

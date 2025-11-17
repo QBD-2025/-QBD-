@@ -7,32 +7,6 @@
 
   <!-- Estilos externos para la página -->
   <link rel="stylesheet" href="/css/eleccion-examen.css" />
-
-  <style>
-    /* Estilos de cada tarjeta del carrusel */
-    .card {
-      width: 200px; /* ancho de la tarjeta */
-      height: 250px; /* alto de la tarjeta */
-      background-color: #fff; /* color de fondo blanco */
-      border-radius: 12px; /* bordes redondeados */
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* sombra para efecto 3D */
-      padding: 1rem; /* espacio interno */
-      text-align: center; /* centrar texto */
-      overflow: hidden; /* ocultar contenido que se desborde */
-      display: flex; 
-      flex-direction: column; /* colocar elementos de arriba hacia abajo */
-      align-items: center; /* centrar horizontal */
-      justify-content: space-between; /* espacio entre elementos */
-    }
-
-    /* Estilos para los GIFs dentro de cada tarjeta */
-    .gif-materia {
-      width: 100%; /* ancho máximo de la tarjeta */
-      max-height: 150px; /* limitar altura */
-      object-fit: contain; /* mantener proporción del GIF */
-      border-radius: 8px; /* esquinas redondeadas */
-    }
-  </style>
 </head>
 <body>
 
@@ -56,74 +30,10 @@
 <div id="rightZone" class="zone-click derecha"></div>
 
 <script>
-  // Rotación actual del carrusel
-  let currentRotation = 0;
-
-  // Array de materias recibido desde el servidor
-  const materias = {{{materias}}};
-  console.log("Materias:", materias);
-
-  const carousel = document.getElementById('carousel'); // contenedor del carrusel
-  const cardCount = materias.length; // cantidad de tarjetas
-  const theta = 360 / cardCount; // ángulo entre cada tarjeta
-  const radius = 820; // distancia desde el centro para el efecto 3D
-  let currIndex = 0; // índice de la tarjeta actualmente seleccionada
-
-  // Crear tarjetas dinámicamente
-  materias.forEach((materia, i) => {
-    const card = document.createElement('div');
-    card.className = 'card';
-
-    // Crear el GIF de la materia
-    const gif = document.createElement('img');
-    gif.src = `/media/videos/${materia.descripcion}.gif`;
-    gif.alt = `Animación de ${materia.descripcion}`;
-    gif.className = 'gif-materia';
-
-    // Texto descriptivo de la materia
-    const texto = document.createElement('div');
-    texto.textContent = materia.descripcion;
-
-    // Agregar GIF y texto a la tarjeta
-    card.appendChild(gif);
-    card.appendChild(texto);
-
-    // Posicionar la tarjeta en el carrusel 3D
-    const angle = theta * i;
-    card.style.transform = `rotateY(${angle}deg) translateZ(${radius}px)`;
-
-    // Al hacer click en la tarjeta, se selecciona y se redirige
-    card.onclick = () => {
-      currIndex = i;
-      rotateCarousel();
-      window.location.href = `/dato-curioso/${materia.id_materia}`;
-    };
-
-    // Agregar la tarjeta al carrusel
-    carousel.appendChild(card);
-  });
-
-  // Función para rotar el carrusel a la tarjeta seleccionada
-  function rotateCarousel() {
-    const angle = currIndex * -theta; // calcular ángulo basado en la tarjeta seleccionada
-    carousel.style.transition = 'transform 1.5s ease-in-out'; // animación suave
-    carousel.style.transform = `translateZ(-${radius}px) rotateY(${currentRotation}deg)`;
-  }
-
-  // Evento para hacer clic en la zona izquierda
-  document.getElementById('leftZone').addEventListener('click', () => {
-    currIndex = Math.max(currIndex - 1, 0); // no bajar del índice 0
-    currentRotation += theta; // aumentar rotación para girar a la izquierda
-    rotateCarousel(); // aplicar rotación
-  });
-
-  // Evento para hacer clic en la zona derecha
-  document.getElementById('rightZone').addEventListener('click', () => {
-    currIndex = Math.min(currIndex + 1, cardCount - 1); // no subir del último índice
-    currentRotation -= theta; // disminuir rotación para girar a la derecha
-    rotateCarousel(); // aplicar rotación
-  });
+        window.MATERIAS_DATA = {{{json materias}}};
 </script>
+
+<script src="/public/js/eleccionDato.controller.js" defer></script>
 
 </body>
 </html>

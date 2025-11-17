@@ -1,6 +1,6 @@
 // ================================================================
 // SISTEMA UNIFICADO DE PUNTUACIÓN - DUELOS RÁPIDOS
-// Versión: 2.0 - Corrige duplicados y centraliza lógica
+// Versión: 2.1 - Corrige bugs de tipos y SQL
 // ================================================================
 
 const db = require('../db/conexion');
@@ -272,10 +272,12 @@ class GestorPuntuacion {
         try {
             await connection.beginTransaction();
             
-            const jugadoresIds = Object.keys(duelo.jugadores);
+            // ✅ CONVERTIR IDs A NÚMEROS (Object.keys devuelve strings)
+            const jugadoresIds = Object.keys(duelo.jugadores).map(id => parseInt(id));
             const [jugadorA_id, jugadorB_id] = jugadoresIds;
             
             console.log(`[FINALIZAR ${salaId}]: 🏁 Iniciando...`);
+            console.log(`[FINALIZAR]: IDs procesados - A: ${jugadorA_id} (${typeof jugadorA_id}), B: ${jugadorB_id} (${typeof jugadorB_id})`);
             
             // ================================================================
             // PASO 1: Cargar datos de preguntas
@@ -361,15 +363,14 @@ class GestorPuntuacion {
             const esEmpate = ptsA === ptsB;
             const ganadorId = esEmpate ? null : (ptsA > ptsB ? jugadorA_id : jugadorB_id);
             
-            console.log(`[FINALIZAR]: Puntos A=${ptsA}, B=${ptsB}, Ganador=${ganadorId || 'EMPATE'}`);
+            console.log(`[FINALIZAR]: Puntos A=${ptsA}, B=${ptsB}, Ganador=${ganadorId || 'EMPATE'} (tipo: ${typeof ganadorId})`);
             
             // ================================================================
             // PASO 6: Calcular recompensas finales
             // ================================================================
             
             const bote = apuesta * 2;
-            const recompensaBase = SISTEMA_PUNTOS.RECOMPENSA[duelo.dificultad] || 
-                                  SISTEMA_PUNTOS.RECOMPENSA.normal;
+            const recompensaBase = SISTEMA_PUNTOS.RECOMPENSA[duelo.dificultad] || SISTEMA_PUNTOS.RECOMPENSA.normal;
             
             const desgloseCompleto = {};
             
@@ -482,16 +483,12 @@ class GestorPuntuacion {
                 // PASO 7: ACTUALIZAR BASE DE DATOS
                 // ================================================================
                 
-                // 7.1 Puntos globales
+                // 7.1 Puntos globales - ✅ CORREGIDO: Solo 2 parámetros
                 await connection.query(
                     `UPDATE usuario 
-                    SET puntos = GREATEST(0, puntos + ?),
-                        racha_victorias = CASE 
-                            WHEN ? THEN racha_victorias + 1 
-                            ELSE 0 
-                        END
+                    SET puntos = GREATEST(0, puntos + ?)
                     WHERE id_usuario = ?`,
-                    [cambioTotal, esGanador, jId]
+                    [cambioTotal, jId]
                 );
                 
                 console.log(`[BD]: Usuario ${jId}: ${puntosIniciales} → ${puntosIniciales + cambioTotal} (${cambioTotal > 0 ? '+' : ''}${cambioTotal})`);
@@ -537,7 +534,7 @@ class GestorPuntuacion {
             // ================================================================
             
             return {
-                ganadorId,
+                ganadorId, // ✅ Ya es un número
                 esEmpate,
                 puntuaciones: { 
                     [jugadorA_id]: ptsA, 
@@ -547,7 +544,7 @@ class GestorPuntuacion {
                 bote,
                 recompensaBase,
                 jugadores: jugadoresIds.map(jId => ({
-                    userId: jId,
+                    userId: parseInt(jId), // ✅ ASEGURAR QUE SEA NÚMERO
                     username: duelo.jugadores[jId].username,
                     foto_perfil: duelo.jugadores[jId].foto_perfil || '/uploads/default_avatar.png',
                     puntuacionFinal: resultados[jId].puntosPartida,

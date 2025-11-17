@@ -114,3 +114,27 @@ button:hover {
 .izquierda { left: 0; }
 .derecha { right: 0; }
 
+
+    /* Estilos de cada tarjeta del carrusel */
+    .card {
+      width: 200px; /* ancho de la tarjeta */
+      height: 250px; /* alto de la tarjeta */
+      background-color: #fff; /* color de fondo blanco */
+      border-radius: 12px; /* bordes redondeados */
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2); /* sombra para efecto 3D */
+      padding: 1rem; /* espacio interno */
+      text-align: center; /* centrar texto */
+      overflow: hidden; /* ocultar contenido que se desborde */
+      display: flex; 
+      flex-direction: column; /* colocar elementos de arriba hacia abajo */
+      align-items: center; /* centrar horizontal */
+      justify-content: space-between; /* espacio entre elementos */
+    }
+
+    /* Estilos para los GIFs dentro de cada tarjeta */
+    .gif-materia {
+      width: 100%; /* ancho máximo de la tarjeta */
+      max-height: 150px; /* limitar altura */
+      object-fit: contain; /* mantener proporción del GIF */
+      border-radius: 8px; /* esquinas redondeadas */
+    }

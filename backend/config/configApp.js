@@ -102,6 +102,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../../frontend/media/up
 app.use('/media', express.static(path.join(__dirname, '../../frontend/media')));
 app.use('/css', express.static(path.join(__dirname, '../../frontend/css')));
 app.use('/js', express.static(path.join(__dirname, '../../frontend/js')));
+app.use('/public', express.static(path.join(__dirname, '../../public')))
 
 // ------------------ Configuración de sesiones ------------------
 const sessionMiddleware = session({

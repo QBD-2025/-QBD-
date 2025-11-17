@@ -168,74 +168,13 @@
     </div>
 
     <script>
-        // Auto-actualizar página si el oponente no ha terminado
-        {{#unless ambosTerminaron}}
-        let contadorRecargas = 0;
-        const maxRecargas = 20;
-
-        function verificarEstado() {
-            contadorRecargas++;
-            if (contadorRecargas > maxRecargas) {
-                console.log('Se detuvo la recarga automática para evitar bucles.');
-                return;
-            }
-            
-            fetch('/competitivo/duelo/estado/{{duelo.id_duelo}}')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('La respuesta del servidor no fue OK: ' + response.status);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.ambosCompletaron) {
-                        console.log('¡Ambos terminaron! Recargando página...');
-                        location.reload();
-                    } else {
-                        console.log('Oponente aún no termina, verificando de nuevo en 30s...');
-                        setTimeout(verificarEstado, 30000);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error verificando estado:', error);
-                    setTimeout(verificarEstado, 60000);
-                });
-        }
-
-        const btnVolver = document.getElementById('btnVolver');
-            btnVolver.addEventListener('click', function(e) {
-                e.preventDefault(); // Evita que navegue inmediatamente
-
-                fetch('/competitivo/duelo/volver/{{duelo.id_duelo}}', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ jugador: '{{esRetador}}' ? 'retador' : 'defensor' })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.ambosVolvieron) {
-                        // Ambos hicieron clic en "volver", ejecutar función
-                        ejecutarFuncionEspecial();
-                    } else {
-                        // Solo este usuario hizo clic, podemos redirigir igual
-                        window.location.href = '/portal';
-                    }
-                })
-                .catch(err => {
-                    console.error('Error notificando clic:', err);
-                    window.location.href = '/portal'; // fallback
-                });
-            });
-
-        function ejecutarFuncionEspecial() {
-            alert("¡Ambos jugadores volvieron al portal! Ejecutando función...");
-            // Aquí pones la función que quieras ejecutar
-            window.location.href = '/portal';
-        }
-
-        // Iniciar verificación después de 10 segundos
-        setTimeout(verificarEstado, 10000);
-        {{/unless}}
+        window.DUELO_DATA = {
+            id_duelo: "{{duelo.id_duelo}}",
+            ambosTerminaron: {{#if ambosTerminaron}}true{{else}}false{{/if}},
+            esRetador: {{#if esRetador}}true{{else}}false{{/if}}
+        };
     </script>
+
+    <script src="/public/js/resultadosDuelo.controller.js" defer></script>
 </body>
 </html>

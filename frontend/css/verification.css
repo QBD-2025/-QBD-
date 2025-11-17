@@ -249,3 +249,24 @@ body {
     height: auto;
     background-color: #fbfafb;
 }
+
+/* Contenedor relativo para el input de contraseña y el icono de mostrar/ocultar */
+.password-wrapper {
+    position: relative;
+}
+
+/* Estilo general de los inputs (anchura completa y espacio a la derecha para el icono) */
+.form-control {
+    width: 100%;
+    padding-right: 40px; /* espacio para el icono de ojo 🔍 */
+}
+
+/* Estilo del icono de mostrar/ocultar contraseña */
+.password-toggle-icon {
+    position: absolute;   /* posición relativa al contenedor padre */
+    right: 10px;          /* margen derecho */
+    top: 50%;             /* centrado vertical */
+    transform: translateY(-50%); /* ajuste exacto vertical */
+    cursor: pointer;      /* indica que se puede clicar */
+    font-size: 18px;      /* tamaño del icono */
+}

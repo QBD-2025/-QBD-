@@ -463,8 +463,6 @@ router.post('/desafiar/duelo/:idOponente', async (req, res) => {
             req.io.to(idOponente.toString()).emit('notificacion_recibida');
         }
         
-        console.log(`[CREAR DUELO] ✅ Proceso completado para duelo ${id_duelo}`);
-        
         res.json({ 
             success: true, 
             message: '¡Desafío enviado!', 
@@ -982,12 +980,11 @@ router.post('/duelo/abandonar/:salaId', async (req, res) => {
     const idUsuario = req.session.user.id_usuario;
     
     console.log(`[ABANDONAR] Usuario ${idUsuario} abandonando duelo ${salaId}`);
-    
+
     const conn = await pool.getConnection();
     try {
         await conn.beginTransaction();
-        
-        // Obtener información del duelo
+
         const [duelo] = await conn.query(
             'SELECT * FROM duelos WHERE id_duelo = ? AND (id_retador = ? OR id_defensor = ?)',
             [salaId, idUsuario, idUsuario]
@@ -1001,59 +998,84 @@ router.post('/duelo/abandonar/:salaId', async (req, res) => {
         
         const dueloData = duelo[0];
         const esRetador = dueloData.id_retador === idUsuario;
-        
-        // El que abandona pierde, el otro gana
+
         const idGanador = esRetador ? dueloData.id_defensor : dueloData.id_retador;
         const idPerdedor = idUsuario;
         
-        // Registrar en historial SIN modificar puntos
+        console.log(`[ABANDONAR] Ganador por abandono: ${idGanador}`);
+
         await conn.query(`
             INSERT INTO historial_duelos 
             (id_duelo, id_retador, id_defensor, id_ganador, puntos_retador, puntos_defensor, fecha_duelo)
             VALUES (?, ?, ?, ?, 0, 0, NOW())
         `, [salaId, dueloData.id_retador, dueloData.id_defensor, idGanador]);
         
-        // Actualizar estado del duelo
-        await conn.query(
-            'UPDATE duelos SET estado = ? WHERE id_duelo = ?',
-            ['abandonado', salaId]
+        console.log(`[ABANDONAR] ✅ Historial registrado`);
+
+        const [deleteNotifResult] = await conn.query(`
+            DELETE FROM notificaciones 
+            WHERE tipo = 'duelo_aceptado' 
+            AND (
+                JSON_EXTRACT(extra_data, '$.salaId') = ? 
+                OR JSON_EXTRACT(extra_data, '$.id_duelo') = ?
+            )
+        `, [salaId, salaId]);
+
+        await conn.query(`DELETE FROM duelos_preguntas WHERE id_duelo = ?`, [salaId]);
+        
+        await conn.query(`DELETE FROM duelos_respuestas WHERE id_duelo = ?`, [salaId]);
+        
+        const [deleteDueloResult] = await conn.query(
+            `DELETE FROM duelos WHERE id_duelo = ? AND estado = 'activo' or estado = 'abandonado'`,
+            [salaId]
         );
-        
-        // Crear notificación para el ganador
-        const [ganador] = await conn.query('SELECT username FROM usuario WHERE id_usuario = ?', [idGanador]);
-        
-        await conn.query(`
-            INSERT INTO notificaciones 
-            (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data)
-            VALUES (?, ?, 'duelo_abandonado', ?, ?)
-        `, [
-            idGanador,
-            idUsuario,
-            `¡Tu oponente abandonó el duelo!`,
-            JSON.stringify({ 
-                id_duelo: salaId, 
-                razon: razon || 'Sin especificar',
-                abandonador: req.session.user.username 
-            })
-        ]);
-        
+
+        const [ganador] = await conn.query(
+            'SELECT username FROM usuario WHERE id_usuario = ?', 
+            [idGanador]
+        );
+
+        if (ganador.length > 0) {
+            await conn.query(`
+                INSERT INTO notificaciones 
+                (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data)
+                VALUES (?, ?, 'duelo_abandonado', ?, ?)
+            `, [
+                idGanador,
+                idUsuario,
+                `¡${req.session.user.username} abandonó el duelo! Ganaste por abandono 🏆`,
+                JSON.stringify({ 
+                    id_duelo: salaId, 
+                    razon: razon || 'Sin especificar',
+                    abandonador: req.session.user.username 
+                })
+            ]);
+            
+            console.log(`[ABANDONAR] ✅ Notificación enviada al ganador`);
+        }
+
         await conn.commit();
         await conn.release();
         
-        console.log(`[ABANDONAR] ✅ Duelo ${salaId} marcado como abandonado`);
+        console.log(`[ABANDONAR] ✅ Proceso completado exitosamente`);
         
-        // Emitir evento de socket
+        // ✅ 7. Emitir eventos de socket
         if (req.io) {
-            req.io.to(idGanador.toString()).emit('duelo_abandonado', {
+            req.io.to(idGanador.toString()).emit('duelo:abandonado', {
                 ganaste: true,
                 mensaje: `${req.session.user.username} ha abandonado el duelo`,
                 id_duelo: salaId
             });
+            
+            req.io.to(idGanador.toString()).emit('notificacion_recibida');
+            req.io.to(idUsuario.toString()).emit('notificacion_recibida');
+            
+            console.log(`[ABANDONAR] ✅ Sockets emitidos`);
         }
         
         res.json({
             success: true,
-            message: 'Has abandonado el duelo',
+            message: 'Has abandonado el duelo. Tu oponente gana por abandono.',
             redirigir: '/portal'
         });
         
@@ -1061,7 +1083,7 @@ router.post('/duelo/abandonar/:salaId', async (req, res) => {
         await conn.rollback();
         await conn.release();
         console.error('❌ Error al abandonar duelo:', error);
-        res.status(500).json({ error: 'Error al abandonar el duelo' });
+        res.status(500).json({ error: 'Error al abandonar el duelo: ' + error.message });
     }
 });
 

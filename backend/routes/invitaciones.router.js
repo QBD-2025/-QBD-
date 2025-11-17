@@ -332,9 +332,6 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             conn.release();
 
             const urlRedireccion = `/competitivo/sala/${salaKey}?origen=socket`;
-            
-            console.log('[ACEPTAR]: ✅ DUELO RÁPIDO ACEPTADO');
-            console.log('═══════════════════════════════════════════════════════════');
 
             return res.json({
                 success: true,
@@ -356,15 +353,15 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             const fechaLimite = new Date(Date.now() + 48 * 60 * 60 * 1000);
 
             await pool.query(
-                `INSERT INTO duelos (id_duelo, id_retador, id_defensor, materia, fecha_limite, respondido_retador, respondido_oponente)
-                 VALUES (?, ?, ?, ?, ?, 0, 0)
+                `INSERT INTO duelos (id_duelo, id_retador, id_defensor, fecha_limite, respondido_retador, respondido_oponente)
+                 VALUES (?, ?, ?, ?, 0, 0)
                  ON DUPLICATE KEY UPDATE fecha_limite = VALUES(fecha_limite)`,
-                [salaId, remitente.id_usuario, userId, extraData.materia, fechaLimite]
+                [salaId, remitente.id_usuario, userId, fechaLimite]
             );
 
             await pool.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
 
-            const notifData = JSON.stringify({ salaId, materia: extraData.materia });
+            const notifData = JSON.stringify({ salaId});
 
             // Notificación al retador
             if (remitente.id_usuario) {
@@ -374,7 +371,7 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
                     [
                         remitente.id_usuario,
                         userId,
-                        `${req.session.user.username} aceptó tu desafío de ${extraData.materia}. Tienes 48h para hacer el examen.`,
+                        `${req.session.user.username} aceptó tu desafío. Tienes 48h para hacer el examen.`,
                         notifData
                     ]
                 );
@@ -383,11 +380,11 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             // Notificación al defensor
             await pool.query(
                 `INSERT INTO notificaciones (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
-                 VALUES (?, ?, 'duelo_aceptado', ?, ?)`,
+                VALUES (?, ?, 'duelo_aceptado', ?, ?)`,
                 [
                     userId,
                     remitente.id_usuario,
-                    `Duelo activo contra ${remitente.username} en ${extraData.materia}. Tienes 48h para hacer el examen.`,
+                    `Duelo activo contra ${remitente.username}. Tienes 48h para hacer el examen.`,
                     notifData
                 ]
             );
@@ -401,7 +398,7 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
                 success: true,
                 tipo: 'desafio_duelo',
                 salaId,
-                message: `¡Desafío aceptado! Tienes 48h para hacer el examen de ${extraData.materia}.`,
+                message: `¡Desafío aceptado! Tienes 48h para hacer el examen`,
                 mostrarEnlace: true,
                 enlaceExamen: `/duelo/examen/${salaId}`,
                 fechaLimite,

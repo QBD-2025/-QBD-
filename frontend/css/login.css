@@ -193,3 +193,26 @@ button[type="submit"]:active {
         padding: 12px;
     }
 }
+
+    /* Contenedor relativo para posicionar el botón de mostrar contraseña */
+    .password-container {
+      position: relative;
+    }
+
+    /* Botón de toggle para mostrar/ocultar contraseña */
+    .toggle-password {
+      position: absolute;
+      right: 5px;
+      top: 44px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-size: 1.2em;
+    }
+
+    /* Ajuste de ancho del input considerando espacio para el botón toggle */
+    input[type="password"],
+    input[type="text"] {
+      padding-right: 37px;
+      width: calc(100% - 43px);
+    }
