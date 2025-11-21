@@ -15,9 +15,13 @@ router.get('/examen/:id_materia', async (req, res) => {
         if (!materiaRow) return res.status(404).send('Materia no encontrada');
 
         const [preguntas] = await db.query(
-            'SELECT id_pregunta, pregunta, retroalimentacion, puntos FROM pregunta WHERE id_materia = ? LIMIT 20',
-            [id_materia]
-        );
+          `SELECT id_pregunta, pregunta, retroalimentacion, puntos 
+          FROM pregunta 
+          WHERE id_materia = ? 
+          AND RAND() < (SELECT 20 / COUNT(*) FROM pregunta WHERE id_materia = ?)
+          LIMIT 20`,
+          [id_materia, id_materia]
+      );
 
         for (let pregunta of preguntas) {
             const [respuestas] = await db.query(
