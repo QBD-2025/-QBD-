@@ -1,27 +1,791 @@
 /* =========================================================================
-Archivo: styles.css
-Descripción: Estilos generales y específicos para la plataforma.
-
-Contenido principal:
-1. Sistema de notificaciones: estilos para iconos, conteo, dropdown,
-    botones de acción y animaciones.
-2. Scrollbars personalizadas: globales para toda la página.
-3. Cabecera global y elementos topbar: logo, links, bolitas decorativas,
-    enlaces, menú hamburguesa y avatar.
-4. Menú Kebab: dropdown del perfil, animaciones GSAP y estilos activos.
-5. Página de presentación y estilo tipo Duolingo: secciones de info,
-    hero, videos, titulares y botones principales/CTA.
-6. Formularios de login/registro: inputs, labels y validaciones visuales.
-7. Responsividad: ajustes para tablets y móviles.
-8. Estilos varios adicionales: botones, efectos hover y ajustes de layout.
-
-Nota: Este CSS integra correcciones visuales y mejoras de UX para la
-experiencia completa del usuario, manteniendo coherencia en colores,
-tipografía y animaciones.
-Fecha: [Fecha de creación o última edición]
+Archivo: styles.css - VERSIÓN ÉPICA CON TOPBAR DEGRADADA
 =========================================================================== */
 
-/* ===== SISTEMA DE NOTIFICACIONES CORREGIDO ===== */
+/* ===== VARIABLES CSS ===== */
+
+:root {
+    /* TEMA CLARO */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --text-primary: #333333;
+    --text-secondary: #555555;
+    --accent-yellow: #FFC107;
+    --accent-blue: #0817eb;
+    
+    /* Header Tema Claro */
+    --header-gradient-start: #0815c5;
+    --header-gradient-end: #0c0264;
+    
+    --shadow-light: rgba(0, 0, 0, 0.1);
+    --shadow-medium: rgba(0, 0, 0, 0.15);
+    --shadow-heavy: rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="dark"] {
+    /* TEMA OSCURO */
+    --bg-primary: #0a0e27;
+    --bg-secondary: #151b3d;
+    --text-primary: #ffffff;
+    --text-secondary: #e0e0e0;
+    --accent-yellow: #FFC107;
+    --accent-blue: #4A90E2;
+    
+    /* Header Tema Oscuro - REVERSE: Morado → Azul eléctrico */
+    --header-gradient-start: #6c00ff;
+    --header-gradient-end: #0000ff;
+    
+    --shadow-light: rgba(0, 0, 0, 0.4);
+    --shadow-medium: rgba(0, 0, 0, 0.5);
+    --shadow-heavy: rgba(0, 0, 0, 0.7);
+}
+
+/* ================== TRANSICIÓN SUAVE GLOBAL ================== */
+* {
+    transition: background-color 0.3s ease, 
+                color 0.3s ease, 
+                border-color 0.3s ease,
+                box-shadow 0.3s ease !important;
+}
+
+/* ================== BODY ================== */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    background-size: cover;
+    font-family: Arial, sans-serif;
+    overflow-y: auto;
+    position: relative;
+    min-height: 100vh;
+}
+
+/* ================== HEADER GLOBAL - DEGRADADO ÉPICO ================== */
+.global-header-elements {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 75px !important;
+    
+    /* DEGRADADO DIRECCIONAL según tema */
+    background: linear-gradient(to right, 
+        var(--header-gradient-start), 
+        var(--header-gradient-end)
+    ) !important;
+    
+    z-index: 1000 !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0 2rem !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Efecto glow en tema oscuro */
+[data-theme="dark"] .global-header-elements {
+    box-shadow: 
+        0 4px 20px rgba(108, 0, 255, 0.4),
+        0 0 40px rgba(0, 0, 255, 0.2) !important;
+}
+
+/* ================== NOTIFICACIONES ================== */
+.notification-container {
+    position: relative;
+    cursor: pointer;
+    font-size: 24px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-container:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+[data-theme="dark"] .notification-container:hover {
+    background: rgba(108, 0, 255, 0.3);
+    box-shadow: 0 0 20px rgba(108, 0, 255, 0.5);
+}
+
+#notification-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.notification-dropdown {
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    background: var(--bg-primary) !important;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px var(--shadow-medium) !important;
+    min-width: 350px;
+    max-width: 400px;
+    max-height: 500px;
+    overflow-y: auto;
+    z-index: 1000;
+    animation: slideDown 0.3s ease;
+    border: 1px solid var(--bg-secondary) !important;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.notification-dropdown::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    right: 30px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid var(--bg-primary);
+}
+
+#notifications-ul {
+    list-style: none;
+    margin: 0;
+    padding: 10px;
+}
+
+#notifications-ul li {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    border-left: 4px solid #667eea;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#notifications-ul li:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px var(--shadow-light);
+}
+
+#notifications-ul li span {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--text-primary) !important;
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 500;
+}
+
+.btn-aceptar, .btn-rechazar, .btn-ir-examen, .btn-eliminar {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    margin-right: 8px;
+    margin-top: 5px;
+}
+
+.btn-aceptar {
+    background: linear-gradient(135deg, #00b894, #00d2a0);
+    color: white;
+}
+
+.btn-aceptar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
+}
+
+.btn-rechazar {
+    background: linear-gradient(135deg, #d63031, #e74c3c);
+    color: white;
+}
+
+.btn-rechazar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(214, 48, 49, 0.4);
+}
+
+.btn-ir-examen {
+    background: linear-gradient(135deg, #28a745, #34ce57);
+    color: white;
+    font-weight: bold;
+}
+
+.btn-ir-examen:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+}
+
+.btn-eliminar {
+    background: #95a5a6;
+    color: white;
+    padding: 6px 12px;
+}
+
+.btn-eliminar:hover {
+    background: #7f8c8d;
+}
+
+.btn-aceptar:disabled, .btn-rechazar:disabled, 
+.btn-ir-examen:disabled, .btn-eliminar:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+#notifications-ul li:has(.btn-ir-examen) {
+    border-left-color: #28a745;
+}
+
+#notifications-ul li:only-child:not(:has(button)) {
+    text-align: center;
+    border-left: none;
+    color: var(--text-secondary) !important;
+    font-style: italic;
+}
+
+.notification-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notification-dropdown::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 10px;
+}
+
+.notification-dropdown::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #667eea, #764ba2);
+    border-radius: 10px;
+}
+
+[data-theme="dark"] .notification-dropdown::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #0000ff, #6c00ff);
+}
+
+.notification-dropdown::-webkit-scrollbar-thumb:hover {
+    background: #667eea;
+}
+
+/* ================== SCROLLBAR PERSONALIZADA ================== */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--accent-yellow);
+    border-radius: 10px;
+    border: 2px solid var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-blue);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #0000ff, #6c00ff);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: #6c00ff;
+}
+
+/* ================== HEADER LINKS ================== */
+.header-link, .header-button {
+    text-decoration: none;
+    color: #fffcfc !important;
+    font-weight: bold;
+    padding: 8px 15px;
+    font-size: 1.2em;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+.header-link:hover, .header-button:hover {
+    background-color: var(--accent-yellow) !important;
+    color: #878787 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);
+}
+
+[data-theme="dark"] .header-link:hover, 
+[data-theme="dark"] .header-button:hover {
+    background-color: rgba(108, 0, 255, 0.3) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 15px rgba(108, 0, 255, 0.6);
+}
+
+.top-right-nav {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.nav-username {
+    font-weight: bold;
+    color: var(--accent-yellow) !important;
+}
+
+[data-theme="dark"] .nav-username {
+    color: #ffffff !important;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.top-left-logo .header-link {
+    text-decoration: none;
+    color: #FFC107;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.top-left-logo .header-link:hover {
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+.top-left-logo {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    pointer-events: auto;
+    gap: 40px;
+    margin-right: auto;
+}
+
+.top-left-logo img {
+    width: 100px;
+    height: auto;
+    margin-right: -10px;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+}
+
+[data-theme="dark"] .top-left-logo img {
+    filter: drop-shadow(0 0 15px rgba(108, 0, 255, 0.6));
+}
+
+.top-left-logo h1 {
+    color: #FFC107;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* ================== MENÚ KEBAB ================== */
+.kebab-menu {
+    position: relative;
+    display: inline-block;
+    margin-left: 15px;
+    z-index: 1001;
+}
+
+.kebab-button {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: white;
+    height: 40px;
+}
+
+.kebab-button:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    transform: scale(1.05);
+}
+
+[data-theme="dark"] .kebab-button {
+    background: rgba(108, 0, 255, 0.2) !important;
+    border: 2px solid rgba(108, 0, 255, 0.4) !important;
+}
+
+[data-theme="dark"] .kebab-button:hover {
+    background: rgba(108, 0, 255, 0.4) !important;
+    box-shadow: 0 0 20px rgba(108, 0, 255, 0.6);
+}
+
+.kebab-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    flex-shrink: 0;
+    border: 2px solid #FFC107;
+}
+
+[data-theme="dark"] .kebab-avatar {
+    background: linear-gradient(135deg, #0000ff 0%, #6c00ff 100%);
+    border: 2px solid #ffffff;
+}
+
+.kebab-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.kebab-dropdown {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: var(--bg-primary) !important;
+    border-radius: 8px;
+    box-shadow: 0 3px 15px var(--shadow-medium) !important;
+    padding: 8px 0;
+    min-width: 280px;
+    list-style: none;
+    margin-top: 5px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 1100;
+    border: 1px solid var(--bg-secondary) !important;
+}
+
+.kebab-menu.active .kebab-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.kebab-dropdown .profile-header {
+    padding: 1rem;
+    background: linear-gradient(135deg, 
+        var(--header-gradient-start), 
+        var(--header-gradient-end)
+    ) !important;
+    border-radius: 8px 8px 0 0;
+    margin: -8px 0 8px 0;
+}
+
+.profile-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.profile-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0815c5;
+    font-weight: bold;
+    font-size: 18px;
+    border: 3px solid white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.profile-details {
+    flex: 1;
+    color: white;
+}
+
+.profile-details strong {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 2px;
+}
+
+.profile-details span {
+    display: block;
+    font-size: 0.85rem;
+    opacity: 0.9;
+    margin-bottom: 2px;
+}
+
+.kebab-dropdown li a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    color: var(--text-primary) !important;
+    text-decoration: none;
+    transition: all 0.2s;
+    font-size: 14px;
+    border-bottom: 1px solid var(--bg-secondary);
+}
+
+.kebab-dropdown li a:hover {
+    background: var(--bg-secondary) !important;
+    color: var(--accent-blue) !important;
+}
+
+.kebab-dropdown .cerrar-sesion {
+    color: #e74c3c !important;
+    font-weight: bold;
+    border-top: 2px solid var(--bg-secondary);
+    margin-top: 4px;
+}
+
+.kebab-dropdown .cerrar-sesion:hover {
+    background: #fee !important;
+    color: #c0392b !important;
+}
+
+.kebab-dropdown li {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+.kebab-menu.active .kebab-dropdown li {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ================== PRESENTACIÓN - DUOLINGO STYLE ================== */
+.duo-style-wrapper {
+    background: var(--bg-primary);
+}
+
+.info-section {
+    color: var(--text-primary);
+}
+
+.hero-main-headline, .info-headline {
+    color: var(--text-primary);
+}
+
+.info-description {
+    color: var(--text-secondary);
+}
+
+.yellow-text {
+    color: var(--accent-yellow) !important;
+}
+
+.blue-text {
+    color: var(--accent-blue) !important;
+}
+
+/* ================== FORMULARIOS ================== */
+.form-group label {
+    color: var(--text-secondary);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--bg-secondary);
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border-color: var(--accent-blue);
+}
+
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="password"] {
+    background: var(--bg-secondary);
+    border: 1px solid rgba(108, 0, 255, 0.3);
+}
+
+/* ================== BOTONES ================== */
+.btn-start-duo {
+    background-color: var(--accent-yellow);
+    border-bottom: 4px solid #e0a800;
+}
+
+.btn-start-duo:hover {
+    background-color: #ffd44f;
+}
+
+.btn-secondary-duo {
+    background-color: var(--bg-primary);
+    color: var(--accent-yellow);
+    border: 2px solid var(--bg-secondary);
+}
+
+[data-theme="dark"] .btn-secondary-duo {
+    background-color: var(--bg-secondary);
+    border: 2px solid rgba(108, 0, 255, 0.4);
+}
+
+/* ================== ANIMACIÓN DE TRANSICIÓN ================== */
+@keyframes theme-transition {
+    0% { opacity: 1; }
+    50% { opacity: 0.9; }
+    100% { opacity: 1; }
+}
+
+[data-theme-transitioning] {
+    animation: theme-transition 0.3s ease;
+}
+
+/* ================== RESPONSIVE ================== */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* ... RESTO DE TU CSS EXISTENTE (formularios, presentación, etc) ... */
+/* ================== HEADER LINKS ================== */
+.header-link, .header-button {
+    color: #fffcfc !important;
+}
+
+.header-link:hover, .header-button:hover {
+    background-color: var(--accent-yellow) !important;
+    color: #878787 !important;
+}
+
+.nav-username {
+    color: var(--accent-yellow) !important;
+}
+
+/* ================== PRESENTACIÓN - DUOLINGO STYLE ================== */
+.duo-style-wrapper {
+    background: var(--bg-primary);
+}
+
+.info-section {
+    color: var(--text-primary);
+}
+
+.hero-main-headline, .info-headline {
+    color: var(--text-primary);
+}
+
+.info-description {
+    color: var(--text-secondary);
+}
+
+.yellow-text {
+    color: var(--accent-yellow) !important;
+}
+
+.blue-text {
+    color: var(--accent-blue) !important;
+}
+
+/* ================== FORMULARIOS ================== */
+.form-group label {
+    color: var(--text-secondary);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--bg-secondary);
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border-color: var(--accent-blue);
+}
+
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="password"] {
+    background: var(--bg-secondary);
+    border: 1px solid rgba(108, 0, 255, 0.3);
+}
+
+/* ================== BOTONES ================== */
+.btn-start-duo {
+    background-color: var(--accent-yellow);
+    border-bottom: 4px solid #e0a800;
+}
+
+.btn-start-duo:hover {
+    background-color: #ffd44f;
+}
+
+.btn-secondary-duo {
+    background-color: var(--bg-primary);
+    color: var(--accent-yellow);
+    border: 2px solid var(--bg-secondary);
+}
+
+[data-theme="dark"] .btn-secondary-duo {
+    background-color: var(--bg-secondary);
+    border: 2px solid rgba(108, 0, 255, 0.4);
+}
+
+/* ================== RESPONSIVE ================== */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
 .notification-container {
     position: relative;
     cursor: pointer;
@@ -235,13 +999,12 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    /*min-height: 100vh; /* Ocupa el 100% del alto del viewport */
-    /*width: 100vw;    /* Ocupa el 100% del ancho del viewport */
-    background-color: #fbfafb; /* Un gris muy claro, casi blanco. Ajusta el tono si lo deseas. */
+    background-color: var(--bg-primary); /* ✅ USA LA VARIABLE */
     background-size: cover;
     font-family: Arial, sans-serif;
     overflow-y: auto;
-    position: relative; /* For positioning global elements like dots */
+    position: relative;
+    min-height: 100vh;
 }
 
 /* --- ESTILOS PARA LA SCROLLBAR PERSONALIZADA --- */
