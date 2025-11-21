@@ -77,7 +77,7 @@
                     </ul>
                 </div>
             {{else}}
-                {{#unless (eq currentPath "/")}}
+                {{#unless (or (eq currentPath "/") (eq currentPath "/video"))}}
                     <a href="/login" class="header-link">Iniciar Sesión</a>
                 {{/unless}}
             {{/if}}

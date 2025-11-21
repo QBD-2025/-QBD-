@@ -38,44 +38,97 @@ function getFramePath(frameNumber) {
 }
 
 // ======================================================================
-// === PRE-CARGA DE IMÁGENES (CAMBIO: ahora progresiva) =================
+// === CACHÉ DE IMÁGENES ========================================
+// ======================================================================
+const imageCache = new Map();
+let lastDisplayedFrame = -1; // Para evitar actualizar el mismo frame
+
+function cacheFrame(frameNumber) {
+    if (!imageCache.has(frameNumber)) {
+        const img = new Image();
+        img.src = getFramePath(frameNumber);
+        imageCache.set(frameNumber, img);
+    }
+    return imageCache.get(frameNumber);
+}
+
+// ======================================================================
+// === PRE-CARGA DE IMÁGENES MEJORADA ===================================
 // ======================================================================
 function preloadFrames(start, end, callback) {
     let loaded = 0;
     const total = end - start + 1;
-
-    for (let i = start; i <= end; i++) {
-        const img = new Image();
-        img.src = getFramePath(i);
-        img.onload = () => {
-            loaded++;
-            if (loaded === total && callback) callback();
-        };
-        img.onerror = () => {
-            loaded++;
-            if (loaded === total && callback) callback();
-        };
+    
+    // Precargamos en lotes para no saturar el navegador
+    const batchSize = 20;
+    let currentBatch = 0;
+    
+    function loadBatch() {
+        const batchStart = start + (currentBatch * batchSize);
+        const batchEnd = Math.min(batchStart + batchSize - 1, end);
+        
+        for (let i = batchStart; i <= batchEnd; i++) {
+            const img = cacheFrame(i);
+            
+            if (img.complete) {
+                loaded++;
+            } else {
+                img.onload = () => {
+                    loaded++;
+                    checkProgress();
+                };
+                img.onerror = () => {
+                    loaded++;
+                    checkProgress();
+                };
+            }
+        }
     }
+    
+    function checkProgress() {
+        if (loaded === total && callback) {
+            callback();
+        } else if (loaded >= (currentBatch + 1) * batchSize && currentBatch * batchSize < total) {
+            currentBatch++;
+            loadBatch();
+        }
+    }
+    
+    loadBatch();
+    checkProgress();
 }
 
-// Primero precargamos solo la intro
+// Precarga inicial
 preloadFrames(introStartFrameNum, introEndFrameNum, () => {
-    console.log("✅ Intro lista");
     waitForUserInteraction();
-
-    // Mientras corre la intro, precargamos idle
     preloadFrames(loopStartFrameNum, loopEndFrameNum, () => {
-        console.log("✅ Idle listo");
-
-        // Luego precargamos outro
         preloadFrames(outroStartFrameNum, outroEndFrameNum, () => {
-            console.log("✅ Outro listo");
         });
     });
 });
 
 // ======================================================================
-// === TIMELINES DE ANIMACIÓN ===========================================
+// === FUNCIÓN PARA ACTUALIZAR FRAME (OPTIMIZADA) =======================
+// ======================================================================
+function updateFrame(frameNumber) {
+    // Evitar actualizar el mismo frame
+    if (frameNumber === lastDisplayedFrame) return;
+    
+    const cachedImage = imageCache.get(frameNumber);
+    
+    if (cachedImage && cachedImage.complete) {
+        // Usar el src del objeto Image cacheado
+        animationElement.src = cachedImage.src;
+        lastDisplayedFrame = frameNumber;
+    } else {
+        // Fallback si no está en caché
+        animationElement.src = getFramePath(frameNumber);
+        lastDisplayedFrame = frameNumber;
+    }
+}
+
+// ======================================================================
+// === TIMELINES DE ANIMACIÓN (OPTIMIZADAS) =============================
 // ======================================================================
 let introTimeline;
 let loopTimeline;
@@ -88,7 +141,6 @@ function initAnimation() {
     introTimeline = gsap.timeline({
         paused: true,
         onComplete: () => {
-            console.log('🎬 Intro terminada → bucle idle + botón');
             loopTimeline.play();
             showStartButton();
         }
@@ -100,26 +152,25 @@ function initAnimation() {
         onUpdate: function () {
             const progress = this.progress();
             const currentFrame = Math.floor(progress * introTotalImages) + introStartFrameNum;
-            animationElement.src = getFramePath(currentFrame);
+            updateFrame(currentFrame);
         }
     });
 
-    // Escena 2: Bucle Idle
-    // ⚡ CAMBIO: frames controlados por currentTime del audio
+    // Escena 2: Bucle Idle - sincronizado con audio
     loopTimeline = gsap.timeline({
         paused: true,
         repeat: -1
     });
 
-    loopTimeline.to({}, { // objeto vacío solo para el "tick"
-        duration: 1, // da igual, porque usamos currentTime
+    loopTimeline.to({}, {
+        duration: 1,
         repeat: -1,
         ease: "none",
         onUpdate: function () {
             if (esperandoAudio.duration > 0) {
                 const progress = (esperandoAudio.currentTime % esperandoAudio.duration) / esperandoAudio.duration;
                 const currentFrame = Math.floor(progress * loopTotalImages) + loopStartFrameNum;
-                animationElement.src = getFramePath(currentFrame);
+                updateFrame(currentFrame);
             }
         }
     });
@@ -128,9 +179,8 @@ function initAnimation() {
     outroTimeline = gsap.timeline({
         paused: true,
         onComplete: async () => {
-            console.log("🏁 Outro terminado → mostrando formulario...");
 
-            animationElement.src = "/media/animacion_frames_p/video-bienvenida_000000_000700.webp";
+            updateFrame(700);
 
             const res = await fetch("/formulario1?partial=1");
             const html = await res.text();
@@ -147,11 +197,11 @@ function initAnimation() {
     });
 
     outroTimeline.to(animationElement, {
-        duration: outroTotalImages / 20,
+        duration: outroTotalImages / 30,
         ease: "none",
         onUpdate: function () {
             const currentFrame = Math.floor(this.progress() * outroTotalImages) + outroStartFrameNum;
-            animationElement.src = getFramePath(currentFrame);
+            updateFrame(currentFrame);
         }
     });
 
@@ -159,19 +209,15 @@ function initAnimation() {
     startButton.addEventListener('click', () => {
         hideStartButton();
 
-        // Pausar bucle idle
         loopTimeline.pause();
 
-        // Detener audio de esperando si está sonando
         esperandoAudio.pause();
         esperandoAudio.currentTime = 0;
 
-        // Reproducir audio Hagamoslo
         hagamosloAudio.currentTime = 0;
         hagamosloAudio.loop = false;
-        hagamosloAudio.play().catch(() => console.warn("🎵 Audio Hagamoslo bloqueado"));
+        hagamosloAudio.play()
 
-        // Iniciar animación outro
         outroTimeline.play();
     });
 }
@@ -194,29 +240,28 @@ function waitForUserInteraction() {
     const startIntro = () => {
         document.removeEventListener('click', startIntro);
 
-        // Reproducir audio Bienvenido
         bienvenidoAudio.currentTime = 0;
-        bienvenidoAudio.play().catch(() => console.warn("🎵 Audio Bienvenido bloqueado"));
+        bienvenidoAudio.play()
 
-        // Cuando termine Bienvenido → empezar audio de Esperando
         bienvenidoAudio.onended = () => {
-            console.log("🎵 Bienvenido terminado → iniciando audio Esperando");
             esperandoAudio.currentTime = 0;
             esperandoAudio.loop = true;
-            esperandoAudio.play().catch(() => console.warn("🎵 Audio Esperando bloqueado"));
+            esperandoAudio.play()
         };
 
-        // Inicializar animación y reproducir intro
         initAnimation();
         introTimeline.play();
     };
 
-    // ✅ Si venimos desde la página de "Empezar Ahora"
     if (localStorage.getItem("startClicked") === "true") {
         localStorage.removeItem("startClicked");
         startIntro();
     } else {
-        // ⏳ Si el usuario entra directo → esperar click
         document.addEventListener('click', startIntro);
     }
 }
+
+// Limpiar al descargar la página
+window.addEventListener('beforeunload', () => {
+    imageCache.clear();
+});
