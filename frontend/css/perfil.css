@@ -1,418 +1,500 @@
 /* ===========================================================
-Archivo: perfil.css
-----------------------------------------------------------
-Este archivo contiene:
+   🚀 ESTILOS OPTIMIZADOS V4 - RENDIMIENTO + DISEÑO PREMIUM
+   -----------------------------------------------------------
+   ✅ CSS optimizado para fluidez máxima
+   ✅ Personajes integrados dentro del contenedor
+   ✅ Colores morados perfectamente sincronizados
+   ✅ Sin efectos pesados innecesarios
+   =========================================================== */
 
-1. Reset básico y estilos generales del body
-2. Contenedores principales (.presentation-content-wrapper, .wrapper)
-3. Encabezados y títulos (.presentation-headline, .hero-main-headline, .info-headline)
-4. Botones principales y secundarios (.btn-start, .btn-start-duo, .btn-secondary-duo, .duo-button)
-5. Sección de videos (.videos-and-cta-container, .video-placeholder)
-6. Estilo tipo Duolingo (.duo-style-wrapper, .info-section)
-7. Botón flotante circular (.floating-button)
-8. Highlight boxes (.highlight-box)
-9. Responsive para tablets y móviles
------------------------------------------------------------
-Todos los elementos incluyen transiciones, sombras y
-gradientes para un estilo moderno, atractivo y responsivo.
-Fecha: [Fecha de creación o última edición]
-=========================================================== */
-
-/* ================== Reset básico y body ================== */
-body {
+/* ================== RESET Y BASE ================== */
+* {
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    width: 100%;
-    height: 100%;
+    box-sizing: border-box;
 }
 
-
-/* --- Presentation Page Specific Styles --- */
-.presentation-content-wrapper {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    height: 100%;
-    width: 100%;
-    padding: 20px;
-    gap: 40px;
-}
-
-.headline-and-button-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex-grow: 1;
-    width: 100%;
-}
-
-.presentation-headline{
-    font-size: 3.5em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: -100px;
-    line-height: 1.5;
-    position: static;
-    z-index: auto;
-}
-
-.presentation-headline .blue-text {
-    color: #5926e4;
-}
-
-.presentation-headline .yellow-text {
-    color: #FFC107;
-}
-
-.btn-start {
-    position: relative;
-    padding: 15px 20px;
-    background-color: #FFC107;
-    color: #333;
-    border: none;
-    border-radius: 50px;
-    font-weight: bold;
-    font-size: 0.7em;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    top: unset;
-    z-index: auto;
-    align-items: center;
-    justify-content: center;
-    left:30px;
-    display: flex;
-    margin-bottom:-1000px;
-}
-
-.btn-start:hover {
-    background-color: #e0a800;
-    transform: translateY(-4px);
-}
-
-.videos-and-cta-container {
-    display: flex;
-    justify-content: space-around;
-    align-items: flex-end;
-    width: 100%;
-    gap: 500px;
-    position: static;
-    bottom: unset;
-    left: unset;
-    padding: 0 20px;
-    z-index: auto;
-}
-
-.videos-and-cta-containerv2 {
-    display: flex;
-    justify-content: space-around;
-    align-items: flex-end;
-    width: 100%;
-    gap: -70px;
-    position: static;
-    bottom: unset;
-    left: unset;
-    padding: 0 20px;
-    z-index: auto;
-}
-
-.video-placeholder{
-    background-color: #ffffff;
-    border-radius: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #ffffff;
-}
-
-.video-placeholder .big {
-    right: 100px;
-    width: 450px;
-    height: 500px;
-}
-
-.video-placeholder .small {
-    width: 300px;
-    height: 350px;
-}
-
-.video-placeholder .supersmall{
-    width: 150px;
-    height: 200px;
-}
-
-.video-placeholder iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    object-fit: cover;
-}
-
-/* Estilo Duolingo */
 .duo-style-wrapper {
-  width: 100%;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.info-section {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 50px;
-  padding: 60px 10px;
-}
-
-.hero-section {
-    padding-top: 20px;
-    padding-bottom: 80px;
-    border-bottom: 2px solid #e5e5e5;
-}
-
-.info-section.reverse {
-  flex-direction: row-reverse;
-}
-
-.text-content, .image-content {
-  flex-basis: 48%;
-}
-
-.image-content img, .image-content video {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto;
-}
-
-.promo-video {
-    border-radius: 20px;
-    background-color: #f0f0f0;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-}
-
-.hero-main-headline {
-    font-size: 2.4em;
-    font-weight: bold;
-    color: #333;
-    line-height: 1.3;
-    margin-bottom: 25px;
-}
-
-.cta-text {
-    text-align: center;
-}
-
-.info-headline {
-  font-size: 2.2em;
-  font-weight: bold;
-  line-height: 1.2;
-  margin-bottom: 15px;
-}
-
-.info-description {
-  font-size: 1.1em;
-  line-height: 1.6;
-  color: #555;
-}
-
-.btn-start-duo, .btn-secondary-duo {
     width: 100%;
-    max-width: 320px;
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 12px;
-    font-size: 1em;
-    font-weight: bold;
-    text-transform: uppercase;
+    padding: 60px 20px;
+    background: #ffffff;
+    position: relative;
+}
+
+/* ================== CONTENEDOR PRINCIPAL - OPTIMIZADO ================== */
+.mode-container {
+    /* Gradiente morado premium sincronizado */
+    background: linear-gradient(135deg, 
+        #8B5CF6 0%,      /* Morado vibrante */
+        #7C3AED 25%,     /* Morado medio */
+        #6366F1 50%,     /* Morado-azul */
+        #4F46E5 75%,     /* Índigo */
+        #3B82F6 100%     /* Azul brillante */
+    );
+    
+    border-radius: 32px;
+    padding: 0;
+    margin: 50px auto;
+    max-width: 1100px;
+    width: 92%;
+    min-height: 320px;
+    
+    /* CRÍTICO: Personajes ahora DENTRO del contenedor */
+    overflow: hidden;
+    position: relative;
+    
+    /* Sombra optimizada - menos capas */
+    box-shadow: 
+        0 20px 50px rgba(124, 58, 237, 0.25),
+        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    
+    /* Transición suave GPU-acelerada */
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.4s ease;
+    transform: translateZ(0);
+    
     cursor: pointer;
-    border: none;
-    transition: all 0.2s ease;
+    border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
-.btn-start-duo {
-    background-color: #FFC107;
-    color: #333;
-    border-bottom: 4px solid #e0a800;
+/* ================== HOVER OPTIMIZADO ================== */
+.mode-container:hover {
+    /* Elevación sutil pero impactante */
+    transform: translateY(-12px) translateZ(0);
+    
+    /* Glow reducido pero visible */
+    box-shadow: 
+        0 0 60px rgba(139, 92, 246, 0.5),
+        0 25px 70px rgba(0, 0, 0, 0.25),
+        0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+    
+    border: 2px solid rgba(255, 255, 255, 0.4);
 }
 
-.btn-start-duo:hover {
-    background-color: #ffd44f;
+/* ================== EFECTO SHIMMER - OPTIMIZADO ================== */
+.mode-container::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -100%;
+    width: 80%;
+    height: 200%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.15),
+        transparent
+    );
+    transform: rotate(25deg);
+    transition: left 0.7s ease-out;
+    pointer-events: none;
+    z-index: 10;
 }
 
-.btn-start-duo:active {
-    transform: translateY(2px);
-    border-bottom: 2px solid #e0a800;
+.mode-container:hover::before {
+    left: 120%;
 }
 
-.btn-secondary-duo {
-    background-color: #fff;
-    color: #FFC107;
-    border: 2px solid #e5e5e5;
-    border-bottom: 4px solid #e5e5e5;
+/* ================== BADGE PREMIUM ================== */
+.mode-badge {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    background: linear-gradient(135deg, #FCD34D 0%, #F59E0B 100%);
+    color: #1F2937;
+    padding: 8px 20px;
+    border-radius: 24px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    z-index: 15;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
 }
 
-.btn-secondary-duo:hover {
-    background-color: #f7f7f7;
+/* ================== CONTENIDO INTERNO ================== */
+.mode-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 50px 50px;
+    gap: 60px;
+    position: relative;
+    z-index: 5;
 }
 
-.btn-secondary-duo:active {
-    transform: translateY(2px);
-    border-bottom: 2px solid #e5e5e5;
-}
-
-@media (max-width: 900px) {
-  .info-section, .info-section.reverse {
+/* ================== SECCIÓN DE TEXTO ================== */
+.mode-text {
+    flex: 1;
+    color: #ffffff;
+    display: flex;
     flex-direction: column;
-    text-align: center;
-    padding: 40px 10px;
-  }
-  
-  .info-section.reverse {
-      flex-direction: column-reverse;
-  }
-
-  .hero-main-headline, .info-headline {
-    font-size: 1.8em;
-  }    
-  
-duo-button {
-  width: 100%;
-  max-width: 320px;
-  padding: 15px;
-  margin-bottom: 15px;
-  border-radius: 12px;
-  font-size: 1em;
-  font-weight: bold;
-  text-transform: uppercase;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s ease;
-}
+    gap: 16px;
+    position: relative;
+    padding-left: 30px;
 }
 
-/* Estilos para los botones "texto de prueba" */
-.duo-button {
+/* Barra decorativa lateral */
+.mode-text::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 70%;
+    background: linear-gradient(180deg, 
+        rgba(255, 255, 255, 0.6) 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        rgba(255, 255, 255, 0.6) 100%
+    );
+    border-radius: 10px;
+}
+
+.mode-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.mode-icon {
+    font-size: 3rem;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
+}
+
+.mode-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin: 0;
+    text-shadow: 0 2px 15px rgba(0, 0, 0, 0.4);
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+}
+
+.mode-description {
+    font-size: 1.1rem;
+    opacity: 0.95;
+    line-height: 1.6;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    margin: 0;
+    max-width: 95%;
+    font-weight: 400;
+}
+
+/* ================== SECCIÓN DE VIDEO - INTEGRADA ================== */
+.mode-video {
+    flex: 0 0 380px;
+    position: relative;
+    overflow: hidden;
+    
+    /* Personajes DENTRO del contenedor */
+    transform: translateZ(0);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border-radius: 20px;
+    
+    /* Fondo transparente - el gradiente del contenedor se ve a través */
+    background: transparent;
+}
+
+.mode-container:hover .mode-video {
+    /* Efecto sutil de zoom */
+    transform: scale(1.05) translateZ(0);
+}
+
+/* Contenedor de animación integrado */
+.mode-video .animacion-duolingo {
     width: 100%;
-    max-width: 320px;
-    padding: 15px;
-    margin: 15px 0;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 20px;
+    
+    /* Sombra interna sutil */
+    filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.3));
+}
+
+.mode-video .animacion-duolingo img {
+    max-width: 100%;
+    height: auto;
+    display: block;
     border-radius: 12px;
-    font-size: 1em;
-    font-weight: bold;
-    text-transform: uppercase;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s ease;
-    background-color: #FFC107;
-    color: #333;
-    border-bottom: 4px solid #e0a800;
-    text-align: center;
-    display: inline-block;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    
+    /* Glow morado sincronizado */
+    filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.4));
+    transition: filter 0.3s ease;
 }
 
-/* Estilos para los botones "texto de prueba" */
-.duo-button {
-    width: 100%;
-    max-width: 320px;
-    padding: 15px;
-    margin: 15px 0;
-    border-radius: 12px;
-    font-size: 1em;
-    font-weight: bold;
-    text-transform: uppercase;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s ease;
-    background-color: #FFC107;
-    color: #333;
-    border-bottom: 4px solid #e0a800;
-    text-align: center;
-    display: inline-block;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+.mode-container:hover .mode-video .animacion-duolingo img {
+    /* Glow intenso al hover */
+    filter: drop-shadow(0 0 35px rgba(139, 92, 246, 0.6));
 }
 
-.duo-button:hover {
-    background-color: #ffd44f;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+/* ================== VARIANTES DE COLOR OPTIMIZADAS ================== */
+
+/* 🎮 MINIJUEGOS */
+.mode-container.minijuegos {
+    background: linear-gradient(135deg, 
+        #A855F7 0%,
+        #8B5CF6 30%,
+        #7C3AED 70%,
+        #3B82F6 100%
+    );
 }
 
-.duo-button:active {
-    transform: translateY(1px);
-    border-bottom: 2px solid #e0a800;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+.mode-container.minijuegos .mode-video {
+    background: linear-gradient(135deg, 
+        rgba(168, 85, 247, 0.3) 0%,
+        rgba(59, 130, 246, 0.2) 100%
+    );
 }
 
-/* Responsive para los botones */
-@media (max-width: 900px) {
-    .duo-button {
-        max-width: 280px;
-        padding: 12px;
-        font-size: 0.9em;
-    }
+/* 📝 EXÁMENES */
+.mode-container.examenes {
+    background: linear-gradient(135deg, 
+        #7C3AED 0%,
+        #6D28D9 30%,
+        #5B21B6 70%,
+        #1E40AF 100%
+    );
 }
 
-/* Botón flotante circular */
+.mode-container.examenes .mode-video {
+    background: linear-gradient(135deg, 
+        rgba(124, 58, 237, 0.3) 0%,
+        rgba(30, 64, 175, 0.2) 100%
+    );
+}
+
+/* 🎯 SIMULADOR */
+.mode-container.simulador {
+    background: linear-gradient(135deg, 
+        #A855F7 0%,
+        #9333EA 30%,
+        #7C3AED 70%,
+        #2563EB 100%
+    );
+}
+
+.mode-container.simulador .mode-video {
+    background: linear-gradient(135deg, 
+        rgba(168, 85, 247, 0.3) 0%,
+        rgba(37, 99, 235, 0.2) 100%
+    );
+}
+
+/* 🏆 RANKING */
+.mode-container.ranking {
+    background: linear-gradient(135deg, 
+        #9333EA 0%,
+        #7C3AED 30%,
+        #6366F1 70%,
+        #1D4ED8 100%
+    );
+}
+
+.mode-container.ranking .mode-video {
+    background: linear-gradient(135deg, 
+        rgba(147, 51, 234, 0.3) 0%,
+        rgba(29, 78, 216, 0.2) 100%
+    );
+}
+
+/* ⚔️ COMPETITIVO */
+.mode-container.competitivo {
+    background: linear-gradient(135deg, 
+        #7C3AED 0%,
+        #6D28D9 30%,
+        #4F46E5 70%,
+        #1E3A8A 100%
+    );
+}
+
+.mode-container.competitivo .mode-video {
+    background: linear-gradient(135deg, 
+        rgba(124, 58, 237, 0.3) 0%,
+        rgba(30, 58, 138, 0.2) 100%
+    );
+}
+
+/* 📚 DATOS */
+.mode-container.datos {
+    background: linear-gradient(135deg, 
+        #6366F1 0%,
+        #5B21B6 30%,
+        #4F46E5 70%,
+        #2563EB 100%
+    );
+}
+
+.mode-container.datos .mode-video {
+    background: linear-gradient(135deg, 
+        rgba(99, 102, 241, 0.3) 0%,
+        rgba(37, 99, 235, 0.2) 100%
+    );
+}
+
+/* ================== LAYOUT ALTERNADO ================== */
+.mode-container.reverse .mode-content {
+    flex-direction: row-reverse;
+}
+
+.mode-container.reverse .mode-text {
+    padding-left: 0;
+    padding-right: 30px;
+}
+
+.mode-container.reverse .mode-text::before {
+    left: auto;
+    right: 0;
+}
+
+/* ================== BOTÓN FLOTANTE ================== */
 .floating-button {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 60px;
-    height: 60px;
+    bottom: 40px;
+    right: 40px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
-    background-color: #FFC107;
-    color: #333;
-    border: none;
-    border-bottom: 4px solid #e0a800;
-    font-size: 1.5em;
+    background: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%);
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    font-size: 2rem;
     cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    box-shadow: 0 8px 30px rgba(139, 92, 246, 0.4);
+    transition: all 0.3s ease;
 }
 
 .floating-button:hover {
-    background-color: #ffd44f;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+    transform: scale(1.1);
+    box-shadow: 0 12px 45px rgba(139, 92, 246, 0.6);
 }
 
-.floating-button:active {
-    transform: translateY(1px);
-    border-bottom: 2px solid #e0a800;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-/* Responsive para móviles */
-@media (max-width: 768px) {
-    .floating-button {
-        width: 50px;
-        height: 50px;
-        font-size: 1.2em;
-        bottom: 15px;
-        right: 15px;
+/* ================== RESPONSIVE - TABLETS ================== */
+@media (max-width: 900px) {
+    .mode-content {
+        flex-direction: column !important;
+        text-align: center;
+        padding: 40px 30px;
+        gap: 30px;
+    }
+    
+    .mode-title {
+        font-size: 1.8rem;
+    }
+    
+    .mode-icon {
+        font-size: 2.5rem;
+    }
+    
+    .mode-description {
+        font-size: 1rem;
+        max-width: 100%;
+    }
+    
+    .mode-container {
+        min-height: 360px;
+        margin: 40px auto;
+    }
+    
+    .mode-video {
+        flex: 0 0 auto;
+        max-width: 320px;
+    }
+    
+    .mode-title-wrapper {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .mode-text {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    
+    .mode-text::before {
+        display: none;
     }
 }
 
-.highlight-box {
-    background: linear-gradient(to right, #0815c5, #0c0264);
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    display: inline-block; /* ajusta el ancho al contenido */
-    max-width: 400px; /* opcional: ancho máximo */
-    text-align: center;
+/* ================== RESPONSIVE - MÓVILES ================== */
+@media (max-width: 600px) {
+    .duo-style-wrapper {
+        padding: 40px 15px;
+    }
+    
+    .mode-content {
+        padding: 30px 25px;
+    }
+    
+    .mode-title {
+        font-size: 1.5rem;
+    }
+    
+    .mode-icon {
+        font-size: 2rem;
+    }
+    
+    .mode-description {
+        font-size: 0.95rem;
+    }
+    
+    .mode-container {
+        min-height: 320px;
+        margin: 30px auto;
+        border-radius: 24px;
+        width: 95%;
+    }
+    
+    .mode-video {
+        max-width: 280px;
+    }
+    
+    .mode-badge {
+        top: 18px;
+        left: 18px;
+        padding: 6px 14px;
+        font-size: 0.7rem;
+    }
+    
+    .floating-button {
+        width: 60px;
+        height: 60px;
+        bottom: 30px;
+        right: 30px;
+        font-size: 1.8rem;
+    }
 }
 
-.highlight-box .info-headline {
-    color: #333; /* cambia el texto a oscuro para que contraste */
+/* ================== OPTIMIZACIONES DE PERFORMANCE ================== */
+.mode-container,
+.mode-video,
+.animacion-duolingo {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: transform;
+}
+
+/* ================== ACCESIBILIDAD ================== */
+.mode-container:focus {
+    outline: 3px solid rgba(255, 255, 255, 0.6);
+    outline-offset: 4px;
+}
+
+/* Reduce movimiento para usuarios con preferencias */
+@media (prefers-reduced-motion: reduce) {
+    .mode-container,
+    .mode-video,
+    .animacion-duolingo,
+    .mode-icon,
+    .floating-button {
+        animation: none !important;
+        transition: none !important;
+    }
+    
+    .mode-container::before {
+        animation: none !important;
+    }
 }

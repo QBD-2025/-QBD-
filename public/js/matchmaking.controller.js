@@ -53,7 +53,6 @@ const dificultadActualEl = document.getElementById('dificultadActual');
 const btnQuieroApostar = document.getElementById('btnQuieroApostar');
 const negociacionContainer = document.getElementById('negociacionApuestaContainer');
 
-console.log('[DUELO INIT]: Portal iniciado para usuario:', user.id_usuario);
 
 // ================================================================
 // ✅ BOTÓN "QUIERO APOSTAR"
@@ -1659,29 +1658,55 @@ socket.on('duelo:desafioRechazado', ({ mensaje }) => {
 function renderizarRanking(container, jugadores) {
     container.innerHTML = '';
     
+    // ✅ VALIDACIÓN 1: Verificar que hay jugadores
     if (!jugadores || jugadores.length === 0) {
         container.innerHTML = '<p>No hay jugadores en este ranking.</p>';
         return;
     }
 
-    jugadores.forEach(jugador => {
-        if (jugador.id_usuario === user.id_usuario) return;
+    // ✅ VALIDACIÓN 2: Verificar que user existe
+    if (!user || !user.id_usuario) {
+        console.error('❌ ERROR: user.id_usuario no disponible en renderizarRanking');
+        container.innerHTML = '<p style="color: red;">Error: No se pudo cargar tu información de usuario.</p>';
+        return;
+    }
+
+    console.log(`[RANKING]: Renderizando ${jugadores.length} jugadores`);
+    console.log(`[RANKING]: Usuario actual: ${user.id_usuario} (${user.username})`);
+
+    jugadores.forEach((jugador, index) => {
+        // ✅ VALIDACIÓN 3: Verificar que el jugador tiene id_usuario
+        if (!jugador || !jugador.id_usuario) {
+            console.warn(`[RANKING]: Jugador en índice ${index} sin id_usuario:`, jugador);
+            return; // Saltar este jugador
+        }
+
+        // Filtrar jugador actual
+        if (jugador.id_usuario === user.id_usuario) {
+            console.log(`[RANKING]: Filtrando jugador actual (${user.id_usuario})`);
+            return;
+        }
 
         const item = document.createElement('div');
         item.className = 'player-item';
         item.innerHTML = `
             <div style="display: flex; align-items: center; gap: 10px;">
-                <img src="${jugador.foto_perfil || '/uploads/default_avatar.png'}" alt="Avatar" class="avatar">
+                <img src="${jugador.foto_perfil || '/uploads/default_avatar.png'}" 
+                     alt="Avatar" 
+                     class="avatar"
+                     onerror="this.src='/uploads/default_avatar.png'">
                 <div class="player-info">
-                    <strong>${jugador.username}</strong>
-                    <p>${jugador.puntos} puntos</p>
+                    <strong>${jugador.username || 'Usuario'}</strong>
+                    <p>${jugador.puntos || 0} puntos</p>
                 </div>
             </div>
             <div class="player-actions">
-                <button class="btn-buscar" onclick="buscarJugadorEnLobby(${jugador.id_usuario}, '${jugador.username}')">
+                <button class="btn-buscar" 
+                        onclick="buscarJugadorEnLobby(${jugador.id_usuario}, '${(jugador.username || '').replace(/'/g, "\\'")}')">
                     Invitar Lobby 👤
                 </button>
-                <button class="btn-notificar" onclick="enviarDesafioBD(${jugador.id_usuario}, '${jugador.username}', this)">
+                <button class="btn-notificar" 
+                        onclick="enviarDesafioBD(${jugador.id_usuario}, '${(jugador.username || '').replace(/'/g, "\\'")}', this)">
                     Invitar Notif 📧
                 </button>
             </div>
@@ -1689,17 +1714,56 @@ function renderizarRanking(container, jugadores) {
         
         container.appendChild(item);
     });
+
+    console.log(`[RANKING]: ✅ Renderizado completado`);
 }
 
 async function cargarRankingGlobal() {
+    const container = document.getElementById('rankingGlobalContainer');
+    
+    if (!container) {
+        console.error('❌ ERROR: rankingGlobalContainer no encontrado');
+        return;
+    }
+
     try {
+        container.innerHTML = '<p style="text-align: center;">⏳ Cargando ranking...</p>';
+        
+        console.log('[RANKING GLOBAL]: Iniciando carga...');
+        
         const response = await fetch('/api/ranking/global/com');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
         const jugadores = await response.json();
-        renderizarRanking(document.getElementById('rankingGlobalContainer'), jugadores);
+        
+        console.log('[RANKING GLOBAL]: Datos recibidos:', {
+            totalJugadores: jugadores.length,
+            primerosJugadores: jugadores.slice(0, 3).map(j => ({
+                id_usuario: j.id_usuario,
+                username: j.username,
+                puntos: j.puntos
+            }))
+        });
+        
+        renderizarRanking(container, jugadores);
+        
     } catch (error) {
-        console.error('Error cargando ranking global:', error);
+        console.error('[RANKING GLOBAL ERROR]:', error);
+        container.innerHTML = `
+            <p style="color: red; text-align: center;">
+                ❌ Error al cargar ranking: ${error.message}
+                <br>
+                <button onclick="cargarRankingGlobal()" style="margin-top: 10px;">
+                    🔄 Reintentar
+                </button>
+            </p>
+        `;
     }
 }
+
 
 async function cargarRankingCarrera(idCarrera) {
     if (!idCarrera) {

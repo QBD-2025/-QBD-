@@ -39,9 +39,9 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e3a8a 100%);
+    background: linear-gradient(135deg, white whitea 100%);
     min-height: 100vh;
-    color: var(--blanco);
+    color: var(--morado-principal);
     overflow-x: hidden;
 }
 

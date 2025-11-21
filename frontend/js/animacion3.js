@@ -24,19 +24,19 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ===== CONFIGURACIÓN DE FRAMES =====
-  const framesPerStep = 3; // Cada cuántos frames reales se actualiza la imagen
+  const framesPerStep = 2; // Cada cuántos frames reales se actualiza la imagen
   const introStartFrameNum = 1; // Primer frame de la animación
-  const introEndFrameNum = 189; // Último frame de la animación
+  const introEndFrameNum = 150; // Último frame de la animación
   const introTotalImages = Math.floor((introEndFrameNum - introStartFrameNum) / framesPerStep) + 1; 
   // Total de imágenes únicas que se mostrarán
 
-  const framePath = '/media/video_stuart_octavio/Video_stuart_octavio_'; // Ruta base de las imágenes
+  const framePath = '/media/video_stuart_octavio/frame-'; // Ruta base de las imágenes
   const frameExtension = '.webp'; // Extensión de los archivos de imagen
 
   // ===== FUNCIONES AUXILIARES =====
   // Devuelve la ruta completa de un frame según su número, con padding de ceros
   function getFramePath(frameNumber) {
-    const paddedNumber = String(frameNumber).padStart(6, '0'); // Ejemplo: 000001.webp
+    const paddedNumber = String(frameNumber).padStart(0, '0'); // Ejemplo: 000001.webp
     return `${framePath}${paddedNumber}${frameExtension}`;
   }
 
