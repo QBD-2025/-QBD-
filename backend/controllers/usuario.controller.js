@@ -182,14 +182,16 @@ async function verHistorial(req, res) {
   }
 }
 
-// Ver detalle de un examen específico
 async function verDetalleExamen(req, res) {
   try {
     const { id_examen } = req.params;
     const id_usuario = req.session.user.id_usuario;
 
+    // 1️⃣ OBTENER DATOS GENERALES DEL EXAMEN
     const [detalles] = await db.query(queries.getDetalleExamen, [id_usuario, id_examen]);
-    if (detalles.length === 0) return res.status(404).send('Examen no encontrado o no pertenece a este usuario.');
+    if (detalles.length === 0) {
+      return res.status(404).send('Examen no encontrado o no pertenece a este usuario.');
+    }
 
     const examenDetalle = {
       ...detalles[0],
@@ -197,7 +199,57 @@ async function verDetalleExamen(req, res) {
       fecha: new Date(detalles[0].fecha).toLocaleString('es-MX', { dateStyle: 'long', timeStyle: 'short' })
     };
 
-    res.render('historialDetalle', { layout: 'main', title: 'Detalle del Examen', examen: examenDetalle });
+    // 2️⃣ OBTENER LAS PREGUNTAS Y RESPUESTAS DEL HISTORIAL
+    const [historial] = await db.query(`
+      SELECT h.id_pregunta, h.id_respuesta AS id_respuesta_usuario, h.puntos
+      FROM historial h
+      WHERE h.id_examen = ? AND h.id_usuario = ?
+      ORDER BY h.id_pregunta
+    `, [id_examen, id_usuario]);
+
+    console.log('📊 Historial encontrado:', historial.length, 'registros');
+
+    // 3️⃣ CONSTRUIR ARRAY DE PREGUNTAS CON DETALLES
+    const preguntas = [];
+    
+    for (const h of historial) {
+      // Obtener texto de la pregunta
+      const [preguntaRow] = await db.query(
+        'SELECT pregunta, retroalimentacion FROM pregunta WHERE id_pregunta = ?',
+        [h.id_pregunta]
+      );
+
+      if (preguntaRow.length === 0) continue;
+
+      // Obtener todas las respuestas de esta pregunta
+      const [respuestas] = await db.query(`
+        SELECT id_respuesta, respuesta, correcta
+        FROM respuesta
+        WHERE id_pregunta = ?
+      `, [h.id_pregunta]);
+
+      const correcta = respuestas.find(r => r.correcta === 1);
+      const seleccionada = respuestas.find(r => r.id_respuesta === h.id_respuesta_usuario);
+
+      preguntas.push({
+        pregunta: preguntaRow[0].pregunta,
+        retroalimentacion: preguntaRow[0].retroalimentacion,
+        textoSeleccionado: seleccionada?.respuesta || "No respondió",
+        esCorrecta: h.puntos === 1,
+        textoCorrecto: correcta?.respuesta || "Sin respuesta correcta"
+      });
+    }
+
+    console.log('✅ Preguntas procesadas:', preguntas.length);
+
+    // 4️⃣ RENDERIZAR CON AMBOS DATOS
+    res.render('historialDetalle', { 
+      layout: 'main', 
+      title: 'Detalle del Examen', 
+      examen: examenDetalle,
+      preguntas: preguntas  // ✅ Array separado
+    });
+
   } catch (error) {
     console.error('Error al cargar el detalle del examen:', error);
     res.status(500).send('Error al cargar el examen');
