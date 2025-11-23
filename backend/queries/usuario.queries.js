@@ -26,7 +26,7 @@ const updateUsuarioConAvatar = `
 // Obtener historial de exámenes de un usuario con materia y fecha
 const getHistorialExamenes = `
     SELECT ue.id_examen, ue.obtenido, ue.maximo, ue.porcentaje, ue.fecha_inicio AS fecha, 
-           m.descripcion AS materia 
+    m.descripcion AS materia 
     FROM usuario_examen ue 
     LEFT JOIN examen e ON ue.id_examen = e.id_examen 
     LEFT JOIN materias m ON e.id_materia = m.id_materia 
@@ -37,7 +37,7 @@ const getHistorialExamenes = `
 // Obtener detalle de un examen específico de un usuario
 const getDetalleExamen = `
     SELECT ue.id_examen, ue.obtenido, ue.maximo, ue.porcentaje, ue.fecha_inicio AS fecha, 
-           m.descripcion AS materia 
+    m.descripcion AS materia 
     FROM usuario_examen ue 
     LEFT JOIN examen e ON ue.id_examen = e.id_examen 
     LEFT JOIN materias m ON e.id_materia = m.id_materia 

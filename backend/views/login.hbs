@@ -63,6 +63,9 @@
                 Continua con Google
             </button>
         </a>
+        {{#if mensaje}}
+          <div class="error">{{mensaje}}</div>
+        {{/if}}
       </form>
     </div> <!-- Cierre de sección de formulario -->
   </div> <!-- Cierre del contenedor principal -->

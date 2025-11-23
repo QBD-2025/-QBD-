@@ -90,7 +90,6 @@ function renderizarRanking(container, jugadores) {
                 <div class="player-name">${jugador.username} ${esYo ? '(Tú)' : ''}</div>
                 <div class="player-stats">
                     <span class="stat-item">📊 Posición #${i + 1}</span>
-                    ${jugador.id_carrera ? '<span class="stat-item">🎓 Misma carrera</span>' : '<span class="stat-item">⚠️ Sin carrera</span>'}
                 </div>
             </div>
             <div class="score-display">${jugador.puntos} pts</div>

@@ -145,9 +145,104 @@ console.log('[MIDDLEWARE]: ✅ req.io configurado en middleware');
 
 // ------------------ Routers ------------------
 // ════════════════════════════════════════════════════════════════
-// ✅ ORDEN CORRECTO DE ROUTERS EN configApp.js
+// 🔍 SOLUCIÓN COMPLETA DE DEBUG + FIX (CORREGIDA)
+// Colocar en configApp.js después de la línea 134
 // ════════════════════════════════════════════════════════════════
 
+// 1️⃣ MIDDLEWARE DE DEBUG MEJORADO
+app.use((req, res, next) => {
+    const path = req.originalUrl;
+    
+    // Solo loguear rutas relevantes
+    if (path.includes('/examen') || path.includes('/admin') || path.includes('/resultados')) {
+        console.log('\n═══════════════════════════════════════════════════════════');
+        console.log(`[🔍 REQUEST]: ${req.method} ${path}`);
+        console.log(`[🔍 USUARIO]:`, {
+            existe: !!req.session.user,
+            username: req.session.user?.username || 'N/A',
+            id_usuario: req.session.user?.id_usuario || 'N/A',
+            id_tp_usuario: req.session.user?.id_tp_usuario || 'N/A',
+            es_admin: req.session.user?.id_tp_usuario === 3
+        });
+        console.log(`[🔍 HEADERS]:`, {
+            referer: req.get('referer') || 'N/A',
+            'user-agent': req.get('user-agent')?.substring(0, 50) + '...'
+        });
+    }
+    next();
+});
+
+// 2️⃣ INTERCEPTOR DE REDIRECTS
+const originalRedirect = express.response.redirect;
+
+express.response.redirect = function(statusOrUrl, url) {
+    // Manejar redirect(url) y redirect(status, url)
+    const targetUrl = typeof statusOrUrl === 'string' ? statusOrUrl : url;
+    const status = typeof statusOrUrl === 'number' ? statusOrUrl : 302;
+    
+    const requestPath = this.req.originalUrl;
+    
+    // Detectar redirects sospechosos
+    const isExamenRequest = requestPath.includes('/examen') || requestPath.includes('/resultados');
+    const isRedirectingToAdmin = targetUrl && targetUrl.includes('/admin');
+    
+    if (isExamenRequest && isRedirectingToAdmin) {
+        console.error('\n❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌');
+        console.error('❌ [REDIRECT INCORRECTO DETECTADO]');
+        console.error('❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌');
+        console.error(`❌ Ruta origen: ${requestPath}`);
+        console.error(`❌ Ruta destino: ${targetUrl}`);
+        console.error(`❌ Usuario: ${this.req.session.user?.username || 'N/A'}`);
+        console.error(`❌ Stack trace completo:`);
+        console.error(new Error().stack);
+        console.error('❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌\n');
+        
+        // 🚨 BLOQUEAR EL REDIRECT INCORRECTO Y MOSTRAR ERROR
+        return this.status(500).send(`
+            <h1>🚨 Error detectado por sistema de debugging</h1>
+            <p><strong>Intentó redirigir de:</strong> ${requestPath}</p>
+            <p><strong>Hacia:</strong> ${targetUrl}</p>
+            <p><strong>Usuario:</strong> ${this.req.session.user?.username || 'N/A'}</p>
+            <hr>
+            <p>Este error fue capturado para debugging. Revisa la consola del servidor.</p>
+            <button onclick="history.back()">← Volver</button>
+        `);
+    }
+    
+    // Si no es un redirect problemático, continuar normalmente
+    if (typeof statusOrUrl === 'string') {
+        return originalRedirect.call(this, statusOrUrl);
+    } else {
+        return originalRedirect.call(this, statusOrUrl, url);
+    }
+};
+
+// 3️⃣ MIDDLEWARE PROTECTOR DE RUTAS DE EXAMEN (SINTAXIS CORREGIDA)
+app.use((req, res, next) => {
+    const path = req.originalUrl;
+    
+    // Verificar si es una ruta de examen o resultados
+    if (path.startsWith('/examen') || path.startsWith('/resultados')) {
+        console.log('[🛡️ PROTECTOR]: Ruta protegida detectada:', path);
+        
+        // Si no hay usuario, redirigir a login (NO a admin)
+        if (!req.session.user) {
+            console.log('[🛡️ PROTECTOR]: Usuario no autenticado, redirigiendo a /login');
+            return res.redirect('/login');
+        }
+        
+        console.log('[🛡️ PROTECTOR]: Usuario autenticado, permitiendo acceso');
+    }
+    
+    next();
+});
+
+console.log('\n═══════════════════════════════════════════════════════════');
+console.log('[DEBUG SYSTEM]: ✅ Sistema de debugging completo instalado');
+console.log('[DEBUG SYSTEM]: ✅ Interceptor de redirects activo');
+console.log('[DEBUG SYSTEM]: ✅ Protector de rutas de examen activo');
+console.log('[DEBUG SYSTEM]: 🔒 Redirects incorrectos serán BLOQUEADOS');
+console.log('═══════════════════════════════════════════════════════════\n');
 // ------------------ Routers ------------------
 const adminR = require('../routes/admin.router.js');
 const examenR = require('../routes/examen.router.js');

@@ -5,130 +5,337 @@ Incluye contenedor principal, paneles, logos, títulos,
 botones y toggle de contraseña
 Fecha: [Fecha de creación o última edición]
    ============================== */
+:root {
+    --color-primary-dark: #0515a8;
+    --color-primary-darker: #09012c;
+    --color-accent: #ffc107;
+    --color-text-dark: #212529;
+    --color-background-light: #fbfafb;
+    --color-white: #ffffff;
+    --shadow-soft: 0 2px 5px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --shadow-logo: 0 0 10px rgba(0, 0, 0, 0.3);
+    --spacing-xs: 0.625rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.25rem;
+    --spacing-lg: 1.875rem;
+    --spacing-xl: 2.5rem;
+    --border-radius-sm: 0.5rem;
+    --border-radius-md: 0.9375rem;
+    --transition-base: all 0.3s ease;
+    --font-size-base: 1.05rem;
+    --font-size-large: 2.5em;
+    --font-size-icon: 1.125rem;
+}
 
-/* --- Fondo y contenedor principal --- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 body {
-    /* Fondo degradado oscuro, centrado vertical y horizontal */
-    background: linear-gradient(-135deg, #0515a8, #09012c);
+    background: linear-gradient(-135deg, var(--color-primary-dark), var(--color-primary-darker));
     min-height: 100vh;
     margin: 0;
-    padding: 1rem;
+    padding: var(--spacing-sm);
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100vw;
-    height: 100vh;
-    overflow: hidden;  /* Evita que aparezca scroll */
+    overflow-y: auto;
 }
 
-/* --- Contenedor principal de registro --- */
 .registration-container {
     display: flex;
-    width: 80vw;
-    height: 88vh;
+    width: min(80vw, 1400px);
+    min-height: 88vh;
+    max-height: 900px;
     border-radius: 0;
-    overflow: hidden;
+    overflow: visible;
     box-shadow: none;
     position: relative;
 }
 
-/* --- Panel izquierdo con logos y títulos --- */
-.registration-left-panel {
-    flex: 0.7;  /* Ocupa 70% del ancho del contenedor */
+.registration-left-panel,
+.registration-left-panel2 {
+    flex: 0.7;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
     position: relative;
+    padding: var(--spacing-md);
 }
 
-/* Eliminamos padding no deseado para alinear contenido */
-.registration-left-panel, 
-.registration-left-panel2 {
-    padding: 0 !important;
-}
-
-/* Logo principal */
 .registration-logo {
-    width: 450px;
+    width: min(450px, 90%);
     height: auto;
-    max-width: 100%; /* No excede el ancho del contenedor */
-    margin-bottom: 30px;
-    filter: drop-shadow(0 0 10px rgba(0,0,0,0.3));
-    z-index: 2; /* Se asegura que esté sobre el fondo */
-}
-
-/* Logo secundario */
-.registration-logo2 {
-    width: 350px;
-    height: auto;
-    max-width: 100%;
-    margin: 0 auto 30px; /* Centrado horizontal y margen inferior */
-    filter: drop-shadow(0 0 10px rgba(0,0,0,0.3));
+    margin-bottom: var(--spacing-lg);
+    filter: drop-shadow(var(--shadow-logo));
     z-index: 2;
 }
 
-/* Título de la página */
+.registration-logo2 {
+    width: min(350px, 80%);
+    height: auto;
+    margin: 0 auto var(--spacing-lg);
+    filter: drop-shadow(var(--shadow-logo));
+    z-index: 2;
+}
+
 .registration-title {
-    color: white;
-    font-size: 2.5em;
-    font-weight: bold;
+    color: var(--color-white);
+    font-size: clamp(1.5rem, 4vw, var(--font-size-large));
+    font-weight: 700;
     text-transform: uppercase;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-    margin: 0 20px; /* Separación horizontal del borde */
+    margin: 0 var(--spacing-md);
     z-index: 2;
+    line-height: 1.2;
 }
 
-/* Fondo decorativo del panel izquierdo */
-.registration-left-panel::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1; /* Debajo de los logos y título */
-}
-
-/* --- Panel derecho con formulario --- */
 .registration-right-panel {
-    flex: 0.6;  /* Ocupa 60% del ancho del contenedor */
-    background-color: #fbfafb;
-    padding: 40px;
+    flex: 0.6;
+    background-color: var(--color-background-light);
+    padding: var(--spacing-xl);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
-    border-radius: 15px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    margin: 20px;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-medium);
+    margin: var(--spacing-md);
     z-index: 2;
+    overflow-y: auto;
 }
 
-/* Icono para mostrar/ocultar contraseña */
+.welcome-headline {
+    color: var(--color-text-dark);
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-lg);
+    text-transform: uppercase;
+}
+
+.form-group {
+    width: 100%;
+    margin-bottom: var(--spacing-md);
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--color-text-dark);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-base);
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1);
+}
+
 .password-toggle-icon {
     position: absolute;
-    right: 10px;
+    right: var(--spacing-xs);
     top: 50%;
     transform: translateY(-50%);
     cursor: pointer;
-    font-size: 18px; /* Ajustable según necesidad */
-    user-select: none; /* Evita que el texto se seleccione */
+    font-size: var(--font-size-icon);
+    user-select: none;
+    color: var(--color-text-dark);
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
 }
 
-/* Botón de envío del formulario */
-button[type="submit"] {
+.password-toggle-icon:hover {
+    opacity: 1;
+}
+
+.password-toggle-icon:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+#error-mensaje {
+    display: block;
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-bottom: var(--spacing-sm);
+    min-height: 1.25rem;
+}
+
+button[type="submit"],
+.button {
     width: 100%;
-    padding: 14px;
-    background-color: #FFC107; /* Color amarillo distintivo */
-    color: #212529;
+    padding: 0.875rem;
+    background-color: var(--color-accent);
+    color: var(--color-text-dark);
     border: none;
-    border-radius: 8px;
-    font-size: 1.05rem;
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-base);
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s; /* Animación suave al hover */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: var(--transition-base);
+    box-shadow: var(--shadow-soft);
+    margin-bottom: var(--spacing-md);
+}
+
+button[type="submit"]:hover,
+.button:hover {
+    background-color: #ffb300;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+button[type="submit"]:active,
+.button:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-soft);
+}
+
+button[type="submit"]:focus-visible,
+.button:focus-visible {
+    outline: 2px solid var(--color-primary-dark);
+    outline-offset: 2px;
+}
+
+button[type="submit"]:disabled,
+.button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.login-link {
+    font-size: 0.9rem;
+    color: var(--color-text-dark);
+    margin-top: var(--spacing-sm);
+}
+
+.login-link a {
+    color: var(--color-primary-dark);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+button[type="button"] {
+    background-color: white;
+    color: #444;
+    border: 1px solid #ccc;
+    border-radius: var(--border-radius-sm);
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--spacing-md);
+    width: 100%;
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+button[type="button"]:hover {
+    background-color: #f8f9fa;
+    box-shadow: var(--shadow-soft);
+}
+
+button[type="button"] img {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+@media (max-width: 1024px) {
+    .registration-container {
+        width: 90vw;
+        min-height: auto;
+        flex-direction: column;
+    }
+    
+    .registration-left-panel,
+    .registration-left-panel2,
+    .registration-right-panel {
+        flex: 1;
+        width: 100%;
+    }
+    
+    .registration-logo {
+        width: min(300px, 80%);
+    }
+    
+    .registration-logo2 {
+        width: min(250px, 70%);
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 0.5rem;
+    }
+    
+    .registration-right-panel {
+        padding: var(--spacing-md);
+        margin: var(--spacing-sm);
+    }
+    
+    .registration-title {
+        font-size: clamp(1.25rem, 5vw, 2rem);
+    }
+    
+    .welcome-headline {
+        font-size: 1.5rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+@media (prefers-contrast: high) {
+    button[type="submit"],
+    .button {
+        border: 2px solid var(--color-text-dark);
+    }
+    
+    .password-toggle-icon {
+        opacity: 1;
+    }
 }

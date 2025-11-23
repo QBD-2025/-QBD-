@@ -18,6 +18,7 @@ Fecha: [Fecha de creación o última edición]
                     VARIABLES GLOBALES
 ----------------------------------------------------------- */
 :root {
+  /* TEMA CLARO */
   --primary: #4361ee;
   --secondary: #3a0ca3;
   --accent: #f72585;
@@ -30,6 +31,42 @@ Fecha: [Fecha de creación o última edición]
   --border-radius: 12px;
   --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   --transition: all 0.3s ease;
+  
+  /* Colores adicionales tema claro */
+  --bg-body: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --page-bg: rgba(255, 255, 255, 0.95);
+  --card-bg: white;
+  --text-color: #212529;
+  --header-bg: #4361ee;
+  --panel-bg: #f8f9fa;
+  --cell-bg: white;
+  --cell-hover: #dee2e6;
+  --chat-bg: #f8f9fa;
+}
+
+[data-theme="dark"] {
+  /* TEMA OSCURO */
+  --primary: #6c00ff;
+  --secondary: #7a21f8;
+  --accent: #ff4081;
+  --light: #1a1a2e;
+  --dark: #f8f9fa;
+  --success: #00e5ff;
+  --danger: #ff5252;
+  --warning: #ffb74d;
+  --info: #651fff;
+  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  
+  /* Colores adicionales tema oscuro */
+  --bg-body: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 100%);
+  --page-bg: rgba(26, 26, 46, 0.95);
+  --card-bg: #1e1e3c;
+  --text-color: #f8f9fa;
+  --header-bg: #6c00ff;
+  --panel-bg: #2d2b55;
+  --cell-bg: #2d2b55;
+  --cell-hover: #3a3785;
+  --chat-bg: #2d2b55;
 }
 
 /* ===========================================================
@@ -43,12 +80,13 @@ Fecha: [Fecha de creación o última edición]
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: var(--dark);
+  background: var(--bg-body);
+  color: var(--text-color);
   line-height: 1.6;
   min-height: 100vh;
   padding: 20px;
   padding-top: 100px; /* Espacio superior para el header */
+  transition: var(--transition);
 }
 
 /* ===========================================================
@@ -57,10 +95,11 @@ body {
 .page {
   max-width: 1600px;
   margin: 0 auto;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--page-bg);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
   overflow: hidden;
+  transition: var(--transition);
 }
 
 /* ===========================================================
@@ -71,8 +110,9 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  background: var(--primary);
+  background: var(--header-bg);
   color: white;
+  transition: var(--transition);
 }
 
 .title {
@@ -121,23 +161,25 @@ body {
                       JUEGO / TABLERO
 ----------------------------------------------------------- */
 .game.card {
-  background: white;
+  background: var(--card-bg);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  transition: var(--transition);
 }
 
 .status.panel {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--light);
+  background: var(--panel-bg);
   padding: 15px;
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
+  transition: var(--transition);
 }
 
 .small {
@@ -171,6 +213,9 @@ body {
   padding: 10px;
   border-radius: var(--border-radius);
   border: 1px solid #ced4da;
+  background: var(--card-bg);
+  color: var(--text-color);
+  transition: var(--transition);
 }
 
 .controls button {
@@ -206,10 +251,11 @@ body {
   grid-template-rows: repeat(14, 35px);
   gap: 3px;
   margin: 0 auto;
-  background: #e9ecef;
+  background: var(--panel-bg);
   padding: 15px;
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
+  transition: var(--transition);
 }
 
 .cell {
@@ -218,7 +264,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: white;
+  background: var(--cell-bg);
   border-radius: 5px;
   font-weight: bold;
   font-size: 18px;
@@ -226,10 +272,11 @@ body {
   user-select: none;
   transition: var(--transition);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: var(--text-color);
 }
 
 .cell:hover {
-  background: #dee2e6;
+  background: var(--cell-hover);
   transform: scale(1.05);
 }
 
@@ -285,10 +332,11 @@ body {
 }
 
 #voting-panel {
-  background: var(--light);
+  background: var(--panel-bg);
   padding: 20px;
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
+  transition: var(--transition);
 }
 
 #voting-panel h4 {
@@ -305,10 +353,11 @@ body {
   font-size: 32px;
   font-weight: 700;
   color: var(--primary);
-  background: var(--light);
+  background: var(--panel-bg);
   padding: 10px;
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
+  transition: var(--transition);
 }
 
 /* ===========================================================
@@ -321,7 +370,7 @@ body {
 }
 
 .player-board {
-  background: white;
+  background: var(--card-bg);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
   padding: 15px;
@@ -342,7 +391,7 @@ body {
   align-items: center;
   margin-bottom: 15px;
   padding-bottom: 10px;
-  border-bottom: 1px solid #dee2e6;
+  border-bottom: 1px solid var(--panel-bg);
 }
 
 .player-name {
@@ -380,10 +429,11 @@ body {
 }
 
 .panel.card {
-  background: white;
+  background: var(--card-bg);
   border-radius: var(--border-radius);
   box-shadow: var(--box-shadow);
   padding: 20px;
+  transition: var(--transition);
 }
 
 .panel h3 {
@@ -404,13 +454,15 @@ body {
 .clues li {
   padding: 10px;
   border-radius: var(--border-radius);
-  background: var(--light);
+  background: var(--panel-bg);
   transition: var(--transition);
+  color: var(--text-color);
 }
 
 .clues li.done {
-  background: #d1e7dd;
+  background: var(--success);
   text-decoration: line-through;
+  color: white;
 }
 
 .clues .word {
@@ -435,19 +487,22 @@ body {
   flex: 1;
   overflow-y: auto;
   padding: 10px;
-  background: var(--light);
+  background: var(--chat-bg);
   border-radius: var(--border-radius);
   margin-bottom: 15px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  transition: var(--transition);
 }
 
 .msg {
   padding: 10px;
   border-radius: var(--border-radius);
-  background: white;
+  background: var(--card-bg);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: var(--text-color);
+  transition: var(--transition);
 }
 
 .msg .u {
@@ -463,8 +518,11 @@ body {
 #chatInput {
   flex: 1;
   padding: 12px;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--panel-bg);
   border-radius: var(--border-radius);
+  background: var(--card-bg);
+  color: var(--text-color);
+  transition: var(--transition);
 }
 
 .chat-send {
@@ -497,8 +555,10 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background: var(--light);
+  background: var(--panel-bg);
   border-radius: var(--border-radius);
+  color: var(--text-color);
+  transition: var(--transition);
 }
 
 .actions {
@@ -547,13 +607,15 @@ body {
 }
 
 .results-content {
-  background: white;
+  background: var(--card-bg);
   padding: 30px;
   border-radius: var(--border-radius);
   text-align: center;
   max-width: 600px;
   width: 90%;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  color: var(--text-color);
+  transition: var(--transition);
 }
 
 .results-title {
@@ -570,7 +632,7 @@ body {
 .result-player {
   padding: 20px;
   border-radius: var(--border-radius);
-  background: var(--light);
+  background: var(--panel-bg);
   transition: var(--transition);
 }
 
@@ -601,6 +663,35 @@ body {
 }
 
 /* ===========================================================
+                      BOTÓN TOGGLE TEMA
+----------------------------------------------------------- */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+  background: var(--secondary);
+}
+
+/* ===========================================================
+>>>>>>> main
                       RESPONSIVE
 ----------------------------------------------------------- */
 @media (max-width: 1200px) {
@@ -639,3 +730,11 @@ body {
       font-size: 18px;
   }
 }
+  
+  .theme-toggle {
+      width: 50px;
+      height: 50px;
+      font-size: 1.2rem;
+      top: 15px;
+      right: 15px;
+  }

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 17-11-2025 a las 09:16:27
+-- Tiempo de generación: 23-11-2025 a las 01:55:39
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: `qbd`
+-- Base de datos: `quebuendato`
 --
 
 -- --------------------------------------------------------
@@ -307,6 +307,14 @@ CREATE TABLE `duelos` (
   `respuestas_oponente` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `duelos`
+--
+
+INSERT INTO `duelos` (`id_duelo`, `id_retador`, `id_defensor`, `materia`, `fecha_inicio`, `fecha_limite`, `respondido_retador`, `respondido_oponente`, `ganador`, `estado_retador`, `estado_defensor`, `fecha_abandono`, `id_usuario_abandono`, `razon_abandono`, `estado`, `ganador_id`, `puntaje_retador`, `puntaje_oponente`, `respuestas_retador`, `respuestas_oponente`) VALUES
+('sala_6ae2d2fd-cc8e-4b1b-8ebe-90a72437fef5', 20, 16, NULL, '2025-11-22 17:03:12', '2025-11-24 17:03:12', 1, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'finalizado', NULL, 0, 0, NULL, NULL),
+('sala_6b8ce9a1-50e6-45e4-a0a5-513d2f77a1c0', 16, 20, NULL, '2025-11-22 17:11:16', '2025-11-24 17:11:16', 1, 1, NULL, 'activo', 'activo', NULL, NULL, NULL, 'finalizado', NULL, 0, 0, NULL, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -319,6 +327,22 @@ CREATE TABLE `duelos_preguntas` (
   `id_pregunta` int(11) NOT NULL,
   `orden` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `duelos_preguntas`
+--
+
+INSERT INTO `duelos_preguntas` (`id_duelo_pregunta`, `id_duelo`, `id_pregunta`, `orden`) VALUES
+(351, 0, 800, 1),
+(352, 0, 804, 2),
+(353, 0, 1074, 3),
+(354, 0, 1155, 4),
+(355, 0, 1111, 5),
+(356, 0, 784, 6),
+(357, 0, 1063, 7),
+(358, 0, 1048, 8),
+(359, 0, 797, 9),
+(360, 0, 869, 10);
 
 -- --------------------------------------------------------
 
@@ -335,6 +359,29 @@ CREATE TABLE `duelos_respuestas` (
   `correcta` tinyint(1) DEFAULT NULL,
   `fecha_respuesta` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `duelos_respuestas`
+--
+
+INSERT INTO `duelos_respuestas` (`id_respuesta_duelo`, `id_duelo`, `id_usuario`, `id_pregunta`, `id_respuesta`, `correcta`, `fecha_respuesta`) VALUES
+(63, 0, 20, 247, 1067, NULL, '2025-11-22 17:11:40'),
+(64, 0, 20, 263, 1130, NULL, '2025-11-22 17:11:40'),
+(65, 0, 20, 1110, 4519, NULL, '2025-11-22 17:11:40'),
+(66, 0, 20, 1111, 4521, NULL, '2025-11-22 17:11:40'),
+(67, 0, 20, 1133, 4611, NULL, '2025-11-22 17:11:40'),
+(68, 0, 20, 1147, 4668, NULL, '2025-11-22 17:11:40'),
+(69, 0, 20, 1155, 4698, NULL, '2025-11-22 17:11:40'),
+(70, 0, 20, 1160, 4720, NULL, '2025-11-22 17:11:40'),
+(71, 0, 16, 247, 1065, NULL, '2025-11-22 17:12:16'),
+(72, 0, 16, 263, 1129, NULL, '2025-11-22 17:12:16'),
+(73, 0, 16, 1106, 4503, NULL, '2025-11-22 17:12:16'),
+(74, 0, 16, 1110, 4517, NULL, '2025-11-22 17:12:16'),
+(75, 0, 16, 1111, 4522, NULL, '2025-11-22 17:12:16'),
+(76, 0, 16, 1133, 4611, NULL, '2025-11-22 17:12:16'),
+(77, 0, 16, 1147, 4668, NULL, '2025-11-22 17:12:16'),
+(78, 0, 16, 1155, 4699, NULL, '2025-11-22 17:12:16'),
+(79, 0, 16, 1160, 4717, NULL, '2025-11-22 17:12:16');
 
 -- --------------------------------------------------------
 
@@ -390,27 +437,20 @@ CREATE TABLE `examen` (
   `puntuacion_competencia` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
-
 --
--- Estructura de tabla para la tabla `grupos`
+-- Volcado de datos para la tabla `examen`
 --
 
-CREATE TABLE `grupos` (
-  `id_grupo` int(11) NOT NULL,
-  `nombre` varchar(50) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `grupo_usuarios`
---
-
-CREATE TABLE `grupo_usuarios` (
-  `id_grupo` int(11) NOT NULL,
-  `id_usuario` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+INSERT INTO `examen` (`id_examen`, `id_materia`, `fecha_inicio`, `fecha_termino`, `duracion`, `puntuacion_competencia`) VALUES
+(1, 1, '2025-11-22 14:27:00', '2025-11-22 14:27:10', '00:00:10', NULL),
+(2, 1, '2025-11-22 14:26:57', '2025-11-22 14:29:00', '00:01:22', NULL),
+(3, 19, '2025-11-22 14:28:01', '2025-11-22 14:31:25', '00:02:04', NULL),
+(4, 2, '2025-11-22 14:41:19', '2025-11-22 14:41:47', '00:00:27', NULL),
+(5, 2, '2025-11-22 14:42:04', '2025-11-22 14:42:54', '00:00:49', NULL),
+(6, 2, '2025-11-22 14:43:28', '2025-11-22 14:44:32', '00:00:00', NULL),
+(7, 2, '2025-11-22 14:45:13', '2025-11-22 14:45:29', '00:00:16', NULL),
+(8, 1, '2025-11-22 18:22:34', '2025-11-22 18:22:47', '00:00:13', NULL),
+(9, 1, '2025-11-22 18:22:14', '2025-11-22 18:24:45', '00:01:50', NULL);
 
 -- --------------------------------------------------------
 
@@ -427,6 +467,170 @@ CREATE TABLE `historial` (
   `porcentaje` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `historial`
+--
+
+INSERT INTO `historial` (`id_examen`, `id_usuario`, `id_pregunta`, `id_respuesta`, `puntos`, `porcentaje`) VALUES
+(1, 4, 1031, 4204, 0, 0),
+(1, 4, 1064, 4335, 0, 0),
+(1, 4, 1074, 4374, 0, 0),
+(1, 4, 1086, 4421, 0, 0),
+(1, 4, 1097, 4466, 0, 0),
+(1, 4, 1125, 4579, 0, 0),
+(1, 4, 1134, 4616, 0, 0),
+(1, 4, 1156, 4703, 0, 0),
+(2, 6, 1032, 4205, 0, 0),
+(2, 6, 1033, NULL, 0, 0),
+(2, 6, 1034, NULL, 0, 0),
+(2, 6, 1047, NULL, 0, 0),
+(2, 6, 1050, NULL, 0, 0),
+(2, 6, 1067, NULL, 0, 0),
+(2, 6, 1073, NULL, 0, 0),
+(2, 6, 1074, NULL, 0, 0),
+(2, 6, 1081, NULL, 0, 0),
+(2, 6, 1083, NULL, 0, 0),
+(2, 6, 1085, NULL, 0, 0),
+(2, 6, 1090, NULL, 0, 0),
+(2, 6, 1110, NULL, 0, 0),
+(2, 6, 1115, NULL, 0, 0),
+(2, 6, 1116, NULL, 0, 0),
+(2, 6, 1119, NULL, 0, 0),
+(2, 6, 1121, NULL, 0, 0),
+(2, 6, 1122, NULL, 0, 0),
+(2, 6, 1145, NULL, 0, 0),
+(2, 6, 1147, NULL, 0, 0),
+(3, 6, 841, 3441, 1, 75),
+(3, 6, 842, 3445, 1, 75),
+(3, 6, 843, 3449, 1, 75),
+(3, 6, 845, 3457, 1, 75),
+(3, 6, 848, 3469, 1, 75),
+(3, 6, 850, 3477, 1, 75),
+(3, 6, 851, 3482, 0, 75),
+(3, 6, 852, 3488, 0, 75),
+(3, 6, 853, 3489, 1, 75),
+(3, 6, 855, 3497, 1, 75),
+(3, 6, 856, 3501, 1, 75),
+(3, 6, 862, 3526, 0, 75),
+(3, 6, 869, 3556, 0, 75),
+(3, 6, 870, 3557, 1, 75),
+(3, 6, 877, 3585, 1, 75),
+(3, 6, 878, 3589, 1, 75),
+(3, 6, 880, 3597, 1, 75),
+(3, 6, 883, 3609, 1, 75),
+(3, 6, 888, 3629, 1, 75),
+(3, 6, 889, NULL, 0, 75),
+(4, 16, 3, 9, 1, 30),
+(4, 16, 7, 25, 1, 30),
+(4, 16, 8, 29, 1, 30),
+(4, 16, 11, 41, 1, 30),
+(4, 16, 25, 97, 1, 30),
+(4, 16, 26, 102, 0, 30),
+(4, 16, 29, NULL, 0, 30),
+(4, 16, 31, NULL, 0, 30),
+(4, 16, 32, NULL, 0, 30),
+(4, 16, 40, NULL, 0, 30),
+(4, 16, 43, NULL, 0, 30),
+(4, 16, 44, NULL, 0, 30),
+(4, 16, 45, NULL, 0, 30),
+(4, 16, 49, NULL, 0, 30),
+(4, 16, 52, NULL, 0, 30),
+(4, 16, 54, NULL, 0, 30),
+(4, 16, 55, NULL, 0, 30),
+(4, 16, 56, NULL, 0, 30),
+(4, 16, 58, NULL, 0, 30),
+(4, 16, 60, 237, 1, 30),
+(5, 16, 1, 1, 1, 50),
+(5, 16, 2, 5, 1, 50),
+(5, 16, 9, 33, 1, 50),
+(5, 16, 12, 47, 0, 50),
+(5, 16, 15, 57, 1, 50),
+(5, 16, 18, 70, 0, 50),
+(5, 16, 19, 73, 1, 50),
+(5, 16, 24, 93, 1, 50),
+(5, 16, 31, 121, 1, 50),
+(5, 16, 33, 129, 1, 50),
+(5, 16, 34, NULL, 0, 50),
+(5, 16, 40, NULL, 0, 50),
+(5, 16, 47, NULL, 0, 50),
+(5, 16, 50, NULL, 0, 50),
+(5, 16, 54, NULL, 0, 50),
+(5, 16, 56, 224, 0, 50),
+(6, 16, 3, 9, 1, 63),
+(6, 16, 5, 17, 1, 63),
+(6, 16, 6, 21, 1, 63),
+(6, 16, 8, 29, 1, 63),
+(6, 16, 10, 37, 1, 63),
+(6, 16, 12, 47, 0, 63),
+(6, 16, 30, 117, 1, 63),
+(6, 16, 32, 128, 0, 63),
+(6, 16, 33, 129, 1, 63),
+(6, 16, 38, 149, 1, 63),
+(6, 16, 43, 169, 1, 63),
+(6, 16, 45, 178, 0, 63),
+(6, 16, 47, 187, 0, 63),
+(6, 16, 55, 217, 1, 63),
+(6, 16, 57, NULL, 0, 63),
+(6, 16, 60, 240, 0, 63),
+(7, 16, 2, 8, 0, 10),
+(7, 16, 3, 11, 0, 10),
+(7, 16, 10, 38, 0, 10),
+(7, 16, 11, 41, 1, 10),
+(7, 16, 28, 110, 0, 10),
+(7, 16, 30, 119, 0, 10),
+(7, 16, 32, 128, 0, 10),
+(7, 16, 38, 151, 0, 10),
+(7, 16, 39, 156, 0, 10),
+(7, 16, 40, 159, 0, 10),
+(7, 16, 41, 162, 0, 10),
+(7, 16, 43, 169, 1, 10),
+(7, 16, 44, NULL, 0, 10),
+(7, 16, 47, NULL, 0, 10),
+(7, 16, 48, NULL, 0, 10),
+(7, 16, 51, NULL, 0, 10),
+(7, 16, 54, NULL, 0, 10),
+(7, 16, 55, NULL, 0, 10),
+(7, 16, 56, NULL, 0, 10),
+(7, 16, 60, 240, 0, 10),
+(8, 20, 1025, 4180, 0, 5),
+(8, 20, 1026, 4183, 0, 5),
+(8, 20, 1034, 4214, 0, 5),
+(8, 20, 1035, 4217, 0, 5),
+(8, 20, 1047, 4266, 0, 5),
+(8, 20, 1066, 4343, 1, 5),
+(8, 20, 1079, NULL, 0, 5),
+(8, 20, 1085, 4420, 0, 5),
+(8, 20, 1089, NULL, 0, 5),
+(8, 20, 1091, NULL, 0, 5),
+(8, 20, 1094, NULL, 0, 5),
+(8, 20, 1099, NULL, 0, 5),
+(8, 20, 1104, NULL, 0, 5),
+(8, 20, 1108, NULL, 0, 5),
+(8, 20, 1109, NULL, 0, 5),
+(8, 20, 1128, NULL, 0, 5),
+(8, 20, 1130, NULL, 0, 5),
+(8, 20, 1131, NULL, 0, 5),
+(8, 20, 1145, NULL, 0, 5),
+(8, 20, 1154, 4696, 0, 5),
+(9, 13, 1030, 4199, 0, 33),
+(9, 13, 1038, 4232, 1, 33),
+(9, 13, 1040, 4240, 1, 33),
+(9, 13, 1041, 4243, 0, 33),
+(9, 13, 1042, 4246, 0, 33),
+(9, 13, 1069, 4355, 0, 33),
+(9, 13, 1073, 4370, 0, 33),
+(9, 13, 1079, 4394, 1, 33),
+(9, 13, 1086, 4421, 0, 33),
+(9, 13, 1088, 4431, 0, 33),
+(9, 13, 1091, 4443, 0, 33),
+(9, 13, 1098, 4472, 1, 33),
+(9, 13, 1101, 4484, 0, 33),
+(9, 13, 1108, 4511, 0, 33),
+(9, 13, 1119, 4554, 0, 33),
+(9, 13, 1133, 4609, 1, 33),
+(9, 13, 1144, 4654, 0, 33),
+(9, 13, 1156, 4701, 1, 33);
+
 -- --------------------------------------------------------
 
 --
@@ -442,6 +646,18 @@ CREATE TABLE `historial_duelos` (
   `puntos_defensor` int(11) DEFAULT NULL,
   `fecha_duelo` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `historial_duelos`
+--
+
+INSERT INTO `historial_duelos` (`id_duelo`, `id_retador`, `id_defensor`, `id_ganador`, `puntos_retador`, `puntos_defensor`, `fecha_duelo`) VALUES
+(1, 16, 6, 6, 3, 7, '2025-11-22 20:38:21'),
+(2, 16, 6, 6, 3, 7, '2025-11-22 20:38:21'),
+(3, 4, 6, 6, 135, 363, '2025-11-22 20:53:47'),
+(4, 4, 6, 4, 38, 14, '2025-11-22 21:04:45'),
+(5, 20, 16, 20, 2, 1, '2025-11-22 23:03:57'),
+(6, 16, 20, 16, 4, 1, '2025-11-22 23:12:16');
 
 -- --------------------------------------------------------
 
@@ -494,6 +710,17 @@ CREATE TABLE `notificaciones` (
   `leido` tinyint(1) DEFAULT 0,
   `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `notificaciones`
+--
+
+INSERT INTO `notificaciones` (`id_notificacion`, `id_usuario_destinatario`, `id_usuario_remitente`, `tipo`, `mensaje`, `extra_data`, `leido`, `fecha_creacion`) VALUES
+(99, 19, 16, 'invitacion', 'Daniel Viramontes Alfaro te invita a Gato', '{\"salaId\":\"{{salaId}}\",\"juego\":\"Gato\"}', 0, '2025-11-22 23:45:53'),
+(100, 19, 13, 'invitacion', 'JUAN JOSE CHAVEZ SANCHEZ te invita a Gato', '{\"salaId\":\"{{salaId}}\",\"juego\":\"Gato\"}', 0, '2025-11-22 23:45:54'),
+(103, 13, 6, 'invitacion', 'Eduardo García te invita a Gato', '{\"salaId\":\"{{salaId}}\",\"juego\":\"Gato\"}', 0, '2025-11-22 23:46:03'),
+(107, 6, 18, 'desafio_duelo', 'Miguel Pedroza te desafía a un Duelo de Ascenso!', '{\"remitente\":{\"id_usuario\":18,\"username\":\"Miguel Pedroza\",\"email\":\"pedrozamiguel0123@gmail.com\",\"id_tp_usuario\":3,\"foto_perfil\":\"https://lh3.googleusercontent.com/a/ACg8ocLV3y1SSaTrvqJvqrvhzwdt9Nxnojw4Fap9sp0h_ctzYzGZmxdv=s96-c\"},\"id_duelo\":\"duelo_1763855703017_vurvohgqj\",\"tiempoLimite\":172800}', 0, '2025-11-22 23:55:03'),
+(108, 6, 20, 'desafio_duelo', 'daniel vira te desafía a un Duelo de Ascenso!', '{\"remitente\":{\"id_usuario\":20,\"username\":\"daniel vira\",\"email\":\"danielcrack345673@gmail.com\",\"id_tp_usuario\":1,\"foto_perfil\":\"https://lh3.googleusercontent.com/a/ACg8ocIRfWXrnjRXvTX8WSapETlFO_Dpg3bfQM_tJ0k7sIVaJyiGdg=s96-c\"},\"id_duelo\":\"duelo_1763856018839_idgql2a1q\",\"tiempoLimite\":172800}', 0, '2025-11-23 00:00:18');
 
 -- --------------------------------------------------------
 
@@ -7034,6 +7261,20 @@ CREATE TABLE `usuario` (
   `ultimo_examen` decimal(5,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `usuario`
+--
+
+INSERT INTO `usuario` (`id_usuario`, `username`, `apodo`, `email`, `password`, `descripcion`, `verificado`, `token`, `actualizacion`, `token_expira`, `puntos`, `id_tp_usuario`, `id_status`, `foto_perfil`, `suspension_fin`, `token_reseteo`, `token_reseteo_expira`, `puntos_ranking`, `ultimo_examen`) VALUES
+(4, 'Daniel Viramontes', 'a', 'danielviramontes762@gmail.com', '', '', 1, NULL, NULL, NULL, 414, 3, 2, '/uploads/4_1763843269744_optimized.webp', NULL, NULL, NULL, 0, NULL),
+(6, 'Eduardo García', 'lalo', 'eduardogarcia080806@gmail.com', '', '', 1, NULL, NULL, NULL, 508, 1, 2, '/uploads/6_1763843296584_optimized.webp', NULL, NULL, NULL, 0, NULL),
+(13, 'JUAN JOSE CHAVEZ SANCHEZ', NULL, '23301061550073@cetis155.edu.mx', '', NULL, 1, NULL, NULL, NULL, 6, 1, 2, 'https://lh3.googleusercontent.com/a/ACg8ocJrVEJjRkCyYRgyUGwl_kUWX3OZygI5wenhihxjFdRLs8GqLw=s96-c', NULL, NULL, NULL, 0, NULL),
+(15, 'NEBUR4K', NULL, '23301061550096@cetis155.edu.mx', '$2b$10$QKe3VFb46C8Zmh.6oX9bY.Xn5VW5zBzIjGQlnTlu2JDfF2f8e.C.G', NULL, 1, NULL, NULL, NULL, 0, 3, 2, NULL, NULL, NULL, NULL, 0, NULL),
+(16, 'Daniel Viramontes Alfaro', NULL, 'danielviramontes562@gmail.com', '', NULL, 1, NULL, NULL, NULL, 20, 3, 2, 'https://lh3.googleusercontent.com/a/ACg8ocJ8TQboZ-rpGgxjsV2tMAGMQvZoQUP4THkqBRfAYGz2JAR8p9Eh-g=s96-c', NULL, NULL, NULL, 0, NULL),
+(18, 'Miguel Pedroza', NULL, 'pedrozamiguel0123@gmail.com', '', NULL, 1, NULL, NULL, NULL, 0, 3, 1, 'https://lh3.googleusercontent.com/a/ACg8ocLV3y1SSaTrvqJvqrvhzwdt9Nxnojw4Fap9sp0h_ctzYzGZmxdv=s96-c', NULL, NULL, NULL, 0, NULL),
+(19, 'EDUARDO GARCIA BECERRA', NULL, '23301061550089@cetis155.edu.mx', '', NULL, 1, NULL, NULL, NULL, 0, 3, 2, 'https://lh3.googleusercontent.com/a/ACg8ocLAIfHiFMPsJhljWIpsJ5mB4HdPlUpwOnvqBIcxJWs6ZWHGVA=s96-c', NULL, NULL, NULL, 0, NULL),
+(20, 'daniel vira', NULL, 'danielcrack345673@gmail.com', '', NULL, 1, NULL, NULL, NULL, 5, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocIRfWXrnjRXvTX8WSapETlFO_Dpg3bfQM_tJ0k7sIVaJyiGdg=s96-c', NULL, NULL, NULL, 0, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -7044,6 +7285,20 @@ CREATE TABLE `usuario_carrera` (
   `id_usuario` int(11) NOT NULL,
   `id_carrera` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `usuario_carrera`
+--
+
+INSERT INTO `usuario_carrera` (`id_usuario`, `id_carrera`) VALUES
+(4, 11),
+(6, 1),
+(13, 9),
+(15, 1),
+(16, 1),
+(18, 1),
+(19, 1),
+(20, 1);
 
 -- --------------------------------------------------------
 
@@ -7061,17 +7316,20 @@ CREATE TABLE `usuario_examen` (
   `porcentaje` decimal(4,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
-
 --
--- Estructura de tabla para la tabla `usuario_puntos_carrera`
+-- Volcado de datos para la tabla `usuario_examen`
 --
 
-CREATE TABLE `usuario_puntos_carrera` (
-  `id_usuario` int(11) NOT NULL,
-  `id_carrera` int(11) NOT NULL,
-  `puntos` int(11) NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+INSERT INTO `usuario_examen` (`id_usuario`, `id_examen`, `maximo`, `obtenido`, `fecha_inicio`, `fecha_termino`, `porcentaje`) VALUES
+(4, 1, 8, 0, '2025-11-22 14:27:00', '2025-11-22 14:27:10', 0.00),
+(6, 2, 20, 0, '2025-11-22 14:26:57', '2025-11-22 14:29:00', 0.00),
+(6, 3, 20, 15, '2025-11-22 14:28:01', '2025-11-22 14:31:25', 75.00),
+(13, 9, 18, 6, '2025-11-22 18:22:14', '2025-11-22 18:24:45', 33.33),
+(16, 4, 20, 6, '2025-11-22 14:41:19', '2025-11-22 14:41:47', 30.00),
+(16, 5, 16, 8, '2025-11-22 14:42:04', '2025-11-22 14:42:54', 50.00),
+(16, 6, 16, 10, '2025-11-22 14:43:28', '2025-11-22 14:44:32', 62.50),
+(16, 7, 20, 2, '2025-11-22 14:45:13', '2025-11-22 14:45:29', 10.00),
+(20, 8, 20, 1, '2025-11-22 18:22:34', '2025-11-22 18:22:47', 5.00);
 
 --
 -- Índices para tablas volcadas
@@ -7146,19 +7404,6 @@ ALTER TABLE `estatus_pregunta`
 ALTER TABLE `examen`
   ADD PRIMARY KEY (`id_examen`),
   ADD KEY `fk_materia_examen` (`id_materia`);
-
---
--- Indices de la tabla `grupos`
---
-ALTER TABLE `grupos`
-  ADD PRIMARY KEY (`id_grupo`);
-
---
--- Indices de la tabla `grupo_usuarios`
---
-ALTER TABLE `grupo_usuarios`
-  ADD PRIMARY KEY (`id_grupo`,`id_usuario`),
-  ADD KEY `id_usuario` (`id_usuario`);
 
 --
 -- Indices de la tabla `historial`
@@ -7294,13 +7539,6 @@ ALTER TABLE `usuario_examen`
   ADD KEY `id_examen` (`id_examen`);
 
 --
--- Indices de la tabla `usuario_puntos_carrera`
---
-ALTER TABLE `usuario_puntos_carrera`
-  ADD PRIMARY KEY (`id_usuario`,`id_carrera`),
-  ADD KEY `id_carrera` (`id_carrera`);
-
---
 -- AUTO_INCREMENT de las tablas volcadas
 --
 
@@ -7332,13 +7570,13 @@ ALTER TABLE `dificultad`
 -- AUTO_INCREMENT de la tabla `duelos_preguntas`
 --
 ALTER TABLE `duelos_preguntas`
-  MODIFY `id_duelo_pregunta` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_duelo_pregunta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=361;
 
 --
 -- AUTO_INCREMENT de la tabla `duelos_respuestas`
 --
 ALTER TABLE `duelos_respuestas`
-  MODIFY `id_respuesta_duelo` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_respuesta_duelo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=80;
 
 --
 -- AUTO_INCREMENT de la tabla `encuesta`
@@ -7356,19 +7594,13 @@ ALTER TABLE `estatus_pregunta`
 -- AUTO_INCREMENT de la tabla `examen`
 --
 ALTER TABLE `examen`
-  MODIFY `id_examen` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `grupos`
---
-ALTER TABLE `grupos`
-  MODIFY `id_grupo` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_examen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de la tabla `historial_duelos`
 --
 ALTER TABLE `historial_duelos`
-  MODIFY `id_duelo` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_duelo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `materias`
@@ -7380,7 +7612,7 @@ ALTER TABLE `materias`
 -- AUTO_INCREMENT de la tabla `notificaciones`
 --
 ALTER TABLE `notificaciones`
-  MODIFY `id_notificacion` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_notificacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=109;
 
 --
 -- AUTO_INCREMENT de la tabla `opcion_pregunta`
@@ -7434,7 +7666,7 @@ ALTER TABLE `tipo_usuario`
 -- AUTO_INCREMENT de la tabla `usuario`
 --
 ALTER TABLE `usuario`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- Restricciones para tablas volcadas
@@ -7472,13 +7704,6 @@ ALTER TABLE `duelos_respuestas`
 --
 ALTER TABLE `examen`
   ADD CONSTRAINT `fk_materia_examen` FOREIGN KEY (`id_materia`) REFERENCES `materias` (`id_materia`);
-
---
--- Filtros para la tabla `grupo_usuarios`
---
-ALTER TABLE `grupo_usuarios`
-  ADD CONSTRAINT `grupo_usuarios_ibfk_1` FOREIGN KEY (`id_grupo`) REFERENCES `grupos` (`id_grupo`),
-  ADD CONSTRAINT `grupo_usuarios_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`);
 
 --
 -- Filtros para la tabla `historial`
@@ -7578,13 +7803,6 @@ ALTER TABLE `usuario_carrera`
 ALTER TABLE `usuario_examen`
   ADD CONSTRAINT `usuario_examen_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `usuario_examen_ibfk_2` FOREIGN KEY (`id_examen`) REFERENCES `examen` (`id_examen`) ON DELETE NO ACTION ON UPDATE NO ACTION;
-
---
--- Filtros para la tabla `usuario_puntos_carrera`
---
-ALTER TABLE `usuario_puntos_carrera`
-  ADD CONSTRAINT `usuario_puntos_carrera_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id_usuario`) ON DELETE CASCADE,
-  ADD CONSTRAINT `usuario_puntos_carrera_ibfk_2` FOREIGN KEY (`id_carrera`) REFERENCES `carrera` (`id_carrera`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

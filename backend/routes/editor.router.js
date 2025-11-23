@@ -19,5 +19,4 @@ router.get('/datos', isAuthenticated, mostrarDatos);
 router.get('/encuesta', isAuthenticated, mostrarEncuesta);
 
 // Aquí agregarías los POST/DELETE para CRUD, usando controladores separados para cada acción.
-
 module.exports = router;

@@ -3,7 +3,40 @@
 Archivo: serpientes-escaleras.css                  
 Fecha: [Fecha de creación o última edición] */
 /* ============================================= */
+/* ================== VARIABLES CSS ================== */
+:root {
+    /* TEMA CLARO */
+    --bg-body: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    --header-bg: rgba(255, 255, 255, 0.95);
+    --card-bg: white;
+    --text-primary: #333;
+    --text-secondary: #4a0e9e;
+    --border-color: #d9e2ff;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 10px 30px rgba(0, 0, 0, 0.2);
+    --panel-bg: white;
+    --cell-bg: #f0f4ff;
+    --cell-alt-bg: #f8faff;
+    --chat-bg: #f1f3f5;
+    --system-chat-bg: #e7f5ff;
+}
 
+[data-theme="dark"] {
+    /* TEMA OSCURO */
+    --bg-body: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 100%);
+    --header-bg: rgba(30, 30, 60, 0.95);
+    --card-bg: #1e1e3c;
+    --text-primary: #f8f9fa;
+    --text-secondary: #8b5cf6;
+    --border-color: #3a3785;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    --shadow-hover: 0 10px 30px rgba(0, 0, 0, 0.5);
+    --panel-bg: #2d2b55;
+    --cell-bg: #2d2b55;
+    --cell-alt-bg: #3a3785;
+    --chat-bg: #2d2b55;
+    --system-chat-bg: #1a1a2e;
+}
 /* Reinicio básico y fuente global */
 * {
     margin: 0;
@@ -14,11 +47,12 @@ Fecha: [Fecha de creación o última edición] */
 
 /* Body con fondo degradado y layout general */
 body {
-    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    background: var(--bg-body);
     min-height: 100vh;
     padding: 20px;
     padding-top: 100px; /* Desplaza el contenido hacia abajo */
-    color: #333;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
 }
 
 .page {
@@ -31,17 +65,18 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--header-bg);
     padding: 15px 25px;
     border-radius: 12px;
     margin-bottom: 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
 }
 
 .title {
     font-size: 24px;
     font-weight: bold;
-    color: #4a0e9e;
+    color: var(--text-secondary);
 }
 
 .game-container {
@@ -69,7 +104,7 @@ body {
     margin: 20px 0;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-hover);
 }
 
 /* Tablero en grid de 10 columnas */
@@ -77,7 +112,7 @@ body {
     display: grid;
     grid-template-columns: repeat(10, 1fr);
     width: 100%;
-    background: #f0f4ff;
+    background: var(--cell-bg);
 }
 
 /* Cada celda del tablero */
@@ -87,13 +122,14 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 1px solid #d9e2ff;
+    border: 1px solid var(--border-color);
     transition: transform 0.2s ease;
+    color: var(--text-primary);
 }
 
 /* Colores alternados para mejor lectura */
 .cell:nth-child(2n) {
-    background-color: #f8faff;
+    background-color: var(--cell-alt-bg);
 }
 
 /* Hover para destacar celda */
@@ -108,8 +144,9 @@ body {
     top: 3px;
     left: 5px;
     font-size: clamp(0.6rem, 2vw, 0.8rem);
-    color: #777;
+    color: var(--text-primary);
     font-weight: 600;
+    opacity: 0.7;
 }
 
 .cell-icon {
@@ -122,12 +159,24 @@ body {
 /* ============================================= */
 
 /* Escaleras */
-.ladder-start { background-color: #e0f2f1; box-shadow: inset 0 0 15px #80cbc4; }
-.ladder-end   { background-color: #dcedc8; border: 2px dashed #689f38; }
+.ladder-start { 
+    background-color: rgba(224, 242, 241, 0.3); 
+    box-shadow: inset 0 0 15px rgba(128, 203, 196, 0.5); 
+}
+.ladder-end   { 
+    background-color: rgba(220, 237, 200, 0.3); 
+    border: 2px dashed rgba(104, 159, 56, 0.7); 
+}
 
 /* Serpientes */
-.snake-start { background-color: #ffcdd2; box-shadow: inset 0 0 15px #ef9a9a; }
-.snake-end   { background-color: #ffccbc; border: 2px dashed #f4511e; }
+.snake-start { 
+    background-color: rgba(255, 205, 210, 0.3); 
+    box-shadow: inset 0 0 15px rgba(239, 154, 154, 0.5); 
+}
+.snake-end   { 
+    background-color: rgba(255, 204, 188, 0.3); 
+    border: 2px dashed rgba(244, 81, 30, 0.7); 
+}
 
 /* ============================================= */
 /* FICHAS DE LOS JUGADORES                        */
@@ -190,48 +239,198 @@ body {
 }
 
 .panel {
-    background: white;
+    background: var(--panel-bg);
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    color: var(--text-primary);
 }
 
 .panel h3 {
     margin-bottom: 15px;
-    color: #4a0e9e;
-    border-bottom: 2px solid #f0f4ff;
+    color: var(--text-secondary);
+    border-bottom: 2px solid var(--border-color);
     padding-bottom: 10px;
 }
 
 /* Lista de jugadores */
-#players-list-room { list-style: none; padding: 0; }
-#players-list-room li { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-weight: 500; }
-.player-color-dot { width: 15px; height: 15px; border-radius: 50%; border: 2px solid white; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+#players-list-room { 
+    list-style: none; 
+    padding: 0; 
+}
+#players-list-room li { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    padding: 8px 0; 
+    font-weight: 500; 
+    color: var(--text-primary);
+}
+.player-color-dot { 
+    width: 15px; 
+    height: 15px; 
+    border-radius: 50%; 
+    border: 2px solid var(--panel-bg); 
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2); 
+}
 
 /* Chat */
-#chatBox { height: 250px; overflow-y: auto; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; padding-right: 10px; }
-.chat-message { padding: 8px 14px; border-radius: 18px; max-width: 90%; word-wrap: break-word; background-color: #f1f3f5; align-self: flex-start; }
-.chat-message.system { background-color: #e7f5ff; align-self: center; width: 100%; text-align: center; font-style: italic; color: #495057; font-size: 0.9rem; }
+#chatBox { 
+    height: 250px; 
+    overflow-y: auto; 
+    margin-bottom: 15px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+    padding-right: 10px; 
+}
+.chat-message { 
+    padding: 8px 14px; 
+    border-radius: 18px; 
+    max-width: 90%; 
+    word-wrap: break-word; 
+    background-color: var(--chat-bg); 
+    align-self: flex-start; 
+    color: var(--text-primary);
+}
+.chat-message.system { 
+    background-color: var(--system-chat-bg); 
+    align-self: center; 
+    width: 100%; 
+    text-align: center; 
+    font-style: italic; 
+    color: var(--text-primary); 
+    font-size: 0.9rem; 
+}
 
 /* Preguntas en chat */
-.question-message p { font-weight: bold; color: #4a0e9e; margin-bottom: 10px; }
-.question-options { display: flex; flex-direction: column; gap: 8px; }
-.question-options button { width: 100%; background: #f8f9fa; color: #343a40; border: 1px solid #dee2e6; text-align: left; }
-.question-options button:not(:disabled):hover { background: #e9ecef; border-color: #adb5bd; }
-.question-options button:disabled { opacity: 0.7; cursor: default; }
-.question-options .respuesta-correcta { background-color: #d4edda !important; border-color: #c3e6cb !important; color: #155724 !important; font-weight: bold; }
-.question-options .respuesta-incorrecta { background-color: #f8d7da !important; border-color: #f5c6cb !important; color: #721c24 !important; }
+.question-message p { 
+    font-weight: bold; 
+    color: var(--text-secondary); 
+    margin-bottom: 10px; 
+}
+.question-options { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 8px; 
+}
+.question-options button { 
+    width: 100%; 
+    background: var(--chat-bg); 
+    color: var(--text-primary); 
+    border: 1px solid var(--border-color); 
+    text-align: left; 
+    transition: all 0.3s ease;
+}
+.question-options button:not(:disabled):hover { 
+    background: var(--border-color); 
+    border-color: var(--text-secondary); 
+}
+.question-options button:disabled { 
+    opacity: 0.7; 
+    cursor: default; 
+}
+.question-options .respuesta-correcta { 
+    background-color: #d4edda !important; 
+    border-color: #c3e6cb !important; 
+    color: #155724 !important; 
+    font-weight: bold; 
+}
+.question-options .respuesta-incorrecta { 
+    background-color: #f8d7da !important; 
+    border-color: #f5c6cb !important; 
+    color: #721c24 !important; 
+}
 
 /* ============================================= */
 /* CONTROLES DEL JUEGO (DADO, BOTONES, INFO)    */
 /* ============================================= */
+.game-controls { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    gap: 15px; 
+    margin-top: 20px; 
+    width: 100%; 
+}
+.dice-container { 
+    display: flex; 
+    align-items: center; 
+    gap: 20px; 
+}
+.dice { 
+    width: 80px; 
+    height: 80px; 
+    border-radius: 15px; 
+    background: var(--card-bg); 
+    color: var(--text-secondary); 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 3rem; 
+    font-weight: bold; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1), inset 0 0 10px rgba(0,0,0,0.05); 
+    transition: all 0.3s ease;
+}
+#lanzar-dado { 
+    padding: 15px 30px; 
+    font-size: 1.1rem; 
+    font-weight: bold; 
+    background: #4caf50; 
+    color: white;
+    border: none;
+    border-radius: 8px; 
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+#lanzar-dado:disabled { 
+    background: #ccc; 
+    cursor: not-allowed; 
+    transform: none; 
+}
+#info-turno { 
+    font-size: 1.2rem; 
+    font-weight: 500; 
+    color: var(--text-primary); 
+    text-align: center; 
+    padding: 10px 25px; 
+    background: var(--card-bg); 
+    border-radius: 25px; 
+    min-width: 300px; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+    transition: all 0.3s ease;
+}
 
-.game-controls { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 20px; width: 100%; }
-.dice-container { display: flex; align-items: center; gap: 20px; }
-.dice { width: 80px; height: 80px; border-radius: 15px; background: #fff; color: #4a0e9e; display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.1), inset 0 0 10px rgba(0,0,0,0.05); }
-#lanzar-dado { padding: 15px 30px; font-size: 1.1rem; font-weight: bold; background: #4caf50; border-radius: 8px; }
-#lanzar-dado:disabled { background: #ccc; cursor: not-allowed; transform: none; }
-#info-turno { font-size: 1.2rem; font-weight: 500; color: #333; text-align: center; padding: 10px 25px; background: #fff; border-radius: 25px; min-width: 300px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+/* ============================================= */
+/* BOTÓN TOGGLE TEMA                            */
+/* ============================================= */
+
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--text-secondary);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    background: var(--text-secondary);
+    filter: brightness(1.2);
+}
 
 /* ============================================= */
 /* RESPONSIVE                                    */
@@ -248,6 +447,13 @@ body {
     .side-panel { flex-direction: column; }
     .dice { width: 60px; height: 60px; font-size: 2rem; }
     #lanzar-dado { padding: 12px 20px; font-size: 1rem; }
+    .theme-toggle {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+        top: 15px;
+        right: 15px;
+    }
 }
 
 /* ============================================= */
@@ -257,13 +463,13 @@ body {
 #character-selector {
     margin-top: 20px;
     padding-top: 15px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--border-color);
     text-align: center;
 }
 
 #character-selector h4 {
     margin-bottom: 10px;
-    color: #555;
+    color: var(--text-primary);
     font-weight: 600;
 }
 
@@ -281,6 +487,7 @@ body {
     border-radius: 8px;
     transition: transform 0.2s, box-shadow 0.2s;
     border: 2px solid transparent;
+    background: var(--panel-bg);
 }
 
 .emoji-option:hover {
@@ -288,8 +495,8 @@ body {
 }
 
 .emoji-option.selected {
-    border-color: #4e54c8;
-    box-shadow: 0 0 10px rgba(78, 84, 200, 0.5);
+    border-color: var(--text-secondary);
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
     transform: scale(1.2);
 }
 

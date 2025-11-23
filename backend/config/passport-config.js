@@ -1,6 +1,3 @@
-// ==============================================
-// passport-config.js - VERSIÓN CORREGIDA Y ESTABLE
-// ==============================================
 
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
@@ -22,27 +19,54 @@ passport.use(new GoogleStrategy(
             const foto = profile.photos?.[0]?.value || null;
 
             if (!email) {
-                console.error('⚠️ El perfil de Google no incluye un email.');
+
                 return done(null, false, { message: 'Cuenta de Google sin correo electrónico.' });
             }
-
-            // Buscar usuario existente
             const [rows] = await pool.query('SELECT * FROM usuario WHERE email = ?', [email]);
 
             if (rows.length > 0) {
                 const usuario = rows[0];
 
-                if (usuario.verificado === 0) {
-                    console.log(`⚠️ Usuario ${email} no verificado.`);
-                    return done(null, false, { message: 'Cuenta no verificada' });
+                if (usuario.id_status === 4) {
+                    return done(null, false, { 
+                        message: 'pending',
+                        statusInfo: {
+                            titulo: "Cuenta pendiente",
+                            mensaje: "Tu cuenta está pendiente de aprobación. Contacta con el administrador."
+                        }
+                    });
                 }
 
-                console.log(`✅ Usuario existente autenticado: ${usuario.username}`);
+                if (usuario.id_status === 3) {
+                    if (usuario.suspension_fin && new Date(usuario.suspension_fin) > new Date()) {
+                        return done(null, false, { 
+                            message: 'suspended',
+                            statusInfo: {
+                                titulo: "Cuenta suspendida",
+                                mensaje: `Tu cuenta está suspendida hasta el ${usuario.suspension_fin.toLocaleDateString()}`
+                            }
+                        });
+                    } else {
+                        await pool.query(
+                            'UPDATE usuario SET id_status = 1, suspension_fin = NULL WHERE id_usuario = ?',
+                            [usuario.id_usuario]
+                        );
+                        usuario.id_status = 1;
+                    }
+                }
+
+                if (usuario.id_status !== 1) {
+                    await pool.query(
+                        'UPDATE usuario SET id_status = 1 WHERE id_usuario = ?',
+                        [usuario.id_usuario]
+                    );
+                    usuario.id_status = 1;
+                }
+
+                global.sesionesActivas.add(usuario.id_usuario);
+
                 return done(null, usuario);
             }
-
-            // Si no existe, crear nuevo usuario
-            console.log(`🆕 Creando nuevo usuario con email: ${email}`);
 
             const points = 0;
             const tp_user = 1;
@@ -50,8 +74,8 @@ passport.use(new GoogleStrategy(
 
             const [insertResult] = await pool.query(
                 `INSERT INTO usuario 
-                 (username, email, verificado, puntos, id_tp_usuario, id_status, foto_perfil) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                (username, email, verificado, puntos, id_tp_usuario, id_status, foto_perfil) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)`,
                 [nombre, email, 1, points, tp_user, status, foto]
             );
 
@@ -60,7 +84,6 @@ passport.use(new GoogleStrategy(
                 [insertResult.insertId]
             );
 
-            console.log(`✅ Nuevo usuario insertado correctamente: ${nombre}`);
             return done(null, nuevoUsuario[0]);
 
         } catch (error) {
@@ -70,17 +93,10 @@ passport.use(new GoogleStrategy(
     }
 ));
 
-// ============================
-// Serialización de la sesión
-// ============================
 passport.serializeUser((user, done) => {
-    // Solo guarda el ID del usuario en la sesión
     done(null, user.id_usuario);
 });
 
-// ============================
-// Deserialización de la sesión
-// ============================
 passport.deserializeUser(async (id, done) => {
     try {
         const [rows] = await pool.query('SELECT * FROM usuario WHERE id_usuario = ?', [id]);

@@ -1,4 +1,3 @@
-{{!-- Main.hbs - FRONTEND CORREGIDO PARA DUELOS 48H --}}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -24,6 +23,13 @@
         <div class="top-right-nav">
             {{#if user}}
                 <span class="nav-username">Hola, {{user.username}}</span>
+                {{!-- 🎨 TOGGLE DE TEMA --}}
+                <div class="theme-toggle-wrapper">
+                    <label class="theme-toggle-container"> 
+                        <input type="checkbox" class="theme-toggle-input" id="theme-toggle"> 
+                        <span class="theme-toggle-slider"></span>
+                    </label>
+                </div>
 
                 <div class="notification-container" onclick="toggleNotifications(event)">
                     🔔 <span id="notification-count" style="display:none;"></span>
@@ -100,6 +106,6 @@
     };
 </script>
 {{/if}}
-</body>
 <script src="/public/js/notificacion.controller.js" defer></script>
+</body>
 </html>

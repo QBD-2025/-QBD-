@@ -12,10 +12,10 @@ Archivo CSS diseñado para:
 
 /* ================== Variables globales ================== */
 :root {
-    --color-primary: #0815c5;
-    --color-secondary: #facc15;
-    --color-dark: #0c0264;
-    --color-light: #f9f9f9;
+    --color-primary: #333;          /* Neutral */
+    --color-secondary: #facc15;     /* Amarillo */
+    --color-dark: #111;             /* Gris muy oscuro */
+    --color-light: #ffffff;         /* Blanco */
     --color-gray: #ededed;
     --color-gold: #FFD700;
     --color-silver: #C0C0C0;
@@ -31,7 +31,7 @@ Archivo CSS diseñado para:
 }
 
 body {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: linear-gradient(135deg, #f5f7fa 0%, #dfe4ec 100%);
     color: var(--color-dark);
     min-height: 100vh;
     display: flex;
@@ -51,7 +51,7 @@ body {
 header {
     text-align: center;
     padding: 20px;
-    background: linear-gradient(120deg, var(--color-primary) 0%, var(--color-dark) 100%);
+    background: linear-gradient(120deg, #444 0%, #222 100%);
     color: white;
     border-radius: 15px;
     margin-bottom: 25px;
@@ -77,8 +77,8 @@ header p { font-size: 1rem; opacity: 0.9; }
     border-bottom: 2px solid var(--color-secondary);
     display: flex;
     align-items: center;
-    gap: 10px;
     justify-content: center;
+    gap: 10px;
 }
 
 .podium {
@@ -132,15 +132,10 @@ header p { font-size: 1rem; opacity: 0.9; }
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 1.8rem;
-    margin-bottom: 15px;
     border: 3px solid white;
-    background: rgba(255, 255, 255, 0.3);
+    margin-bottom: 15px;
     object-fit: cover;
+    background: rgba(255, 255, 255, 0.3);
 }
 
 .podium-username { font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
@@ -162,10 +157,13 @@ header p { font-size: 1rem; opacity: 0.9; }
     margin-bottom: 30px;
 }
 
-table { width: 100%; border-collapse: collapse; }
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
 
 thead {
-    background: linear-gradient(120deg, var(--color-primary) 0%, var(--color-dark) 100%);
+    background: linear-gradient(120deg, #444 0%, #222 100%);
     color: white;
 }
 
@@ -182,7 +180,10 @@ th:nth-child(2) { width: 40%; }
 tbody tr { border-bottom: 1px solid #eee; transition: background 0.3s; }
 tbody tr:hover { background: #f8f9fa; }
 
-td { padding: 14px 15px; font-size: 1rem; }
+td {
+    padding: 14px 15px;
+    font-size: 1rem;
+}
 td:first-child {
     text-align: center;
     font-weight: 700;
@@ -209,10 +210,13 @@ td:first-child {
     font-size: 1.1rem;
     color: var(--color-dark);
     object-fit: cover;
-    padding: 0;
 }
 
-.avatar img { width: 100%; height: 100%; border-radius: 50%; }
+.avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
 
 .username { font-weight: 600; color: var(--color-dark); }
 .user-category { font-size: 0.85rem; color: #6c757d; }
@@ -252,7 +256,6 @@ td:first-child {
         flex-direction: column;
         align-items: center;
     }
-    
     .podium-item {
         width: 100%;
         max-width: 300px;
@@ -263,11 +266,12 @@ td:first-child {
         justify-content: flex-start;
     }
     
-    .podium-avatar {
-        margin-right: 15px;
-        margin-bottom: 0;
-        width: 60px;
-        height: 60px;
-        font-size: 1.4rem;
-    }
 }
+.podium-avatar {
+    margin-right: 15px;
+    margin-bottom: 0;
+    width: 60px;
+    height: 60px;
+    font-size: 1.4rem;
+}
+

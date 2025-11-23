@@ -521,9 +521,9 @@ const EVENTOS_ESPECIALES = [
     {
         id: 'riesgo',
         nombre: 'Ronda de Riesgo',
-        notificacion: '💀 RONDA DE RIESGO: Si fallas pierdes -50 puntos',
+        notificacion: '💀 RONDA DE RIESGO: Si fallas pierdes -25 puntos',
         duracion: 10,
-        penalizacionError: -50
+        penalizacionError: -25
     },
     {
         id: 'oculta',

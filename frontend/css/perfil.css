@@ -5,7 +5,78 @@
    ✅ Personajes integrados dentro del contenedor
    ✅ Colores morados perfectamente sincronizados
    ✅ Sin efectos pesados innecesarios
+   ===========================================================
+   PERFIL.CSS - MENU PRINCIPAL CON DIFUMINADO DIRECCIONAL
+   🎨 Tema Claro: Blanco → Amarillo (según posición animación)
+   🌙 Tema Oscuro: Azul eléctrico → Morado sólido #6c00ff
    =========================================================== */
+
+/* ================== VARIABLES CSS ================== */
+:root {
+    /* TEMA CLARO - Degradados direccionales */
+    --bg-page: #ffffff;
+    
+    /* Normal: Blanco en texto (izq) → Amarillo en animación (der) */
+    --container-bg-normal: linear-gradient(to right,
+        rgba(255, 193, 7, 0.3) 0%,
+        rgba(255, 212, 79, 0.4) 30%,
+        rgba(255, 255, 255, 0.9) 60%,
+        rgba(255, 255, 255, 0.9)100%
+    );
+    
+    /* Reverse: Amarillo en animación (izq) → Blanco en texto (der) */
+    --container-bg-reverse: linear-gradient(to right,
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(255, 255, 255, 0.9) 40%,
+        rgba(255, 193, 7, 0.3)70%,
+        rgba(255, 212, 79, 0.4)100%
+    );
+    
+    --container-text: #333333;
+    --container-desc: #555555;
+    --container-border: rgba(255, 193, 7, 0.2);
+    --container-hover-glow: rgba(255, 193, 7, 0.4);
+    --container-shadow: rgba(0, 0, 0, 0.08);
+    --container-shadow-hover: rgba(0, 0, 0, 0.12);
+    
+    /* Animaciones */
+    --animation-bg: rgba(255, 255, 255, 0.1);
+    --animation-glow: rgba(255, 193, 7, 0.2);
+    --animation-glow-hover: rgba(255, 193, 7, 0.35);
+}
+
+[data-theme="dark"] {
+    /* TEMA OSCURO - Degradados direccionales */
+    --bg-page: #0a0e27;
+    
+    /* Normal: Azul eléctrico en texto (izq) → Morado sólido en animación (der) */
+    --container-bg-normal: linear-gradient(to right,
+        #1e3a8a 0%,
+        #3b5998 40%,
+        #6c00ff 70%,
+        #6c00ff 100%
+    );
+    
+    /* Reverse: Morado sólido en animación (izq) → Azul eléctrico en texto (der) */
+    --container-bg-reverse: linear-gradient(to right,
+        #7a21f8 0%,
+        #7310fd 30%,
+        #3b5998 60%,
+        #1e3a8a 100%
+    );
+    
+    --container-text: #ffffff;
+    --container-desc: #e0e0e0;
+    --container-border: rgba(108, 0, 255, 0.3);
+    --container-hover-glow: rgba(108, 0, 255, 0.6);
+    --container-shadow: rgba(0, 0, 0, 0.5);
+    --container-shadow-hover: rgba(0, 0, 0, 0.7);
+    
+    /* Animaciones - Frames se mezclan con morado #6c00ff */
+    --animation-bg: rgba(108, 0, 255, 0.15);
+    --animation-glow: rgba(108, 0, 255, 0.4);
+    --animation-glow-hover: rgba(108, 0, 255, 0.7);
+}
 
 /* ================== RESET Y BASE ================== */
 * {
@@ -17,20 +88,17 @@
 .duo-style-wrapper {
     width: 100%;
     padding: 60px 20px;
-    background: #ffffff;
+    background: var(--bg-page);
     position: relative;
+    min-height: 100vh;
 }
 
-/* ================== CONTENEDOR PRINCIPAL - OPTIMIZADO ================== */
+/* ================== CONTENEDOR PRINCIPAL ================== */
 .mode-container {
-    /* Gradiente morado premium sincronizado */
-    background: linear-gradient(135deg, 
-        #8B5CF6 0%,      /* Morado vibrante */
-        #7C3AED 25%,     /* Morado medio */
-        #6366F1 50%,     /* Morado-azul */
-        #4F46E5 75%,     /* Índigo */
-        #3B82F6 100%     /* Azul brillante */
-    );
+    /* DEGRADADO NORMAL por defecto */
+    background: var(--container-bg-normal);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     
     border-radius: 32px;
     padding: 0;
@@ -38,40 +106,37 @@
     max-width: 1100px;
     width: 92%;
     min-height: 320px;
-    
-    /* CRÍTICO: Personajes ahora DENTRO del contenedor */
     overflow: hidden;
     position: relative;
     
-    /* Sombra optimizada - menos capas */
     box-shadow: 
-        0 20px 50px rgba(124, 58, 237, 0.25),
+        0 20px 50px var(--container-shadow),
         0 0 0 1px rgba(255, 255, 255, 0.1) inset;
     
-    /* Transición suave GPU-acelerada */
     transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-                box-shadow 0.4s ease;
+                box-shadow 0.4s ease,
+                background 0.3s ease;
     transform: translateZ(0);
-    
     cursor: pointer;
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    border: 2px solid var(--container-border);
+}
+
+/* CONTENEDORES REVERSE usan el degradado invertido */
+.mode-container.reverse {
+    background: var(--container-bg-reverse);
 }
 
 /* ================== HOVER OPTIMIZADO ================== */
 .mode-container:hover {
-    /* Elevación sutil pero impactante */
     transform: translateY(-12px) translateZ(0);
-    
-    /* Glow reducido pero visible */
     box-shadow: 
-        0 0 60px rgba(139, 92, 246, 0.5),
-        0 25px 70px rgba(0, 0, 0, 0.25),
-        0 0 0 1px rgba(255, 255, 255, 0.3) inset;
-    
-    border: 2px solid rgba(255, 255, 255, 0.4);
+        0 0 60px var(--container-hover-glow),
+        0 25px 70px var(--container-shadow-hover),
+        0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+    border-color: var(--container-hover-glow);
 }
 
-/* ================== EFECTO SHIMMER - OPTIMIZADO ================== */
+/* ================== EFECTO SHIMMER ================== */
 .mode-container::before {
     content: '';
     position: absolute;
@@ -82,7 +147,7 @@
     background: linear-gradient(
         90deg,
         transparent,
-        rgba(255, 255, 255, 0.15),
+        rgba(255, 255, 255, 0.1),
         transparent
     );
     transform: rotate(25deg);
@@ -112,6 +177,12 @@
     box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
 }
 
+[data-theme="dark"] .mode-badge {
+    background: linear-gradient(135deg, #FFC107 0%, #ff9800 100%);
+    color: #0a0e27;
+    box-shadow: 0 4px 14px rgba(255, 193, 7, 0.6);
+}
+
 /* ================== CONTENIDO INTERNO ================== */
 .mode-content {
     display: flex;
@@ -126,7 +197,7 @@
 /* ================== SECCIÓN DE TEXTO ================== */
 .mode-text {
     flex: 1;
-    color: #ffffff;
+    color: var(--container-text);
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -134,7 +205,6 @@
     padding-left: 30px;
 }
 
-/* Barra decorativa lateral */
 .mode-text::before {
     content: '';
     position: absolute;
@@ -159,14 +229,15 @@
 
 .mode-icon {
     font-size: 3rem;
-    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
+    filter: drop-shadow(0 4px 10px var(--container-shadow));
 }
 
 .mode-title {
     font-size: 2.2rem;
     font-weight: 800;
     margin: 0;
-    text-shadow: 0 2px 15px rgba(0, 0, 0, 0.4);
+    color: var(--container-text);
+    text-shadow: 0 2px 15px var(--container-shadow);
     line-height: 1.2;
     letter-spacing: -0.5px;
 }
@@ -175,33 +246,29 @@
     font-size: 1.1rem;
     opacity: 0.95;
     line-height: 1.6;
-    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    color: var(--container-desc);
+    text-shadow: 0 2px 6px var(--container-shadow);
     margin: 0;
     max-width: 95%;
     font-weight: 400;
 }
 
-/* ================== SECCIÓN DE VIDEO - INTEGRADA ================== */
+/* ================== SECCIÓN DE VIDEO - MEZCLA PERFECTA ================== */
 .mode-video {
     flex: 0 0 380px;
     position: relative;
-    overflow: hidden;
-    
-    /* Personajes DENTRO del contenedor */
+    overflow: visible;
     transform: translateZ(0);
     transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     border-radius: 20px;
-    
-    /* Fondo transparente - el gradiente del contenedor se ve a través */
-    background: transparent;
+    background: var(--animation-bg);
+    padding: 15px;
 }
 
 .mode-container:hover .mode-video {
-    /* Efecto sutil de zoom */
     transform: scale(1.05) translateZ(0);
 }
 
-/* Contenedor de animación integrado */
 .mode-video .animacion-duolingo {
     width: 100%;
     height: auto;
@@ -209,10 +276,7 @@
     align-items: center;
     justify-content: center;
     position: relative;
-    padding: 20px;
-    
-    /* Sombra interna sutil */
-    filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.3));
+    padding: 0;
 }
 
 .mode-video .animacion-duolingo img {
@@ -221,118 +285,50 @@
     display: block;
     border-radius: 12px;
     
-    /* Glow morado sincronizado */
-    filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.4));
-    transition: filter 0.3s ease;
+    /* MEZCLA PERFECTA CON EL FONDO */
+    filter: drop-shadow(0 0 15px var(--animation-glow));
+    opacity: 0.98;
+    mix-blend-mode: screen;
+    transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+[data-theme="dark"] .mode-video .animacion-duolingo img {
+    /* En tema oscuro, los frames se mezclan con el morado sólido */
+    filter: drop-shadow(0 0 20px var(--animation-glow));
+    opacity: 0.95;
+    mix-blend-mode: lighten; /* CLAVE: Mezcla suave con el morado */
 }
 
 .mode-container:hover .mode-video .animacion-duolingo img {
-    /* Glow intenso al hover */
-    filter: drop-shadow(0 0 35px rgba(139, 92, 246, 0.6));
+    filter: drop-shadow(0 0 25px var(--animation-glow-hover));
+    opacity: 1;
 }
 
-/* ================== VARIANTES DE COLOR OPTIMIZADAS ================== */
+/* ================== VARIANTES POR SECCIÓN ================== */
+/* Mantener las variaciones sutiles con hue-rotate */
 
-/* 🎮 MINIJUEGOS */
 .mode-container.minijuegos {
-    background: linear-gradient(135deg, 
-        #A855F7 0%,
-        #8B5CF6 30%,
-        #7C3AED 70%,
-        #3B82F6 100%
-    );
+    /* Usa el degradado normal por defecto */
 }
 
-.mode-container.minijuegos .mode-video {
-    background: linear-gradient(135deg, 
-        rgba(168, 85, 247, 0.3) 0%,
-        rgba(59, 130, 246, 0.2) 100%
-    );
-}
-
-/* 📝 EXÁMENES */
 .mode-container.examenes {
-    background: linear-gradient(135deg, 
-        #7C3AED 0%,
-        #6D28D9 30%,
-        #5B21B6 70%,
-        #1E40AF 100%
-    );
+    filter: hue-rotate(10deg);
 }
 
-.mode-container.examenes .mode-video {
-    background: linear-gradient(135deg, 
-        rgba(124, 58, 237, 0.3) 0%,
-        rgba(30, 64, 175, 0.2) 100%
-    );
-}
-
-/* 🎯 SIMULADOR */
 .mode-container.simulador {
-    background: linear-gradient(135deg, 
-        #A855F7 0%,
-        #9333EA 30%,
-        #7C3AED 70%,
-        #2563EB 100%
-    );
+    filter: hue-rotate(-10deg);
 }
 
-.mode-container.simulador .mode-video {
-    background: linear-gradient(135deg, 
-        rgba(168, 85, 247, 0.3) 0%,
-        rgba(37, 99, 235, 0.2) 100%
-    );
-}
-
-/* 🏆 RANKING */
 .mode-container.ranking {
-    background: linear-gradient(135deg, 
-        #9333EA 0%,
-        #7C3AED 30%,
-        #6366F1 70%,
-        #1D4ED8 100%
-    );
+    filter: hue-rotate(5deg);
 }
 
-.mode-container.ranking .mode-video {
-    background: linear-gradient(135deg, 
-        rgba(147, 51, 234, 0.3) 0%,
-        rgba(29, 78, 216, 0.2) 100%
-    );
-}
-
-/* ⚔️ COMPETITIVO */
 .mode-container.competitivo {
-    background: linear-gradient(135deg, 
-        #7C3AED 0%,
-        #6D28D9 30%,
-        #4F46E5 70%,
-        #1E3A8A 100%
-    );
+    filter: hue-rotate(-5deg);
 }
 
-.mode-container.competitivo .mode-video {
-    background: linear-gradient(135deg, 
-        rgba(124, 58, 237, 0.3) 0%,
-        rgba(30, 58, 138, 0.2) 100%
-    );
-}
-
-/* 📚 DATOS */
 .mode-container.datos {
-    background: linear-gradient(135deg, 
-        #6366F1 0%,
-        #5B21B6 30%,
-        #4F46E5 70%,
-        #2563EB 100%
-    );
-}
-
-.mode-container.datos .mode-video {
-    background: linear-gradient(135deg, 
-        rgba(99, 102, 241, 0.3) 0%,
-        rgba(37, 99, 235, 0.2) 100%
-    );
+    filter: hue-rotate(15deg);
 }
 
 /* ================== LAYOUT ALTERNADO ================== */
@@ -358,18 +354,22 @@
     width: 70px;
     height: 70px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%);
-    border: 3px solid rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, #FFC107 0%, #ffd44f 100%);
+    border: 3px solid var(--container-border);
     font-size: 2rem;
     cursor: pointer;
     z-index: 1000;
-    box-shadow: 0 8px 30px rgba(139, 92, 246, 0.4);
+    box-shadow: 0 8px 30px var(--container-hover-glow);
     transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .floating-button {
+    background: linear-gradient(135deg, #6c00ff 0%, #8b5cf6 100%);
 }
 
 .floating-button:hover {
     transform: scale(1.1);
-    box-shadow: 0 12px 45px rgba(139, 92, 246, 0.6);
+    box-shadow: 0 12px 45px var(--container-hover-glow);
 }
 
 /* ================== RESPONSIVE - TABLETS ================== */
@@ -479,11 +479,10 @@
 
 /* ================== ACCESIBILIDAD ================== */
 .mode-container:focus {
-    outline: 3px solid rgba(255, 255, 255, 0.6);
+    outline: 3px solid var(--container-border);
     outline-offset: 4px;
 }
 
-/* Reduce movimiento para usuarios con preferencias */
 @media (prefers-reduced-motion: reduce) {
     .mode-container,
     .mode-video,

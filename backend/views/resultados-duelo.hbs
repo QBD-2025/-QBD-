@@ -5,32 +5,264 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resultados del Duelo</title>
     <style>
-        .resultado-container { max-width: 800px; margin: 0 auto; padding: 20px; }
-        .puntajes { display: flex; justify-content: space-between; margin: 20px 0; }
-        .puntaje-card { background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; flex: 1; margin: 0 10px; }
-        .puntaje-numero { font-size: 2em; font-weight: bold; color: #007bff; }
-        .pregunta-resultado { background: white; border: 1px solid #ddd; margin: 10px 0; padding: 15px; border-radius: 8px; }
-        .respuesta-correcta { color: #28a745; font-weight: bold; }
-        .respuesta-incorrecta { color: #dc3545; }
-        .esperando { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0; }
-        .oponente-pendiente { color: #6c757d; font-style: italic; }
-        .btn-volver { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: inline-block; }
-        .btn-volver:hover { background: #0056b3; }
-        .respuestas-comparacion { margin-top: 10px; }
-        .mi-respuesta, .oponente-respuesta { margin: 8px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; }
-        .info-duelo { background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        .resultado-final { margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center; }
-        .puntos-ganados { font-size: 1.8em; margin: 20px 0; padding: 15px; border-radius: 8px; }
-        .puntos-positivos { background: #d4edda; color: #155724; }
-        .puntos-negativos { background: #f8d7da; color: #721c24; }
-        .puntos-empate { background: #fff3cd; color: #856404; }
+        /* ================== VARIABLES CSS - TEMA CLARO Y OSCURO ================== */
+        :root {
+            /* TEMA CLARO */
+            --bg-page: #ffffff;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #333333;
+            --text-secondary: #555555;
+            --accent-yellow: #FFC107;
+            --accent-blue: #0817eb;
+            
+            /* Cards y containers */
+            --card-bg: #ffffff;
+            --card-border: rgba(255, 193, 7, 0.2);
+            --card-shadow: rgba(0, 0, 0, 0.1);
+            --card-shadow-hover: rgba(0, 0, 0, 0.15);
+            
+            /* Botones */
+            --btn-primary-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --btn-primary-hover-shadow: rgba(102, 126, 234, 0.4);
+            
+            /* Estados */
+            --success-bg: #d4edda;
+            --success-text: #155724;
+            --success-border: #28a745;
+            
+            --error-bg: #f8d7da;
+            --error-text: #721c24;
+            --error-border: #dc3545;
+            
+            --warning-bg: #fff3cd;
+            --warning-text: #856404;
+            --warning-border: #ffc107;
+            
+            --info-bg: #e9ecef;
+            --info-text: #333333;
+            
+            /* Puntajes */
+            --puntaje-color: #667eea;
+        }
+
+        [data-theme="dark"] {
+            /* TEMA OSCURO */
+            --bg-page: #0a0e27;
+            --bg-primary: #0a0e27;
+            --bg-secondary: #151b3d;
+            --text-primary: #ffffff;
+            --text-secondary: #e0e0e0;
+            --accent-yellow: #FFC107;
+            --accent-blue: #4A90E2;
+            
+            /* Cards y containers */
+            --card-bg: #151b3d;
+            --card-border: rgba(108, 0, 255, 0.3);
+            --card-shadow: rgba(0, 0, 0, 0.5);
+            --card-shadow-hover: rgba(0, 0, 0, 0.7);
+            
+            /* Botones */
+            --btn-primary-bg: linear-gradient(135deg, #6c00ff 0%, #8b5cf6 100%);
+            --btn-primary-hover-shadow: rgba(108, 0, 255, 0.6);
+            
+            /* Estados */
+            --success-bg: rgba(40, 167, 69, 0.2);
+            --success-text: #4ade80;
+            --success-border: #4ade80;
+            
+            --error-bg: rgba(220, 53, 69, 0.2);
+            --error-text: #fb7185;
+            --error-border: #fb7185;
+            
+            --warning-bg: rgba(255, 193, 7, 0.2);
+            --warning-text: #fbbf24;
+            --warning-border: #fbbf24;
+            
+            --info-bg: #1e293b;
+            --info-text: #e0e0e0;
+            
+            /* Puntajes */
+            --puntaje-color: #8b5cf6;
+        }
+
+        /* ================== TRANSICIONES SUAVES ================== */
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--gris-claro);
-            color: var(--texto-oscuro);
+            background-color: var(--bg-page);
+            color: var(--text-primary);
             min-height: 100vh;
             line-height: 1.6;
             padding-top: 100px;
+        }
+
+
+        /* ===== CONTENIDO PRINCIPAL ===== */
+        .resultado-container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+
+        .puntajes { 
+            display: flex; 
+            justify-content: space-between; 
+            margin: 20px 0; 
+            gap: 20px;
+        }
+
+        .puntaje-card { 
+            background: var(--card-bg);
+            padding: 20px; 
+            border-radius: 12px; 
+            text-align: center; 
+            flex: 1;
+            box-shadow: 0 2px 8px var(--card-shadow);
+            transition: transform 0.2s;
+            border: 1px solid var(--card-border);
+        }
+
+        .puntaje-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px var(--card-shadow-hover);
+        }
+
+        .puntaje-numero { 
+            font-size: 2.5em; 
+            font-weight: bold; 
+            color: var(--puntaje-color);
+            margin: 10px 0;
+        }
+
+        .pregunta-resultado { 
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            margin: 15px 0; 
+            padding: 20px; 
+            border-radius: 12px;
+            box-shadow: 0 2px 5px var(--card-shadow);
+        }
+
+        .respuesta-correcta { 
+            color: var(--success-text);
+            font-weight: bold; 
+        }
+
+        .respuesta-incorrecta { 
+            color: var(--error-text); 
+            font-weight: bold;
+        }
+
+        .esperando { 
+            background: var(--warning-bg);
+            border: 2px solid var(--warning-border);
+            color: var(--warning-text);
+            padding: 20px; 
+            border-radius: 12px; 
+            text-align: center; 
+            margin: 20px 0;
+            box-shadow: 0 2px 5px var(--card-shadow);
+        }
+
+        .oponente-pendiente { 
+            color: var(--text-secondary);
+            font-style: italic; 
+        }
+
+        .btn-volver { 
+            background: var(--btn-primary-bg);
+            color: white; 
+            padding: 12px 30px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            text-decoration: none; 
+            display: inline-block;
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-volver:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px var(--btn-primary-hover-shadow);
+        }
+
+        .respuestas-comparacion { 
+            margin-top: 15px; 
+        }
+
+        .mi-respuesta, .oponente-respuesta { 
+            margin: 10px 0; 
+            padding: 12px; 
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border-left: 4px solid var(--puntaje-color);
+        }
+
+        .info-duelo { 
+            background: var(--info-bg);
+            color: var(--info-text);
+            padding: 20px; 
+            border-radius: 12px; 
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px var(--card-shadow);
+            border: 1px solid var(--card-border);
+        }
+
+        .resultado-final { 
+            margin-top: 30px; 
+            padding: 25px; 
+            background: var(--card-bg);
+            border-radius: 12px; 
+            text-align: center;
+            box-shadow: 0 2px 8px var(--card-shadow);
+            border: 1px solid var(--card-border);
+        }
+
+        .puntos-ganados { 
+            font-size: 1.8em; 
+            margin: 20px 0; 
+            padding: 20px; 
+            border-radius: 12px;
+            font-weight: bold;
+        }
+
+        .puntos-positivos { 
+            background: var(--success-bg);
+            color: var(--success-text);
+            border: 2px solid var(--success-border);
+        }
+
+        .puntos-negativos { 
+            background: var(--error-bg);
+            color: var(--error-text);
+            border: 2px solid var(--error-border);
+        }
+
+        .puntos-empate { 
+            background: var(--warning-bg);
+            color: var(--warning-text);
+            border: 2px solid var(--warning-border);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 80px;
+            }
+
+            .puntajes {
+                flex-direction: column;
+            }
+
+            .puntaje-card {
+                margin-bottom: 15px;
+            }
         }
     </style>
 </head>
@@ -81,7 +313,7 @@
             <h3>🏆 Resultado Final</h3>
             
             {{#if (eq miPuntaje oponentePuntaje)}}
-                <h4 style="color: #ffc107; font-size: 1.5em;">¡Empate!</h4>
+                <h4 style="color: var(--warning-text); font-size: 1.5em;">¡Empate!</h4>
                 <p style="font-size: 1.2em;">Ambos obtuvieron {{miPuntaje}} preguntas correctas</p>
                 <div class="puntos-ganados puntos-empate">
                     <strong>0 puntos de ranking</strong>
@@ -89,7 +321,7 @@
                 </div>
             {{else}}
                 {{#if (gt miPuntaje oponentePuntaje)}}
-                    <h4 style="color: #28a745; font-size: 1.5em;">¡Victoria! 🎉</h4>
+                    <h4 style="color: var(--success-text); font-size: 1.5em;">¡Victoria! 🎉</h4>
                     <p style="font-size: 1.2em;">{{miPuntaje}} vs {{oponentePuntaje}}</p>
                     
                     {{#if puntosGanados}}
@@ -105,7 +337,7 @@
                     {{/if}}
                     <p style="margin-top: 15px;">¡Excelente desempeño! Sigue así 💪</p>
                 {{else}}
-                    <h4 style="color: #dc3545; font-size: 1.5em;">Derrota 😔</h4>
+                    <h4 style="color: var(--error-text); font-size: 1.5em;">Derrota 😔</h4>
                     <p style="font-size: 1.2em;">{{miPuntaje}} vs {{oponentePuntaje}}</p>
                     
                     {{#if puntosGanados}}
@@ -160,7 +392,7 @@
         {{/each}}
 
         <!-- Botón para volver -->
-        <div style="text-align: center; margin-top: 30px;">
+        <div style="text-align: center; margin-top: 30px; margin-bottom: 30px;">
             <button id="btnVolver" class="btn-volver" data-duelo-id="{{duelo.id_duelo}}" onclick="location.href='/portal'">
                 🏠 Volver al Portal de Duelos
             </button>

@@ -213,6 +213,24 @@
         console.log('✅ Enviando formulario...');
         document.getElementById('formResultados').submit();
     }
-    
+
+    // Sistema de temas
+    document.addEventListener('DOMContentLoaded', function() {
+        const themeToggle = document.getElementById('theme-toggle');
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        
+        if (themeToggle) {
+            themeToggle.checked = currentTheme === 'dark';
+            
+            themeToggle.addEventListener('change', function() {
+                const newTheme = this.checked ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+        }
+    });
+
     // Iniciar (solo prepara, no inicia el examen hasta que se presione el botón)
     document.body.classList.remove('mostrar-examen');

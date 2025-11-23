@@ -3,10 +3,13 @@ const router = express.Router();
 
 // Presentación pública
 router.get('/', (req, res) => {
+    if (req.session.user) {
+        return res.redirect('/menu_principal');
+    }
     res.render('presentation', {
         layout: 'main',
         currentPath: req.path,
-        user: req.session.user || null
+        user: null
     });
 });
 

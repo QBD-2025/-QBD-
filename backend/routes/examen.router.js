@@ -23,6 +23,8 @@ router.get('/examen/:id_materia', async (req, res) => {
           [id_materia, id_materia]
       );
 
+      req.session.preguntasExamen = preguntas.map(p => ({id_pregunta: p.id_pregunta}))
+
         for (let pregunta of preguntas) {
             const [respuestas] = await db.query(
                 'SELECT id_respuesta, respuesta, correcta FROM respuesta WHERE id_pregunta = ?',
@@ -74,10 +76,6 @@ router.get('/examen/:id_materia', async (req, res) => {
 // POST RESULTADOS - VERSIÓN CORREGIDA
 // ===================================================================================
 router.post('/resultados', async (req, res) => {
-  console.log('\n🚀 ============ INICIO POST /resultados ============');
-  console.log('📥 Body completo:', req.body);
-  console.log('👤 Usuario en sesión:', req.session.user);
-  
   try {
     const id_usuario = req.session.user?.id_usuario;
     let { id_materia, respuestas, fecha_inicio_str } = req.body;
@@ -108,15 +106,10 @@ router.post('/resultados', async (req, res) => {
     // 1️⃣ OBTENER PREGUNTAS DEL EXAMEN
     let todasLasPreguntas = [];
     if (id_materia) {
-      const [preguntasDB] = await db.query(
-        'SELECT id_pregunta FROM pregunta WHERE id_materia = ? LIMIT 20',
-        [id_materia]
-      );
-      todasLasPreguntas = preguntasDB;
+      todasLasPreguntas = req.session.preguntasExamen || [];
     } else {
       todasLasPreguntas = req.session.preguntasAleatorias || [];
     }
-
     const totalPreguntas = todasLasPreguntas.length;
     
     console.log(`📊 Total de preguntas: ${totalPreguntas}`);

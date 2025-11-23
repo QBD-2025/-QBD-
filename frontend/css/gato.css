@@ -5,431 +5,522 @@ Fecha: [Fecha de creación o última edición]
 =================================================== */
 
 :root {
-            --primary-color: #4a6fa5;
-            --secondary-color: #6e9cd2;
-            --accent-correct: #4caf50;
-            --accent-incorrect: #f44336;
-            --background-light: #f8f9fa;
-            --text-dark: #333;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        body { 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
-            background-color: #f0f2f5;
-            color: var(--text-dark);
-            margin: 0;
-            padding: 20px;
-            padding-top: 100px; /* Añade esto para bajar todo el contenido */
-        }
-        
-        .gato-container { 
-            display: flex; 
-            max-width: 1400px; 
-            margin: 20px auto; 
-            gap: 20px; 
-            flex-wrap: wrap; 
-        }
-        
-        .game-main { 
-            flex: 3; 
-            min-width: 500px; 
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-        }
-        
-        .side-panel { 
-            flex: 1; 
-            min-width: 300px; 
-        }
-        
-        .panel { 
-            background-color: white; 
-            border-radius: 12px; 
-            padding: 1.2rem; 
-            margin-bottom: 1.2rem; 
-            box-shadow: var(--shadow);
-        }
-        
-        #board { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 12px; 
-            max-width: 600px; 
-            aspect-ratio: 1/1; 
-            margin: 20px auto; 
-        }
-        
-        .cell { 
-            background-color: #fff; 
-            border-radius: 12px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            font-size: 4rem; 
-            font-weight: bold; 
-            cursor: pointer; 
-            border: 2px solid #e0e0e0; 
-            transition: all 0.2s ease; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        
-        .cell:not(.disabled):hover { 
-            transform: translateY(-3px); 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            border-color: var(--secondary-color);
-        }
-        
-        .cell.disabled { 
-            cursor: not-allowed; 
-            background-color: #f5f5f5; 
-        }
-        
-        .symbol-x { 
-            color: #0d6efd; 
-        }
-        
-        .symbol-o { 
-            color: #dc3545; 
-        }
-        
-        .turno-activo { 
-            border: 3px solid #198754; 
-            box-shadow: 0 0 15px rgba(25, 135, 84, 0.3); 
-        }
+    /* TEMA CLARO */
+    --primary-color: #4a6fa5;
+    --secondary-color: #6e9cd2;
+    --accent-correct: #4caf50;
+    --accent-incorrect: #f44336;
+    --background-light: #f8f9fa;
+    --text-dark: #333;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    
+    /* Colores adicionales tema claro */
+    --bg-body: #f0f2f5;
+    --card-bg: white;
+    --border-color: #e0e0e0;
+    --panel-bg: white;
+    --chat-bg: #fff;
+    --modal-bg: white;
+    --disabled-bg: #f5f5f5;
+}
 
-        #lobby-state, #game-status-display { 
-            text-align: center; 
-            padding: 1rem; 
-            margin-bottom: 1rem; 
-            border-radius: 12px; 
-            font-size: 1.2rem; 
-            font-weight: bold; 
-        }
+[data-theme="dark"] {
+    /* TEMA OSCURO */
+    --primary-color: #6c00ff;
+    --secondary-color: #8b5cf6;
+    --accent-correct: #00e5ff;
+    --accent-incorrect: #ff5252;
+    --background-light: #1a1a2e;
+    --text-dark: #f8f9fa;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    
+    /* Colores adicionales tema oscuro */
+    --bg-body: #0a0e27;
+    --card-bg: #1e1e3c;
+    --border-color: #2d2b55;
+    --panel-bg: #2d2b55;
+    --chat-bg: #2d2b55;
+    --modal-bg: #1e1e3c;
+    --disabled-bg: #2d2b55;
+}
         
-        #lobby-state { 
-            background-color: #e9ecef; 
-        }
+body { 
+    font-family: 'Segoe UI', system-ui, sans-serif; 
+    background-color: var(--bg-body);
+    color: var(--text-dark);
+    margin: 0;
+    padding: 20px;
+    padding-top: 100px; /* Añade esto para bajar todo el contenido */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
         
-        #game-status-display { 
-            background-color: #e7f5ff; 
-            border-left: 4px solid var(--primary-color);
-        }
+.gato-container { 
+    display: flex; 
+    max-width: 1400px; 
+    margin: 20px auto; 
+    gap: 20px; 
+    flex-wrap: wrap; 
+}
         
-        #start-game-controls button, #vote-controls button { 
-            padding: 10px 15px; 
-            margin: 0 5px; 
-            cursor: pointer; 
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
+.game-main { 
+    flex: 3; 
+    min-width: 500px; 
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
         
-        #propose-start-btn {
-            background-color: var(--primary-color);
-            color: white;
-        }
+.side-panel { 
+    flex: 1; 
+    min-width: 300px; 
+}
         
-        #propose-start-btn:hover {
-            background-color: #3a5a84;
-        }
+.panel { 
+    background-color: var(--panel-bg); 
+    border-radius: 12px; 
+    padding: 1.2rem; 
+    margin-bottom: 1.2rem; 
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
         
-        #vote-yes-btn {
-            background-color: var(--accent-correct);
-            color: white;
-        }
+#board { 
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 12px; 
+    max-width: 600px; 
+    aspect-ratio: 1/1; 
+    margin: 20px auto; 
+}
         
-        #vote-no-btn {
-            background-color: var(--accent-incorrect);
-            color: white;
-        }
+.cell { 
+    background-color: var(--card-bg); 
+    border-radius: 12px; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    font-size: 4rem; 
+    font-weight: bold; 
+    cursor: pointer; 
+    border: 2px solid var(--border-color); 
+    transition: all 0.2s ease; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    color: var(--text-dark);
+}
         
-        #chatBox { 
-            height: 250px; 
-            overflow-y: auto; 
-            border: 1px solid #e0e0e0; 
-            padding: 10px; 
-            background: #fff; 
-            margin-bottom: 10px; 
-            border-radius: 8px;
-        }
+.cell:not(.disabled):hover { 
+    transform: translateY(-3px); 
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-color: var(--secondary-color);
+}
         
-        .chat-input { 
-            display: flex; 
-            gap: 8px;
-        }
+.cell.disabled { 
+    cursor: not-allowed; 
+    background-color: var(--disabled-bg); 
+}
         
-        #chatInput { 
-            flex-grow: 1; 
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-        }
+.symbol-x { 
+    color: #0d6efd; 
+}
         
-        #chatBtn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 0 20px;
-            cursor: pointer;
-        }
+.symbol-o { 
+    color: #dc3545; 
+}
         
-        .chat-message { 
-            margin-bottom: 8px; 
-            padding: 8px 12px;
-            border-radius: 18px;
-            max-width: 80%;
-            word-wrap: break-word;
-        }
-        
-        .chat-message.system { 
-            font-style: italic; 
-            color: #6c757d; 
-            text-align: center; 
-            background: #f8f9fa; 
-            padding: 8px; 
-            border-radius: 8px; 
-            margin: 0 auto;
-            max-width: 90%;
-        }
-        
-        .question-message { 
-            border-left: 4px solid #0dcaf0; 
-            padding-left: 10px; 
-            background-color: #f0faff; 
-        }
-        
-        .question-options button { 
-            display: block; 
-            width: 100%; 
-            margin-top: 5px; 
-            text-align: left; 
-            transition: background-color 0.2s; 
-        }
-        
-        .respuesta-correcta { 
-            background-color: #d1e7dd !important; 
-            border-color: #0f5132 !important; 
-            color: #0f5132; 
-            font-weight: bold; 
-        }
-        
-        .respuesta-incorrecta { 
-            background-color: #f8d7da !important; 
-            border-color: #842029 !important; 
-            color: #842029; 
-            font-weight: bold; 
-        }
+.turno-activo { 
+    border: 3px solid var(--accent-correct); 
+    box-shadow: 0 0 15px rgba(25, 135, 84, 0.3); 
+}
 
-        /* === ESTILOS PARA LA LISTA DE JUGADORES E INVITACIONES === */
-        #lista-jugadores-activos { 
-            list-style: none; 
-            padding: 0; 
-            max-height: 200px; 
-            overflow-y: auto; 
-        }
+#lobby-state, #game-status-display { 
+    text-align: center; 
+    padding: 1rem; 
+    margin-bottom: 1rem; 
+    border-radius: 12px; 
+    font-size: 1.2rem; 
+    font-weight: bold; 
+}
         
-        #lista-jugadores-activos li { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 10px; 
-            border-bottom: 1px solid #eee; 
-        }
+#lobby-state { 
+    background-color: var(--background-light); 
+    color: var(--text-dark);
+}
         
-        .btn-invite { 
-            background-color: #28a745; 
-            color: white; 
-            border: none; 
-            padding: 6px 12px; 
-            border-radius: 20px; 
-            cursor: pointer; 
-            font-size: 0.85rem;
-            transition: all 0.2s;
-        }
+#game-status-display { 
+    background-color: var(--background-light); 
+    border-left: 4px solid var(--primary-color);
+    color: var(--text-dark);
+}
         
-        .btn-invite:hover {
-            background-color: #218838;
-            transform: scale(1.05);
-        }
+#start-game-controls button, #vote-controls button { 
+    padding: 10px 15px; 
+    margin: 0 5px; 
+    cursor: pointer; 
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: all 0.2s;
+}
         
-        .btn-invite:disabled { 
-            background-color: #6c757d; 
-        }
+#propose-start-btn {
+    background-color: var(--primary-color);
+    color: white;
+}
         
-        #notification { 
-            position: fixed; 
-            top: 20px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            background-color: #333; 
-            color: white; 
-            padding: 15px 25px; 
-            border-radius: 8px; 
-            z-index: 1000; 
-            opacity: 0; 
-            transition: opacity 0.5s; 
-            pointer-events: none; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
+#propose-start-btn:hover {
+    background-color: var(--secondary-color);
+}
         
-        #notification.show { 
-            opacity: 1; 
-        }
+#vote-yes-btn {
+    background-color: var(--accent-correct);
+    color: white;
+}
+        
+#vote-no-btn {
+    background-color: var(--accent-incorrect);
+    color: white;
+}
+        
+#chatBox { 
+    height: 250px; 
+    overflow-y: auto; 
+    border: 1px solid var(--border-color); 
+    padding: 10px; 
+    background: var(--chat-bg); 
+    margin-bottom: 10px; 
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+        
+.chat-input { 
+    display: flex; 
+    gap: 8px;
+}
+        
+#chatInput { 
+    flex-grow: 1; 
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    background: var(--card-bg);
+    color: var(--text-dark);
+    transition: all 0.3s ease;
+}
+        
+#chatBtn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 0 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
 
-        .hidden { 
-            display: none; 
-        }
+#chatBtn:hover {
+    background-color: var(--secondary-color);
+}
         
-        h3 {
-            color: var(--primary-color);
-            margin-top: 0;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 10px;
-        }
+.chat-message { 
+    margin-bottom: 8px; 
+    padding: 8px 12px;
+    border-radius: 18px;
+    max-width: 80%;
+    word-wrap: break-word;
+    background: var(--background-light);
+    color: var(--text-dark);
+    transition: all 0.3s ease;
+}
         
-        /* === MODAL PARA PREGUNTAS === */
-        #question-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
+.chat-message.system { 
+    font-style: italic; 
+    color: #6c757d; 
+    text-align: center; 
+    background: var(--background-light); 
+    padding: 8px; 
+    border-radius: 8px; 
+    margin: 0 auto;
+    max-width: 90%;
+}
         
-        #question-modal.show {
-            opacity: 1;
-            pointer-events: all;
-        }
+.question-message { 
+    border-left: 4px solid var(--secondary-color); 
+    padding-left: 10px; 
+    background-color: var(--background-light); 
+}
         
-        .modal-content {
-            background-color: white;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 600px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
-            position: relative;
-        }
+.question-options button { 
+    display: block; 
+    width: 100%; 
+    margin-top: 5px; 
+    text-align: left; 
+    transition: background-color 0.2s; 
+}
         
-        #question-modal.show .modal-content {
-            transform: translateY(0);
-        }
+.respuesta-correcta { 
+    background-color: var(--accent-correct) !important; 
+    border-color: var(--accent-correct) !important; 
+    color: white; 
+    font-weight: bold; 
+}
         
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-        }
+.respuesta-incorrecta { 
+    background-color: var(--accent-incorrect) !important; 
+    border-color: var(--accent-incorrect) !important; 
+    color: white; 
+    font-weight: bold; 
+}
+
+/* === ESTILOS PARA LA LISTA DE JUGADORES E INVITACIONES === */
+#lista-jugadores-activos { 
+    list-style: none; 
+    padding: 0; 
+    max-height: 200px; 
+    overflow-y: auto; 
+}
         
-        .modal-title {
-            font-size: 1.5rem;
-            color: var(--primary-color);
-            margin: 0;
-        }
+#lista-jugadores-activos li { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 10px; 
+    border-bottom: 1px solid var(--border-color); 
+    color: var(--text-dark);
+}
         
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #999;
-        }
+.btn-invite { 
+    background-color: var(--accent-correct); 
+    color: white; 
+    border: none; 
+    padding: 6px 12px; 
+    border-radius: 20px; 
+    cursor: pointer; 
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
         
-        .close-modal:hover {
-            color: var(--accent-incorrect);
-        }
+.btn-invite:hover {
+    background-color: var(--accent-correct);
+    filter: brightness(1.1);
+    transform: scale(1.05);
+}
         
-        .question-text {
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-            line-height: 1.5;
-            color: #333;
-        }
+.btn-invite:disabled { 
+    background-color: #6c757d; 
+}
         
-        .question-options-modal {
-            display: grid;
-            gap: 12px;
-        }
+#notification { 
+    position: fixed; 
+    top: 20px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    background-color: var(--card-bg); 
+    color: var(--text-dark); 
+    padding: 15px 25px; 
+    border-radius: 8px; 
+    z-index: 1000; 
+    opacity: 0; 
+    transition: opacity 0.5s; 
+    pointer-events: none; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 1px solid var(--border-color);
+}
         
-        .option-btn {
-            padding: 14px 20px;
-            background-color: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            text-align: left;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.2s;
-        }
+#notification.show { 
+    opacity: 1; 
+}
+
+.hidden { 
+    display: none; 
+}
         
-        .option-btn:hover {
-            background-color: #e9ecef;
-            transform: translateX(5px);
-        }
+h3 {
+    color: var(--primary-color);
+    margin-top: 0;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 10px;
+}
         
-        .option-btn.correct {
-            background-color: #d4edda;
-            border-color: #c3e6cb;
-            color: #155724;
-        }
+/* === MODAL PARA PREGUNTAS === */
+#question-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
         
-        .option-btn.incorrect {
-            background-color: #f8d7da;
-            border-color: #f5c6cb;
-            color: #721c24;
-        }
+#question-modal.show {
+    opacity: 1;
+    pointer-events: all;
+}
         
-        .feedback-section {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 8px;
-            display: none;
-        }
+.modal-content {
+    background-color: var(--modal-bg);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 600px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+    position: relative;
+    color: var(--text-dark);
+}
         
-        .feedback-correct {
-            background-color: #d4edda;
-            border-left: 4px solid #28a745;
-        }
+#question-modal.show .modal-content {
+    transform: translateY(0);
+}
         
-        .feedback-incorrect {
-            background-color: #f8d7da;
-            border-left: 4px solid #dc3545;
-        }
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
         
-        .feedback-text {
-            margin: 0;
-            font-size: 1rem;
-        }
+.modal-title {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin: 0;
+}
         
-        @media (max-width: 768px) {
-            .gato-container {
-                flex-direction: column;
-            }
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-dark);
+    opacity: 0.7;
+}
+        
+.close-modal:hover {
+    color: var(--accent-incorrect);
+    opacity: 1;
+}
+        
+.question-text {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    line-height: 1.5;
+    color: var(--text-dark);
+}
+        
+.question-options-modal {
+    display: grid;
+    gap: 12px;
+}
+        
+.option-btn {
+    padding: 14px 20px;
+    background-color: var(--background-light);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s;
+    color: var(--text-dark);
+}
+        
+.option-btn:hover {
+    background-color: var(--border-color);
+    transform: translateX(5px);
+}
+        
+.option-btn.correct {
+    background-color: var(--accent-correct);
+    border-color: var(--accent-correct);
+    color: white;
+}
+        
+.option-btn.incorrect {
+    background-color: var(--accent-incorrect);
+    border-color: var(--accent-incorrect);
+    color: white;
+}
+        
+.feedback-section {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    display: none;
+    background-color: var(--background-light);
+}
+        
+.feedback-correct {
+    background-color: rgba(0, 229, 255, 0.1);
+    border-left: 4px solid var(--accent-correct);
+}
+        
+.feedback-incorrect {
+    background-color: rgba(255, 82, 82, 0.1);
+    border-left: 4px solid var(--accent-incorrect);
+}
+        
+.feedback-text {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text-dark);
+}
+
+/* === BOTÓN TOGGLE TEMA === */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    background: var(--secondary-color);
+}
+        
+@media (max-width: 768px) {
+    .gato-container {
+        flex-direction: column;
+    }
             
-            .game-main, .side-panel {
-                min-width: 100%;
-            }
+    .game-main, .side-panel {
+        min-width: 100%;
+    }
             
-            .modal-content {
-                width: 95%;
-                padding: 15px;
-            }
-        }
+    .modal-content {
+        width: 95%;
+        padding: 15px;
+    }
+    
+    .theme-toggle {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+        top: 15px;
+        right: 15px;
+    }
+}

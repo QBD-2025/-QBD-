@@ -15,6 +15,9 @@ router.post('/register', async (req, res) => {
     let errorMessage = '';
     const emailRegex = /^[^\s@]+@[^\s@]+\.(com|mx)$/i;
 
+    if (username.length > 50) {
+        errorMessage = 'usernameTooLong';
+    }
     // Validaciones básicas
     if (!emailRegex.test(email)) {
         errorMessage = 'invalidEmail';
@@ -56,11 +59,7 @@ router.post('/register', async (req, res) => {
             [username, email, hashedPassword, 0, token, tokenExpires, points, 1, 1]
         );
 
-        const id_usuario = result.insertId; // ID real del usuario
-
-        console.log('=== DEBUG REGISTRO ===');
-        console.log('Usuario registrado con ID:', id_usuario);
-        console.log('Carrera en sesión:', req.session.carreraSeleccionada);
+        const id_usuario = result.insertId;
 
         // --- INSERTAR en usuario_carrera si hay carrera seleccionada ---
         const carreraSeleccionada = req.session.carreraSeleccionada;
