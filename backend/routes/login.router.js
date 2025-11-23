@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const { enviarCorreoRecuperacion } = require('../utils/mail.js');
+const { enviarCorreoVerificacion } = require('../utils/mail.js');
+const crypto = require("crypto")
 
 // ----------------- Sesiones activas -----------------
 global.sesionesActivas = new Set();
@@ -43,6 +44,7 @@ router.get('/menu_principal', isAuthenticated, (req, res) => {
 router.get('/login', (req, res) => {
     res.render('login', {
         error: req.query.error,
+        mensaje: req.query.mensaje || null,
         verificado: req.query.verificado,
         layout: 'auth-layout',
         title: 'Iniciar Sesión',
@@ -62,8 +64,6 @@ router.get('/sin-carrera', async (req, res) =>{
     }
 })
 
-// Procesar login
-// Procesar login
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -105,16 +105,29 @@ router.post('/login', async (req, res) => {
             }
         }
 
-        // Usuario no verificado
         if (user.verificado === 0) {
-            return res.redirect(`/verificacion?correo=${encodeURIComponent(email)}&error=Cuenta no verificada`);
+
+            // Crear nuevo token
+            const token = crypto.randomBytes(16).toString('hex');
+            const tokenExpires = new Date(Date.now() + 1000 * 60 * 10); // 10 minutos
+
+            await req.pool.query(
+                'UPDATE usuario SET token = ?, token_expira = ? WHERE id_usuario = ?',
+                [token, tokenExpires, user.id_usuario]
+            );
+
+            const mailResult = await enviarCorreoVerificacion(user.email, token);
+
+            if (mailResult.ok) {
+                return res.redirect(`/verificacion?correo=${encodeURIComponent(email)}&resent=true`);
+            }
+
+            return res.redirect('/login?error=No se pudo reenviar el codigo');
         }
 
-        // Validar contraseña
         const match = await bcrypt.compare(password, user.password);
         if (!match) return res.redirect('/login?error=Contraseña incorrecta');
 
-        // ⭐ OBTENER LA CARRERA DEL USUARIO
         const [carreraResult] = await req.pool.query(
             `SELECT c.id_carrera 
             FROM carrera c
@@ -125,14 +138,13 @@ router.post('/login', async (req, res) => {
         );
 
         if (!carreraResult || carreraResult.length === 0){
-            // ✅ CORREGIDO: usar foto_perfil en lugar de avatarUrl
             req.session.user = {
                 id_usuario: user.id_usuario,
                 username: user.username,
                 email: user.email,
                 apodo: user.apodo || user.username,
                 descripcion: user.descripcion || '',
-                foto_perfil: user.foto_perfil || '/uploads/default_avatar.png', // ✅
+                foto_perfil: user.foto_perfil || '/uploads/default_avatar.png',
                 id_tp_usuario: user.id_tp_usuario,
                 id_carrera: null
             };
@@ -145,31 +157,21 @@ router.post('/login', async (req, res) => {
             return res.redirect('/sin-carrera');
         }
 
-        // ✅ CORREGIDO: Crear sesión completa con todos los campos
         req.session.user = {
             id_usuario: user.id_usuario,
             username: user.username,
             email: user.email,
             apodo: user.apodo || user.username,
             descripcion: user.descripcion || '',
-            foto_perfil: user.foto_perfil || '/uploads/default_avatar.png', // ✅
+            foto_perfil: user.foto_perfil || '/uploads/default_avatar.png', 
             id_tp_usuario: user.id_tp_usuario,
             id_carrera: carreraResult.length > 0 ? carreraResult[0].id_carrera : null
         };
 
-        console.log('✅ Usuario logueado:', {
-            id: req.session.user.id_usuario,
-            username: req.session.user.username,
-            foto_perfil: req.session.user.foto_perfil,
-            carrera: req.session.user.id_carrera
-        });
-
-        // Marcar usuario activo
         if (user.id_status !== 1) {
             await req.pool.query('UPDATE usuario SET id_status = 1 WHERE id_usuario = ?', [user.id_usuario]);
         }
 
-        // Agregar a sesiones activas
         global.sesionesActivas.add(user.id_usuario);
 
         req.session.save(async (err) => {
@@ -178,7 +180,6 @@ router.post('/login', async (req, res) => {
                 return res.redirect('/login?error=serverError');
             }
 
-            // Redirecciones según rol
             switch (user.id_tp_usuario) {
                 case 3:
                     return res.redirect('/admin');
@@ -199,45 +200,6 @@ router.post('/login', async (req, res) => {
     } catch (error) {
         console.error('Error al iniciar sesión:', error);
         return res.redirect('/login?error=serverError');
-    }
-});
-
-router.post('/asignar-carrera', isAuthenticated, async (req, res) => {
-    const userId = req.session.user?.id_usuario;
-    const { id_carrera } = req.body;
-    console.log('userId:', userId, 'id_carrera:', id_carrera);
-
-    if (!userId || !id_carrera) {
-        return res.status(400).send('Usuario o carrera no definidos');
-    }
-
-    try {
-        await req.pool.query(
-            'INSERT INTO usuario_carrera (id_usuario, id_carrera) VALUES (?, ?)',
-            [userId, id_carrera]
-        );  
-        
-        // ✅ Actualizar sesión con carrera
-        req.session.user.id_carrera = id_carrera;
-
-        switch (req.session.user.id_tp_usuario) {
-            case 3:
-                return res.redirect('/admin');
-            case 2:
-                return res.redirect('/editor/panel');
-            default: {
-                const [datos] = await req.pool.query('SELECT dato, imagen FROM dato_curioso ORDER BY RAND() LIMIT 1');
-                const datoCurioso = datos[0];
-                return res.render('dato-sesion', {
-                    layout: false,
-                    dato: datoCurioso.dato,
-                    imagen: datoCurioso.imagen ? datoCurioso.imagen.toString('base64') : null,
-                });
-            }
-        }
-    } catch (error) {
-        console.error('Error al guardar carrera:', error);
-        res.status(500).send('Error al asignar carrera');
     }
 });
 

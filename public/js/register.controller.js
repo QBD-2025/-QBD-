@@ -17,6 +17,7 @@ function validarFormulario() {
     if (!email.value.trim()) {
         mostrarError(email, "El correo es obligatorio");
         valido = false;
+    
     } else if (!/^[\w\.-]+@[\w\.-]+\.\w{2,4}$/.test(email.value)) {
         mostrarError(email, "Correo inválido");
         valido = false;
@@ -70,7 +71,9 @@ document.addEventListener("DOMContentLoaded", function () {
             El correo ya está registrado o falta verificarse.<br>
             <a href="/login" style="color: #7B24C0; text-decoration: underline;">Inicia sesión aquí</a>
         `;
-    } else if (error === "passwordMismatch") {
+    } else if (error === "usernameTooLong") {
+        errorMensaje.textContent= "Nombre de usuario muy largo"
+    }else if (error === "passwordMismatch") {
         errorMensaje.textContent = "Las contraseñas no coinciden.";
     } else if (error === "passwordLength") {
         errorMensaje.textContent = "La contraseña debe tener entre 8 y 20 caracteres.";
@@ -88,6 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.getElementById("registrationForm").addEventListener("submit", function (event) {
+    let username = document.getElementById("username").value
     let password = document.getElementById("password").value;
     let confirmPassword = document.getElementById("confirm_password").value;
     let email = document.getElementById("email").value;
@@ -99,6 +103,12 @@ document.getElementById("registrationForm").addEventListener("submit", function 
         errorMensaje.textContent = "El correo no es válido.";
         event.preventDefault();
         return;
+    }
+
+    if (username.length > 50) {
+        errorMensaje.textContent = "El nombre de usuario es muy largo"
+        event.preventDefault()
+        return 
     }
 
     if (password.length > 20 || password.length < 8) {
