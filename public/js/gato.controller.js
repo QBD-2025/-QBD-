@@ -2,7 +2,7 @@
         const socket = io();
         const salaId = "{{salaId}}";
         const usuario = window.DATA_USER;
-        const materiasPrecargadas = window.DATA_MATERIAS;
+        const materiasPrecargadas = window.MATERIAS_DATA;
         
         const elements = {
             board: document.getElementById('board'),

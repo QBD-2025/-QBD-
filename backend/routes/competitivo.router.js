@@ -8,23 +8,25 @@ const NUM_PREGUNTAS_POR_DUELO = 10;
 
 // --- FUNCIONES AUXILIARES ---
 
-// Función para obtener las respuestas detalladas de un usuario en un duelo
 async function obtenerRespuestas(idUsuario, salaId) {
     const [respuestas] = await pool.query(`
         SELECT 
-            dr.id_pregunta,
+            dp.id_pregunta,
             dr.id_respuesta,
             p.pregunta,
             r.respuesta as texto_respuesta,
-            r.correcta as es_correcta,
-            dp.orden
-        FROM duelos_respuestas dr
-        INNER JOIN duelos_preguntas dp ON dr.id_duelo = dp.id_duelo AND dr.id_pregunta = dp.id_pregunta
-        INNER JOIN pregunta p ON dr.id_pregunta = p.id_pregunta
-        INNER JOIN respuesta r ON dr.id_respuesta = r.id_respuesta
-        WHERE dr.id_duelo = ? AND dr.id_usuario = ?
+            COALESCE(r.correcta, 0) as es_correcta,
+            dp.orden,
+            CASE WHEN dr.id_respuesta IS NULL THEN 1 ELSE 0 END as sin_responder
+        FROM duelos_preguntas dp
+        INNER JOIN pregunta p ON dp.id_pregunta = p.id_pregunta
+        LEFT JOIN duelos_respuestas dr ON dr.id_duelo = dp.id_duelo 
+            AND dr.id_pregunta = dp.id_pregunta 
+            AND dr.id_usuario = ?
+        LEFT JOIN respuesta r ON dr.id_respuesta = r.id_respuesta
+        WHERE dp.id_duelo = ?
         ORDER BY dp.orden
-    `, [salaId, idUsuario]);
+    `, [idUsuario, salaId]);
     
     return respuestas;
 }
@@ -65,9 +67,19 @@ async function obtenerOponente(idUsuario, salaId) {
     return oponente[0];
 }
 
-// Función para calcular el puntaje basado en respuestas correctas
 function calcularPuntaje(respuestas) {
-    return respuestas.filter(r => r.es_correcta).length;
+    // Contar solo las que fueron respondidas Y correctas
+    return respuestas.filter(r => r.id_respuesta !== null && r.es_correcta).length;
+}
+
+async function obtenerTotalPreguntasDuelo(salaId) {
+    const [result] = await pool.query(`
+        SELECT COUNT(*) as total 
+        FROM duelos_preguntas 
+        WHERE id_duelo = ?
+    `, [salaId]);
+    
+    return result[0]?.total || 0;
 }
 
 // Función para obtener el puesto/ranking de un usuario
@@ -194,6 +206,47 @@ async function obtenerDuelo(salaId) {
     `, [salaId]);
     
     return duelo[0];
+}
+
+async function actualizarNotificacionesAlTerminar(salaId, conn) {
+    try {
+        console.log(`[ACTUALIZAR NOTIF] Verificando si ambos terminaron: ${salaId}`);
+        
+        // 1️⃣ Verificar si ambos completaron
+        const [duelo] = await conn.query(`
+            SELECT respondido_retador, respondido_oponente, id_retador, id_defensor
+            FROM duelos 
+            WHERE id_duelo = ?
+        `, [salaId]);
+        
+        if (duelo.length === 0) return;
+        
+        const ambosTerminaron = duelo[0].respondido_retador && duelo[0].respondido_oponente;
+        
+        if (!ambosTerminaron) {
+            return;
+        }
+        
+        console.log(`[ACTUALIZAR NOTIF] ✅ Ambos terminaron, actualizando notificaciones`);
+        
+        // 2️⃣ Actualizar mensaje de TODAS las notificaciones relacionadas
+        await conn.query(`
+            UPDATE notificaciones 
+            SET 
+                mensaje = 'Duelo completado - Ver resultados',
+                tipo = 'duelo_completado'
+            WHERE tipo = 'duelo_aceptado' 
+            AND (
+                JSON_EXTRACT(extra_data, '$.salaId') = ?
+                OR JSON_EXTRACT(extra_data, '$.id_duelo') = ?
+            )
+        `, [salaId, salaId]);
+        
+        console.log(`[ACTUALIZAR NOTIF] ✅ Notificaciones actualizadas a 'duelo_completado'`);
+        
+    } catch (error) {
+        console.error('❌ Error actualizando notificaciones:', error);
+    }
 }
 
 // =============================================
@@ -692,12 +745,14 @@ router.post('/duelo/responder/:salaId', async (req, res) => {
         }
         
         console.log(`[RESPONDER] ✅ Duelo marcado como respondido`);
+
+        await actualizarNotificacionesAlTerminar(salaId, conn);
         
         await conn.commit();
         await conn.release();
         
         res.redirect(`/duelo/resultados/${salaId}`);
-        
+
     } catch (error) {
         await conn.rollback();
         await conn.release();
@@ -718,7 +773,6 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
     console.log(`[RESULTADOS] Usuario ${idUsuario} consultando resultados del duelo ${salaId}`);
     
     try {
-        // ✅ 1. OBTENER INFORMACIÓN DEL DUELO
         const duelo = await obtenerDuelo(salaId);
         if (!duelo) {
             console.log(`[RESULTADOS] ❌ Duelo no encontrado: ${salaId}`);
@@ -727,21 +781,19 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
         
         console.log(`[RESULTADOS] Duelo encontrado. Estado: ${duelo.estado}`);
         
-        // ✅ 2. OBTENER MIS RESPUESTAS
+        // 🔥 OBTENER TODAS LAS PREGUNTAS (incluyendo no respondidas)
         const misRespuestasDetalladas = await obtenerRespuestas(idUsuario, salaId);
         
         if (misRespuestasDetalladas.length === 0) {
-            console.log(`[RESULTADOS] ⚠️ Usuario no ha respondido aún`);
-            return res.redirect(`/duelo/examen/${salaId}?mensaje=Debes completar el examen primero`);
+            console.log(`[RESULTADOS] ⚠️ No hay preguntas en este duelo`);
+            return res.redirect(`/portal?error=duelo_sin_preguntas`);
         }
         
-        console.log(`[RESULTADOS] ✅ ${misRespuestasDetalladas.length} respuestas del usuario cargadas`);
+        console.log(`[RESULTADOS] ✅ ${misRespuestasDetalladas.length} preguntas del duelo cargadas`);
         
-        // ✅ 3. VERIFICAR SI AMBOS TERMINARON
         const ambosTerminaron = await verificarAmbosTerminaron(salaId);
         console.log(`[RESULTADOS] Ambos terminaron: ${ambosTerminaron}`);
         
-        // ✅ 4. OBTENER INFORMACIÓN DEL OPONENTE
         let respuestasOponenteDetalladas = [];
         let oponentePuntaje = null;
         let nombreOponente = '';
@@ -753,12 +805,12 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
             
             if (oponente) {
                 nombreOponente = oponente.username;
+                // 🔥 OBTENER TODAS LAS PREGUNTAS DEL OPONENTE
                 respuestasOponenteDetalladas = await obtenerRespuestas(oponente.id, salaId);
                 oponentePuntaje = calcularPuntaje(respuestasOponenteDetalladas);
                 
                 console.log(`[RESULTADOS] Oponente: ${nombreOponente}, Puntaje: ${oponentePuntaje}`);
                 
-                // ✅ 5. FINALIZAR DUELO (solo si no está finalizado)
                 if (duelo.estado !== 'finalizado') {
                     console.log(`[RESULTADOS] 🏁 Finalizando duelo...`);
                     
@@ -793,12 +845,10 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
                         
                         console.log(`[RESULTADOS] ✅ Duelo finalizado. Puntos: ${puntosGanados}`);
                     } else {
-                        // En caso de empate, puntos = 0
                         puntosGanados = 0;
                         console.log(`[RESULTADOS] ✅ Empate - 0 puntos`);
                     }
                 } else {
-                    // Si ya está finalizado, obtener los puntos del historial
                     console.log(`[RESULTADOS] Duelo ya finalizado, obteniendo del historial`);
                     
                     const [historial] = await pool.query(`
@@ -819,14 +869,10 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
                         
                         if (empate) {
                             puntosGanados = 0;
-                            console.log(`[RESULTADOS] Empate registrado - 0 puntos`);
                         } else {
-                            // Obtener mis puntos según mi rol (retador o defensor)
                             puntosGanados = esRetador ? hist.puntos_retador : hist.puntos_defensor;
-                            console.log(`[RESULTADOS] Puntos desde historial: ${puntosGanados} (${esRetador ? 'retador' : 'defensor'})`);
                         }
                         
-                        // Obtener info de ranking actual
                         const puestoRetador = await obtenerRankingUsuario(duelo.retador_id);
                         const puestoDefensor = await obtenerRankingUsuario(duelo.defensor_id);
                         
@@ -836,42 +882,25 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
                             puestoRetador,
                             puestoDefensor
                         };
-                        
-                        console.log(`[RESULTADOS] Info ranking recuperada`);
-                    } else {
-                        console.warn(`[RESULTADOS] ⚠️ No se encontró historial para duelo finalizado ${salaId}`);
-                        // Fallback: calcular en el momento
-                        const miPuntaje = calcularPuntaje(misRespuestasDetalladas);
-                        
-                        if (miPuntaje > oponentePuntaje) {
-                            puntosGanados = 10; // Valor por defecto
-                        } else if (miPuntaje < oponentePuntaje) {
-                            puntosGanados = -5; // Valor por defecto
-                        } else {
-                            puntosGanados = 0;
-                        }
-                        
-                        console.log(`[RESULTADOS] Usando puntos por defecto: ${puntosGanados}`);
                     }
                 }
             }
         }
         
-        // ✅ 6. COMBINAR RESPUESTAS PARA MOSTRAR
+        // 🔥 COMBINAR RESPUESTAS - Ahora incluye preguntas sin responder
         let respuestasCombinadas = misRespuestasDetalladas.map((miResp, index) => {
             const respOponente = respuestasOponenteDetalladas.find(r => r.id_pregunta === miResp.id_pregunta);
             return {
                 id_pregunta: miResp.id_pregunta,
                 orden: index + 1,
                 pregunta: miResp.pregunta,
-                mi_respuesta_texto: miResp.texto_respuesta,
-                mi_correcta: miResp.es_correcta,
-                oponente_respuesta_texto: respOponente ? respOponente.texto_respuesta : null,
-                oponente_correcta: respOponente ? respOponente.es_correcta : null,
+                mi_respuesta_texto: miResp.texto_respuesta || 'Sin responder',
+                mi_correcta: miResp.es_correcta || false,
+                oponente_respuesta_texto: respOponente ? (respOponente.texto_respuesta || 'Sin responder') : null,
+                oponente_correcta: respOponente ? (respOponente.es_correcta || false) : null,
             };
         });
         
-        // ✅ 7. ELIMINAR DUPLICADOS (por ID de pregunta)
         const respuestasUnicas = Array.from(
             new Map(respuestasCombinadas.map(r => [r.id_pregunta, r])).values()
         ).map((r, index) => ({ ...r, orden: index + 1 }));
@@ -879,12 +908,11 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
         console.log(`[RESULTADOS] Total preguntas únicas: ${respuestasUnicas.length}`);
         
         const miPuntaje = calcularPuntaje(misRespuestasDetalladas);
-        const correctas = misRespuestasDetalladas.filter(r => r.es_correcta).length;
-        const totalPreguntas = respuestasUnicas.length;
+        const correctas = misRespuestasDetalladas.filter(r => r.id_respuesta !== null && r.es_correcta).length;
+        const totalPreguntas = respuestasUnicas.length; // 🔥 Este es el total correcto
         
         console.log(`[RESULTADOS] Mi puntaje: ${miPuntaje}/${totalPreguntas}`);
         
-        // ✅ 9. LIMPIAR NOTIFICACIONES DE ESTE DUELO
         try {
             await pool.query(`
                 DELETE FROM notificaciones 
@@ -897,7 +925,6 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
             console.warn('⚠️ No se pudieron limpiar las notificaciones:', cleanupError.message);
         }
         
-        // ✅ 10. RENDERIZAR VISTA
         res.render('resultados-duelo', {
             layout: 'main',
             user: req.session.user,

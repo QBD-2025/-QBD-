@@ -1,359 +1,431 @@
-/* ==================================================
-Archivo: usuarioEditor.css
-- Definición de colores y variables reutilizables
-- Facilita cambios de tema y consistencia en toda la página
-Fecha: [Fecha de creación o última edición]
-================================================== */
 :root {
-  --azul-oscuro: #1a237e;       /* Azul intenso para encabezados y títulos */
-  --azul-medio: #283593;        /* Azul medio para degradados y textos secundarios */
-  --azul-claro: #3949ab;        /* Azul claro para hover y fondos */
-  --mostaza: #ffb300;           /* Color mostaza para acentos y botones */
-  --mostaza-claro: #ffca28;     /* Versión clara del mostaza para hover */
-  --blanco: #ffffff;            /* Blanco estándar para fondos y textos claros */
-  --gris-claro: #f8f9fa;        /* Gris muy claro para fondos y secciones */
-  --gris-medio: #e9ecef;        /* Gris medio para fondos secundarios */
-  --gris-oscuro: #495057;       /* Gris oscuro para notas o subtítulos */
-  --texto-oscuro: #212121;      /* Color de texto principal */
-  --borde: #e1e5e9;             /* Color de bordes para inputs y contenedores */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --text-primary: #333333;
+    --text-secondary: #555555;
+    --accent-yellow: #FFC107;
+    --accent-blue: #0817eb;
+    --header-gradient-start: #0815c5;
+    --header-gradient-end: #0c0264;
+    --shadow-light: rgba(0, 0, 0, 0.1);
+    --shadow-medium: rgba(0, 0, 0, 0.15);
+    --shadow-heavy: rgba(0, 0, 0, 0.25);
 }
 
-/* ==================================================
-RESET Y BASE
-- Elimina márgenes y paddings por defecto
-- Define box-sizing para un control más consistente del layout
-================================================== */
+[data-theme="dark"] {
+    --bg-primary: #0a0e27;
+    --bg-secondary: #151b3d;
+    --text-primary: #ffffff;
+    --text-secondary: #e0e0e0;
+    --accent-yellow: #FFC107;
+    --accent-blue: #4A90E2;
+    --header-gradient-start: #6c00ff;
+    --header-gradient-end: #0000ff;
+    --shadow-light: rgba(0, 0, 0, 0.4);
+    --shadow-medium: rgba(0, 0, 0, 0.5);
+    --shadow-heavy: rgba(0, 0, 0, 0.7);
+}
+
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box; /* Incluye padding y border en el ancho total */
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; /* Fuente principal */
-  background: var(--gris-medio);  /* Fondo principal */
-  color: var(--texto-oscuro);     /* Color de texto general */
-  line-height: 1.5;               /* Espaciado entre líneas */
-  font-weight: 400;               /* Peso de fuente normal */
-  min-height: 100vh;              /* Altura mínima de pantalla completa */
-  display: flex;                  /* Centra vertical y horizontal */
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;                  /* Espacio interno general */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.5;
+    font-weight: 400;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
 }
 
-/* ==================================================
-   CONTENEDOR PRINCIPAL
-   - Wrapper del perfil
-   - Maneja ancho máximo y centrado
-================================================== */
 .profile-full {
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto; /* Centrado horizontal */
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
 }
 
 .profile-card {
-  background: var(--blanco);                       /* Fondo blanco de la tarjeta */
-  border-radius: 16px;                             /* Bordes redondeados */
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);      /* Sombra intensa */
-  overflow: hidden;                                /* Oculta overflow */
-  border: 3px solid var(--mostaza);               /* Borde decorativo */
+    background: var(--bg-primary);
+    border-radius: 16px;
+    box-shadow: 0 20px 40px var(--shadow-heavy);
+    overflow: hidden;
+    border: 3px solid var(--accent-yellow);
+    animation: slideUp 0.6s ease-out;
 }
 
-/* ==================================================
-   ENCABEZADO
-   - Fondo degradado, centrado de texto y padding
-   - Contiene título y subtítulo del perfil
-================================================== */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .profile-header {
-  background: linear-gradient(135deg, var(--azul-oscuro), var(--azul-medio)); /* Degradado azul */
-  color: var(--blanco);           /* Texto blanco */
-  padding: 3rem 3rem 2rem 3rem;  /* Padding superior, lateral e inferior */
-  text-align: center;             /* Centrado de texto */
-  border-bottom: 4px solid var(--mostaza); /* Línea decorativa inferior */
+    background: linear-gradient(135deg, var(--header-gradient-start), var(--header-gradient-end));
+    color: var(--bg-primary);
+    padding: 3rem 3rem 2rem 3rem;
+    text-align: center;
+    border-bottom: 4px solid var(--accent-yellow);
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--accent-yellow);
+}
+
+[data-theme="dark"] .profile-header {
+    box-shadow: 0 4px 20px rgba(108, 0, 255, 0.4), 0 0 40px rgba(0, 0, 255, 0.2);
 }
 
 .profile-title {
-  font-size: 2.5rem;               /* Tamaño del título principal */
-  font-weight: 700;                 /* Negrita fuerte */
-  margin-bottom: 0.5rem;           /* Separación inferior */
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); /* Sombra de texto */
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    color: var(--accent-yellow);
+    animation: fadeIn 0.8s ease-out 0.2s both;
 }
 
 .profile-subtitle {
-  font-size: 1.1rem;               /* Tamaño del subtítulo */
-  opacity: 0.9;                     /* Ligeramente transparente */
-  font-weight: 400;                 /* Peso normal */
+    font-size: 1.1rem;
+    opacity: 0.9;
+    font-weight: 400;
+    color: var(--bg-primary);
+    animation: fadeIn 0.8s ease-out 0.4s both;
 }
 
-/* ==================================================
-   CUERPO DEL FORMULARIO
-   - Padding interno y fondo blanco
-================================================== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .profile-body {
-  padding: 3rem;                  /* Espacio interno */
-  background: var(--blanco);      /* Fondo de la sección */
+    padding: 3rem;
+    background: var(--bg-primary);
 }
 
-/* ==================================================
-   SECCIONES DEL FORMULARIO
-   - Margen inferior entre secciones
-   - Títulos con color y línea decorativa
-================================================== */
 .form-section {
-  margin-bottom: 3rem;            /* Separación inferior entre secciones */
+    margin-bottom: 3rem;
+    animation: slideIn 0.6s ease-out both;
+}
+
+.form-section:nth-child(1) { animation-delay: 0.1s; }
+.form-section:nth-child(2) { animation-delay: 0.2s; }
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 .section-title {
-  font-size: 1.4rem;             /* Tamaño del título de sección */
-  font-weight: 600;               /* Semi-negrita */
-  color: var(--azul-oscuro);      /* Color azul oscuro */
-  margin-bottom: 1.5rem;          /* Espacio inferior */
-  padding-bottom: 0.75rem;        /* Padding inferior para línea */
-  border-bottom: 2px solid var(--mostaza); /* Línea decorativa */
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--accent-yellow);
+    position: relative;
 }
 
-/* ==================================================
-   SECCIÓN AVATAR
-   - Contenedor flexible con preview e inputs
-   - Fondo gris claro y bordes redondeados
-================================================== */
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 60px;
+    height: 2px;
+    background: var(--accent-blue);
+}
+
 .avatar-section {
-  display: flex;
-  align-items: center;
-  gap: 2.5rem;                   /* Separación entre elementos */
-  padding: 2rem;                  /* Espacio interno */
-  background: var(--gris-claro);
-  border-radius: 12px;
-  border: 2px solid var(--borde);
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+    padding: 2rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--bg-secondary);
+    box-shadow: 0 4px 12px var(--shadow-light);
+    transition: all 0.3s ease;
+}
+
+.avatar-section:hover {
+    box-shadow: 0 8px 20px var(--shadow-medium);
+    transform: translateY(-2px);
 }
 
 .avatar-preview-container {
-  flex-shrink: 0;                 /* No reduce tamaño */
+    flex-shrink: 0;
 }
 
 .avatar-preview {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;             /* Avatar circular */
-  overflow: hidden;
-  background: linear-gradient(135deg, var(--azul-oscuro), var(--azul-medio));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--blanco);
-  font-weight: 600;
-  font-size: 2.5rem;
-  border: 4px solid var(--blanco);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--header-gradient-start), var(--header-gradient-end));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bg-primary);
+    font-weight: 600;
+    font-size: 2.5rem;
+    border: 4px solid var(--accent-yellow);
+    box-shadow: 0 8px 20px var(--shadow-medium);
+    transition: all 0.3s ease;
+}
+
+.avatar-preview:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 25px var(--shadow-heavy);
 }
 
 .avatar-preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;              /* Ajusta la imagen al contenedor */
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .avatar-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;                      /* Separación entre botones */
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .avatar-input {
-  display: none;                  /* Input oculto */
+    display: none;
 }
 
 .change-avatar-btn {
-  padding: 1rem 2rem;
-  background: var(--azul-medio);
-  color: var(--blanco);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 1rem;
-  transition: all 0.2s ease;
-  width: fit-content;
+    padding: 1rem 2rem;
+    background: var(--accent-blue);
+    color: var(--bg-primary);
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    width: fit-content;
+    border-bottom: 3px solid var(--header-gradient-end);
 }
 
 .change-avatar-btn:hover {
-  background: var(--azul-claro);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(57, 73, 171, 0.3);
+    background: var(--header-gradient-end);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(8, 23, 235, 0.4);
+}
+
+[data-theme="dark"] .change-avatar-btn:hover {
+    box-shadow: 0 6px 15px rgba(108, 0, 255, 0.6);
 }
 
 .avatar-note {
-  font-size: 0.9rem;
-  color: var(--gris-oscuro);
-  margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
 }
 
-/* ==================================================
-   FORMULARIO GRID
-   - Distribución en columnas para campos
-   - Grid responsive y campos full-width
-================================================== */
 .form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;                   /* Espacio entre campos */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 
 .form-group.full-width {
-  grid-column: 1 / -1;           /* Ocupa toda la fila */
+    grid-column: 1 / -1;
 }
 
 .form-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;                   /* Espacio entre icono y texto */
-  font-weight: 600;
-  color: var(--azul-medio);
-  margin-bottom: 0.75rem;
-  font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
 }
 
 .label-icon {
-  font-size: 1.1rem;
+    font-size: 1.1rem;
+    color: var(--accent-blue);
 }
 
 .form-input,
 .form-textarea {
-  padding: 1rem 1.25rem;
-  border: 2px solid var(--borde);
-  border-radius: 8px;
-  font-size: 1rem;
-  font-family: inherit;
-  transition: all 0.2s ease;
-  background: var(--blanco);
+    padding: 1rem 1.25rem;
+    border: 2px solid var(--bg-secondary);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    box-shadow: 0 2px 6px var(--shadow-light);
 }
 
 .form-input:focus,
 .form-textarea:focus {
-  border-color: var(--mostaza);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(255, 179, 0, 0.1); /* Resalta campo activo */
+    border-color: var(--accent-blue);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(8, 23, 235, 0.1), 0 4px 12px var(--shadow-light);
+}
+
+[data-theme="dark"] .form-input:focus,
+[data-theme="dark"] .form-textarea:focus {
+    box-shadow: 0 0 0 3px rgba(108, 0, 255, 0.3), 0 4px 12px var(--shadow-light);
 }
 
 .form-textarea {
-  resize: vertical;              /* Permite cambiar altura */
-  min-height: 120px;
+    resize: vertical;
+    min-height: 120px;
 }
 
-/* Campos de solo lectura */
 .display-field {
-  padding: 1rem 1.25rem;
-  background: var(--gris-claro);
-  border: 2px solid var(--borde);
-  border-radius: 8px;
-  font-size: 1rem;
-  color: var(--texto-oscuro);
-  font-weight: 500;
+    padding: 1rem 1.25rem;
+    background: var(--bg-secondary);
+    border: 2px solid var(--bg-secondary);
+    border-radius: 8px;
+    font-size: 1rem;
+    color: var(--text-primary);
+    font-weight: 500;
+    box-shadow: 0 2px 6px var(--shadow-light);
 }
 
 .account-type {
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--azul-oscuro);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent-blue);
 }
 
-/* ==================================================
-   BOTONES DE ACCIÓN
-   - Botones guardar y cancelar
-   - Efectos hover y transición suave
-================================================== */
 .form-actions {
-  display: flex;
-  gap: 1.5rem;
-  justify-content: flex-end;
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 2px solid var(--gris-medio);
+    display: flex;
+    gap: 1.5rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--bg-secondary);
+    animation: fadeIn 0.8s ease-out 0.6s both;
 }
 
 .cancel-btn,
 .save-btn {
-  padding: 1.25rem 3rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 1.1rem;
-  transition: all 0.2s ease;
-  min-width: 180px;
+    padding: 1.25rem 3rem;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    min-width: 180px;
+    border-bottom: 3px solid;
 }
 
 .save-btn {
-  background: var(--mostaza);
-  color: var(--azul-oscuro);
+    background: var(--accent-yellow);
+    color: var(--text-primary);
+    border-bottom-color: #e0a800;
 }
 
 .save-btn:hover {
-  background: var(--mostaza-claro);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(255, 179, 0, 0.4);
+    background: #ffd44f;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 193, 7, 0.4);
 }
 
 .cancel-btn {
-  background: transparent;
-  color: var(--azul-medio);
-  border: 2px solid var(--azul-medio);
+    background: transparent;
+    color: var(--accent-blue);
+    border: 2px solid var(--accent-blue);
+    border-bottom-color: var(--header-gradient-end);
 }
 
 .cancel-btn:hover {
-  background: var(--azul-medio);
-  color: var(--blanco);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(57, 73, 171, 0.3);
+    background: var(--accent-blue);
+    color: var(--bg-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(8, 23, 235, 0.4);
 }
 
-/* ==================================================
-   RESPONSIVE
-   - Ajustes para pantallas menores a 768px
-   - Campos, grid y botones se adaptan al ancho
-================================================== */
+[data-theme="dark"] .cancel-btn:hover {
+    box-shadow: 0 8px 20px rgba(108, 0, 255, 0.6);
+}
+
 @media (max-width: 768px) {
-  body {
-    padding: 1rem;               /* Menos padding en móvil */
-  }
-  
-  .profile-header {
-    padding: 2rem 1.5rem;
-  }
-  
-  .profile-body {
-    padding: 2rem 1.5rem;
-  }
-  
-  .profile-title {
-    font-size: 2rem;             /* Ajusta tamaño de título */
-  }
-  
-  .avatar-section {
-    flex-direction: column;      /* Avatar y controles apilados */
-    text-align: center;
-    gap: 1.5rem;
-  }
-  
-  .form-grid {
-    grid-template-columns: 1fr;  /* Campos en una columna */
-  }
-  
-  .form-actions {
-    flex-direction: column;      /* Botones apilados */
-  }
-  
-  .cancel-btn,
-  .save-btn {
-    width: 100%;                 /* Botones a ancho completo */
-    min-width: auto;
-  }
+    body {
+        padding: 1rem;
+    }
+    
+    .profile-header {
+        padding: 2rem 1.5rem;
+    }
+    
+    .profile-body {
+        padding: 2rem 1.5rem;
+    }
+    
+    .profile-title {
+        font-size: 2rem;
+    }
+    
+    .avatar-section {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .cancel-btn,
+    .save-btn {
+        width: 100%;
+        min-width: auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
 }

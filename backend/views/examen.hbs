@@ -1,150 +1,217 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Examen Interactivo</title>
-  <link rel="stylesheet" href="/css/examen.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - ¡Que Buen Dato!</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
 
-<!-- SECCIÓN PRE-EXAMEN -->
-<div class="pre-examen-container" id="preExamenContent">
-  <div class="pre-examen-content">
-    <div class="pre-examen-header">
-      <h1><i class="fas fa-graduation-cap"></i> Examen de {{materia}}</h1>
-      <p>Demuestra tus conocimientos y compite por un lugar en el ranking global</p>
+<!-- ===== ENCABEZADO ===== -->
+<header class="admin-header">
+  <div class="header-left">
+    <a href="/menu_principal">
+      <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image-header">
+    </a>
+  </div>
+
+  <div class="header-center">
+    <h1 class="admin-title">Panel de Administración</h1>
+    <p class="admin-welcome">Bienvenido {{user.username}} (ADMIN)</p>
+  </div>
+
+  <div class="header-right">
+    <!-- TOGGLE DE TEMA -->
+    <div class="theme-toggle-wrapper">
+      <label class="theme-toggle-container">
+        <input type="checkbox" class="theme-toggle-input" id="theme-toggle">
+        <span class="theme-toggle-slider"></span>
+      </label>
+    </div>
+    <a href="/menu_principal" class="volver-button">← Volver</a>
+  </div>
+</header>
+
+  <img src="/media/images/stuart_recargado.png" alt="Personaje Administrador" class="character-image">
+<!-- ===== SECCIÓN PRINCIPAL ===== -->
+<div class="admin-container">
+  <h2 class="admin-subtitle mb-4">👥 Usuarios del Sistema</h2>
+
+  <!-- Formulario principal para actualizar usuarios -->
+  <form method="POST" action="/admin/actualizar-usuarios" class="admin-form">
+
+
+    <!-- Tabla de usuarios con estilos de Bootstrap -->
+    <div class="table-responsive">
+      <table class="admin-table table table-striped table-hover">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Email</th>
+            <th>Nombre</th>
+            <th>Rol Actual</th>
+            <th>Cambiar Rol</th>
+            <th>Estatus Actual</th>
+            <th>Cambiar Estatus</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="usuarios-tbody">
+          <!-- Iteración sobre los usuarios con Handlebars -->
+          {{#each usuarios}}
+          <tr>
+            <td><strong>{{this.id_usuario}}</strong></td>
+            <td>{{this.email}}</td>
+            <td>{{this.username}}</td>
+            <td>
+              {{#if (eq this.id_tp_usuario 3)}}
+                <span class="badge bg-danger">ADMIN</span>
+              {{else if (eq this.id_tp_usuario 2)}}
+                <span class="badge bg-warning text-dark">EDITOR</span>
+              {{else}}
+                <span class="badge bg-primary">USUARIO</span>
+              {{/if}}
+            </td>
+            <td>
+              <input type="hidden" name="usuario_ids[]" value="{{this.id_usuario}}">
+              <select name="nuevos_roles[]" class="form-select form-select-sm" required>
+                <option value="1" {{#if (eq this.id_tp_usuario 1)}}selected{{/if}}>USUARIO</option>
+                <option value="2" {{#if (eq this.id_tp_usuario 2)}}selected{{/if}}>EDITOR</option>
+                <option value="3" {{#if (eq this.id_tp_usuario 3)}}selected{{/if}}>ADMIN</option>
+              </select>
+            </td>
+            <td>
+              <span class="badge status-{{this.id_status}} bg-info">{{this.status}}</span>
+            </td>
+            <td>
+              <select name="nuevos_status[]" class="form-select form-select-sm" required onchange="toggleSuspensionInput(this, {{this.id_usuario}})">
+                <option value="1" {{#if (eq this.id_status 1)}}selected{{/if}}>Activo</option>
+                <option value="2" {{#if (eq this.id_status 2)}}selected{{/if}}>Inactivo</option>
+                <option value="3" {{#if (eq this.id_status 3)}}selected{{/if}}>Suspendido</option>
+                <option value="4" {{#if (eq this.id_status 4)}}selected{{/if}}>Pendiente</option>
+                <option value="5" {{#if (eq this.id_status 5)}}selected{{/if}}>Baja</option>
+              </select>
+
+              <input type="datetime-local" name="suspension_fin_{{this.id_usuario}}" class="form-control form-control-sm mt-2 suspension-input"
+                    {{#unless (eq this.id_status 3)}}style="display:none;"{{/unless}}
+                    value="{{this.suspension_fin}}">
+            </td>
+            <td>
+              <button type="button" class="btn btn-sm btn-secondary" onclick="abrirModalEditar({{this.id_usuario}}, '{{this.username}}', '{{this.email}}')">✏️ Editar</button>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
     </div>
 
-    <!-- Top player -->
-    <div class="top-player-section">
-      <h2 class="section-title"><i class="fas fa-crown"></i> Jugador Top Global</h2>
-      
-      {{#if rankingData.length}}
-        {{#with rankingData.[0]}}
-          <div class="top-player-card">
-            <div class="top-badge">🥇</div>
-            
-            {{#if foto_perfil}}
-              <img src="{{foto_perfil}}" alt="Foto de {{username}}" class="top-avatar">
-            {{else}}
-              <div class="top-avatar">{{apodo.[0]}}</div>
-            {{/if}}
-            
-            <div class="top-username">{{username}}</div>
-            <div class="top-category">Total - {{puntos}} puntos</div>
-          </div>
-        {{/with}}
-      {{else}}
-        <div class="top-player-card">
-          <div class="top-badge">🥇</div>
-          <div class="top-avatar">?</div>
-          <div class="top-username">No hay datos aún</div>
-          <div class="top-category">Sé el primero en jugar</div>
-          <div class="top-score">0 puntos</div>
+    <!-- Botones principales de acción -->
+    <div class="mt-3">
+      <button type="button" class="btn btn-success" onclick="abrirModalAgregar()">➕ Agregar usuario</button>
+      <button type="submit" class="btn btn-primary">💾 Guardar Cambios</button>
+    </div>
+  </form>
+</div>
+
+<!-- ===== MODALES ===== -->
+
+<!-- Modal para editar usuario -->
+<div class="modal fade" id="modalEditarUsuario" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="formEditarUsuario">
+        <div class="modal-header">
+          <h5 class="modal-title">✏️ Editar Usuario</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-      {{/if}}
-      <p>¡Inspírate en el mejor jugador para lograr tus propios objetivos! Completa el examen con éxito para aumentar tu puntuación global.</p>
-    </div>
-
-    {{#if ultimoExamen}}
-    <div class="previous-result">
-      <i class="fas fa-chart-line" style="font-size: 36px; margin-bottom: 10px;"></i>
-      <p>Tu último examen: <strong>{{ultimoExamen}}%</strong></p>
-    </div>
-    {{else}}
-    <div class="no-previous-results">
-      <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 15px;"></i>
-      <p>No hay resultados previos para mostrar. ¡Completa este examen para ver tu progreso!</p>
-    </div>
-    {{/if}}
-
-    <!-- Información del examen -->
-    <div class="exam-info">
-      <h2 class="section-title"><i class="fas fa-info-circle"></i> Información del Examen</h2>
-      <div class="info-item"><i class="fas fa-book"></i><div><strong>Materia:</strong> {{materia}}</div></div>
-      <div class="info-item"><i class="fas fa-question-circle"></i><div><strong>Preguntas:</strong> {{preguntas.length}} en total</div></div>
-      <div class="info-item"><i class="fas fa-clock"></i><div><strong>Duración:</strong> 10 minutos aproximadamente</div></div>
-      <div class="info-item"><i class="fas fa-star"></i><div><strong>Puntuación máxima:</strong> 20 puntos</div></div>
-      <div class="pre-examen-buttons">
-        <button class="pre-examen-btn btn-secondary" onclick="location.href='/materias'">
-          <i class="fas fa-arrow-left"></i> Volver Atrás
-        </button>
-        <button class="pre-examen-btn btn-primary" onclick="location.href='/ranking'">
-          <i class="fas fa-trophy"></i> Ver Ranking Completo
-        </button>
-        <button class="pre-examen-btn btn-success pulse" onclick="comenzarExamen()">
-          <i class="fas fa-play"></i> Iniciar Examen
-        </button>
-      </div>
+        <div class="modal-body">
+          <input type="hidden" id="edit-id_usuario" name="id_usuario">
+          <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="edit-username" name="username" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" id="edit-email" name="email" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nueva contraseña (opcional)</label>
+            <input type="password" class="form-control" id="edit-password" name="password" placeholder="Dejar en blanco para no cambiar">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
 
-<!-- SECCIÓN EXAMEN -->
-<div id="examenContent">
-  <header>
-    Examen - {{materia}}
-    <div><button onclick="volverAPreExamen()" class="btn-volver">Regresar</button></div>
-  </header>
-
-  {{#each preguntas}}
-   <div class="contenedor-pregunta {{#if @first}}activa{{/if}}" data-index="{{@index}}" data-id-pregunta="{{id_pregunta}}">
-    <div class="encabezado">
-      <div>Pregunta {{sum @index 1}} de {{../preguntas.length}}</div>
-      <div class="cronometro">10:00</div>
+<!-- Modal para agregar usuario -->
+<div class="modal fade" id="modalAgregarUsuario" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="formAgregarUsuario">
+        <div class="modal-header">
+          <h5 class="modal-title">➕ Agregar Usuario</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" class="form-control" name="username" id="usernameAgregar" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" name="email" id="emailAgregar" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Contraseña</label>
+            <input type="password" class="form-control" name="password" id="passwordAgregar" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success">Agregar Usuario</button>
+        </div>
+      </form>
     </div>
-
-    <h2 class="pregunta">{{pregunta}}</h2>
-
-    <div class="opciones">
-      {{#each respuestas}}
-        <button type="button">{{respuesta}}</button>
-      {{/each}}
-    </div>
-
-    <div class="navegacion">
-      {{#unless @first}}
-        <button type="button" class="btn-volver">← Volver</button>
-      {{/unless}}
-      <button type="button" class="btn-volver btnNoSeguro">No seguro / Para después</button>
-      <button type="button" class="btn-volver btnVolverFinal" style="display:none;">Volver al final</button>
-      
-      {{#if @last}}
-        <button type="button" class="btn-finalizar">Finalizar</button>
-      {{else}}
-        <button type="button" class="btn-siguiente">Siguiente →</button>
-      {{/if}}
-    </div>
-  </div>
-  {{/each}}
-
-   <div id="pendientesContainer" class="pendientes-container">
-    <div class="filter-toggle">
-        <label for="toggleFiltro">Mostrar solo no respondidas</label>
-        <input type="checkbox" id="toggleFiltro" checked>
-    </div>
-    <div id="listaPreguntasNavegacion"></div>
-    </div>
-      
-  <form id="formResultados" method="POST" action="/resultados" style="display:none;">
-    {{!-- ✅ CORRECCIÓN: Usar sintaxis correcta de Handlebars --}}
-    <input type="hidden" name="id_materia" id="inputIdMateria" value="{{id_materia}}">
-    <input type="hidden" name="respuestas" id="inputRespuestas">
-    <input type="hidden" name="fecha_inicio_str" id="inputFechaInicio">
-    <input type="hidden" name="pendientes" id="inputPendientes">
-    <input type="hidden" name="suspensos" id="inputSuspensos">
- </form>
-</div>
-
-<!-- MODAL DE AVISO -->
-<div id="avisoTiempo" class="modal-aviso oculto">
-  <div class="modal-content">
-    <p id="mensajeAviso">Te has quedado mucho tiempo en esta pregunta.</p>
-    <button onclick="cerrarAviso()">Entendido</button>
   </div>
 </div>
 
-<script src="/public/js/examen.controller.js" defer></script>
+<!-- ===== SCRIPTS ===== -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/public/js/admin.controller.js" defer></script>
+
+<!-- SCRIPT DEL TOGGLE DE TEMA -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (!themeToggle) return;
+    
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    
+    // Aplicar el tema guardado
+    if (currentTheme === 'dark') {
+        document.body.setAttribute('data-theme', 'dark');
+        themeToggle.checked = true;
+    }
+    
+    // Escuchar cambios en el toggle
+    themeToggle.addEventListener('change', function() {
+        if (this.checked) {
+            document.body.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.body.removeAttribute('data-theme');
+            localStorage.setItem('theme', 'light');
+        }
+    });
+});
+</script>
+
 </body>
 </html>

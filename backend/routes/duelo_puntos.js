@@ -19,25 +19,25 @@ const SISTEMA_PUNTOS = {
     
     // Recompensas base por dificultad
     RECOMPENSA: {
-        facil: 20,
-        normal: 30,
-        dificil: 50
+        facil: 10,
+        normal: 20,
+        dificil: 30
     },
     
     // Multiplicadores de velocidad
     VELOCIDAD: {
-        RAPIDA: 1.25,   // <= 3s
-        NORMAL: 1.0,    // 3-6s
-        LENTA: 0.75     // >= 6s
+        RAPIDA: 0.30,   // <= 3s
+        NORMAL: 0.20,    // 3-6s
+        LENTA: 0.10     // >= 6s
     },
     
     // Bonificaciones
     BONUS: {
-        VICTORIA: 100,
-        RENDIMIENTO_EXCELENTE: 50,  // >= 90%
-        RENDIMIENTO_BUENO: 30,      // >= 75%
-        RENDIMIENTO_ACEPTABLE: 15,  // >= 50%
-        RACHA_POR_RESPUESTA: 10
+        VICTORIA: 10,
+        RENDIMIENTO_EXCELENTE: 20,  // >= 90%
+        RENDIMIENTO_BUENO: 10,      // >= 75%
+        RENDIMIENTO_ACEPTABLE: 5,  // >= 50%
+        RACHA_POR_RESPUESTA: 4
     },
     
     // Gambito
@@ -48,15 +48,15 @@ const SISTEMA_PUNTOS = {
     
     // Penalizaciones
     PENALIZACION: {
-        TIMEOUT: -25,
-        ERROR_CRITICO: -50
+        TIMEOUT: -10,
+        ERROR_CRITICO: -20
     },
     
     // Eventos especiales
     EVENTOS: {
-        'rapida': { mult: 2.0, nombre: 'Ronda Rápida' },
-        'critica': { mult: 1.5, nombre: 'Ronda Crítica' },
-        'riesgo': { mult: 1.0, penalizacion: -50 }
+        'rapida': { mult: 1.0, nombre: 'Ronda Rápida' },
+        'critica': { mult: 0.50, nombre: 'Ronda Crítica' },
+        'riesgo': { mult: 0.25, penalizacion: -10 }
     }
 };
 

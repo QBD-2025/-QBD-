@@ -1,268 +1,387 @@
-/* ==================================================
-Archivo: usuario.css
-  - Definición de colores y variables CSS reutilizables
-  - Facilita cambios de tema y consistencia en toda la página
-Fecha: [Fecha de creación o última edición]
-================================================== */
 :root {
-  --azul-oscuro: #1a237e;       /* Azul intenso para encabezados y títulos */
-  --azul-medio: #283593;        /* Azul medio para degradados y textos secundarios */
-  --azul-claro: #3949ab;        /* Azul claro para hover y fondos */
-  --mostaza: #ffb300;           /* Color mostaza para acentos y botones */
-  --mostaza-claro: #ffca28;     /* Versión clara del mostaza para hover */
-  --blanco: #ffffff;            /* Blanco estándar para fondos y textos claros */
-  --gris-claro: #f5f5f5;        /* Gris muy claro para fondos y secciones */
-  --texto-oscuro: #212121;      /* Color de texto principal */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --text-primary: #333333;
+    --text-secondary: #555555;
+    --accent-yellow: #FFC107;
+    --accent-blue: #0817eb;
+    --header-gradient-start: #0815c5;
+    --header-gradient-end: #0c0264;
+    --shadow-light: rgba(0, 0, 0, 0.1);
+    --shadow-medium: rgba(0, 0, 0, 0.15);
+    --shadow-heavy: rgba(0, 0, 0, 0.25);
 }
 
-/* ==================================================
-   RESET BÁSICO
-   - Elimina márgenes y paddings por defecto
-   - Define box-sizing para un control más consistente del layout
-================================================== */
+[data-theme="dark"] {
+    --bg-primary: #0a0e27;
+    --bg-secondary: #151b3d;
+    --text-primary: #ffffff;
+    --text-secondary: #e0e0e0;
+    --accent-yellow: #FFC107;
+    --accent-blue: #4A90E2;
+    --header-gradient-start: #6c00ff;
+    --header-gradient-end: #0000ff;
+    --shadow-light: rgba(0, 0, 0, 0.4);
+    --shadow-medium: rgba(0, 0, 0, 0.5);
+    --shadow-heavy: rgba(0, 0, 0, 0.7);
+}
+
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box; /* Permite que padding y border se incluyan en el ancho total */
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fuente principal */
-  background-color: var(--gris-claro); /* Fondo general */
-  color: var(--texto-oscuro);          /* Color de texto predeterminado */
-  min-height: 100vh;                    /* Asegura que el body ocupe toda la altura de la pantalla */
-  line-height: 1.6;                     /* Espaciado entre líneas */
-  padding-top: 70px;                    /* Espacio superior para la cabecera */
+    font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.6;
+    padding-top: 70px;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-/* ==================================================
-   CONTENEDOR PRINCIPAL
-   - Wrapper general para la página de perfil
-   - Maneja márgenes y padding centralizados
-================================================== */
 .profile-full {
-  width: 100%;
-  margin: 0;
-  padding: 2rem;
-  max-width: 1200px;  /* Limita ancho máximo para pantallas grandes */
-  margin: 0 auto;     /* Centra horizontalmente */
+    width: 100%;
+    margin: 0;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    animation: fadeIn 0.6s ease-out;
 }
 
-/* ==================================================
-   TARJETA DEL PERFIL
-   - Fondo blanco, bordes redondeados y sombra
-   - Contenedor principal del contenido del perfil
-================================================== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .profile-card {
-  background: var(--blanco);                  /* Fondo de la tarjeta */
-  border-radius: 12px;                        /* Bordes redondeados */
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Sombra suave */
-  overflow: hidden;                           /* Oculta contenido que sobresalga */
+    background: var(--bg-primary);
+    border-radius: 16px;
+    box-shadow: 0 20px 40px var(--shadow-heavy);
+    overflow: hidden;
+    border: 3px solid var(--accent-yellow);
+    animation: slideUp 0.8s ease-out;
 }
 
-/* ==================================================
-   ENCABEZADO
-   - Fondo degradado, centrado de texto y padding
-   - Contiene título del perfil, mensaje de bienvenida y botón de logout
-================================================== */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .profile-header {
-  background: linear-gradient(135deg, var(--azul-oscuro), var(--azul-medio)); /* Degradado azul */
-  color: var(--blanco);           /* Texto blanco */
-  padding: 2.5rem 1.5rem 2rem;   /* Padding superior, lateral e inferior */
-  text-align: center;             /* Centrado de texto */
-  position: relative;             /* Para posicionamiento interno si es necesario */
+    background: linear-gradient(135deg, var(--header-gradient-start), var(--header-gradient-end));
+    color: var(--bg-primary);
+    padding: 3rem 2rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--accent-yellow);
+}
+
+[data-theme="dark"] .profile-header {
+    box-shadow: 0 4px 20px rgba(108, 0, 255, 0.4), 0 0 40px rgba(0, 0, 255, 0.2);
 }
 
 .profile-title {
-  font-size: 2rem;   /* Tamaño del título principal */
-  font-weight: 700;  /* Negrita fuerte */
-  margin-bottom: 0.5rem; /* Espacio inferior */
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--accent-yellow);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    animation: fadeIn 0.8s ease-out 0.2s both;
 }
 
 .user-welcome {
-  font-size: 1.1rem;  /* Tamaño del texto de bienvenida */
-  font-weight: 500;    /* Semi-negrita */
-  margin-bottom: 1.2rem; /* Espacio inferior */
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    color: white;
+    opacity: 0.9;
+    animation: fadeIn 0.8s ease-out 0.4s both;
 }
 
 .logout-btn {
-  display: inline-block;                   /* Permite padding y margenes */
-  padding: 0.6rem 1.4rem;                  /* Espacio interno del botón */
-  background-color: var(--mostaza);        /* Color de fondo */
-  color: var(--azul-oscuro);               /* Color de texto */
-  text-decoration: none;                   /* Sin subrayado */
-  border-radius: 30px;                     /* Bordes redondeados */
-  font-weight: 600;                        /* Semi-negrita */
-  font-size: 0.95rem;                      /* Tamaño de fuente */
-  border: none;                            /* Sin borde */
-  transition: all 0.3s ease;               /* Suaviza efectos hover */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+    display: inline-block;
+    padding: 0.8rem 2rem;
+    background: var(--accent-yellow);
+    color: var(--text-primary);
+    text-decoration: none;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 1rem;
+    border: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+    border-bottom: 3px solid #e0a800;
+    animation: fadeIn 0.8s ease-out 0.6s both;
 }
 
 .logout-btn:hover {
-  background-color: var(--mostaza-claro);  /* Fondo más claro al pasar el cursor */
-  transform: translateY(-2px);            /* Efecto de "subida" */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Sombra más intensa */
+    background: #ffd44f;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 193, 7, 0.4);
 }
 
-/* ==================================================
-   CUERPO DEL PERFIL
-   - Padding interno para separar el contenido del borde
-   - Subtítulos y secciones dentro del perfil
-================================================== */
 .profile-body {
-  padding: 2rem 1.5rem; /* Espacio interno del body del perfil */
+    padding: 3rem 2rem;
+    background: var(--bg-primary);
+    animation: fadeIn 0.8s ease-out 0.8s both;
 }
 
 .user-subtitle {
-  color: var(--azul-oscuro);         /* Color del subtítulo */
-  font-size: 1.4rem;                 /* Tamaño del texto */
-  font-weight: 600;                   /* Semi-negrita */
-  margin-bottom: 1.5rem;              /* Espacio inferior */
-  border-bottom: 2px solid var(--mostaza); /* Línea decorativa */
-  display: inline-block;              /* Para ajustar el ancho a su contenido */
-  padding-bottom: 0.4rem;             /* Espacio entre texto y línea */
+    color: var(--accent-blue);
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--accent-yellow);
+    display: inline-block;
+    padding-bottom: 0.5rem;
+    position: relative;
 }
 
-/* ==================================================
-   TABLA DE INFORMACIÓN
-   - Estilo uniforme para mostrar información del usuario
-   - Cabeceras con color y texto en mayúsculas
-   - Separadores sutiles y consistentes
-================================================== */
+.user-subtitle::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 60px;
+    height: 2px;
+    background: var(--accent-blue);
+}
+
 .info-table {
-  width: 100%;                   /* Ocupa todo el ancho disponible */
-  border-collapse: collapse;     /* Evita espacios entre celdas */
-  margin-bottom: 2rem;           /* Separación inferior */
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 3rem;
+    background: var(--bg-primary);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px var(--shadow-light);
+    animation: slideIn 0.6s ease-out 1s both;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 .info-table th {
-  text-align: left;              /* Alinea texto a la izquierda */
-  padding: 1rem 0.8rem;          /* Espaciado interno */
-  color: var(--azul-medio);      /* Color del encabezado */
-  font-weight: 600;               /* Semi-negrita */
-  font-size: 0.9rem;             /* Tamaño de fuente */
-  text-transform: uppercase;     /* Mayúsculas */
-  width: 35%;                     /* Ancho relativo */
-  background: #f8f8f8;           /* Fondo gris claro */
+    text-align: left;
+    padding: 1.2rem 1rem;
+    color: var(--accent-blue);
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    width: 35%;
+    background: var(--bg-secondary);
+    border-bottom: 2px solid var(--accent-yellow);
 }
 
 .info-table td {
-  padding: 1rem 0.8rem;           /* Espaciado interno */
-  font-size: 1rem;                /* Tamaño de fuente */
-  font-weight: 500;               /* Semi-negrita */
-  border-bottom: 1px solid var(--gris-claro); /* Línea inferior */
+    padding: 1.2rem 1rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border-bottom: 1px solid var(--bg-secondary);
+    color: var(--text-primary);
 }
 
 .info-table tr:last-child td {
-  border-bottom: none;            /* Elimina línea del último elemento */
+    border-bottom: none;
 }
 
-/* ==================================================
-   SECCIÓN DE ACCIONES
-   - Encabezado con línea decorativa
-   - Lista de acciones/interacciones del usuario
-   - Enlaces con efectos hover y transición suave
-================================================== */
+.info-table tr:hover td {
+    background: var(--bg-secondary);
+    transform: translateX(5px);
+    transition: all 0.3s ease;
+}
+
 .actions-section {
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--gris-claro); /* Línea separadora superior */
+    padding-top: 2rem;
+    border-top: 2px solid var(--bg-secondary);
+    animation: fadeIn 0.8s ease-out 1.2s both;
 }
 
 .actions-section h3 {
-  font-size: 1.2rem;
-  color: var(--azul-oscuro);
-  margin-bottom: 1rem;
-  position: relative;
+    font-size: 1.4rem;
+    color: var(--accent-blue);
+    margin-bottom: 1.5rem;
+    position: relative;
 }
 
 .actions-section h3::after {
-  content: "";
-  position: absolute;
-  width: 50px;
-  height: 3px;
-  background: var(--mostaza);
-  bottom: -6px;
-  left: 0;
+    content: "";
+    position: absolute;
+    width: 50px;
+    height: 3px;
+    background: var(--accent-yellow);
+    bottom: -6px;
+    left: 0;
 }
 
 .actions-list {
-  list-style: none; /* Sin viñetas */
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 1rem; /* Espacio entre acciones */
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 1rem;
 }
 
 .action-item {
-  margin: 0;
+    margin: 0;
 }
 
 .action-link {
-  display: flex;                  /* Para alinear icono y texto */
-  align-items: center;            /* Centrado vertical */
-  padding: 1rem 1.2rem;
-  background: var(--gris-claro);
-  color: var(--azul-oscuro);
-  text-decoration: none;          /* Sin subrayado */
-  border-left: 5px solid var(--mostaza); /* Indicador visual */
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  gap: 0.7rem;
-  position: relative;
+    display: flex;
+    align-items: center;
+    padding: 1.2rem 1.5rem;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    text-decoration: none;
+    border-left: 5px solid var(--accent-yellow);
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    gap: 0.8rem;
+    position: relative;
+    box-shadow: 0 4px 12px var(--shadow-light);
 }
 
 .action-link::before {
-  content: "→";                   /* Flecha antes del texto */
-  color: var(--mostaza);
-  transition: transform 0.3s ease;
+    content: "→";
+    color: var(--accent-yellow);
+    transition: transform 0.3s ease;
+    font-weight: bold;
 }
 
 .action-link:hover {
-  background: var(--azul-claro);  /* Fondo azul claro al pasar cursor */
-  color: var(--blanco);           /* Texto blanco */
-  transform: translateX(5px);     /* Pequeño desplazamiento */
+    background: var(--accent-blue);
+    color: var(--bg-primary);
+    transform: translateX(8px);
+    box-shadow: 0 8px 20px rgba(8, 23, 235, 0.4);
 }
 
 .action-link:hover::before {
-  color: var(--blanco);           /* Flecha blanca */
-  transform: translateX(5px);
+    color: var(--bg-primary);
+    transform: translateX(5px);
 }
 
-/* ==================================================
-   RESPONSIVE DESIGN
-   - Ajustes para dispositivos con ancho máximo de 768px
-   - Adaptación de títulos, tablas y contenedores para pantallas pequeñas
-================================================== */
+[data-theme="dark"] .action-link:hover {
+    box-shadow: 0 8px 20px rgba(108, 0, 255, 0.6);
+}
+.back-button {
+    margin-top: 2rem;
+    padding: 1rem 2.5rem;
+    background: var(--accent-blue);
+    color: #ffffff;
+    border: none;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(8, 23, 235, 0.3);
+    transition: all 0.3s ease;
+    border-bottom: 3px solid var(--header-gradient-end);
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+}
+
+.back-button:hover {
+    background: var(--header-gradient-end);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(8, 23, 235, 0.4);
+}
+
+[data-theme="dark"] button[onclick*="menu_principal"] {
+    background: var(--accent-blue);
+    color: #ffffff;
+}
+
+[data-theme="dark"] button[onclick*="menu_principal"]:hover {
+    background: var(--header-gradient-end);
+    box-shadow: 0 10px 25px rgba(108, 0, 255, 0.6);
+    color: #ffffff;
+}
+
 @media (max-width: 768px) {
-  .profile-half-width {
-    width: 90vw;        /* Ocupa casi todo el ancho en móvil */
-    min-width: unset;
-    max-width: unset;
-  }
+    .profile-full {
+        padding: 1rem;
+    }
+    
+    .profile-header {
+        padding: 2rem 1.5rem;
+    }
+    
+    .profile-body {
+        padding: 2rem 1.5rem;
+    }
+    
+    .profile-title {
+        font-size: 2rem;
+    }
+    
+    .user-subtitle {
+        font-size: 1.4rem;
+    }
+    
+    .info-table th,
+    .info-table td {
+        display: block;
+        width: 100%;
+        text-align: left;
+    }
+    
+    .info-table th {
+        padding-bottom: 0.5rem;
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--accent-yellow);
+    }
+    
+    .info-table td {
+        padding-top: 0.5rem;
+        padding-bottom: 1.2rem;
+        border-bottom: 1px solid var(--bg-secondary);
+    }
+    
+    .info-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .actions-list {
+        grid-template-columns: 1fr;
+    }
+}
 
-  .profile-title {
-    font-size: 1.5rem;  /* Reducir tamaño de título */
-  }
-
-  .user-welcome {
-    font-size: 1rem;    /* Reducir tamaño de texto de bienvenida */
-  }
-
-  .info-table th,
-  .info-table td {
-    display: block;     /* Celdas apiladas */
-    width: 100%;
-  }
-
-  .info-table th {
-    padding-bottom: 0.3rem;
-    background: none;   /* Quitar fondo en móvil */
-  }
-
-  .info-table td {
-    padding-top: 0.2rem;
-    padding-bottom: 1rem;
-  }
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
 }

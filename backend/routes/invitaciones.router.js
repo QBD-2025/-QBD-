@@ -303,10 +303,8 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             global.salasPendientes.set(salaKey, sala);
             global.salasEspera.set(salaKey, sala);
 
-            await conn.query(
-                `DELETE FROM notificaciones WHERE id_notificacion = ?`, 
-                [idNotificacion]
-            );
+            await conn.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
+            await conn.query(`DELETE FROM notificaciones WHERE id_usuario_destinatario = ? OR id_usuario_remitente = ?`, [extraData.idRemitente, extraData.idRemitente]);
 
             const io = req.app.get('io') || global.io;
             const idRetador = parseInt(extraData.idRemitente);
@@ -360,6 +358,7 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             );
 
             await pool.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
+            await pool.query(`DELETE FROM notificaciones WHERE id_usuario_destinatario = ? OR id_usuario_remitente = ?`, [remitente.id_usuario, remitente.id_usuario]);
 
             const notifData = JSON.stringify({ salaId});
 
@@ -367,7 +366,7 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             if (remitente.id_usuario) {
                 await pool.query(
                     `INSERT INTO notificaciones (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
-                     VALUES (?, ?, 'duelo_aceptado', ?, ?)`,
+                    VALUES (?, ?, 'duelo_aceptado', ?, ?)`,
                     [
                         remitente.id_usuario,
                         userId,
@@ -473,7 +472,7 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
 });
 
 // ================================================================
-// 🚫 RECHAZAR NOTIFICACIÓN
+// 🚫 RECHAZAR NOTIFICACIÓN - ✅ CON LÓGICA PARA duelo_aceptado
 // ================================================================
 router.post('/rechazar/:idNotificacion', async (req, res) => {
     if (!req.session.user) {
@@ -485,6 +484,7 @@ router.post('/rechazar/:idNotificacion', async (req, res) => {
 
     const { idNotificacion } = req.params;
     const userId = req.session.user.id_usuario;
+    const username = req.session.user.username;
 
     console.log('[RECHAZAR] ID Notificación:', idNotificacion);
     console.log('[RECHAZAR] Usuario:', userId);
@@ -541,13 +541,13 @@ router.post('/rechazar/:idNotificacion', async (req, res) => {
                 const retadorSocketId = global.usuariosConectados?.get(parseInt(extraData.idRemitente));
                 if (retadorSocketId) {
                     io.to(retadorSocketId).emit('duelo:desafioRechazado', {
-                        mensaje: `${req.session.user.username} rechazó tu desafío`
+                        mensaje: `${username} rechazó tu desafío`
                     });
                 }
             }
         }
 
-        // 📚 Si es un duelo de 48 horas, eliminar el duelo completo
+        // 📚 Si es un duelo de 48 horas PENDIENTE, eliminar el duelo completo
         if (notificacion.tipo === 'desafio_duelo' && extraData.id_duelo) {
             console.log('[RECHAZAR] Eliminando duelo de 48h:', extraData.id_duelo);
             
@@ -560,12 +560,122 @@ router.post('/rechazar/:idNotificacion', async (req, res) => {
                 const retadorSocketId = global.usuariosConectados?.get(parseInt(extraData.remitente.id_usuario));
                 if (retadorSocketId) {
                     io.to(retadorSocketId).emit('duelo:desafioRechazado', {
-                        mensaje: `${req.session.user.username} rechazó tu desafío`
+                        mensaje: `${username} rechazó tu desafío`
                     });
                 }
             }
         }
 
+        // 🆕 ════════════════════════════════════════════════════════
+        // 🚫 Si es DUELO ACEPTADO (tipo: duelo_aceptado) - CANCELAR DUELO
+        // ════════════════════════════════════════════════════════
+        if (notificacion.tipo === 'duelo_aceptado') {
+            console.log('[RECHAZAR] 🚫 CANCELANDO DUELO ACEPTADO');
+            console.log('[RECHAZAR] Extra data:', extraData);
+            
+            const salaId = extraData.salaId;
+            
+            if (!salaId) {
+                console.error('[RECHAZAR] ❌ No hay salaId en duelo_aceptado');
+                await conn.rollback();
+                conn.release();
+                return res.status(400).json({
+                    success: false,
+                    message: 'Datos de duelo incompletos'
+                });
+            }
+
+            // 1️⃣ Eliminar el duelo de la BD
+            console.log('[RECHAZAR] Eliminando duelo:', salaId);
+            
+            await conn.query(`DELETE FROM duelos_preguntas WHERE id_duelo = ?`, [salaId]);
+            await conn.query(`DELETE FROM duelos_respuestas WHERE id_duelo = ?`, [salaId]);
+            
+            // Obtener info del duelo antes de eliminarlo
+            const [dueloInfo] = await conn.query(
+                `SELECT id_retador, id_defensor FROM duelos WHERE id_duelo = ?`,
+                [salaId]
+            );
+            
+            await conn.query(`DELETE FROM duelos WHERE id_duelo = ?`, [salaId]);
+            
+            console.log('[RECHAZAR] ✅ Duelo eliminado de BD');
+
+            // 2️⃣ Eliminar TODAS las notificaciones relacionadas al duelo
+            await conn.query(
+                `DELETE FROM notificaciones 
+                 WHERE tipo = 'duelo_aceptado' 
+                 AND extra_data LIKE ?`,
+                [`%"salaId":"${salaId}"%`]
+            );
+            
+            console.log('[RECHAZAR] ✅ Notificaciones duelo_aceptado eliminadas');
+
+            // 3️⃣ Determinar quién es el oponente
+            let idOponente = null;
+            
+            if (dueloInfo.length > 0) {
+                const { id_retador, id_defensor } = dueloInfo[0];
+                idOponente = (parseInt(userId) === parseInt(id_retador)) ? id_defensor : id_retador;
+            } else {
+                // Si no se encontró en BD, buscar en la notificación
+                idOponente = notificacion.id_usuario_remitente;
+            }
+
+            console.log('[RECHAZAR] ID Oponente:', idOponente);
+
+            // 4️⃣ Crear notificación de CANCELACIÓN para el oponente
+            if (idOponente && idOponente !== userId) {
+                const mensajeCancelacion = `🚫 ${username} canceló el duelo`;
+                
+                await conn.query(
+                    `INSERT INTO notificaciones 
+                    (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
+                    VALUES (?, ?, 'duelo_cancelado', ?, ?)`,
+                    [
+                        idOponente,
+                        userId,
+                        mensajeCancelacion,
+                        JSON.stringify({ salaId, canceladoPor: username })
+                    ]
+                );
+
+                console.log('[RECHAZAR] ✅ Notificación de cancelación enviada');
+
+                // 5️⃣ Emitir evento socket para notificar en tiempo real
+                const io = req.app.get('io') || global.io;
+                if (io) {
+                    const usuariosConectados = global.usuariosConectados || new Map();
+                    const oponenteSocketId = usuariosConectados.get(parseInt(idOponente));
+                    
+                    if (oponenteSocketId) {
+                        io.to(oponenteSocketId).emit('notificacion_recibida', {
+                            tipo: 'duelo_cancelado',
+                            mensaje: mensajeCancelacion
+                        });
+                        
+                        io.to(oponenteSocketId).emit('duelo:cancelado', {
+                            salaId,
+                            mensaje: `${username} canceló el duelo`
+                        });
+                    }
+                }
+            }
+
+            await conn.commit();
+            conn.release();
+            
+            console.log('[RECHAZAR] ✅ DUELO CANCELADO EXITOSAMENTE');
+            
+            return res.json({ 
+                success: true, 
+                message: 'Duelo cancelado exitosamente' 
+            });
+        }
+
+        // ════════════════════════════════════════════════════════
+        // 🔹 OTROS TIPOS - Eliminar normalmente
+        // ════════════════════════════════════════════════════════
         await conn.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
         
         console.log('[RECHAZAR] ✅ Notificación eliminada');
@@ -584,7 +694,7 @@ router.post('/rechazar/:idNotificacion', async (req, res) => {
         console.error('[RECHAZAR ERROR]:', err);
         res.status(500).json({ 
             success: false, 
-            message: 'Error: ' + err.message 
+            message: 'Error: ' + err.message
         });
     }
 });

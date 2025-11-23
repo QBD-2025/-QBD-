@@ -9,7 +9,7 @@
   --azul-claro: #667eea;
   
   /* Colores de acento - Mostaza */
-  --mostaza: #FFC107;
+  --mostaza: #ffc107;
   --mostaza-oscuro: #ffb300;
   --mostaza-hover: #e0a800;
   --mostaza-claro: #ffecb3;
@@ -22,7 +22,7 @@
   --fondo-oscuro: #0a1128;
   
   /* Escala de grises */
-  --blanco: #ffffff;
+  --blanco: #fff;
   --gris-claro: #f8f9fa;
   --gris-medio: #e9ecef;
   --gris-oscuro: #495057;
@@ -36,14 +36,36 @@
   
   /* Bordes y sombras */
   --borde: #dee2e6;
-  --sombra-suave: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --sombra-media: 0 4px 20px rgba(0, 0, 0, 0.12);
-  --sombra-intensa: 0 8px 40px rgba(0, 0, 0, 0.18);
+  --sombra-suave: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.08);
+  --sombra-media: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.12);
+  --sombra-intensa: 0 0.5rem 2.5rem rgba(0, 0, 0, 0.18);
   
   /* Transiciones */
   --transicion-rapida: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --transicion-media: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --transicion-lenta: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Espaciado */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 2.5rem;
+  --spacing-3xl: 3.5rem;
+  
+  /* Border radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-full: 50%;
+  
+  /* Z-index scale */
+  --z-background: -1;
+  --z-base: 1;
+  --z-overlay: 2;
+  --z-dropdown: 5;
+  --z-modal: 10;
 }
 
 /* ==================================================
@@ -52,72 +74,72 @@
 *,
 *::before,
 *::after {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
 html {
-  font-size: 16px;
+  font-size: 100%;
   scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  line-height: 1.6;
-  font-weight: 400;
-  color: var(--texto-oscuro);
-  background: linear-gradient(135deg, var(--azul-electrico) 0%, var(--azul-marino) 50%, var(--azul-violeta) 100%);
-  min-height: 100vh;
-  display: flex;
   align-items: center;
+  background: linear-gradient(135deg, var(--azul-electrico) 0%, var(--azul-marino) 50%, var(--azul-violeta) 100%);
+  color: var(--texto-oscuro);
+  display: flex;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-weight: 400;
   justify-content: center;
-  padding: 1rem;
-  position: relative;
+  line-height: 1.6;
+  min-height: 100vh;
   overflow-x: hidden;
+  padding: var(--spacing-md);
+  position: relative;
 }
 
 /* ==================================================
    FONDO AURORA BOREAL MEJORADO
 ================================================== */
 .body-bg {
+  height: 100%;
+  left: 0;
+  opacity: 0.8;
   position: fixed;
   top: 0;
-  left: 0;
   width: 100%;
+  z-index: var(--z-background);
+}
+
+.body-bg::before,
+.body-bg::after {
+  content: '';
   height: 100%;
-  z-index: -1;
-  opacity: 0.8;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
 }
 
 .body-bg::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  animation: auroraMovement 15s infinite alternate;
   background: 
     radial-gradient(ellipse at 20% 20%, rgba(0, 255, 157, 0.15) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 20%, rgba(189, 0, 255, 0.1) 0%, transparent 50%),
     radial-gradient(ellipse at 40% 80%, rgba(0, 153, 255, 0.1) 0%, transparent 50%),
-    linear-gradient(to right, var(--fondo-oscuro), #000000);
-  animation: auroraMovement 15s infinite alternate;
+    linear-gradient(to right, var(--fondo-oscuro), #000);
 }
 
 .body-bg::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  animation: auroraFloat 20s infinite alternate;
   background: 
     linear-gradient(to bottom, transparent 0%, rgba(10, 17, 40, 0.1) 100%),
     radial-gradient(ellipse at 30% 10%, rgba(0, 255, 157, 0.1) 0%, transparent 40%),
     radial-gradient(ellipse at 70% 10%, rgba(189, 0, 255, 0.1) 0%, transparent 40%);
   pointer-events: none;
-  animation: auroraFloat 20s infinite alternate;
 }
 
 @keyframes auroraMovement {
@@ -132,43 +154,45 @@ body {
 }
 
 @keyframes auroraFloat {
-  0%, 100% { 
-    transform: translateY(0px) rotate(0deg); 
+  0%, 
+  100% { 
     opacity: 0.6;
+    transform: translateY(0) rotate(0deg); 
   }
   50% { 
-    transform: translateY(-20px) rotate(1deg); 
     opacity: 0.8;
+    transform: translateY(-1.25rem) rotate(1deg); 
   }
 }
 
 /* Partículas de Aurora */
 .aurora-particles {
+  height: 100%;
+  left: 0;
+  pointer-events: none;
   position: fixed;
   top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: -1;
+  z-index: var(--z-background);
 }
 
 .particle {
-  position: absolute;
-  background: var(--verde-fosforescente);
-  border-radius: 50%;
-  opacity: 0.3;
   animation: float 8s infinite ease-in-out;
+  background: var(--verde-fosforescente);
+  border-radius: var(--radius-full);
+  opacity: 0.3;
+  position: absolute;
 }
 
 @keyframes float {
-  0%, 100% {
-    transform: translateY(0) translateX(0);
+  0%, 
+  100% {
     opacity: 0.2;
+    transform: translateY(0) translateX(0);
   }
   50% {
-    transform: translateY(-20px) translateX(10px);
     opacity: 0.4;
+    transform: translateY(-1.25rem) translateX(0.625rem);
   }
 }
 
@@ -176,94 +200,96 @@ body {
    CONTENEDOR PRINCIPAL - CARD ELEVADA CON AURORA
 ================================================== */
 .career-selection-container {
-  max-width: 480px;
-  width: 100%;
+  animation: slideInUp 0.8s ease-out;
+  backdrop-filter: blur(0.75rem);
   background: linear-gradient(
     135deg,
     rgba(15, 23, 111, 0.95) 0%,
     rgba(26, 35, 126, 0.95) 50%,
     rgba(63, 81, 181, 0.9) 100%
   );
-  border-radius: 24px;
+  border: 0.125rem solid transparent;
+  border-radius: 1.5rem;
   box-shadow:
-    0 0 25px rgba(255, 179, 0, 0.3),
-    inset 0 0 40px rgba(255, 255, 255, 0.05),
-    0 0 60px rgba(0, 255, 157, 0.2);
-  padding: 3.5rem;
-  border: 2px solid transparent;
-  background-clip: padding-box, border-box;
-  background-origin: border-box;
-  backdrop-filter: blur(12px);
-  position: relative;
+    0 0 1.5625rem rgba(255, 179, 0, 0.3),
+    inset 0 0 2.5rem rgba(255, 255, 255, 0.05),
+    0 0 3.75rem rgba(0, 255, 157, 0.2);
+  max-width: 30rem;
   overflow: hidden;
-  animation: slideInUp 0.8s ease-out;
+  padding: var(--spacing-3xl);
+  position: relative;
+  width: 100%;
 }
 
 /* Bordes con brillo aurora-mezclado */
 .career-selection-container::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 24px;
-  padding: 2px;
+  animation: borderAuroraGlow 8s linear infinite;
   background: linear-gradient(
     135deg,
-    var(--mostaza-brillo),
+    var(--mostaza),
     var(--verde-fosforescente),
     var(--azul-aurora),
     var(--purpura-aurora),
-    var(--mostaza-brillo)
+    var(--mostaza)
   );
   background-size: 300% 300%;
-  animation: borderAuroraGlow 8s linear infinite;
-  -webkit-mask:
-  linear-gradient(#fff 0 0) content-box,
+  border-radius: 1.5rem;
+  content: '';
+  inset: 0;
+  mask: 
+    linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
   mask-composite: exclude;
+  padding: 0.125rem;
   pointer-events: none;
-  z-index: 2;
+  position: absolute;
+  z-index: var(--z-overlay);
 }
 
 @keyframes borderAuroraGlow {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%, 
+  100% { 
+    background-position: 0% 50%; 
+  }
+  50% { 
+    background-position: 100% 50%; 
+  }
 }
 
 /* ==================================================
    ENCABEZADO CON ICONO ANIMADO AURORA
 ================================================== */
 .career-header {
-  text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: var(--spacing-2xl);
   position: relative;
+  text-align: center;
 }
 
 .career-icon-wrapper {
+  height: 6.25rem;
+  margin: 0 auto var(--spacing-lg);
   position: relative;
-  width: 100px;
-  height: 100px;
-  margin: 0 auto 1.5rem;
+  width: 6.25rem;
 }
 
 .career-icon {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, var(--azul-electrico), var(--azul-violeta));
-  border-radius: 50%;
-  display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 2.5rem;
-  color: var(--blanco);
-  box-shadow: 
-    0 8px 32px rgba(8, 21, 197, 0.3),
-    inset 0 2px 4px rgba(255, 255, 255, 0.2),
-    0 0 30px rgba(0, 255, 157, 0.3);
-  border: 3px solid var(--mostaza);
-  position: relative;
-  z-index: 2;
   animation: iconFloatAurora 4s ease-in-out infinite;
+  background: linear-gradient(135deg, var(--azul-electrico), var(--azul-violeta));
+  border: 0.1875rem solid var(--mostaza);
+  border-radius: var(--radius-full);
+  box-shadow: 
+    0 0.5rem 2rem rgba(8, 21, 197, 0.3),
+    inset 0 0.125rem 0.25rem rgba(255, 255, 255, 0.2),
+    0 0 1.875rem rgba(0, 255, 157, 0.3);
+  color: var(--blanco);
+  display: flex;
+  font-size: 2.5rem;
+  height: 100%;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  z-index: var(--z-overlay);
 }
 
 .career-icon::before {
@@ -271,40 +297,44 @@ body {
 }
 
 .career-icon-glow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 120px;
-  height: 120px;
-  background: radial-gradient(circle, 
+  animation: pulseAuroraGlow 3s ease-in-out infinite;
+  background: radial-gradient(
+    circle, 
     rgba(255, 193, 7, 0.2) 0%, 
     rgba(0, 255, 157, 0.3) 50%,
-    transparent 70%);
-  border-radius: 50%;
-  animation: pulseAuroraGlow 3s ease-in-out infinite;
-  z-index: 1;
+    transparent 70%
+  );
+  border-radius: var(--radius-full);
+  height: 7.5rem;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 7.5rem;
+  z-index: var(--z-base);
 }
 
 @keyframes iconFloatAurora {
-  0%, 100% { 
-    transform: translateY(0px) rotate(0deg);
+  0%, 
+  100% { 
     box-shadow: 
-      0 8px 32px rgba(8, 21, 197, 0.3),
-      inset 0 2px 4px rgba(255, 255, 255, 0.2),
-      0 0 30px rgba(0, 255, 157, 0.3);
+      0 0.5rem 2rem rgba(8, 21, 197, 0.3),
+      inset 0 0.125rem 0.25rem rgba(255, 255, 255, 0.2),
+      0 0 1.875rem rgba(0, 255, 157, 0.3);
+    transform: translateY(0) rotate(0deg);
   }
   50% { 
-    transform: translateY(-8px) rotate(3deg);
     box-shadow: 
-      0 12px 40px rgba(8, 21, 197, 0.4),
-      inset 0 2px 4px rgba(255, 255, 255, 0.2),
-      0 0 40px rgba(0, 255, 157, 0.5);
+      0 0.75rem 2.5rem rgba(8, 21, 197, 0.4),
+      inset 0 0.125rem 0.25rem rgba(255, 255, 255, 0.2),
+      0 0 2.5rem rgba(0, 255, 157, 0.5);
+    transform: translateY(-0.5rem) rotate(3deg);
   }
 }
 
 @keyframes pulseAuroraGlow {
-  0%, 100% { 
+  0%, 
+  100% { 
     opacity: 0.6; 
     transform: translate(-50%, -50%) scale(1);
   }
@@ -315,26 +345,27 @@ body {
 }
 
 .career-title {
+  background: linear-gradient(135deg, #fff, #ffecb3, var(--verde-fosforescente));
+  background-clip: text;
+  color: transparent;
   font-size: 2rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #fff, #ffecb3, var(--verde-fosforescente));
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  margin-bottom: var(--spacing-sm);
+  text-shadow: 0 0 1.875rem rgba(0, 255, 157, 0.3);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 0 0 30px rgba(0, 255, 157, 0.3);
-  margin-bottom: 0.75rem;
-  line-height: 1.3;
-  letter-spacing: -0.02em;
 }
 
 .career-subtitle {
-  font-size: 1.125rem;
   color: var(--gris-texto);
+  font-size: 1.125rem;
   font-weight: 500;
   line-height: 1.5;
-  max-width: 320px;
   margin: 0 auto;
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  max-width: 20rem;
+  text-shadow: 0 0 0.625rem rgba(0, 0, 0, 0.5);
 }
 
 /* ==================================================
@@ -343,37 +374,37 @@ body {
 .career-form {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: var(--spacing-xl);
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--spacing-sm);
 }
 
 .form-label {
-  font-size: 1rem;
-  font-weight: 600;
+  align-items: center;
   color: var(--blanco);
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  gap: var(--spacing-xs);
+  text-shadow: 0 0 0.625rem rgba(0, 255, 157, 0.3);
   transition: var(--transicion-rapida);
-  text-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
 }
 
 .form-label::before {
   content: '📚';
-  font-size: 1.2rem;
   filter: grayscale(0.3);
+  font-size: 1.2rem;
   transition: var(--transicion-rapida);
 }
 
 .form-label:hover::before {
   filter: grayscale(0);
+  text-shadow: 0 0 0.9375rem var(--verde-fosforescente);
   transform: scale(1.1);
-  text-shadow: 0 0 15px var(--verde-fosforescente);
 }
 
 /* Contenedor del select con diseño aurora */
@@ -383,20 +414,20 @@ body {
 }
 
 .select-container::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300ff9d'%3E%3Cpath d='M7.41 8.84L12 13.42l4.59-4.58L18 10.25l-6 6-6-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
   content: '';
+  filter: drop-shadow(0 0 0.3125rem rgba(0, 255, 157, 0.5));
+  height: 0.875rem;
+  pointer-events: none;
   position: absolute;
   right: 1.5rem;
   top: 50%;
   transform: translateY(-50%);
-  width: 14px;
-  height: 14px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300ff9d'%3E%3Cpath d='M7.41 8.84L12 13.42l4.59-4.58L18 10.25l-6 6-6-6z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-size: contain;
-  pointer-events: none;
   transition: var(--transicion-media);
-  z-index: 5;
-  filter: drop-shadow(0 0 5px rgba(0, 255, 157, 0.5));
+  width: 0.875rem;
+  z-index: var(--z-dropdown);
 }
 
 .select-container:focus-within::after {
@@ -404,46 +435,46 @@ body {
 }
 
 .career-select {
-  width: 100%;
-  padding: 1.25rem 3rem 1.25rem 1.5rem;
-  border: 2px solid rgba(255, 179, 0, 0.4);
-  border-radius: 16px;
-  font-size: 1rem;
-  font-family: inherit;
-  font-weight: 500;
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--blanco);
-  cursor: pointer;
-  transition: var(--transicion-media);
   appearance: none;
-  position: relative;
-  z-index: 2;
+  backdrop-filter: blur(0.625rem);
+  background: rgba(255, 255, 255, 0.1);
+  border: 0.125rem solid rgba(255, 179, 0, 0.4);
+  border-radius: var(--radius-md);
   box-shadow: 
     var(--sombra-suave),
-    inset 0 0 20px rgba(0, 255, 157, 0.1);
-  backdrop-filter: blur(10px);
-}
-
-.career-select:focus {
-  outline: none;
-  border-color: var(--verde-fosforescente);
-  box-shadow: 
-    0 0 0 4px rgba(0, 255, 157, 0.15),
-    var(--sombra-media),
-    inset 0 0 30px rgba(0, 255, 157, 0.2);
-  transform: translateY(-2px);
+    inset 0 0 1.25rem rgba(0, 255, 157, 0.1);
+  color: var(--fondo-oscuro);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 1.25rem 3rem 1.25rem 1.5rem;
+  position: relative;
+  transition: var(--transicion-media);
+  width: 100%;
+  z-index: var(--z-overlay);
 }
 
 .career-select:hover {
   border-color: var(--azul-aurora);
   box-shadow: 
     var(--sombra-media),
-    inset 0 0 25px rgba(0, 153, 255, 0.2);
+    inset 0 0 1.5625rem rgba(0, 153, 255, 0.2);
+}
+
+.career-select:focus {
+  border-color: var(--verde-fosforescente);
+  box-shadow: 
+    0 0 0 0.25rem rgba(0, 255, 157, 0.15),
+    var(--sombra-media),
+    inset 0 0 1.875rem rgba(0, 255, 157, 0.2);
+  outline: none;
+  transform: translateY(-0.125rem);
 }
 
 .career-select:valid {
-  border-color: var(--verde-aurora);
   background: linear-gradient(to right, rgba(0, 255, 157, 0.1), rgba(255, 255, 255, 0.1));
+  border-color: var(--verde-aurora);
 }
 
 .career-select:invalid {
@@ -452,12 +483,12 @@ body {
 
 /* Opciones del select con diseño aurora */
 .career-select option {
-  padding: 1rem 1.5rem;
+  background: var(--azul-marino);
+  border-bottom: 0.0625rem solid rgba(255, 255, 255, 0.1);
+  color: var(--blanco);
   font-size: 0.95rem;
   font-weight: 500;
-  background: var(--azul-marino);
-  color: var(--blanco);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1rem 1.5rem;
   transition: var(--transicion-rapida);
 }
 
@@ -476,67 +507,71 @@ body {
    BOTÓN DE ACCIÓN PRINCIPAL AURORA
 ================================================== */
 .btn-container {
-  text-align: center;
-  margin-top: 1rem;
+  margin-top: var(--spacing-md);
   position: relative;
+  text-align: center;
 }
 
 .btn-save {
-  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  padding: 1.375rem 3rem;
-  background: linear-gradient(135deg, 
+  background: linear-gradient(
+    135deg, 
     var(--mostaza), 
     var(--verde-fosforescente),
-    var(--azul-aurora));
-  color: var(--azul-marino);
+    var(--azul-aurora)
+  );
   border: none;
-  border-radius: 16px;
+  border-radius: var(--radius-md);
+  box-shadow: 
+    0 0.375rem 1.25rem rgba(255, 179, 0, 0.4),
+    0 0 1.875rem rgba(0, 255, 157, 0.3),
+    inset 0 0.0625rem 0 rgba(255, 255, 255, 0.3);
+  color: var(--azul-marino);
+  cursor: pointer;
+  display: inline-flex;
   font-size: 1.125rem;
   font-weight: 700;
-  cursor: pointer;
-  transition: var(--transicion-media);
-  box-shadow: 
-    0 6px 20px rgba(255, 179, 0, 0.4),
-    0 0 30px rgba(0, 255, 157, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  min-width: 240px;
-  position: relative;
+  gap: var(--spacing-sm);
+  justify-content: center;
+  letter-spacing: 0.03125rem;
+  min-width: 15rem;
   overflow: hidden;
-  z-index: 1;
+  padding: 1.375rem 3rem;
+  position: relative;
+  text-transform: uppercase;
+  transition: var(--transicion-media);
+  z-index: var(--z-base);
 }
 
 .btn-save::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
   background: linear-gradient(
     90deg,
     transparent,
     rgba(255, 255, 255, 0.4),
     transparent
   );
+  content: '';
+  height: 100%;
+  left: -100%;
+  position: absolute;
+  top: 0;
   transition: var(--transicion-lenta);
-  z-index: -1;
+  width: 100%;
+  z-index: var(--z-background);
 }
 
 .btn-save:hover {
-  background: linear-gradient(135deg, 
+  background: linear-gradient(
+    135deg, 
     var(--verde-fosforescente),
     var(--azul-aurora),
-    var(--mostaza-oscuro));
-  transform: translateY(-3px);
+    var(--mostaza-oscuro)
+  );
   box-shadow: 
-    0 12px 30px rgba(255, 179, 0, 0.6),
-    0 0 40px rgba(0, 255, 157, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    0 0.75rem 1.875rem rgba(255, 179, 0, 0.6),
+    0 0 2.5rem rgba(0, 255, 157, 0.5),
+    inset 0 0.0625rem 0 rgba(255, 255, 255, 0.4);
+  transform: translateY(-0.1875rem);
 }
 
 .btn-save:hover::before {
@@ -544,36 +579,36 @@ body {
 }
 
 .btn-save:active {
-  transform: translateY(-1px);
   box-shadow: 
-    0 4px 15px rgba(255, 179, 0, 0.4),
-    0 0 20px rgba(0, 255, 157, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 0.25rem 0.9375rem rgba(255, 179, 0, 0.4),
+    0 0 1.25rem rgba(0, 255, 157, 0.3),
+    inset 0 0.0625rem 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-0.0625rem);
 }
 
 .btn-save:disabled {
   background: var(--gris-medio);
+  box-shadow: none;
   color: var(--gris-texto);
   cursor: not-allowed;
   transform: none;
-  box-shadow: none;
 }
 
 .btn-save:disabled:hover {
   background: var(--gris-medio);
-  transform: none;
   box-shadow: none;
+  transform: none;
 }
 
 .btn-icon {
+  filter: drop-shadow(0 0.125rem 0.125rem rgba(0, 0, 0, 0.1));
   font-size: 1.375rem;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
   transition: var(--transicion-rapida);
 }
 
 .btn-save:hover .btn-icon {
-  transform: scale(1.1) translateX(2px);
-  filter: drop-shadow(0 0 8px rgba(0, 255, 157, 0.5));
+  filter: drop-shadow(0 0 0.5rem rgba(0, 255, 157, 0.5));
+  transform: scale(1.1) translateX(0.125rem);
 }
 
 /* ==================================================
@@ -582,7 +617,7 @@ body {
 @keyframes slideInUp {
   from {
     opacity: 0;
-    transform: translateY(40px) scale(0.95);
+    transform: translateY(2.5rem) scale(0.95);
   }
   to {
     opacity: 1;
@@ -615,39 +650,39 @@ body {
    SCROLLBAR AURORA PERSONALIZADA
 ================================================== */
 ::-webkit-scrollbar {
-  width: 12px;
+  width: 0.75rem;
 }
 
 ::-webkit-scrollbar-track {
   background: rgba(10, 17, 40, 0.8);
-  border-radius: 10px;
+  border-radius: 0.625rem;
 }
 
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(to bottom, var(--verde-fosforescente), var(--verde-aurora));
-  border-radius: 10px;
-  border: 2px solid rgba(10, 17, 40, 0.8);
+  border: 0.125rem solid rgba(10, 17, 40, 0.8);
+  border-radius: 0.625rem;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(to bottom, var(--verde-aurora), var(--azul-aurora));
-  box-shadow: 0 0 10px rgba(0, 255, 157, 0.5);
+  box-shadow: 0 0 0.625rem rgba(0, 255, 157, 0.5);
 }
 
 /* Para Firefox */
 * {
-  scrollbar-width: thin;
   scrollbar-color: var(--verde-fosforescente) rgba(10, 17, 40, 0.8);
+  scrollbar-width: thin;
 }
 
 /* ==================================================
    DISEÑO RESPONSIVE
 ================================================== */
-@media (max-width: 768px) {
+@media (max-width: 48rem) {
   .career-selection-container {
-    padding: 2.5rem 2rem;
-    margin: 1rem;
-    border-radius: 20px;
+    border-radius: 1.25rem;
+    margin: var(--spacing-md);
+    padding: var(--spacing-2xl) var(--spacing-xl);
   }
   
   .career-title {
@@ -659,8 +694,8 @@ body {
   }
   
   .career-icon-wrapper {
-    width: 85px;
-    height: 85px;
+    height: 5.3125rem;
+    width: 5.3125rem;
   }
   
   .career-icon {
@@ -668,20 +703,20 @@ body {
   }
   
   .btn-save {
-    padding: 1.25rem 2.5rem;
     font-size: 1.05rem;
-    min-width: 220px;
+    min-width: 13.75rem;
+    padding: 1.25rem 2.5rem;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 30rem) {
   body {
-    padding: 0.5rem;
+    padding: var(--spacing-xs);
   }
   
   .career-selection-container {
-    padding: 2rem 1.5rem;
-    border-radius: 16px;
+    border-radius: var(--radius-md);
+    padding: var(--spacing-xl) var(--spacing-lg);
   }
   
   .career-title {
@@ -693,9 +728,9 @@ body {
   }
   
   .career-icon-wrapper {
-    width: 70px;
-    height: 70px;
+    height: 4.375rem;
     margin-bottom: 1.25rem;
+    width: 4.375rem;
   }
   
   .career-icon {
@@ -703,14 +738,14 @@ body {
   }
   
   .career-select {
-    padding: 1.125rem 2.5rem 1.125rem 1.25rem;
     font-size: 0.95rem;
+    padding: 1.125rem 2.5rem 1.125rem 1.25rem;
   }
   
   .btn-save {
-    padding: 1.125rem 2rem;
     font-size: 1rem;
-    min-width: 200px;
+    min-width: 12.5rem;
+    padding: 1.125rem 2rem;
   }
 }
 
@@ -730,19 +765,18 @@ body {
 /* Focus visible para navegación con teclado */
 .career-select:focus-visible,
 .btn-save:focus-visible {
-  outline: 3px solid var(--verde-fosforescente);
-  outline-offset: 2px;
+  outline: 0.1875rem solid var(--verde-fosforescente);
+  outline-offset: 0.125rem;
 }
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   :root {
-    --borde: #000000;
-    --sombra-suave: 0 2px 4px rgba(0, 0, 0, 0.5);
+    --borde: #000;
+    --sombra-suave: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.5);
   }
   
   .career-selection-container {
-    border: 2px solid var(--borde);
+    border: 0.125rem solid var(--borde);
   }
 }
-

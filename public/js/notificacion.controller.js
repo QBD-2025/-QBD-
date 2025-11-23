@@ -1,4 +1,63 @@
-// public/js/notificaciones.js - FRONTEND LIMPIO
+// ================== SISTEMA DE TEMAS ==================
+const themeToggle = document.getElementById('theme-toggle');
+const themeSlider = document.querySelector('.theme-toggle-slider');
+const htmlElement = document.documentElement;
+
+// Cargar tema guardado al iniciar
+function loadTheme() {
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    if (currentTheme === 'dark') {
+        htmlElement.setAttribute('data-theme', 'dark');
+        if (themeToggle) themeToggle.checked = true;
+    }
+}
+
+// Función para cambiar tema
+function toggleTheme() {
+    if (!themeToggle || !themeSlider) return;
+    
+    // Añadir clase de transición
+    htmlElement.setAttribute('data-theme-transitioning', '');
+    
+    // Animar el slider
+    themeSlider.classList.add('animating');
+    
+    // Cambiar tema
+    const isDark = themeToggle.checked;
+    
+    if (isDark) {
+        htmlElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        console.log('🌙 Tema oscuro activado');
+    } else {
+        htmlElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+        console.log('☀️ Tema claro activado');
+    }
+    
+    // Remover clases de animación después de completar
+    setTimeout(() => {
+        htmlElement.removeAttribute('data-theme-transitioning');
+        themeSlider.classList.remove('animating');
+    }, 300);
+}
+
+// Event listeners
+if (themeToggle) {
+    themeToggle.addEventListener('change', toggleTheme);
+}
+
+// Cargar tema al iniciar
+loadTheme();
+
+// Mostrar animación de carga
+window.addEventListener('load', () => {
+    if (themeSlider) {
+        setTimeout(() => {
+            themeSlider.style.opacity = '1';
+        }, 100);
+    }
+});
 
 // ═══════════════════════════════════════════════════════════
 // FUNCIONES GLOBALES
@@ -143,6 +202,54 @@ if (window.usuarioActual) {
                             Rechazar
                         </button>
                     `;
+                } else if (notif.tipo === 'duelo_completado') {
+                    let ed = extraData || {};
+                    const urlResultados = `/duelo/resultados/${ed.salaId || ed.id_duelo}`;
+                    
+                    console.log('[NOTIF DUELO COMPLETADO]:', {
+                        extraData: ed,
+                        urlResultados: urlResultados,
+                        salaId: ed.salaId,
+                        id_duelo: ed.id_duelo
+                    });
+                    
+                    li.innerHTML = `
+                        <span>🏆 ${notif.mensaje}</span>
+                        <button class="btn-ver-resultados" 
+                                onclick="window.location.href='${urlResultados}'" 
+                                style="background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-left: 10px; font-weight: bold;">
+                            Ver Resultados
+                        </button>
+                        <button class="btn-eliminar" 
+                                data-id="${notif.id_notificacion}" 
+                                style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-left: 5px;">
+                            ✕
+                        </button>
+                    `;
+                } else if (notif.tipo === 'duelo_completado') {
+                    let ed = extraData || {};
+                    const urlResultados = `/duelo/resultados/${ed.salaId || ed.id_duelo}`;
+                    
+                    console.log('[NOTIF DUELO COMPLETADO]:', {
+                        extraData: ed,
+                        urlResultados: urlResultados,
+                        salaId: ed.salaId,
+                        id_duelo: ed.id_duelo
+                    });
+                    
+                    li.innerHTML = `
+                        <span>🏆 ${notif.mensaje}</span>
+                        <button class="btn-ver-resultados" 
+                                onclick="window.location.href='${urlResultados}'" 
+                                style="background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-left: 10px; font-weight: bold;">
+                            Ver Resultados
+                        </button>
+                        <button class="btn-eliminar" 
+                                data-id="${notif.id_notificacion}" 
+                                style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-left: 5px;">
+                            ✕
+                        </button>
+                    `;
                 } else {
                     li.innerHTML = `<span>${notif.mensaje}</span>
                     <button class="btn-rechazar" data-id="${notif.id_notificacion}">
@@ -160,6 +267,57 @@ if (window.usuarioActual) {
             }
         } catch (error) { 
             console.error("[CARGAR NOTIF ERROR]:", error); 
+        }
+    }
+
+    async function actualizarNotificacionesAlTerminar(salaId, conn) {
+        try {
+            console.log(`[ACTUALIZAR NOTIF] Verificando si ambos terminaron: ${salaId}`);
+            
+            // 1️⃣ Verificar si ambos completaron
+            const [duelo] = await conn.query(`
+                SELECT respondido_retador, respondido_oponente, id_retador, id_defensor
+                FROM duelos 
+                WHERE id_duelo = ?
+            `, [salaId]);
+            
+            if (duelo.length === 0) return;
+            
+            const ambosTerminaron = duelo[0].respondido_retador && duelo[0].respondido_oponente;
+            
+            if (!ambosTerminaron) {
+                console.log(`[ACTUALIZAR NOTIF] ⏳ Todavía falta que uno termine`);
+                return;
+            }
+            
+            console.log(`[ACTUALIZAR NOTIF] ✅ Ambos terminaron, actualizando notificaciones`);
+            
+            // 2️⃣ Actualizar mensaje de TODAS las notificaciones relacionadas
+            await conn.query(`
+                UPDATE notificaciones 
+                SET 
+                    mensaje = CASE 
+                        WHEN id_usuario_destinatario = ? 
+                        THEN CONCAT('🏆 Duelo completado - Ver resultados')
+                        ELSE CONCAT('🏆 Duelo completado - Ver resultados')
+                    END,
+                    tipo = 'duelo_completado'
+                WHERE tipo = 'duelo_aceptado' 
+                AND JSON_EXTRACT(extra_data, '$.salaId') = ?
+            `, [duelo[0].id_retador, salaId]);
+            
+            console.log(`[ACTUALIZAR NOTIF] ✅ Notificaciones actualizadas a 'duelo_completado'`);
+            
+            // 3️⃣ Emitir evento socket para actualizar en tiempo real
+            const io = global.io || req?.app?.get('io');
+            if (io) {
+                io.to(duelo[0].id_retador.toString()).emit('notificacion_recibida');
+                io.to(duelo[0].id_defensor.toString()).emit('notificacion_recibida');
+                console.log(`[ACTUALIZAR NOTIF] 📡 Sockets emitidos`);
+            }
+            
+        } catch (error) {
+            console.error('❌ Error actualizando notificaciones:', error);
         }
     }
 
@@ -213,12 +371,17 @@ if (window.usuarioActual) {
                 console.log('[BTN]: ID:', notifId);
                 console.log('[BTN]: Tipo:', tipoNotif);
                 
+                // Mostrar estado de carga en el <li>
+                const li = event.target.closest('li');
+                if (li) {
+                    li.style.opacity = '0.5';
+                    li.innerHTML = '<span>⏳ Procesando...</span>';
+                }
+                
                 button.disabled = true;
                 button.textContent = 'Procesando...';
                 
                 try {
-                    console.log('[BTN]: 📤 POST /aceptar/' + notifId);
-                    
                     const response = await fetch(`/aceptar/${notifId}`, { 
                         method: 'POST', 
                         credentials: 'include',
@@ -228,47 +391,29 @@ if (window.usuarioActual) {
                         }
                     });
                     
-                    console.log('[BTN]: Status:', response.status);
-                    
                     const contentType = response.headers.get('content-type');
-                    console.log('[BTN]: Content-Type:', contentType);
                     
                     if (!contentType || !contentType.includes('application/json')) {
                         const text = await response.text();
-                        console.error('[BTN]: ❌ NO ES JSON');
-                        console.error('[BTN]: Respuesta:', text.substring(0, 500));
                         throw new Error('Respuesta no es JSON');
                     }
                     
                     const data = await response.json();
-                    
-                    console.log('[BTN]: ✅ JSON recibido');
-                    console.log('[BTN]: success:', data.success);
-                    console.log('[BTN]: tipo:', data.tipo);
-                    console.log('[BTN]: salaId:', data.salaId);
-                    console.log('[BTN]: redirigir:', data.redirigir);
-                    console.log('[BTN]: message:', data.message);
-                    console.log('[BTN]: mostrar_mensaje:', data.mostrar_mensaje);
                     
                     if (!response.ok) {
                         throw new Error(data.message || `HTTP ${response.status}`);
                     }
                     
                     if (data.success) {
-                        const li = event.target.closest('li');
-                        if (li) li.remove();
                         
                         // ⚔️ DUELO RÁPIDO BD
                         if (data.tipo === 'desafio_duelo_rapido') {
-                            console.log('[BTN]: ⚔️ DUELO RÁPIDO BD');
                             
                             if (!data.salaId) {
-                                console.error('[BTN]: ❌ NO HAY salaId');
                                 throw new Error('No se recibió salaId');
                             }
                             
                             if (!data.redirigir) {
-                                console.error('[BTN]: ❌ NO HAY URL');
                                 throw new Error('No se recibió URL');
                             }
                             
@@ -276,7 +421,7 @@ if (window.usuarioActual) {
                             
                             socket.emit('duelo:aceptarDesafioBD', {
                                 salaId: data.salaId,
-                                idRetado: window.usuarioActual.id_usuario // ✅ CORREGIDO
+                                idRetado: window.usuarioActual.id_usuario
                             });
                             
                             console.log('[BTN]: ✅ Socket emitido');
@@ -310,37 +455,90 @@ if (window.usuarioActual) {
                             console.log('[BTN]: Mostrar mensaje:', data.mostrar_mensaje);
                             console.log('[BTN]: Extra data:', data.extra_data);
                             
-                            const cont = document.getElementById('mensajeExamen') || document.body;
+                            // Crear overlay oscuro
+                            const overlay = document.createElement('div');
+                            overlay.id = 'duelo-overlay';
+                            overlay.style.cssText = `
+                                position: fixed;
+                                top: 0;
+                                left: 0;
+                                right: 0;
+                                bottom: 0;
+                                background: rgba(0, 0, 0, 0.7);
+                                z-index: 9999;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                            `;
+                            
+                            // Crear mensaje modal
                             const mensajeDiv = document.createElement('div');
                             mensajeDiv.id = 'duelo-aceptado-mensaje';
-                            mensajeDiv.className = 'notification-message duelo-48h';
+                            mensajeDiv.style.cssText = `
+                                background: black;
+                                padding: 40px;
+                                border-radius: 15px;
+                                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+                                text-align: center;
+                                min-width: 400px;
+                                max-width: 90%;
+                                color: #333;
+                                animation: fadeInScale 0.3s ease-out;
+                            `;
+                            
                             mensajeDiv.innerHTML = `
                                 <div style="font-size: 48px; margin-bottom: 10px;">📚</div>
-                                <h3 style="margin: 0 0 15px 0; font-size: 24px;">¡Desafío Aceptado!</h3>
-                                <p style="margin: 0 0 20px 0;">${data.message}</p>
-                                <p style="margin: 0 0 15px 0;">
+                                <h3 style="margin: 0 0 15px 0; font-size: 24px; color: #ffffff;">¡Desafío Aceptado!</h3>
+                                <p style="margin: 0 0 20px 0; color: #ffffff;">${data.message}</p>
+                                <p style="margin: 0 0 15px 0; color: #ffffff;">
                                     <strong>Haz clic en las notificaciones 🔔 para ver el botón "Unirse"</strong>
                                 </p>
                                 <div style="margin-top: 15px;">
-                                    <button id="btn-cerrar-mensaje" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                                    <button id="btn-cerrar-mensaje" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: background 0.2s;">
                                         Entendido
                                     </button>
                                 </div>
                             `;
-                            cont.appendChild(mensajeDiv);
                             
+                            overlay.appendChild(mensajeDiv);
+                            document.body.appendChild(overlay);
+                            
+                            // ✅ Recargar notificaciones después de 1.5s (dar tiempo al backend)
                             setTimeout(() => {
                                 cargarNotificaciones();
-                            }, 1000);
+                            }, 1500);
+                            
+                            // Agregar animación CSS si no existe
+                            if (!document.getElementById('duelo-animation-styles')) {
+                                const style = document.createElement('style');
+                                style.id = 'duelo-animation-styles';
+                                style.textContent = `
+                                    @keyframes fadeInScale {
+                                        from {
+                                            opacity: 0;
+                                            transform: scale(0.9);
+                                        }
+                                        to {
+                                            opacity: 1;
+                                            transform: scale(1);
+                                        }
+                                    }
+                                    #btn-cerrar-mensaje:hover {
+                                        background: #218838 !important;
+                                    }
+                                `;
+                                document.head.appendChild(style);
+                            }
                             
                             document.getElementById('btn-cerrar-mensaje').addEventListener('click', () => {
-                                mensajeDiv.remove();
+                                overlay.remove();
                                 cargarNotificaciones();
                             });
                             
+                            // Auto-cerrar después de 10 segundos
                             setTimeout(() => {
-                                if (document.getElementById('duelo-aceptado-mensaje')) {
-                                    mensajeDiv.remove();
+                                if (document.getElementById('duelo-overlay')) {
+                                    overlay.remove();
                                     cargarNotificaciones();
                                 }
                             }, 10000);
@@ -355,11 +553,24 @@ if (window.usuarioActual) {
                         // 🎮 INVITACIÓN A MINIJUEGO
                         if (data.tipo === 'invitacion') {
                             console.log('[BTN]: 🎮 INVITACIÓN ACEPTADA, redirigiendo:', data.redirigir);
-                            setTimeout(() => window.location.href = data.redirigir, 1000);
+                            
+                            // Mostrar mensaje de confirmación
+                            const mensaje = document.createElement('div');
+                            mensaje.className = 'notification-message invitacion';
+                            mensaje.innerHTML = `
+                                <div style="font-size: 48px; margin-bottom: 10px;">🎮</div>
+                                <h3 style="margin: 0 0 15px 0; font-size: 24px;">¡Invitación Aceptada!</h3>
+                                <p style="margin: 0 0 20px 0;">Uniéndose al juego...</p>
+                                <div class="spinner"></div>
+                            `;
+                            document.body.appendChild(mensaje);
+                            
+                            setTimeout(() => window.location.href = data.redirigir, 1500);
                             return;
                         }
                         
-                        setTimeout(cargarNotificaciones, 500);
+                        // ✅ Para otros tipos, recargar después de 1.5s
+                        setTimeout(cargarNotificaciones, 1500);
                         
                     } else {
                         console.error('[BTN]: ❌ success = false');
@@ -389,14 +600,18 @@ if (window.usuarioActual) {
 
                 try {
                     const li = event.target.closest('li');
-                    if (li) li.remove();
+                    if (li) {
+                        li.style.opacity = '0.5';
+                        li.innerHTML = '<span>⏳ Eliminando...</span>';
+                    }
                     
                     await fetch(`/rechazar/${notifId}`, { 
                         method: 'POST', 
                         credentials: 'include' 
                     });
                     
-                    setTimeout(cargarNotificaciones, 500);
+                    // ✅ Dar tiempo al backend antes de recargar
+                    setTimeout(cargarNotificaciones, 1500);
                 } catch (error) {
                     console.error('[RECHAZAR ERROR]:', error);
                     button.disabled = false;
@@ -413,14 +628,18 @@ if (window.usuarioActual) {
 
                 try {
                     const li = event.target.closest('li');
-                    if (li) li.remove();
+                    if (li) {
+                        li.style.opacity = '0.5';
+                        li.innerHTML = '<span>⏳ Eliminando...</span>';
+                    }
                     
                     await fetch(`/rechazar/${notifId}`, { 
                         method: 'POST', 
                         credentials: 'include' 
                     });
                     
-                    setTimeout(cargarNotificaciones, 500);
+                    // ✅ Dar tiempo al backend antes de recargar
+                    setTimeout(cargarNotificaciones, 1500);
                 } catch (error) {
                     console.error('[ELIMINAR ERROR]:', error);
                     button.disabled = false;
