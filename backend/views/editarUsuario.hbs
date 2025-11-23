@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- Título de la página -->
+  <title>Editar Perfil – QueBuenDato.com.mx</title>
+  
+  <!-- CSS principal para la edición de usuario -->
+  <link rel="stylesheet" href="/css/usuarioEditor.css" />
+  
+  <!-- Conexión con Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body class="page-usuario">
+
+  <!-- Contenedor principal de perfil -->
+  <div class="profile-full">
+    <div class="profile-card">
+
+      <!-- Encabezado del perfil -->
+      <header class="profile-header">
+        <h1 class="profile-title">Editar Perfil</h1>
+        <p class="profile-subtitle">Actualiza tu información personal y preferencias</p>
+      </header>
+
+      <!-- Cuerpo del perfil: formulario -->
+      <div class="profile-body">
+        <!-- Formulario para editar perfil -->
+        <!-- enctype="multipart/form-data" necesario para subir archivos -->
+        <form action="/usuario/editar" method="POST" enctype="multipart/form-data" class="edit-form" id="editForm">
+
+          <!-- Sección de Avatar -->
+          <div class="form-section">
+            <h2 class="section-title">Avatar Personal</h2>
+            <div class="avatar-section">
+
+              <!-- Contenedor de preview del avatar -->
+              <div class="avatar-preview-container">
+                <img src="{{user.avatarUrl}}" alt="Avatar actual" id="avatar-preview" class="avatar-preview">
+              </div>
+
+              <!-- Controles de cambio de avatar -->
+              <div class="avatar-controls">
+                <!-- Input de archivo oculto -->
+                <input type="file" id="avatar" name="avatar" accept="image/jpeg,image/jpg,image/png,image/webp" class="avatar-input" style="display: none;">
+                
+                <!-- Botón para abrir selector de archivo -->
+                <button type="button" class="change-avatar-btn" id="changeAvatarBtn">
+                  📸 Cambiar Imagen
+                </button>
+
+                <p class="avatar-note">JPG, PNG o WEBP. Máximo 5MB</p>
+                <p id="fileNameDisplay" style="font-size: 0.85em; color: #666; margin-top: 5px;"></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Información personal -->
+          <div class="form-section">
+            <h2 class="section-title">Información Personal</h2>
+            <div class="form-grid">
+
+              <!-- Alias visible editable -->
+              <div class="form-group">
+                <label for="apodo" class="form-label">
+                  <span class="label-icon">👤</span>
+                  Alias Visible
+                </label>
+                <input type="text" id="apodo" name="apodo" value="{{user.apodo}}" placeholder="Ingresa tu alias público" class="form-input" required>
+              </div>
+
+              <!-- Nombre real (solo visualización) -->
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="label-icon">📛</span>
+                  Nombre Real
+                </label>
+                <div class="display-field">
+                  {{user.username}}
+                </div>
+              </div>
+
+              <!-- Correo electrónico (solo visualización) -->
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="label-icon">📧</span>
+                  Correo Electrónico
+                </label>
+                <div class="display-field">
+                  {{user.email}}
+                </div>
+              </div>
+
+              <!-- Tipo de cuenta (solo visualización) -->
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="label-icon">👥</span>
+                  Tipo de Cuenta
+                </label>
+                <div class="display-field account-type {{user.role}}">
+                  {{user.role}}
+                </div>
+              </div>
+
+              <!-- Metas y descripción personal -->
+              <div class="form-group full-width">
+                <label for="descripcion" class="form-label">
+                  <span class="label-icon">🎯</span>
+                  Metas y Descripción
+                </label>
+                <textarea id="descripcion" name="descripcion" rows="4" placeholder="Describe tus objetivos de aprendizaje y metas personales..." class="form-textarea">{{user.descripcion}}</textarea>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Campos ocultos necesarios para no perder información -->
+          <input type="hidden" name="username" value="{{user.username}}" />
+          <input type="hidden" name="email" value="{{user.email}}" />
+
+          <!-- Botones de acción -->
+          <div class="form-actions">
+            <!-- Cancelar edición -->
+            <button type="button" onclick="window.location.href='/usuario'" class="cancel-btn">
+              Cancelar
+            </button>
+            <!-- Guardar cambios -->
+            <button type="submit" class="save-btn" id="saveBtn">
+              Guardar Cambios
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/public/js/editarUsuario.controller.js" defer></script>
+
+</body>
+</html>

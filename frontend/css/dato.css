@@ -1,0 +1,110 @@
+/* ================================================================
+Archivo: dato.css
+Descripción: Estilos para la presentación de múltiples datos curiosos en tarjetas.
+Autor: Equipo de desarrollo
+Última modificación: 12 de octubre de 2025
+================================================================ */
+
+/* ===== RESET BÁSICO ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ===== ESTILOS GENERALES ===== */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(to right, #f0f4ff, #dbe9ff); /* Fondo degradado suave */
+  color: #0a2472;
+  display: flex;
+  justify-content: center; /* Centra el contenedor horizontalmente */
+  align-items: start;      /* Alinea al inicio verticalmente */
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+.contenedor-datos {
+  width: 100%;
+  max-width: 1000px; /* Limita el ancho máximo del contenedor */
+}
+
+/* ===== BOTÓN VOLVER ===== */
+.boton-volver {
+  margin-top: 50px;
+  margin-bottom: 20px;
+  background-color: #e6b421;
+  color: white;
+  padding: 30px 18px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.boton-volver:hover {
+  background-color: #001c5a; /* Cambio de color al pasar el cursor */
+}
+
+/* ===== TÍTULO PRINCIPAL ===== */
+.titulo {
+  text-align: center;
+  font-size: 2.4rem;
+  margin-bottom: 30px;
+  color: #0a2472;
+}
+
+/* ===== LISTA DE TARJETAS DE DATOS ===== */
+.lista-datos {
+  display: flex;
+  flex-wrap: wrap;      /* Permite que las tarjetas pasen a la siguiente fila */
+  justify-content: center;
+  gap: 25px;
+}
+
+/* ===== TARJETA INDIVIDUAL ===== */
+.tarjeta-dato {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+  width: 300px;
+  min-height: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tarjeta-dato:hover {
+  transform: translateY(-5px); /* Efecto de elevación al pasar el cursor */
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== TEXTO DENTRO DE LA TARJETA ===== */
+.texto-dato {
+  font-size: 1.1rem;
+  color: #333;
+  text-align: left;    /* Alinea texto a la izquierda dentro de la tarjeta */
+  margin-bottom: 15px;
+  width: 100%;         /* Ocupa todo el ancho de la tarjeta */
+  line-height: 1.5;    /* Mejora la legibilidad */
+}
+
+/* ===== IMAGEN DENTRO DE LA TARJETA ===== */
+.imagen-dato {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  max-height: 200px;
+  object-fit: cover;   /* Mantiene proporción de la imagen */
+}
+
+/* ===== ESTILO PARA MENSAJE CUANDO NO HAY DATOS ===== */
+.sin-datos {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #555;
+  margin-top: 50px;
+}

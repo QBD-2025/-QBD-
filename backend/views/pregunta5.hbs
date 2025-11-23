@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/css/formulario1.css"/>
+  <title>QueBuenDato.com.mx</title>
+
+</head>
+<body class="page-usuario">
+  <!-- Efecto de partículas -->
+  <div class="aurora-particles" id="particles"></div>
+
+  <div class="main-form-container">
+    <!-- Columna de imagen (oculta) -->
+    <div class="image-column"></div>
+
+    <!-- Columna del formulario -->
+    <div class="form-column">
+        <form action="/procesar-formulario" method="POST">
+        {{#each preguntas}}
+          <div class="pregunta">
+            <p><strong>{{pregunta}}</strong></p>
+            {{#each opciones}}
+              <label>
+                <input type="radio" name="respuesta_{{../id_pregunta}}" value="{{id_opcion}}" required/>
+                {{texto_opcion}}
+              </label>
+            {{/each}}
+          </div>
+          <hr>
+        {{/each}}
+
+        <button type="submit", class="button">Finalizar formulario</button>
+        </form>
+    </div>
+  </div>
+
+  <script src="/public/js/particulas.controller.js" defer></script>
+</body>
+</html>

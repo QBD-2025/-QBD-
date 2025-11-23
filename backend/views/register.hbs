@@ -1,0 +1,64 @@
+{{!-- ESTA VISTA SERÁ INYECTADA EN UN LAYOUT (auth-layout.hbs) --}}
+{{!-- NO NECESITA <HTML>, <HEAD>, <BODY> AQUÍ --}}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login</title>
+<link rel="stylesheet" href="/css/register.css">
+
+
+<div class="registration-container">
+    <div class="registration-left-panel">
+        <img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="registration-logo">
+    </div>
+    <div class="registration-right-panel">
+        <h1 class="welcome-headline">¡BIENVENIDO!</h1>
+        <form action="/register" method="POST" id="registrationForm" onsubmit="return validarFormulario()" novalidate>
+            <div class="form-group">
+                <label for="username">Ingresa tu nombre de usuario</label>
+                <input type="text" id="username" name="username" placeholder="Escriba un nombre de usuario" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Ingresa tu correo electronico</label>
+                <input type="email" id="email" name="email" placeholder="Escriba su correo" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Ingresa una contraseña</label>
+                <div style="position: relative;">
+                    <input type="password" id="password" name="password" placeholder="Escriba una contraseña" required>
+                    <span onclick="togglePassword('password', this)" class="password-toggle-icon">👁</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_password">Confirma tu contraseña</label>
+                <div style="position: relative;">
+                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirme su contraseña" required>
+                    <span onclick="togglePassword('confirm_password', this)" class="password-toggle-icon">👁</span>
+                </div>
+            </div>
+
+            <span id="error-mensaje"></span>
+
+            <button type="submit" class="button">Registrarse</button>
+
+            <p class="login-link">
+                ¿Ya tienes cuenta? <a href="/login">Inicia sesión</a>
+            <br> 
+
+            <a href="/auth/google" style="text-decoration: none;">
+                <button type="button" style="background-color: white; color: #444; border: 1px solid #ccc; padding: 10px 15px; font-size: 16px; display: flex; align-items: center; margin-bottom: 15px; width: 100%;">
+                    <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo" style="width: 20px; height: 20px; margin-right: 10px;">
+                    Registrate con Google
+                </button>
+            </a>
+            </p>
+        </form>
+    </div>
+</div>
+
+<script src="/public/js/register.controller.js" defer></script>

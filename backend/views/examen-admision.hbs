@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Examen práctica EXANI</title>
+  <link rel="stylesheet" href="/css/examen.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div id="avisoTiempo" class="modal-aviso oculto">
+  <div class="modal-content">
+    <p id="mensajeAviso">Te has quedado mucho tiempo en esta pregunta.</p>
+    <button onclick="cerrarAviso()">Entendido</button>
+  </div>
+</div>
+
+<div class="pre-examen-container" id="preExamenContent">
+    <div class="pre-examen-content">
+    <div class="pre-examen-header">
+      <h1><i class="fas fa-graduation-cap"></i> Examen EXANI</h1>
+      <p>Demuestra tus conocimientos y compite por un lugar en el ranking global</p>
+    </div>
+    <div class="top-player-section">
+      <h2 class="section-title"><i class="fas fa-crown"></i> Jugador Top Global</h2>
+      {{#if rankingData.length}}
+      <div class="top-player-card">
+        <div class="top-badge">🥇</div>
+        <div class="top-avatar">{{rankingData.[0].apodo.[0]}}</div>
+        <div class="top-username">{{rankingData.[0].username}}</div>
+        <div class="top-category">Total - {{rankingData.[0].puntos}} puntos</div>
+      </div>
+      {{else}}
+      <div class="top-player-card">
+        <div class="top-badge">🥇</div>
+        <div class="top-avatar">?</div>
+        <div class="top-username">No hay datos aún</div>
+        <div class="top-category">Sé el primero en jugar</div>
+        <div class="top-score">0 puntos</div>
+      </div>
+      {{/if}}
+      <p>¡Inspírate en el mejor jugador para lograr tus propios objetivos! Completa el examen con éxito para aumentar tu puntuación global.</p>
+    </div>
+    {{#if ultimoExamen}}
+    <div class="previous-result">
+      <i class="fas fa-chart-line" style="font-size: 36px; margin-bottom: 10px;"></i>
+      <p>Tu último examen: <strong>{{ultimoExamen}}%</strong></p>
+    </div>
+    {{else}}
+    <div class="no-previous-results">
+      <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 15px;"></i>
+      <p>No hay resultados previos para mostrar. ¡Completa este examen para ver tu progreso!</p>
+    </div>
+    {{/if}}
+    <div class="exam-info">
+      <h2 class="section-title"><i class="fas fa-info-circle"></i> Información del Examen</h2>
+      <div class="info-item"><i class="fas fa-question-circle"></i><div><strong>Preguntas:</strong> {{preguntas.length}} en total</div></div>
+      <div class="info-item"><i class="fas fa-clock"></i><div><strong>Duración:</strong> 60 minutos aproximadamente</div></div>
+      <div class="info-item"><i class="fas fa-star"></i><div><strong>Puntuación máxima:</strong> 100 puntos</div></div>
+      <div class="pre-examen-buttons">
+        <button class="pre-examen-btn btn-secondary" onclick="location.href='/'">
+          <i class="fas fa-arrow-left"></i> Volver Atrás
+        </button>
+        <button class="pre-examen-btn btn-primary" onclick="location.href='/ranking'">
+          <i class="fas fa-trophy"></i> Ver Ranking Completo
+        </button>
+        <button class="pre-examen-btn btn-success pulse" id="btnIniciarExamen">
+          <i class="fas fa-play"></i> Iniciar Examen
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="examenContent" style="display:none;">
+  <header>
+    Examen práctica EXANI
+    <div><button onclick="volverAPreExamen()" class="btn-volver">Regresar</button></div>
+  </header>
+
+  {{#each preguntas}}
+    <div class="contenedor-pregunta {{#if @first}}activa{{/if}}" 
+        data-index="{{@index}}" 
+        data-materia="{{materia}}" 
+        data-id-pregunta="{{id_pregunta}}">
+      
+      <div class="encabezado">
+        <div>Pregunta {{sum @index 1}} de {{../preguntas.length}} - <strong>{{materia}}</strong></div>
+        <div class="cronometro">60:00</div>
+      </div>
+      <h2 class="pregunta">{{pregunta}}</h2>
+      <div class="opciones">
+        {{#each respuestas}}
+          <button type="button">{{respuesta}}</button>
+        {{/each}}
+      </div>
+            <div class="navegacion">
+        {{#unless @first}}
+          <button type="button" class="btn-volver">← Volver</button>
+        {{/unless}}
+        <button type="button" class="btn-volver btnNoSeguro">No seguro / Para después</button>
+        <button type="button" class="btn-volver btnVolverFinal" style="display:none;">Volver al final</button>
+        {{#if @last}}
+          <button type="button" class="btn-finalizar">Finalizar</button>
+        {{else}}
+          <button type="button" class="btn-siguiente">Siguiente →</button>
+        {{/if}}
+      </div>
+    </div>
+  {{/each}}
+
+  <div id="pendientesContainer" class="pendientes-container">
+    <div class="filter-toggle">
+      <label for="toggleFiltro">Mostrar solo no respondidas</label>
+      <input type="checkbox" id="toggleFiltro" checked>
+    </div>
+    <div id="listaPreguntasNavegacion"></div>
+  </div>
+        
+  <form id="formResultados" method="POST" action="/resultados_admision" style="display:none;">
+    <input type="hidden" name="respuestas" id="inputRespuestas">
+    <input type="hidden" name="fecha_inicio_str" id="inputFechaInicio">
+    <input type="hidden" name="todosLosIds" id="inputTodosLosIds">
+  </form>
+</div>
+
+<script src="/public/js/examenAdmision.controller.js" defer></script>
+</body>
+</html>

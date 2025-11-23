@@ -1,0 +1,113 @@
+{{!-- Main.hbs - CON SISTEMA DE TEMAS INTEGRADO --}}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>QueBuenDato.com.mx</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="global-header-elements">
+        <div class="top-left-logo">
+            {{#if user}}
+                <a href="/menu_principal"><img src="/media/images/logo.png" alt="Logo" class="logo-image"></a>
+            {{else}}
+                <a href="/"><img src="/media/images/logo.png" alt="Logo" class="logo-image"></a>
+            {{/if}}
+            <a href="/conocenos" class="header-button">Conócenos</a>
+        </div>
+        <div class="top-right-nav">
+            {{#if user}}
+                <span class="nav-username">Hola, {{user.username}}</span>
+
+                {{!-- 🎨 TOGGLE DE TEMA --}}
+                <div class="theme-toggle-wrapper">
+                    <label class="theme-toggle-container"> 
+                        <input type="checkbox" class="theme-toggle-input" id="theme-toggle"> 
+                        <span class="theme-toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="notification-container" onclick="toggleNotifications(event)">
+                    🔔 <span id="notification-count" style="display:none;"></span>
+                </div>
+                <div class="notification-dropdown" id="notification-list" style="display:none;">
+                    <ul id="notifications-ul"><li>Cargando...</li></ul>
+                </div>
+                
+                <div class="kebab-menu">
+                    <button class="kebab-button">
+                        <div class="kebab-avatar">
+                            {{#if user.foto_perfil}}
+                                <img src="{{user.foto_perfil}}" alt="Perfil" style="width:100%;height:100%;border-radius:50%;">
+                            {{else}}
+                                {{#if user.username}}
+                                    {{user.username.[0]}}
+                                {{/if}}
+                            {{/if}}
+                        </div>
+                        &#8942;
+                    </button>
+                    <ul class="kebab-dropdown">
+                        <li class="profile-header">
+                            <div class="profile-info">
+                                <div class="profile-avatar">
+                                    {{#if user.foto_perfil}}
+                                        <img src="{{user.foto_perfil}}" alt="Perfil">
+                                    {{else}}
+                                        <div class="avatar-placeholder">
+                                            {{user.username.[0]}}
+                                        </div>
+                                    {{/if}}
+                                </div>
+                                <div class="profile-details">
+                                    <strong>{{user.username}}</strong>
+                                    <span>{{user.email}}</span>
+                                </div>
+                            </div>
+                        </li>
+                        <li><a href="/menu_principal">Menu Principal</a></li>
+                        <li><a href="/usuario/editar">Mi Perfil</a></li>
+                        <li><a href="/usuario">Configuración</a></li>
+                        {{#if (eq user.id_tp_usuario 3)}}
+                            <li><a href="/admin">Permisos</a></li>
+                            <li><a href="/editor">Editor</a></li>
+                        {{/if}}
+                        {{#if (eq user.id_tp_usuario 2)}}
+                            <li><a href="/editor">Editor</a></li>
+                        {{/if}}
+                        <li><a href="/logout" class="cerrar-sesion">Cerrar sesión</a></li>
+                    </ul>
+                </div>
+            {{else}}
+                {{#unless (or (eq currentPath "/") (eq currentPath "/video"))}}
+                    <a href="/login" class="header-link">Iniciar Sesión</a>
+                {{/unless}}
+            {{/if}}
+        </div>
+    </div>
+    <div id="mensajeExamen"></div>
+
+    {{{body}}}
+
+<script src="/socket.io/socket.io.js"></script>
+
+{{#if user}}
+<script>
+    window.usuarioActual = {
+        id_usuario: {{user.id_usuario}},
+        username: "{{user.username}}",
+        email: "{{user.email}}",
+        foto: "{{user.foto_perfil}}",
+        rol: {{user.id_tp_usuario}}
+    };
+</script>
+{{/if}}
+<script src="/public/js/notificacion.controller.js" defer></script>
+</body>
+</html>

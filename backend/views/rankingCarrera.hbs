@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking por Carrera</title>
+    <link rel="stylesheet" href="/css/rankingCarrera.css">
+</head>
+<body>
+    <div id="rankingCarreraContainer">
+        <div class="ranking-header">
+            <h2>Tabla de Clasificación por Carrera</h2>
+            <p class="ranking-subtitle">Los mejores jugadores de tu carrera</p>
+        </div>
+        <div id="loadingMessage">Cargando ranking...</div>
+    </div>
+
+    <script>
+        window.DATA_USER={{{json user}}}
+    </script>
+
+    <script src="/public/js/rankingCarrera.controller.js" defer></script>
+
+</body>
+</html>

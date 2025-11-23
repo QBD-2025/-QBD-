@@ -1,0 +1,32 @@
+.duel-view {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.duel-notification {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+.bell {
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -10px;
+  background: red;
+  color: white;
+  font-size: 12px;
+  border-radius: 50%;
+  padding: 4px 6px;
+}
+
+.duel-timer {
+  margin-top: 10px;
+  font-weight: bold;
+  color: #333;
+}

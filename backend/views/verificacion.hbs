@@ -1,0 +1,43 @@
+{{!-- ESTA VISTA SERÁ INYECTADA EN UN LAYOUT (auth-layout.hbs) --}}
+{{!-- NO NECESITA <HTML>, <HEAD>, <BODY> AQUÍ --}}
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="/css/verification.css">
+    
+    
+        
+<div class="verification-main-wrapper">
+    <div class="verification-visuals-container">
+        <div class="verification-figure2">
+            <img src="/media/videos/stuart_dance.gif" alt="Stuart bailando" class="verification-character">
+        </div>
+        <div class="verification-figure">
+            <video src="/media/videos/octavio_dance.mp4" autoplay loop muted class="verification-character"></video>
+        </div>
+    </div>
+
+    <div class="verification-text-content">
+        <h1 class="verification-headline-success">¡Registro exitoso!</h1>
+        <p class="verification-message">Se ha enviado un correo de verificación a <span id="correo" class="verification-email">{{correo}}</span>.</p>
+        <p class="verification-message">Por favor, revisa tu bandeja de entrada o spam para activar tu cuenta.</p>
+        
+        {{#if error}}
+            <p id="error-mensaje" class="verification-error-message">
+                {{#if (eq error 'unverifiedAccount')}}Tu cuenta no ha sido verificada.{{/if}}
+                {{#if (eq error 'emailSendFailed')}}Error al enviar el correo de verificación.{{/if}}
+            </p>
+        {{/if}}
+
+        <button id="reenviarCorreo" class="btn-primary verification-button-resend" style="display: none;">Reenviar correo</button>
+        <p id="temporizador" class="verification-timer-text"></p>
+        <div id="mensaje-exito" class="verification-success-message" style="display: none;">
+            Correo reenviado exitosamente.
+        </div>
+    </div>
+</div>
+
+<script src="/public/js/verificacion.controller.js" defer></script>

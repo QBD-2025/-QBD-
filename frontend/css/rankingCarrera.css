@@ -1,0 +1,306 @@
+/* ==========================================================
+   RANKING CARRERA — CSS LIMPIO, ORGANIZADO Y COMENTADO
+   Soporta modo oscuro / día mediante variables CSS.
+   ========================================================== */
+
+
+/* ==========================================================
+   VARIABLES PRINCIPALES — MODO OSCURO (DEFAULT)
+   ========================================================== */
+:root {
+    /* Fondo general del body */
+    --bg-body: linear-gradient(135deg, #1a1a2e 0%, #2a0f45 50%, #3d0b66 100%);
+
+    /* Recuadro principal (MORADO con transparencia) */
+    --bg-container: linear-gradient(135deg, rgba(89, 28, 135, 0.788), rgba(30, 0, 255, 0.692) );
+
+    /* Tarjetas de jugadores (morado claro) */
+    --bg-item: linear-gradient(135deg, rgba(120, 48, 180, 0.25), rgba(158, 68, 220, 0.18));
+
+    /* Colores de texto */
+    --text-main: #ffffff;
+    --text-secondary: #cccccc;
+
+    /* Bordes */
+    --border-color: #c77dff; /* Morado suave */
+
+    /* Botón desafiar */
+    --btn-bg: linear-gradient(135deg, #8e24aa, #ab47bc);
+}
+
+
+
+/* ==========================================================
+   VARIABLES MODO DÍA — ACTIVAS CUANDO body.light-mode ESTÁ PRESENTE
+   ========================================================== */
+body.light-mode {
+    /* Fondo */
+    --bg-body: #ffffff;
+
+    /* Recuadro principal — AMARILLO con negro */
+    --bg-container: linear-gradient(135deg, rgba(255, 230, 100, 0.55), rgba(255, 240, 140, 0.45));
+
+    /* Tarjetas internas */
+    --bg-item: #ffffff;
+
+    /* Texto */
+    --text-main: #000000;
+    --text-secondary: #333333;
+
+    /* Bordes negro–amarillo */
+    --border-color: #000000;
+
+    /* Botón azul claro */
+    --btn-bg: linear-gradient(135deg, #4a90e2, #89bbff);
+}
+
+
+
+/* ==========================================================
+   CONTENEDOR PRINCIPAL
+   ========================================================== */
+#rankingCarreraContainer {
+    background: var(--bg-container);
+    border: 2px solid var(--border-color);
+    padding: 25px;
+    border-radius: 20px;
+    backdrop-filter: blur(5px);
+    margin: 20px auto;
+    max-width: 900px;
+}
+
+/* Modo día — sombra suave */
+body.light-mode #rankingCarreraContainer {
+    border: 2px solid var(--border-color);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+}
+
+
+
+/* ==========================================================
+   HEADER DEL RANKING
+   ========================================================== */
+.ranking-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    border-radius: 15px;
+
+    /* En modo oscuro queda dorado */
+    background: linear-gradient(135deg, rgba(96, 2, 117, 0.836), rgb(38, 0, 255));
+
+    border-bottom: 3px solid var(--border-color);
+}
+
+/* Título con degradado */
+.ranking-header h2 {
+    font-size: 2.4em;
+    font-weight: 800;
+    background: linear-gradient(135deg, #000000, #000000, #ffffff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+/* Texto secundario */
+.ranking-subtitle,a
+.player-stats,
+#rankingCarreraContainer > p {
+    color: var(--text-secondary);
+}
+
+/* Modo día — header blanco */
+body.light-mode .ranking-header {
+    background: #fff7c2;
+    border-bottom: 2px solid var(--border-color);
+}
+
+
+
+/* ==========================================================
+   ITEM DEL RANKING (jugador)
+   ========================================================== */
+.ranking-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 15px;
+    margin-bottom: 12px;
+    border-radius: 15px;
+    background: var(--bg-item);
+    border: 2px solid var(--border-color);
+    transition: 0.3s ease;
+    position: relative;
+}
+
+/* Hover */
+.ranking-item:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow:
+        0 0 20px var(--border-color),
+        0 0 30px rgba(120, 48, 180, 0.7),
+        inset 0 1px 3px rgba(255,255,255,0.3);
+}
+
+/* Modo día — tarjetas blancas */
+body.light-mode .ranking-item {
+    background: #ffffff;
+    border: 2px solid black;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+
+
+/* ==========================================================
+   AVATAR DEL JUGADOR
+   ========================================================== */
+.player-avatar {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    border: 3px solid #8e24aa;
+    object-fit: cover;
+    transition: 0.4s ease;
+}
+
+/* Hover avatar */
+.ranking-item:hover .player-avatar {
+    transform: scale(1.15) rotate(5deg);
+    border-color: var(--border-color);
+}
+
+/* Modo día */
+body.light-mode .player-avatar {
+    border-color: black;
+}
+
+
+
+/* ==========================================================
+   INFORMACIÓN DEL JUGADOR
+   ========================================================== */
+.player-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.player-name {
+    font-size: 1.25em;
+    font-weight: 700;
+    text-shadow: 0 0 6px rgba(150, 0, 255, 0.5);
+}
+
+body.light-mode .player-name {
+    text-shadow: none;
+}
+
+/* Stats */
+.player-stats {
+    font-size: 0.9em;
+    display: flex;
+    gap: 20px;
+}
+
+
+
+/* ==========================================================
+   PUNTAJE DEL JUGADOR
+   ========================================================== */
+.score-display {
+    background: linear-gradient(135deg, rgba(120,48,180,0.35), rgba(255,179,0,0.3));
+    padding: 12px 22px;
+    border-radius: 30px;
+    border: 2px solid var(--border-color);
+    font-weight: 800;
+    color: var(--text-main);
+    min-width: 95px;
+    text-align: center;
+}
+
+/* Día */
+body.light-mode .score-display {
+    background: #fff5c2;
+    border: 2px solid black;
+    color: #000;
+}
+
+
+
+/* ==========================================================
+   BOTÓN DESAFIAR
+   ========================================================== */
+.btn-desafiar {
+    background: var(--btn-bg);
+    color: white;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.btn-desafiar:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow:
+        0 0 20px var(--border-color),
+        0 0 40px rgba(120, 48, 180, 0.7);
+}
+
+/* Día */
+body.light-mode .btn-desafiar {
+    border: 2px solid black;
+}
+
+
+
+/* ==========================================================
+   BADGE “YO”
+   ========================================================== */
+.badge-yo {
+    background: linear-gradient(135deg, #8e24aa, #5e1780);
+    padding: 2px 8px;
+    color: #fff;
+    border-radius: 8px;
+    font-size: 0.75em;
+    font-weight: bold;
+}
+
+
+
+/* ==========================================================
+   MARCAR AL USUARIO ACTUAL
+   ========================================================== */
+.ranking-item.current-user {
+    border: 2px solid #ffb300;
+    animation: pulseLed 2s infinite;
+}
+
+@keyframes pulseLed {
+    0%, 100% { box-shadow: 0 0 10px #c77dff; }
+    50% { box-shadow: 0 0 25px #8e24aa; }
+}
+
+/* Día */
+body.light-mode .ranking-item.current-user {
+    border-color: #000;
+    background: #fff3a1;
+    box-shadow: 0 0 12px rgba(255, 230, 100, 0.6);
+    animation: none;
+}
+
+
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+@media (max-width: 768px) {
+    .ranking-item {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .player-avatar {
+        margin-bottom: 10px;
+    }
+}
+

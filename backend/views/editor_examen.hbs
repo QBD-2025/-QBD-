@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Editor - Exámenes</title>
+
+<!-- Importamos Bootstrap para estilos rápidos -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Estilos personalizados del editor -->
+<link rel="stylesheet" href="/css/editor.css">
+</head>
+<body>
+
+<!-- ---------------------- HEADER ---------------------- -->
+<header class="editor-header">
+  <!-- Logo a la izquierda -->
+  <div class="header-left">
+    <a href="/"><img src="/media/images/logo.png" alt="¡Que Buen Dato!" class="logo-image-header"></a>
+  </div>
+
+  <!-- Título y mensaje de bienvenida al centro -->
+  <div class="header-center text-center">
+    <h1 class="editor-title">Panel de Edición</h1>
+    <p class="editor-welcome">Bienvenido {{user.username}} (EDITOR)</p>
+  </div>
+
+  <!-- Botón de volver al menú a la derecha -->
+  <div class="header-right">
+    <a href="/menu_principal" class="volver-button">Volver al Menú</a>
+  </div>
+</header>
+
+<!-- Imagen decorativa del personaje del editor -->
+<img src="/media/images/stuart_recargado.png" alt="Personaje Administrador" class="character-image">
+
+<!-- ---------------------- CONTENIDO PRINCIPAL ---------------------- -->
+<div class="editor-container container mt-4">
+  <h2 class="editor-subtitle mb-4">Gestión de Exámenes</h2>
+
+  <!-- Botones rápidos de navegación interna -->
+  <div class="mb-4">
+    <a href="/editor/datos" class="editor-btn">Gestión de Datos</a>
+    <a href="/editor/encuesta" class="editor-btn">Gestión de Encuestas</a>
+  </div>
+
+  <!-- Tabla de preguntas -->
+  <table class="editor-table table table-striped">
+    <thead>
+      <tr>
+        <th>ID Materia</th>
+        <th>Pregunta</th>
+        <th>Opciones</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Iteramos sobre las preguntas -->
+      {{#each preguntas}}
+      <tr>
+        <td>{{id_materia}}</td>
+        <td><strong>{{pregunta}}</strong></td>
+        <td>
+          <!-- Lista de respuestas -->
+          <ul style="list-style:none; padding-left:0;">
+            {{#each respuestas}}
+            <li style="margin-bottom:5px;">
+              <span style="{{#if correcta}}color:green;font-weight:bold{{/if}}">
+                {{respuesta}} {{#if correcta}}(Correcta){{/if}} - Puntos: {{puntos}}
+              </span>
+            </li>
+            {{/each}}
+          </ul>
+        </td>
+        <td>
+          <!-- Botón de editar pregunta -->
+          <button type="button" class="editor-btn"
+            data-id-pregunta="{{id_pregunta}}"
+            data-id-materia="{{id_materia}}"
+            data-pregunta="{{pregunta}}"
+            data-retroalimentacion="{{retroalimentacion}}"
+            {{#each respuestas}}
+              data-res{{@index}}-id="{{id_respuesta}}"
+              data-res{{@index}}-texto="{{respuesta}}"
+              data-res{{@index}}-puntos="{{puntos}}"
+              data-res{{@index}}-correcta="{{correcta}}"
+            {{/each}}
+            onclick="editarPreguntaDesdeAtributos(this)">✏️ Editar</button>
+
+          <!-- Botón de eliminar pregunta -->
+          <button type="button" class="editor-btn btn-danger" onclick="abrirModalEliminar({{id_pregunta}})">🗑️ Eliminar</button>
+        </td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+  <!-- ---------------------- PAGINACIÓN ---------------------- -->
+  <div class="pagination">
+    {{#if (gt page 1)}}
+      <a href="/editor/examenes?page={{subtract page 1}}" class="btn btn-secondary">« Anterior</a>
+    {{/if}}
+    {{#each (range 1 totalPages)}}
+      <a href="/editor/examenes?page={{this}}" class="btn {{#ifEquals ../page this}}btn-primary{{else}}btn-light{{/ifEquals}}">{{this}}</a>
+    {{/each}}
+    {{#if (lt page totalPages)}}
+      <a href="/editor/examenes?page={{add page 1}}" class="btn btn-secondary">Siguiente »</a>
+    {{/if}}
+  </div>
+
+  <!-- Botón para agregar nueva pregunta -->
+  <button type="button" class="editor-btn mt-3" onclick="agregarPregunta()">➕ Agregar pregunta</button>
+</div>
+
+<!-- ---------------------- OVERLAYS ---------------------- -->
+<div id="overlay" onclick="cerrarForm()"></div>
+<div id="overlay-eliminar" onclick="cerrarModalEliminar()"></div>
+
+<!-- ---------------------- FORMULARIO DE EDICIÓN ---------------------- -->
+<form id="formulario-edicion">
+  <h3>Editar / Agregar Pregunta</h3>
+  <!-- Campos ocultos y básicos -->
+  <input type="hidden" id="editar-id" name="id_pregunta">
+  <label>ID Materia:</label>
+  <input type="number" id="editar-id-materia" name="id_materia" required>
+  <label>Texto de la Pregunta:</label>
+  <input type="text" id="editar-pregunta" name="pregunta" required>
+  <label>Retroalimentación:</label>
+  <input type="text" id="editar-retroalimentacion" name="retroalimentacion">
+
+  <!-- Contenedor de opciones de respuesta -->
+  <h4>Opciones de Respuesta:</h4>
+  <div id="respuestas-container"></div>
+
+  <!-- Botones de acción -->
+  <button type="submit" class="editor-btn">Guardar cambios</button>
+  <button type="button" class="editor-btn" onclick="cerrarForm()">Cancelar</button>
+</form>
+
+<!-- ---------------------- MODAL ELIMINAR ---------------------- -->
+<div id="modal-eliminar">
+  <h5>¿Deseas eliminar esta pregunta?</h5>
+  <button id="btnEliminarSi" class="editor-btn btn-danger">Sí</button>
+  <button class="editor-btn btn-secondary" onclick="cerrarModalEliminar()">No</button>
+</div>
+
+<script src="/public/js/editorExamen.controller.js" defer></script>
+
+</body>
+</html>

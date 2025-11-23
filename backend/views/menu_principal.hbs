@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>QueBuenDato.com - Portal Principal</title>           
+    <link rel="stylesheet" href="/css/perfil.css">
+    
+    {{!-- GOOGLE FONTS --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+<div class="duo-style-wrapper">
+
+    {{!-- ========= CONTENEDOR PREMIUM 1: MINIJUEGOS ========= --}}
+    <div class="mode-container minijuegos" onclick="location.href='/minijuegos'">
+        <div class="mode-badge">🎮 Popular</div>
+        <div class="mode-content">
+            <div class="mode-text">
+                <div class="mode-title-wrapper">
+                    <span class="mode-icon">🎮</span>
+                    <h2 class="mode-title">Divertido, efectivo y retador</h2>
+                </div>
+                <p class="mode-description">Aprende jugando con minijuegos interactivos diseñados para hacer el aprendizaje más divertido y memorable. Desafía tu mente mientras te diviertes.</p>
+            </div>
+            <div class="mode-video">
+                <div id="animationContainer2" class="animacion-duolingo">
+                    <img id="duolingoAnimation2" src="/media/video_stuart_octavio/frame-1.webp" alt="Animación Minijuegos">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{!-- ========= CONTENEDOR PREMIUM 2: EXÁMENES DE PRÁCTICA (REVERSE) ========= --}}
+    <div class="mode-container examenes reverse" onclick="location.href='/materias'">
+        <div class="mode-content">
+            <div class="mode-text">
+                <div class="mode-title-wrapper">
+                    <span class="mode-icon">📝</span>
+                    <h2 class="mode-title">Refuerza tu conocimiento</h2>
+                </div>
+                <p class="mode-description">Pon a prueba lo que has aprendido con exámenes diseñados para reforzar tu comprensión y prepararte para los desafíos reales.</p>
+            </div>
+            <div class="mode-video">
+                <div id="animationContainer" class="animacion-duolingo">
+                    <img id="duolingoAnimation" src="/media/stuart_octavio_libro/frame-1.webp" alt="Animación Exámenes">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{!-- ========= CONTENEDOR PREMIUM 3: SIMULADOR ========= --}}
+    <div class="mode-container simulador" onclick="location.href='/simulador'">
+        <div class="mode-badge">⚡ Nuevo</div>
+        <div class="mode-content">
+            <div class="mode-text">
+                <div class="mode-title-wrapper">
+                    <span class="mode-icon">🎯</span>
+                    <h2 class="mode-title">Desafíos de intelecto avanzado</h2>
+                </div>
+                <p class="mode-description">Enfréntate a simulaciones realistas que te preparan para los retos más difíciles. Sorprende a tu intelecto con nuevos desafíos.</p>
+            </div>
+            <div class="mode-video">
+                <div id="animationContainer5" class="animacion-duolingo">
+                    <img id="duolingoAnimation5" src="media/video_admision_000/frame-1.webp" alt="Animación Simulador">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{!-- ========= CONTENEDOR PREMIUM 4: CLASIFICACIÓN (REVERSE) ========= --}}
+    <div class="mode-container ranking reverse" onclick="location.href='/ranking'">
+        <div class="mode-content">
+            <div class="mode-text">
+                <div class="mode-title-wrapper">
+                    <span class="mode-icon">🏆</span>
+                    <h2 class="mode-title">Tu progreso y clasificación</h2>
+                </div>
+                <p class="mode-description">Sube en el ranking, desbloquea logros y demuestra que eres el mejor estudiante. Compite con otros y alcanza la cima.</p>
+            </div>
+            <div class="mode-video">
+                <div id="animationContainer7" class="animacion-duolingo">
+                    <img id="duolingoAnimation7" src="/media/video_clasifica/frame-8.webp" alt="Animación Clasificación">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{!-- ========= CONTENEDOR PREMIUM 5: MODO COMPETITIVO ========= --}}
+    <div class="mode-container competitivo" onclick="location.href='/portal'">
+        <div class="mode-badge">🔥 Hot</div>
+        <div class="mode-content">
+            <div class="mode-text">
+                <div class="mode-title-wrapper">
+                    <span class="mode-icon">⚔️</span>
+                    <h2 class="mode-title">¡Demuestra quién es el mejor!</h2>
+                </div>
+                <p class="mode-description">Enfréntate a otros jugadores en batallas de conocimiento en tiempo real. La competencia más épica te espera.</p>
+            </div>
+            <div class="mode-video">
+                <div id="animationContainer6" class="animacion-duolingo">
+                    <img id="duolingoAnimation6" src="/media/animacion-competitivo/animacion-competitivo_000001.webp" alt="Animación Batalla">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{!-- ========= CONTENEDOR PREMIUM 6: DATOS (REVERSE) ========= --}}
+    <div class="mode-container datos reverse" onclick="location.href='/eleccion-dato'">
+        <div class="mode-content">
+            <div class="mode-text">
+                <div class="mode-title-wrapper">
+                    <span class="mode-icon">📚</span>
+                    <h2 class="mode-title">Datos que te hacen sobresalir</h2>
+                </div>
+                <p class="mode-description">Descubre datos fascinantes y curiosidades que ampliarán tu conocimiento. Aprende algo nuevo cada día.</p>
+            </div>
+            <div class="mode-video">
+                <div id="animationContainer3" class="animacion-duolingo">
+                    <img id="duolingoAnimation3" src="/media/caminando_stuart_octavio/frame-1.webp" alt="Animación Datos">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{!-- ========= BOTÓN FLOTANTE CIRCULAR ========= --}}
+    <button class="floating-button" onclick="location.href='/ligas'" aria-label="Ir a Ligas">🧷</button>
+
+</div>
+
+{{!-- ========= SCRIPTS ========= --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="/js/theme-animation-system.js"></script>
+<script>
+    // Mejorar interacción del botón flotante
+    const floatingBtn = document.querySelector('.floating-button');
+    if (floatingBtn) {
+        floatingBtn.addEventListener('mouseenter', function() {
+            this.style.animation = 'none';
+        });
+        
+        floatingBtn.addEventListener('mouseleave', function() {
+            this.style.animation = 'pulse 2s infinite';
+        });
+    }
+
+    // Agregar efecto de cursor en contenedores
+    const containers = document.querySelectorAll('.mode-container');
+    containers.forEach(container => {
+        container.addEventListener('mouseenter', function() {
+            this.style.cursor = 'pointer';
+        });
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</body>
+</html>

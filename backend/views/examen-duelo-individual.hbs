@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Duelo</title>
+  <link rel="stylesheet" href="/css/examen-duelo.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<!-- SECCIÓN PRE-EXAMEN -->
+<div class="pre-examen-container" id="preExamenContent">
+  <div class="pre-examen-content">
+    <div class="pre-examen-header">
+      <h1><i class="fas fa-sword-cross"></i> Duelo de Ascenso</h1>
+      <p>{{#if esRetador}}Has iniciado este duelo contra <strong>{{duelo.defensor_username}}</strong>{{else}}Has sido desafiado por <strong>{{duelo.retador_username}}</strong>{{/if}}</p>
+    </div>
+
+    <!-- Información del duelo -->
+    <div class="duelo-info-section">
+      <h2 class="section-title"><i class="fas fa-info-circle"></i> Información del Duelo</h2>
+      
+      <div class="duelo-participantes">
+        <div class="participante {{#if esRetador}}yo{{else}}oponente{{/if}}">
+          <div class="participante-badge">{{#if esRetador}}Retador{{else}}Defensor{{/if}}</div>
+          <div class="participante-nombre">{{#if esRetador}}{{duelo.retador_username}} (Tú){{else}}{{duelo.defensor_username}} (Tú){{/if}}</div>
+        </div>
+        
+        <div class="vs-divider">VS</div>
+        
+        <div class="participante {{#if esRetador}}oponente{{else}}yo{{/if}}">
+          <div class="participante-badge">{{#if esRetador}}Defensor{{else}}Retador{{/if}}</div>
+          <div class="participante-nombre">{{#if esRetador}}{{duelo.defensor_username}}{{else}}{{duelo.retador_username}}{{/if}}</div>
+        </div>
+      </div>
+
+      <div class="duelo-details">
+        <div class="info-item"><i class="fas fa-question-circle"></i><div><strong>Preguntas:</strong> {{preguntas.length}} en total</div></div>
+        <div class="info-item"><i class="fas fa-hourglass-half"></i><div><strong>Tiempo límite:</strong> <span id="countdown-display">Cargando...</span></div></div>
+        <div class="info-item"><i class="fas fa-star"></i><div><strong>Puntuación:</strong> El ganador obtiene puntos de ranking</div></div>
+      </div>
+      
+      <div class="duelo-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p><strong>Importante:</strong> Solo tienes una oportunidad para hacer este examen. Una vez que lo inicies, debes completarlo. El duelo expira el: <strong><span id="fecha-limite"></span></strong></p>
+      </div>
+
+      <div class="pre-examen-buttons">
+        <button class="pre-examen-btn btn-secondary" onclick="location.href='/portal'">
+          <i class="fas fa-arrow-left"></i> Volver al Portal
+        </button>
+        <button class="pre-examen-btn btn-success pulse" onclick="confirmarInicioExamen()">
+          <i class="fas fa-sword"></i> Iniciar Examen de Duelo
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECCIÓN EXAMEN -->
+<div id="examenContent">
+  <header>
+    Duelo | {{#if esRetador}}Retador{{else}}Defensor{{/if}}
+    <div>
+      <span id="duelo-timer" style="margin-right: 15px; font-weight: bold;"></span>
+      <button onclick="confirmarSalida()" class="btn-volver">Salir del Duelo</button>
+    </div>
+  </header>
+
+  {{#each preguntas}}
+   <div class="contenedor-pregunta {{#if @first}}activa{{/if}}" data-index="{{@index}}" data-id-pregunta="{{id_pregunta}}">
+    <div class="encabezado">
+      <div>Pregunta {{sum @index 1}} de {{../preguntas.length}}</div>
+      <div class="cronometro">10:00</div>
+    </div>
+
+    <h2 class="pregunta">{{pregunta}}</h2>
+
+    <div class="opciones">
+      {{#each respuestas}}
+        <button type="button" data-opcion="{{@index}}" data-id-respuesta="{{id_respuesta}}">{{respuesta}}</button>
+      {{/each}}
+    </div>
+
+    <div class="navegacion">
+      {{#unless @first}}
+        <button type="button" class="btn-volver">← Volver</button>
+      {{/unless}}
+      <button type="button" class="btn-volver btnNoSeguro">No seguro / Para después</button>
+      <button type="button" class="btn-volver btnVolverFinal" style="display:none;">Volver al final</button>
+      
+      {{#if @last}}
+        <button type="button" class="btn-finalizar">Finalizar Duelo</button>
+      {{else}}
+        <button type="button" class="btn-siguiente">Siguiente →</button>
+      {{/if}}
+    </div>
+  </div>
+  {{/each}}
+
+   <div id="pendientesContainer" class="pendientes-container">
+    <div class="filter-toggle">
+        <label for="toggleFiltro">Mostrar solo no respondidas</label>
+        <input type="checkbox" id="toggleFiltro" checked>
+    </div>
+    <div id="listaPreguntasNavegacion"></div>
+    </div>
+      
+  <form id="formResultados" method="POST" action="/duelo/responder/{{duelo.id_duelo}}" style="display:none;">
+    <input type="hidden" name="respuestas" id="inputRespuestas">
+    <input type="hidden" name="fecha_inicio_str" id="inputFechaInicio">
+    <input type="hidden" name="tiempo_empleado" id="inputTiempoEmpleado">
+ </form>
+</div>
+
+<!-- MODAL DE CONFIRMACIÓN INICIO -->
+<div id="modalConfirmacion" class="modal-aviso oculto">
+  <div class="modal-content">
+    <h3><i class="fas fa-exclamation-triangle"></i> Confirmar Inicio de Duelo</h3>
+    <p>Una vez que inicies el examen, no podrás salir hasta completarlo. ¿Estás seguro de que quieres comenzar?</p>
+    <div style="text-align: center; margin-top: 20px;">
+      <button onclick="cerrarModal()" style="margin-right: 10px; background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px;">Cancelar</button>
+      <button onclick="comenzarExamenConfirmado()" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px;">Sí, comenzar duelo</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE AVISO -->
+<div id="avisoTiempo" class="modal-aviso oculto">
+  <div class="modal-content">
+    <p id="mensajeAviso">Te has quedado mucho tiempo en esta pregunta.</p>
+    <button onclick="cerrarAviso()">Entendido</button>
+  </div>
+</div>
+
+<script src="/public/js/examenDueloIndivi.controller.js" defer></script>
+</body>
+</html>

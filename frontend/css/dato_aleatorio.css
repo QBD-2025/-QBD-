@@ -1,0 +1,112 @@
+/* ================================================================
+Archivo: dato_aleatorio.css
+Descripción: Estilos para la presentación de un dato curioso con imagen y texto.
+Autor: Equipo de desarrollo
+Última modificación: 12 de octubre de 2025
+================================================================ */
+
+/* ===== ESTILOS GENERALES ===== */
+body { 
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(135deg, #0515a8, #09012c); /* Fondo degradado */
+  color: #fff;
+  margin: 0;
+  padding: 2rem;
+  display: flex;
+  justify-content: center; /* Centra el contenedor principal horizontalmente */
+  align-items: center;     /* Centra el contenedor principal verticalmente */
+  height: 100vh;
+  position: relative;
+}
+
+/* ===== CONTENEDOR PRINCIPAL ===== */
+.contenedor-dato {
+  display: flex;
+  gap: 2rem;
+  max-width: 900px;
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 1; /* Asegura que el contenido quede sobre las decoraciones */
+}
+
+/* ===== RECUADRO DE IMAGEN ===== */
+.recuadro-imagen {
+  width: 250px;
+  height: 250px;
+  background-color: #FFC300; /* Destaca la sección de imagen */
+  border-radius: 10px;
+  flex-shrink: 0; /* Evita que se reduzca el tamaño */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.recuadro-imagen img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 10px; /* Redondea la imagen para coincidir con el contenedor */
+}
+
+/* ===== CONTENIDO DE TEXTO ===== */
+.contenido-dato {
+  flex-grow: 1; /* Ocupa el espacio restante */
+  color: #0a2472; /* Color legible sobre fondo blanco */
+}
+
+.contenido-dato h1 {
+  margin-bottom: 1rem;
+  font-size: 2rem;
+  color: #0515a8; /* Título principal destacado */
+}
+
+.contenido-dato p {
+  white-space: pre-line; /* Mantiene saltos de línea en el texto */
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* ===== ELEMENTOS GLOBALES OCULTOS ===== */
+.global-header-elements {
+  display: none !important; /* Oculta elementos de la cabecera global si es necesario */
+}
+
+/* ===== DECORACIONES DE ESQUINA ===== */
+.decoracion {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background-image: url('/images/simbolo.svg'); /* Ícono decorativo */
+  background-size: contain;
+  background-repeat: no-repeat;
+  z-index: 0; /* Queda detrás del contenido principal */
+  opacity: 0.9;
+}
+
+/* Esquina superior derecha */
+.esquina-derecha-superior {
+  top: 10px;
+  right: 10px;
+  transform: rotate(90deg);
+  width: 60px;
+  height: 60px;
+  font-size: 60px;
+}
+
+/* Esquina inferior izquierda */
+.esquina-izquierda-inferior {
+  bottom: 10px;
+  left: 10px;
+  transform: rotate(-90deg);
+  width: 60px;
+  height: 60px;
+  font-size: 60px;
+}
+
+/* Oculta puntos decorativos adicionales */
+.top-right-dot, .bottom-left-dot {
+  display: none !important;
+}

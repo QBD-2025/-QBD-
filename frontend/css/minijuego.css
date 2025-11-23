@@ -1,0 +1,277 @@
+/* ===========================================================
+Archivo: minijuego.css
+-----------------------------------------------------------
+Este archivo contiene:
+
+  1. Reset básico y estilos generales del body
+  2. Contenedor principal (.wrapper)
+  3. Contenedor del carrusel (.carousel-container)
+  4. Carrusel 3D (.carousel)
+  5. Tarjetas del carrusel (.card)
+      - Estilos normales
+      - Hover con sombra y escala
+  6. Controles y botones
+      - Botones normales
+      - Botón aleatorio con animación arcoíris
+  7. Animaciones (background rainbow)
+  -----------------------------------------------------------
+  Todos los elementos usan transiciones y sombras para
+  lograr un efecto visual moderno y llamativo.
+Fecha: [Fecha de creación o última edición]
+=========================================================== */
+
+/* ================== VARIABLES CSS ================== */
+:root {
+    /* TEMA CLARO */
+    --bg-body: linear-gradient(145deg, #ededed, #949494);
+    --wrapper-bg: linear-gradient(135deg, #0515a8, #09012c);
+    --wrapper-border: #999;
+    --card-bg: #ededed;
+    --card-color: #06276f;
+    --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    --card-inset: inset 0 0 10px rgba(255, 255, 255, 0.4);
+    --card-hover-glow: hwb(56 0% 0%);
+    --button-bg: linear-gradient(135deg, #f5b70bfd, #fa9702);
+    --button-hover-bg: linear-gradient(135deg, #ff6600, #8f3001);
+    --button-shadow: 0 6px 18px rgba(11, 63, 245, 0.5);
+    --button-hover-shadow: 0 8px 25px rgba(5, 47, 156, 0.85);
+    --random-button-border: #ffffff55;
+    --random-button-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
+    --random-button-hover-shadow: 0 0 20px 8px rgba(255, 255, 255, 0.6);
+}
+
+[data-theme="dark"] {
+    /* TEMA OSCURO */
+    --bg-body: linear-gradient(145deg, #0a0e27, #1a1a2e);
+    --wrapper-bg: linear-gradient(135deg, #1e3a8a, #6c00ff);
+    --wrapper-border: rgba(108, 0, 255, 0.3);
+    --card-bg: #1a1a2e;
+    --card-color: #ffffff;
+    --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+    --card-inset: inset 0 0 10px rgba(108, 0, 255, 0.2);
+    --card-hover-glow: #6c00ff;
+    --button-bg: linear-gradient(135deg, #6c00ff, #8b5cf6);
+    --button-hover-bg: linear-gradient(135deg, #7a21f8, #4c1d95);
+    --button-shadow: 0 6px 18px rgba(108, 0, 255, 0.6);
+    --button-hover-shadow: 0 8px 25px rgba(108, 0, 255, 0.8);
+    --random-button-border: rgba(255, 255, 255, 0.3);
+    --random-button-shadow: 0 6px 20px rgba(108, 0, 255, 0.4);
+    --random-button-hover-shadow: 0 0 20px 8px rgba(108, 0, 255, 0.7);
+}
+
+/* ================== Reset básico y body ================== */
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Centra todo el contenido */
+  perspective: 1200px; /* Efecto 3D para el carrusel */
+  background: var(--bg-body);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: white;
+  overflow: hidden;
+  user-select: none; /* Evita selección accidental de texto */
+  transition: background 0.5s ease;
+}
+
+/* ================== Contenedor principal (.wrapper) ================== */
+.wrapper {
+  padding: 20px 30px;
+  border: 2px solid var(--wrapper-border);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  width: max-content;
+  background: var(--wrapper-bg);
+  transition: all 0.5s ease;
+}
+
+/* ================== Contenedor del carrusel ================== */
+.carousel-container {
+  width: 1000px;
+  height: 340px;
+  position: relative;
+}
+
+/* ================== Carrusel 3D ================== */
+.carousel {
+  width: 100%;
+  height: 320px;
+  position: relative;
+  transform-style: preserve-3d; /* Mantiene el efecto 3D de las tarjetas */
+  transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: grab;
+}
+
+/* ================== Tarjetas (.card) ================== */
+.card {
+  position: absolute;
+  width: 210px;
+  height: 270px;
+  left: calc(50% - 105px); /* Centra la tarjeta horizontalmente */
+  top: 30px;
+  background: var(--card-bg);
+  border-radius: 18px;
+  box-shadow:
+    var(--card-shadow),
+    var(--card-inset);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--card-color);
+  cursor: pointer;
+  transition: box-shadow 0.4s ease, transform 0.4s ease, background 0.4s ease, color 0.4s ease;
+  backface-visibility: hidden; /* Oculta la parte trasera al girar */
+  user-select: none;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Hover de las tarjetas */
+.card:hover {
+  box-shadow:
+    0 0 25px 8px var(--card-hover-glow),
+    0 8px 30px var(--card-hover-glow),
+    inset 0 0 25px var(--card-hover-glow);
+  transform: translateY(-15px) scale(1.05);
+  z-index: 10; /* Trae la tarjeta al frente */
+}
+
+/* ================== Controles y botones ================== */
+.controls {
+  margin-top: 25px;
+  text-align: center;
+}
+
+button {
+  background: var(--button-bg);
+  border: none;
+  color: white;
+  padding: 14px 28px;
+  margin: 0 12px;
+  font-size: 1.15rem;
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: var(--button-shadow);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  user-select: none;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+button:hover,
+button:focus-visible {
+  background: var(--button-hover-bg);
+  box-shadow: var(--button-hover-shadow);
+  transform: translateY(-3px);
+  outline: none;
+}
+
+/* ================== Botón Aleatorio con animación RGB ================== */
+.boton-aleatorio {
+  background: linear-gradient(270deg, #ff00cc, #3333ff, #00ffcc, #ffff00, #ff6600, #ff00cc);
+  background-size: 1200% 1200%;
+  animation: rainbowBackground 8s ease infinite; /* Animación arcoíris */
+  color: #fff;
+  border: 2px solid var(--random-button-border);
+  font-weight: 800;
+  box-shadow: var(--random-button-shadow);
+  padding: 14px 28px;
+  margin: 0 12px;
+  font-size: 1.15rem;
+  border-radius: 14px;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.boton-aleatorio:hover,
+.boton-aleatorio:focus-visible {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: var(--random-button-hover-shadow);
+  outline: none;
+}
+
+/* ================== Animación arcoíris ================== */
+@keyframes rainbowBackground {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ================== BOTÓN TOGGLE TEMA ================== */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--button-bg);
+  border: 2px solid var(--wrapper-border);
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: var(--button-shadow);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: var(--button-hover-shadow);
+}
+
+/* ================== RESPONSIVE ================== */
+@media (max-width: 1100px) {
+  .carousel-container {
+    width: 800px;
+  }
+}
+
+@media (max-width: 850px) {
+  .carousel-container {
+    width: 600px;
+  }
+  
+  .wrapper {
+    padding: 15px 20px;
+  }
+}
+
+@media (max-width: 650px) {
+  .carousel-container {
+    width: 400px;
+    height: 300px;
+  }
+  
+  .carousel {
+    height: 280px;
+  }
+  
+  .card {
+    width: 180px;
+    height: 230px;
+    left: calc(50% - 90px);
+  }
+  
+  button {
+    padding: 12px 20px;
+    font-size: 1rem;
+    margin: 0 8px;
+  }
+  
+  .theme-toggle {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+}

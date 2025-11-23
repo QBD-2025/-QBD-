@@ -1,0 +1,316 @@
+:root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --text-primary: #333333;
+    --text-secondary: #555555;
+    --accent-yellow: #FFC107;
+    --accent-blue: #0817eb;
+    --header-gradient-start: #0815c5;
+    --header-gradient-end: #0c0264;
+    --shadow-light: rgba(0, 0, 0, 0.1);
+    --shadow-medium: rgba(0, 0, 0, 0.15);
+    --shadow-heavy: rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="dark"] {
+    --bg-primary: #0a0e27;
+    --bg-secondary: #151b3d;
+    --text-primary: #ffffff;
+    --text-secondary: #e0e0e0;
+    --accent-yellow: #FFC107;
+    --accent-blue: #4A90E2;
+    --header-gradient-start: #6c00ff;
+    --header-gradient-end: #0000ff;
+    --shadow-light: rgba(0, 0, 0, 0.4);
+    --shadow-medium: rgba(0, 0, 0, 0.5);
+    --shadow-heavy: rgba(0, 0, 0, 0.7);
+}
+
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem 2rem 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    box-sizing: border-box;
+    animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+header {
+    width: 100%;
+    text-align: center;
+    background: linear-gradient(135deg, var(--header-gradient-start), var(--header-gradient-end));
+    padding: 3rem 2rem;
+    box-shadow: 0 4px 20px var(--shadow-heavy);
+    margin-bottom: 3rem;
+    box-sizing: border-box;
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--accent-yellow);
+}
+
+[data-theme="dark"] header {
+    box-shadow: 0 4px 20px rgba(108, 0, 255, 0.4), 0 0 40px rgba(0, 0, 255, 0.2);
+}
+
+header h1 {
+    font-size: 2.5rem;
+    color: var(--accent-yellow);
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    animation: fadeIn 0.8s ease-out 0.2s both;
+}
+
+header p {
+    font-size: 1.2rem;
+    color: white;
+    margin: 0;
+    opacity: 0.9;
+    animation: fadeIn 0.8s ease-out 0.4s both;
+}
+
+.practica {
+    text-align: center;
+    background: var(--bg-secondary);
+    margin-bottom: 4rem;
+    padding: 3rem 2rem;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px var(--shadow-light);
+    border: 2px solid var(--accent-yellow);
+    animation: slideUp 0.8s ease-out 0.6s both;
+    transition: all 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.practica:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px var(--shadow-medium);
+}
+
+.practica h2 {
+    color: var(--accent-blue);
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    font-weight: 700;
+    position: relative;
+    display: inline-block;
+}
+
+.practica h2::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: var(--accent-yellow);
+    border-radius: 2px;
+}
+
+.practica p {
+    margin-bottom: 2.5rem;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
+}
+
+.practica button {
+    background: linear-gradient(135deg, var(--accent-yellow), #ffd44f);
+    border: none;
+    color: var(--text-primary);
+    font-weight: 700;
+    padding: 1.2rem 3rem;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 15px rgba(255, 193, 7, 0.4);
+    border-bottom: 4px solid #e0a800;
+    position: relative;
+    overflow: hidden;
+}
+
+.practica button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s;
+}
+
+.practica button:hover::before {
+    left: 100%;
+}
+
+.practica button:hover {
+    background: linear-gradient(135deg, #ffd44f, var(--accent-yellow));
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(255, 193, 7, 0.6);
+}
+
+.practica button:active {
+    transform: translateY(1px);
+    border-bottom: 2px solid #e0a800;
+}
+
+footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    border-top: 1px solid var(--bg-secondary);
+    margin-top: auto;
+    animation: fadeIn 0.8s ease-out 1s both;
+}
+
+.floating-button {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: var(--accent-yellow);
+    color: var(--text-primary);
+    border: none;
+    border-bottom: 4px solid #e0a800;
+    font-size: 28px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 15px var(--shadow-medium);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2s infinite;
+}
+
+[data-theme="dark"] .floating-button {
+    background: linear-gradient(135deg, var(--header-gradient-start), var(--header-gradient-end));
+    border-bottom: 4px solid var(--header-gradient-end);
+    color: white;
+}
+
+.floating-button:hover {
+    background: #ffd44f;
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 8px 20px var(--shadow-heavy);
+}
+
+[data-theme="dark"] .floating-button:hover {
+    background: linear-gradient(135deg, var(--header-gradient-end), var(--header-gradient-start));
+    box-shadow: 0 8px 20px rgba(108, 0, 255, 0.6);
+    transform: translateY(-5px) scale(1.05);
+}
+
+.floating-button:active {
+    transform: translateY(2px);
+    border-bottom: 2px solid #e0a800;
+    box-shadow: 0 3px 8px var(--shadow-light);
+}
+
+[data-theme="dark"] .floating-button:active {
+    border-bottom: 2px solid var(--header-gradient-end);
+}
+
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@media (max-width: 768px) {
+    .floating-button {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        bottom: 20px;
+        right: 20px;
+    }
+    
+    header {
+        padding: 2rem 1.5rem;
+    }
+    
+    header h1 {
+        font-size: 2rem;
+    }
+    
+    .practica {
+        padding: 2rem 1.5rem;
+        margin-bottom: 3rem;
+    }
+    
+    .practica h2 {
+        font-size: 1.6rem;
+    }
+    
+    .practica button {
+        font-size: 1rem;
+        padding: 1rem 2rem;
+    }
+    
+    .container {
+        padding: 1rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}

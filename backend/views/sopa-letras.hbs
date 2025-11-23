@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/css/sopa-letras.css" />
+  <title>Sopa de Letras Multijugador</title>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div class="title">🧩 Sopa de Letras Multijugador</div>
+      <div class="pill">
+        Jugador: <strong>{{#if user}}{{user.username}}{{else}}Invitado{{/if}}</strong>
+      </div>
+      <button onclick="location.href='/minijuegos'"> ← Regresar</button>
+    </div>
+
+    <div class="layout">
+      <section class="game card">
+        <!-- ========== MODO NORMAL (INDIVIDUAL/COOPERATIVO) ========== -->
+        <div id="normal-mode">
+          <div class="status panel">
+            <div>
+              <div class="small">Progreso</div>
+              <div id="progressText"><strong>0</strong>/<strong id="totalWords">0</strong> palabras</div>
+            </div>
+            <div class="badge" id="errorsBadge">0 / 4</div>
+          </div>
+          
+          <div class="controls">
+            <label for="categoria-select">Categoría:</label>
+            <select id="categoria-select">
+              <option>Cargando categorías...</option>
+            </select>
+            <button id="btnClear">Limpiar selección</button>
+            <button id="btnRestart" class="primary">Reiniciar</button>
+          </div>
+          
+          <div id="board" class="board" aria-label="Tablero de sopa de letras"></div>
+          <div id="gameMessage" class="message" role="status" aria-live="polite"></div>
+        </div>
+
+        <!-- ========== MODO ENFRENTAMIENTO ========== -->
+        <div id="confrontation-mode" style="display: none;">
+          
+          <!-- PANEL DE VOTACIÓN DE CATEGORÍA -->
+          <div id="voting-panel" class="panel" style="display: none; text-align: center; margin-bottom: 20px; padding: 20px; background: #f0f9ff; border-radius: 8px; border: 2px solid #3b82f6;">
+            <h4 style="margin-bottom: 15px; color: #1e40af;">🗳️ Selección de Categoría</h4>
+            
+            <!-- ÁREA 1: Muestra el estado actual de la votación -->
+            <div id="propuesta-actual" style="margin-bottom: 15px; padding: 10px; background: white; border-radius: 6px;">
+              <p style="margin: 0;">Esperando que un jugador proponga una categoría...</p>
+            </div>
+            
+            <!-- ÁREA 2: Formulario para PROPONER una categoría (solo visible cuando puedes proponer) -->
+            <div id="area-proponer" style="display: none; margin-bottom: 15px;">
+              <label for="confrontation-categoria-select" style="display: block; margin-bottom: 8px; font-weight: 600;">Elige una categoría:</label>
+              <select id="confrontation-categoria-select" style="padding: 8px; margin-bottom: 10px; width: 100%; max-width: 300px;">
+                <option>Cargando...</option>
+              </select>
+              <button id="propose-category-btn" class="primary" style="padding: 10px 20px;">📤 Proponer</button>
+            </div>
+
+            <!-- ÁREA 3: Botones para VOTAR (solo visible cuando recibes una propuesta) -->
+            <div id="area-votar" style="display: none; margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+              <button id="aceptar-categoria-btn" class="primary" style="padding: 10px 20px; background: #10b981;">✅ Aceptar</button>
+              <button id="rechazar-categoria-btn" style="padding: 10px 20px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer;">❌ Rechazar</button>
+            </div>
+          </div>
+          
+          <!-- TEMPORIZADOR DEL JUEGO -->
+          <div class="timer-container" id="confrontation-timer" style="display: none;">00:00</div>
+          
+          <!-- TABLEROS DE AMBOS JUGADORES -->
+          <div class="confrontation-boards-container" style="display: none;">
+            <!-- MI TABLERO (Interactivo) -->
+            <div class="player-board" id="my-board">
+              <div class="player-header">
+                <div class="player-name" id="my-name">Tú</div>
+                <div class="player-stats">
+                  <div class="stat">
+                    <div class="stat-value" id="my-words">0</div> 
+                    <div class="stat-label">Palabras</div>
+                  </div>
+                  <div class="stat">
+                    <div class="stat-value" id="my-errors">0</div> 
+                    <div class="stat-label">Errores</div>
+                  </div>
+                </div>
+              </div>
+              <div id="my-board-grid" class="board"></div>
+            </div>
+            
+            <!-- TABLERO DEL OPONENTE (Solo visual) -->
+            <div class="player-board" id="opponent-board">
+              <div class="player-header">
+                <div class="player-name" id="opponent-name">Rival</div>
+                <div class="player-stats">
+                  <div class="stat">
+                    <div class="stat-value" id="opponent-words">0</div> 
+                    <div class="stat-label">Palabras</div>
+                  </div>
+                  <div class="stat">
+                    <div class="stat-value" id="opponent-errors">0</div> 
+                    <div class="stat-label">Errores</div>
+                  </div>
+                </div>
+              </div>
+              <div id="opponent-board-grid" class="board"></div>
+            </div>
+          </div>
+          
+          <div id="confrontation-message" class="message" role="status" aria-live="polite"></div>
+        </div>
+
+        <!-- PANEL LATERAL: Palabras e Instrucciones -->
+        <aside>
+          <div class="panel">
+            <h3>Palabras a encontrar</h3>
+            <ul id="clues" class="clues"></ul>
+          </div>
+          <div class="panel">
+            <h3>Instrucciones</h3>
+            <div class="small">
+              • Arrastra el mouse en recta horizontal o vertical.<br>
+              • Si no coincide con ninguna palabra, cuenta como error.<br>
+              • Con <strong>4 errores</strong> pierdes y el juego se reinicia.
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <!-- PANEL LATERAL DERECHO: Jugadores y Chat -->
+      <aside class="side">
+        <div class="panel card" id="jugadores-panel">
+          <h3>🟢 Jugadores activos</h3>
+          <ul id="lista-jugadores"></ul>
+        </div>
+
+        <div class="panel card" id="chat-panel">
+          <h3>💬 Chat</h3>
+          <div id="chatBox"></div>
+          <div class="chat-input">
+            <input id="chatInput" type="text" placeholder="Escribe un mensaje…">
+            <button id="chatBtn" class="chat-send">Enviar</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- PANTALLA DE RESULTADOS -->
+  <div id="results-screen" class="results-screen" style="display: none;">
+    <div class="results-content">
+      <h2 class="results-title" id="results-title">Resultados del Enfrentamiento</h2>
+      <div class="results-stats">
+        <div class="result-player" id="result-player1">
+          <h3 id="result-name1">Jugador 1</h3>
+          <div class="stat">
+            <div class="stat-value" id="result-words1">0</div>
+            <div class="stat-label">Palabras encontradas</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="result-errors1">0</div>
+            <div class="stat-label">Errores</div>
+          </div>
+        </div>
+        <div class="result-player" id="result-player2">
+          <h3 id="result-name2">Jugador 2</h3>
+          <div class="stat">
+            <div class="stat-value" id="result-words2">0</div>
+            <div class="stat-label">Palabras encontradas</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="result-errors2">0</div>
+            <div class="stat-label">Errores</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- CONTROLES DE REVANCHA -->
+      <div id="rematch-controls" style="margin-top: 20px;">
+        <button id="rematch-btn" class="primary">⚔️ Revancha</button>
+        <button id="back-to-lobby-btn">Ir al Lobby</button>
+      </div>
+      <div id="rematch-status" style="display: none; margin-top: 15px;"></div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    window.DATA_USER={{{json user}}}
+  </script>
+
+  <script src="/public/js/sopaLetras.controller.js" defer></script>
+
+</body>
+</html>

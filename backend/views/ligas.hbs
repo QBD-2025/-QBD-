@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ligas de Universidades - QueBuenDato</title>
+  <link rel="stylesheet" href="/css/ligas.css" />
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Sitios de Interes</h1>
+      <p>Todo lo que necesitas para prepararte y tomar decisiones informadas sobre tu futuro académico</p>
+    </header>
+
+    <!-- Navegación entre secciones -->
+    <div class="nav-secciones">
+      <button class="nav-btn active" data-target="universidades">🏫 Universidades</button>
+      <button class="nav-btn" data-target="recursos">📚 Recursos de Estudio</button>
+      <button class="nav-btn" data-target="orientacion">🧭 Orientación </button>
+    </div>
+
+    <!-- Sección de Universidades -->
+    <section id="universidades" class="seccion activa">
+      <h2>Universidades de Aguascalientes</h2>
+      
+      <div class="search-box">
+        <input type="text" id="buscarUniversidad" placeholder="Buscar universidades...">
+      </div>
+      
+      <div class="universidades-lista" id="listaUniversidades">
+        <!-- Las tarjetas de universidades se generarán con JavaScript -->
+      </div>
+    </section>
+
+    <!-- Sección de Recursos de Estudio -->
+    <section id="recursos" class="seccion">
+      <h2>Recursos de Estudio para el EXANI</h2>
+      
+      <div class="recursos-lista">
+        <div class="recurso-card">
+          <h3>📺 Video Tutoriales</h3>
+          <ul>
+            <li><a href="https://www.youtube.com/watch?v=pDtINc8-bbk" target="_blank">Guía completa para el EXANI</a></li>
+            <li><a href="https://www.youtube.com/watch?v=CsQiXZPkl_s" target="_blank">Consejos para el día del examen</a></li>
+            <li><a href="https://www.youtube.com/playlist?list=PLx4MenJqyL9JwqY3-UrpnUq2wHdgZfSwZ" target="_blank">Resolución de ejercicios tipo EXANI</a></li>
+          </ul>
+        </div>
+        
+        <div class="recurso-card">
+          <h3>📖 Guías y Materiales</h3>
+          <ul>
+            <li><a href="https://online.flippingbook.com/view/278435445/" target="_blank">Guía oficial EXANI II 2025</a></li>
+            <li><a href="http://evaluacion.iea.edu.mx/exani-ii/" target="_blank">Sitio oficial de evaluación IEA</a></li>
+            <li><a href="https://www.unitips.mx/blog/exani-ii" target="_blank">Tips y estrategias Unitips</a></li>
+          </ul>
+        </div>
+        
+        <div class="recurso-card">
+          <h3>📝 Práctica y Simuladores</h3>
+          <ul>
+            <li><a href="/simulador">Simulador EXANI de QueBuenDato</a></li>
+            <li><a href="https://www.ceneval.edu.mx/exani-ii" target="_blank">Portal oficial CENEVAL</a></li>
+            <li><a href="https://www.cursoexani.com/" target="_blank">Curso EXANI en línea</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección de Orientación -->
+    <section id="orientacion" class="seccion">
+      <h2>Orientación </h2>
+      
+      <div class="recursos-lista">
+        <div class="recurso-card">
+          <h3>📊 Información de Carreras</h3>
+          <ul>
+            <li><a href="https://idconline.mx/laboral/2024/12/10/que-estudiar-10-carreras-mejor-pagadas-en-mexico" target="_blank">Carreras Mejor Pagadas </a></li>
+            <li><a href="https://exani.com.mx/blog/carreras-internacionales-oportunidades-y-proyecciones-para-estudiar-y-trabajar-en-el-extranjero/" target="_blank">Guía de Carreras Internacional</a></li>
+          </ul>
+        </div>
+    
+      </div>
+    </section>
+
+    <footer>
+      <p>© 2025 QueBuenDato.com</p>
+    </footer>
+  </div>
+
+  <!-- Botón flotante para volver al simulador -->
+  <button class="floating-button" onclick="location.href='/simulador'">📝</button>
+
+  <script src="/public/js/ligas.controller.js" defer></script>
+
+</body>
+</html>

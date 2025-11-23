@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Historial de Exámenes</title>
+
+  <!-- Estilos específicos para la página de historial del usuario -->
+  <link rel="stylesheet" href="/css/historialUsuario.css">
+</head>
+<body>
+
+  <!-- Encabezado de la página -->
+  <header class="header">
+    <!-- Título con ícono representando historial -->
+    <h1>📜 Historial de Exámenes</h1>
+    
+    <!-- Botón para regresar al perfil del usuario -->
+    <a href="/usuario" class="btn-volver">⬅ Volver al Perfil</a>
+  </header>
+
+  <!-- Condicional Handlebars: si hay exámenes en el historial -->
+  {{#if historial.length}}
+    <!-- Tabla que muestra el historial de exámenes -->
+    <table class="tabla-historial">
+      <thead>
+        <tr>
+          <th>#</th> <!-- Índice del examen -->
+          <th>Examen</th> <!-- Nombre de la materia -->
+          <th>Puntaje</th> <!-- Puntos obtenidos -->
+          <th>Porcentaje</th> <!-- Porcentaje obtenido -->
+          <th>Fecha</th> <!-- Fecha en que se realizó el examen -->
+          <th>Acciones</th> <!-- Botón para ver resumen -->
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Iteración sobre cada examen del historial -->
+        {{#each historial}}
+          <tr>
+            <td>{{@index}}</td> <!-- Índice de la iteración -->
+            <td>{{materia}}</td> <!-- Nombre de la materia -->
+            <td>{{puntos}} / {{total}}</td> <!-- Puntos obtenidos / Total -->
+            <td><strong>{{porcentaje}}%</strong></td> <!-- Porcentaje -->
+            <td>{{fecha}}</td> <!-- Fecha del examen -->
+            <td>
+              <!-- Botón para ver detalles del examen -->
+              <a href="/usuario/historial/{{id_examen}}" class="btn-ver">Ver resumen</a>
+            </td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  {{else}}
+    <!-- Mensaje en caso de no haber exámenes -->
+    <p class="no-datos">No tienes exámenes realizados todavía.</p>
+  {{/if}}
+
+</body>
+</html>

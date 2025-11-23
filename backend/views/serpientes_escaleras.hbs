@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Serpientes y Escaleras - Multijugador</title>
+    <link rel="stylesheet" href="/css/serpientes-escaleras.css" /> 
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <div class="title">🐍 Serpientes y Escaleras - Multijugador</div>
+            <div class="pill">
+                Jugador: <strong id="username">{{#if user}}{{user.username}}{{else}}Invitado{{/if}}</strong>
+            </div>
+            <button onclick="location.href='/minijuegos'"> ← Regresar</button>
+        </div>
+
+        <div class="game-container">
+            <aside class="side-panel">
+                <div class="panel" id="chat-panel">
+                    <h3>💬 Chat de la Sala</h3>
+                    <div id="chatBox"></div>
+                    <div class="chat-input">
+                        <input id="chatInput" type="text" placeholder="Escribe un mensaje…">
+                        <button id="chatBtn" class="chat-send">Enviar</button>
+                    </div>
+                </div>
+                <div class="panel" id="jugadores-panel">
+                    <h3>🟢 Jugadores activos</h3>
+                    <ul id="lista-jugadores"></ul>
+                </div>
+            </aside>
+            <main class="game-board">
+                <div class="panel" id="lobby-panel">
+                    <h3>Sala de Espera</h3>
+                    <div id="players-list-room"></div>
+                    <div id="lobby-state">Conectando...</div>
+                    
+                    <div id="character-selector">
+                        <h4>Elige tu Ficha:</h4>
+                        <div class="emoji-grid">
+                            <span class="emoji-option selected" data-emoji="🐵">🐵</span>
+                            <span class="emoji-option" data-emoji="🐸">🐸</span>
+                            <span class="emoji-option" data-emoji="🦄">🦄</span>
+                            <span class="emoji-option" data-emoji="🤖">🤖</span>
+                            <span class="emoji-option" data-emoji="👽">👽</span>
+                            <span class="emoji-option" data-emoji="🍕">🍕</span>
+                            <span class="emoji-option" data-emoji="👻">👻</span>
+                            <span class="emoji-option" data-emoji="🎃">🎃</span>
+                            <span class="emoji-option" data-emoji="🐲">🐲</span>
+                            <span class="emoji-option" data-emoji="🐷">🐷</span>
+                            <span class="emoji-option" data-emoji="🐰">🐰</span>
+                            <span class="emoji-option" data-emoji="🐼">🐼</span>
+                            <span class="emoji-option" data-emoji="🐨">🐨</span>
+                        </div>
+                    </div>
+                    
+                    <div id="start-game-controls" class="hidden">
+                        <label for="materias-select">Categoría:</label>
+                        <select id="materias-select"></select>
+                        <button id="propose-materia-btn">Proponer Categoría</button>
+                    </div>
+
+                    <div id="vote-controls" class="hidden">
+                        <p id="vote-proposal-text"></p>
+                        <button id="vote-yes-btn">✅ Aceptar</button>
+                        <button id="vote-no-btn">❌ Rechazar</button>
+                    </div>
+                </div>
+
+                <div class="board-container">
+                    <div class="board" id="board"></div>
+                    <svg id="paths-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></svg>
+                </div>
+                <div class="game-controls">
+                    <div class="dice-container">
+                        <div class="dice" id="dice">?</div>
+                        <button id="lanzar-dado" disabled>Lanzar Dado 🎲</button>
+                    </div>
+                    <div id="info-turno">Esperando jugadores...</div>
+                </div>
+            </main>
+            <aside class="side-panel">
+                <div class="panel" id="rules-panel">
+                    <h3>📜 Reglas y Símbolos</h3>
+                    <ul class="rules-list">
+                        <li><strong>Pregunta 🧠:</strong> Cada 3-5 turnos, aparecerá una pregunta.</li>
+                        <li><strong>Respuesta Correcta ✅:</strong> ¡Ganas un turno extra!</li>
+                        <li><strong>Respuesta Incorrecta ❌:</strong> Pierdes tu siguiente turno.</li>
+                        <li><strong>Escalera 🪜 / Avión 🛩️:</strong> Sube a la casilla superior.</li>
+                        <li><strong>Serpiente 🐍 / Lagarto 🦎:</strong> Deslízate a la casilla inferior.</li>
+                        <li><strong>Ganador 🏆:</strong> El primero en llegar a la casilla 100 gana.</li>
+                    </ul>
+                </div>
+            </aside>
+        </div>
+        <div class="notification" id="notification"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        window.DATA_USER={{{json user}}}
+        window.DATA_MATERIAS={{{json materias}}}
+    </script>
+    <script src="/public/js/serpientesEscaleras.controller.js" defer></script>
+</body>
+</html>

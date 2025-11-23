@@ -1,0 +1,361 @@
+/* ===================================================
+Archivo: historialUsuario.css
+Descripción: Estilos para la página de historial
+de duelos, tabla, botones y mensajes sin datos.
+Autor: [Tu nombre o nombres]
+Fecha: [Fecha de creación o última edición]
+=================================================== */
+
+/* ================== VARIABLES CSS ================== */
+:root {
+    /* TEMA CLARO */
+    --bg-primary: #f5f7fa;
+    --bg-secondary: #fff;
+    --bg-header: linear-gradient(90deg, #1565c0, #1e88e5);
+    --text-primary: #212121;
+    --text-secondary: #757575;
+    --text-light: #fff;
+    --accent-primary: #1e88e5;
+    --accent-secondary: #1565c0;
+    --accent-warning: #ffca28;
+    --border-color: #e0e0e0;
+    --shadow: 0 6px 16px rgba(0,0,0,0.1);
+    --shadow-hover: 0 8px 20px rgba(0,0,0,0.15);
+    --row-hover: #e8f3ff;
+    --row-even: #f9f9f9;
+}
+
+[data-theme="dark"] {
+    /* TEMA OSCURO */
+    --bg-primary: #0a0e27;
+    --bg-secondary: #1e1e3c;
+    --bg-header: linear-gradient(90deg, #6c00ff, #8b5cf6);
+    --text-primary: #f8f9fa;
+    --text-secondary: #adb5bd;
+    --text-light: #f8f9fa;
+    --accent-primary: #6c00ff;
+    --accent-secondary: #8b5cf6;
+    --accent-warning: #ffb74d;
+    --border-color: #3a3785;
+    --shadow: 0 6px 16px rgba(0,0,0,0.3);
+    --shadow-hover: 0 8px 20px rgba(0,0,0,0.5);
+    --row-hover: #2d2b55;
+    --row-even: #1a1a2e;
+}
+
+/* ========== BODY ========== */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+  transition: all 0.3s ease;
+
+  /* Centramos vertical y horizontal los elementos principales */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* ========== HEADER ========== */
+.header {
+  background: var(--bg-header);
+  color: var(--text-light);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* ========== BOTÓN VOLVER ========== */
+.btn-volver {
+  background-color: var(--bg-secondary);
+  color: var(--accent-primary);
+  padding: 0.55rem 1.4rem;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.12);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.btn-volver:hover {
+  background-color: var(--row-hover);
+  color: var(--accent-secondary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* ========== CONTENEDOR PRINCIPAL ========== */
+.main-content {
+  margin-top: 4rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  flex: 1;
+}
+
+/* ========== TABLA DE HISTORIAL ========== */
+.tabla-historial {
+  margin-top: 2rem;
+  width: 85%;
+  border-collapse: collapse;
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+}
+
+.tabla-historial th, 
+.tabla-historial td {
+  padding: 1rem 1.2rem;
+  text-align: left;
+  font-size: 0.96rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tabla-historial thead {
+  background: var(--bg-header);
+  color: var(--text-light);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.tabla-historial thead th {
+  border-bottom: none;
+}
+
+/* Filas de la tabla */
+.tabla-historial tbody tr {
+  transition: background-color 0.25s ease;
+  color: var(--text-primary);
+}
+
+.tabla-historial tbody tr:hover {
+  background-color: var(--row-hover);
+}
+
+.tabla-historial tbody tr:nth-child(even) {
+  background-color: var(--row-even);
+}
+
+.tabla-historial tbody tr:nth-child(even):hover {
+  background-color: var(--row-hover);
+}
+
+/* ========== BOTÓN VER ========== */
+.btn-ver {
+  background-color: var(--accent-warning);
+  color: var(--text-primary);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-ver:hover {
+  background-color: var(--accent-warning);
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* ========== MENSAJE DE "SIN DATOS" ========== */
+.no-datos {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 1rem;
+  background-color: var(--bg-secondary);
+  border-radius: 12px;
+  margin: 2rem auto;
+  width: 85%;
+  box-shadow: var(--shadow);
+}
+
+.pregunta-card {
+  background: var(--bg-header);
+  border-radius: 10px;
+  border: 2px solid var(--border-color);
+  width: 500px;
+  color: var(--text-light);
+  padding: 1.5rem;
+  margin: 1rem auto;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+}
+
+/* ========== BOTÓN TOGGLE TEMA ========== */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+  background: var(--accent-secondary);
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+@media (max-width: 768px) {
+  .header {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .header h1 {
+    font-size: 1.4rem;
+  }
+  
+  .tabla-historial {
+    width: 95%;
+    font-size: 0.85rem;
+  }
+  
+  .tabla-historial th, 
+  .tabla-historial td {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .main-content {
+    margin-top: 2rem;
+  }
+  
+  .pregunta-card {
+    width: 90%;
+    margin: 1rem auto;
+  }
+  
+  .theme-toggle {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+    top: 15px;
+    right: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tabla-historial {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  
+  .btn-ver {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .btn-volver {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* ========== ESTILOS ADICIONALES PARA MEJOR UX ========== */
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.stats-container {
+  display: flex;
+  justify-content: space-around;
+  width: 85%;
+  margin: 2rem auto;
+  gap: 1rem;
+}
+
+.stat-card {
+  background: var(--bg-secondary);
+  padding: 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  flex: 1;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--accent-primary);
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* ========== ANIMACIONES ========== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tabla-historial tbody tr {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.tabla-historial tbody tr:nth-child(1) { animation-delay: 0.1s; }
+.tabla-historial tbody tr:nth-child(2) { animation-delay: 0.2s; }
+.tabla-historial tbody tr:nth-child(3) { animation-delay: 0.3s; }
+.tabla-historial tbody tr:nth-child(4) { animation-delay: 0.4s; }
+.tabla-historial tbody tr:nth-child(5) { animation-delay: 0.5s; }

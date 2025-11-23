@@ -1,0 +1,84 @@
+{{!-- Vista para solicitar el enlace de recuperación de contraseña --}}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Configuración de codificación y responsive -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>QueBuenDato.com</title>           
+    
+    <!-- CSS principal para la página de verificación/recuperación -->
+    <link rel="stylesheet" href="/css/verification.css">
+</head>
+<body>
+
+<!-- Contenedor principal de la página de verificación -->
+<div class="verification-main-wrapper">
+
+    <!-- Contenedor de elementos visuales (GIF, video) -->
+    <div class="verification-visuals-container">    
+        {{!-- Imagen GIF de Stuart bailando --}}
+        <div class="verification-figure2">
+            <img src="/media/videos/stuart_dance.gif" alt="Stuart bailando" class="verification-character">
+        </div>
+
+        {{!-- Video de Octavio bailando, autoplay, loop y sin sonido --}}
+        <div class="verification-figure">
+            <video src="/media/videos/octavio_dance.mp4" autoplay loop muted class="verification-character"></video>
+        </div>
+    </div>
+
+    <!-- Contenedor del texto principal y formulario -->
+    <div class="verification-text-content">
+
+        <!-- Título principal de la sección -->
+        <h1 class="verification-headline">Recuperar Contraseña</h1>
+
+        <!-- Mensaje explicativo para el usuario -->
+        <p class="verification-message">
+            Ingresa tu correo electrónico y te enviaremos un enlace para que puedas restablecer tu contraseña.
+        </p>
+
+        {{!-- Mensaje de éxito enviado desde el servidor (si existe) --}}
+        {{#if mensaje}}
+            <div class="verification-success-message" 
+                 style="display: block; background-color: #28a745; color: white; padding: 10px; border-radius: 5px; margin-top: 15px;">
+                {{mensaje}}
+            </div>
+        {{/if}}
+
+        {{!-- Mensaje de error enviado desde el servidor (si existe) --}}
+        {{#if error}}
+            <p class="verification-error-message" 
+               style="display: block; color: #dc3545; margin-top: 15px;">
+                {{error}}
+            </p>
+        {{/if}}
+
+        <!-- Formulario para enviar correo de recuperación -->
+        <form action="/solicitar-recuperacion" method="POST" style="margin-top: 20px;">
+            <div class="form-group">
+                <!-- Etiqueta para input de correo -->
+                <label for="correo" style="display: block; margin-bottom: 5px;">Correo Electrónico</label>
+                
+                <!-- Input tipo email con validación requerida -->
+                <input type="email" id="correo" name="correo" class="form-control" 
+                       placeholder="tu-correo@ejemplo.com" required>
+            </div>
+
+            <!-- Botón para enviar el formulario -->
+            <button type="submit" class="btn-primary verification-button-resend" 
+                    style="display: block; width: 100%; margin-top: 15px;">
+                Enviar enlace de recuperación
+            </button>
+        </form>
+
+        <!-- Enlace para volver a la página de login -->
+        <div class="login-links" style="text-align: center; margin-top: 20px;">
+            <a href="/login">Volver a Iniciar Sesión</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

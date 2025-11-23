@@ -1,0 +1,48 @@
+/* ================================================================
+   Archivo: notification.css
+   Descripción: Estilos para el ícono de notificaciones y su burbuja indicadora.
+   Autor: Equipo de desarrollo
+   Última modificación: 12 de octubre de 2025
+   ================================================================ */
+
+/* ===== CONTENEDOR PRINCIPAL DE NOTIFICACIONES ===== */
+/* Este contenedor agrupa el ícono (campanita o similar) que mostrará las notificaciones */
+.notification-container {
+    position: relative;       /* Permite posicionar la burbuja respecto al ícono */
+    display: inline-block;    /* Mantiene el tamaño ajustado al contenido */
+    cursor: pointer;          /* Cambia el cursor al pasar encima */
+    font-size: 20px;          /* Tamaño base del ícono */
+}
+
+/* ===== BURBUJA DE NOTIFICACIÓN ===== */
+/* Este pequeño círculo rojo indica la cantidad o presencia de notificaciones */
+.notification-bubble {
+    position: absolute;       /* Se posiciona sobre el ícono */
+    top: -8px;                /* Ajusta la posición vertical */
+    right: -12px;             /* Ajusta la posición horizontal */
+    background: red;          /* Color de fondo rojo para destacar */
+    color: white;             /* Texto blanco para contraste */
+    font-size: 12px;          /* Tamaño pequeño del número */
+    font-weight: bold;        /* Hace que el número resalte */
+    padding: 2px 6px;         /* Espaciado interno para forma redonda */
+    border-radius: 50%;       /* Convierte la burbuja en un círculo */
+    box-shadow: 0 0 8px rgba(255, 0, 0, 0.6); /* Efecto de brillo rojo */
+    animation: pulse 1.5s infinite; /* Aplica animación de “latido” constante */
+}
+
+/* ===== ANIMACIÓN DE PULSO ===== */
+/* Da un efecto de expansión y contracción a la burbuja para atraer atención */
+@keyframes pulse {
+    0% { 
+        transform: scale(1); 
+        box-shadow: 0 0 5px red; 
+    }
+    50% { 
+        transform: scale(1.2); 
+        box-shadow: 0 0 15px red; 
+    }
+    100% { 
+        transform: scale(1); 
+        box-shadow: 0 0 5px red; 
+    }
+}

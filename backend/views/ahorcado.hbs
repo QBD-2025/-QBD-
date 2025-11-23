@@ -1,0 +1,118 @@
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="/css/ahorcado_confrontation.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<title>Juego del Ahorcado</title>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div class="title"><i class="fas fa-gamepad"></i> Juego del Ahorcado</div>
+      <div class="pill">
+        <i class="fas fa-user"></i> Jugador: <strong>{{#if user}}{{user.username}}{{else}}Invitado{{/if}}</strong>
+      </div>
+      <button onclick="location.href='/minijuegos'"><i class="fas fa-arrow-left"></i> Regresar</button>
+    </div>
+
+    {{!-- VISTA 1: MODO COOPERATIVO --}}
+    <div id="vista-cooperativo">
+      <section class="game card">
+        <div class="controls"> 
+          <label for="categoria-coop"><i class="fas fa-tag"></i> Categoría:</label>
+          <select id="categoria-coop">
+            <option>Cargando categorías...</option>
+          </select>
+          <button id="reiniciar-coop"><i class="fas fa-sync-alt"></i> Reiniciar</button>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="canvas-coop" width="300" height="350"></canvas>
+        </div>
+        <div class="pista" id="pista-coop">Cargando pista...</div>
+        <div class="word" id="palabra-coop">_ _ _ _ _ _</div>
+        <div class="wrong" id="incorrectas-coop">Incorrectas: </div>
+        <div id="teclado-coop"></div>
+      </section>
+      <aside class="side">
+        <div class="panel card" id="panel-central-coop"></div>
+      </aside>
+    </div>
+
+    {{!-- VISTA 2: MODO ENFRENTAMIENTO --}}
+    <div id="vista-enfrentamiento">
+      <section class="game-enfrentamiento card">
+        <h2 id="nombre-local"><i class="fas fa-user"></i> {{user.username}}</h2>
+        <div class="canvas-wrap">
+          <canvas id="canvas-local" width="300" height="350"></canvas>
+        </div>
+        <div class="pista" id="pista-local"></div>
+        <div class="word" id="palabra-local"></div>
+        <div class="wrong" id="incorrectas-local"></div>
+        <div id="teclado-local" class="teclado-enfrentamiento"></div>
+      </section>
+      
+      <aside class="side" id="panel-central-enfrentamiento">
+        <div class="timer-container">
+          <i class="fas fa-clock"></i> Tiempo: <span id="timer">02:00</span>
+        </div>
+      </aside>
+
+      <section class="game-enfrentamiento card">
+        <h2 id="nombre-oponente"><i class="fas fa-user"></i> Esperando...</h2>
+        <div class="canvas-wrap">
+          <canvas id="canvas-oponente" width="300" height="350"></canvas>
+        </div>
+        <div class="pista" id="pista-oponente"></div>
+        <div class="word" id="palabra-oponente"></div>
+        <div class="wrong" id="incorrectas-oponente"></div>
+        <div id="teclado-oponente" class="teclado-enfrentamiento"></div>
+      </section>
+    </div>
+
+    {{!-- Elementos Comunes --}}
+    <div id="elementos-comunes" style="display: none;">
+      <div class="panel card" id="jugadores-panel">
+        <h3><i class="fas fa-users"></i> Jugadores activos</h3>
+        <ul id="lista-jugadores"></ul>
+      </div>
+      <div class="panel card" id="chat-panel">
+        <h3><i class="fas fa-comments"></i> Chat</h3>
+        <div id="chatBox"></div>
+        <div class="chat-input">
+          <input id="chatInput" type="text" placeholder="Escribe un mensaje…">
+          <button id="chatBtn" class="chat-send"><i class="fas fa-paper-plane"></i></button>
+        </div>
+      </div>
+      <div class="panel card" id="panel-votacion-enfrentamiento" style="display: none;">
+          <h3><i class="fas fa-vote-yea"></i> Selección de Categoría</h3>
+          <div id="propuesta-actual">
+              <p>Esperando que un jugador proponga una categoría...</p>
+          </div>
+          
+          <div id="area-proponer" style="display: none;">
+              <label for="categoria-enfrentamiento-select">Elige una categoría:</label>
+              <select id="categoria-enfrentamiento-select"><option>Cargando...</option></select>
+              <button id="proponer-btn">Proponer</button>
+          </div>
+
+        <div id="area-votar" style="display: none;">
+            <button id="aceptar-btn">✅ Aceptar</button>
+            <button id="rechazar-btn">❌ Rechazar</button>
+        </div>
+
+    </div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    window.SALA_CONFIG = {
+        salaId: "{{salaId}}",
+        user: {{{json user}}}
+    };
+</script>
+<script src= "/public/js/ahorcado.controller.js" defer></script>
+</body>
+</html>

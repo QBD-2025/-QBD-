@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gato Culto - Multijugador</title>
+    <link rel="stylesheet" href="/css/gato.css" />
+</head>
+<body>
+    <div id="notification"></div>
+    
+    <!-- Modal para preguntas -->
+    <div id="question-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Pregunta</h3>
+            </div>
+            <div class="question-text" id="modal-question-text"></div>
+            <div class="question-options-modal" id="modal-options"></div>
+            <div class="feedback-section" id="feedback-section">
+                <p class="feedback-text" id="feedback-text"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="gato-container">
+        <main class="game-main">
+            <div id="game-status-display">Cargando partida...</div>
+            <div id="board"></div>
+        </main>
+
+        <aside class="side-panel">
+            <div id="lobby-panel" class="panel">
+                <h3>Sala de Espera</h3>
+                <div id="lobby-state">Conectando...</div>
+                <div id="start-game-controls" class="hidden" style="text-align: center; margin-top: 10px;">
+                    <label for="materias-select">Categoría:</label>
+                    <select id="materias-select"></select>
+                    <button id="propose-start-btn">Proponer Inicio</button>
+                </div>
+                 <div id="vote-controls" class="hidden" style="text-align: center; margin-top: 10px;">
+                    <p id="vote-proposal-text"></p>
+                    <button id="vote-yes-btn">✅ Aceptar</button>
+                    <button id="vote-no-btn">❌ Rechazar</button>
+                </div>
+            </div>
+            <div class="panel"><h3>Jugadores en la Sala</h3><ul id="players-list"></ul></div>
+
+            <div class="panel">
+                <h3>Jugadores Activos</h3>
+                <ul id="lista-jugadores-activos"><li>Cargando...</li></ul>
+            </div>
+            
+            <div class="panel"><h3>💬 Chat de la Sala</h3><div id="chatBox"></div><div class="chat-input"><input id="chatInput" type="text" placeholder="Escribe un mensaje…"><button id="chatBtn">Enviar</button></div></div>
+        </aside>
+    </div>
+
+<script>
+    window.MATERIAS_DATA= {{{json materias}}}
+    window.DATA_USER = {{{json user}}}
+</script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/public/js/gato.controller.js" defer></script>
+</body>
+</html>

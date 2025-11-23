@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EXAMEN</title>
+
+  <!-- Estilos externos para la página -->
+  <link rel="stylesheet" href="/css/eleccion-examen.css" />
+</head>
+<body>
+
+<!-- Contenedor principal del carrusel 3D -->
+<div class="carousel-container">
+
+  <!-- Carrusel de tarjetas -->
+  <div class="carousel" id="carousel"></div>
+  
+  <!-- Controles debajo del carrusel -->
+  <div class="controls">
+    <div>
+      <!-- Botón para regresar al menú principal -->
+      <button onclick="location.href='/menu_principal'">Regresar</button>
+    </div>
+  </div>  
+</div>
+
+<!-- Zonas clickeables a izquierda y derecha para mover el carrusel -->
+<div id="leftZone" class="zone-click izquierda"></div>
+<div id="rightZone" class="zone-click derecha"></div>
+
+<script>
+        window.MATERIAS_DATA = {{{json materias}}};
+</script>
+
+<script src="/public/js/eleccionDato.controller.js" defer></script>
+
+</body>
+</html>

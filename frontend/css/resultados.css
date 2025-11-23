@@ -1,0 +1,132 @@
+/* ==============================
+Archivo: resultados.css   
+Estilos para mostrar resultados de exámenes o cuestionarios
+Incluye contenedor principal, tarjetas de resultados, 
+títulos, resaltado de respuestas correctas/incorrectas 
+y botón de acción
+Fecha: [Fecha de creación o última edición]
+============================== */
+
+/* --- Estilo general del body --- */
+body {
+  font-family: 'Inter', sans-serif;  /* Tipografía moderna */
+  background-color: #ededed;          /* Fondo gris claro */
+  margin: 0;
+  padding: 2rem;                      /* Espaciado general */
+  color: #ffffff;                     /* Color de texto por defecto */
+}
+
+/* --- Contenedor principal de resultados --- */
+.resultados-contenedor {
+  max-width: 900px;                   /* Ancho máximo */
+  margin: 0 auto;                     /* Centrado horizontal */
+  background-color: #ffffff;          /* Fondo blanco */
+  padding: 2.5rem 3rem;               /* Espaciado interno */
+  border-radius: 20px;                /* Bordes redondeados */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); /* Sombra externa */
+  border: 5px solid #facc15;          /* Borde amarillo llamativo */
+}
+
+/* --- Títulos --- */
+h1 {
+  text-align: center;
+  font-size: 2.8rem;
+  font-weight: bold;
+  color: #0c0264;                     /* Color azul oscuro */
+  margin-bottom: 1rem;
+}
+
+h2 {
+  text-align: center;
+  font-size: 1.6rem;
+  color: #0815c5;                     /* Azul más intenso */
+  margin-bottom: 2.5rem;
+}
+
+/* --- Tarjetas de resultados individuales --- */
+.resultado {
+  background: linear-gradient(to right, #0815c5, #0c0264); /* Degradado azul */
+  padding: 1.8rem 2rem;
+  margin-bottom: 1.5rem;
+  border-radius: 14px;
+  border-left: 10px solid #facc15;   /* Destacado lateral amarillo */
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25); /* Sombra suave */
+  transition: transform 0.2s ease;    /* Animación al hover */
+}
+
+.resultado:hover {
+  transform: translateY(-4px);        /* Eleva la tarjeta ligeramente */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Sombra más intensa */
+}
+
+/* --- Título dentro de cada resultado --- */
+.resultado h3 {
+  margin-top: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* --- Texto de la respuesta o descripción --- */
+.resultado p {
+  margin: 0.8rem 0 0;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+/* --- Resaltado especial --- */
+.resultado strong {
+  color: #facc15;                     /* Amarillo para destacar */
+}
+
+.resultado p .correcta {
+  color: #4ade80;                     /* Verde para correcta */
+  font-weight: bold;
+}
+
+.resultado p .incorrecta {
+  color: #f87171;                     /* Rojo para incorrecta */
+  font-weight: bold;
+}
+
+/* --- Botón dentro de un enlace --- */
+a button {
+  background-color: #facc15;           /* Amarillo llamativo */
+  color: #0c0264;                      /* Azul oscuro */
+  font-weight: bold;
+  border: none;
+  padding: 12px 28px;
+  font-size: 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
+}
+
+a button:hover {
+  background-color: #e6b800;          /* Amarillo más oscuro al hover */
+}
+
+/* --- Responsive / Adaptación a móviles --- */
+@media (max-width: 600px) {
+  .resultados-contenedor {
+    padding: 1.5rem;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+  }
+
+  .resultado {
+    padding: 1.2rem;
+  }
+
+  .resultado h3 {
+    font-size: 1.2rem;
+  }
+}

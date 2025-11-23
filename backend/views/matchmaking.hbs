@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Matchmaking - Duelos Rapidos</title>
+    <link rel="stylesheet" href="/css/matchmaking.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- ============================================================ -->
+    <!-- VISTA DE MATCHMAKING/PORTAL -->
+    <!-- ============================================================ -->
+    <div id="matchmakingView" class="duelo-container">
+        <aside class="player-card">
+            <img src="{{user.foto_perfil}}" alt="Tu avatar" class="player-avatar">
+            <h2>{{user.username}}</h2>
+            <div class="player-rank">
+                <p>Rango: #{{stats.rank}}</p>
+                <span id="puntosUsuario">{{stats.puntos}} Puntos</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress" style="width: {{stats.progress_percent}}%;"></div>
+            </div>
+            <p class="next-rank-info">Faltan {{stats.points_needed}} puntos para el siguiente rango</p>
+            <hr>
+            <div class="player-stats">
+                <p><i class="fas fa-fist-raised"></i> Récord: {{stats.victorias}}V - {{stats.derrotas}}D</p>
+                <p><i class="fas fa-fire"></i> Racha Actual: {{stats.racha}} Victorias</p>
+            </div>
+        </aside>
+
+        <main class="matchmaking-center">
+            <h1>Duelos de Ascenso Rapidos</h1>
+            <p class="subtitle">Elige tu arena y demuestra tu conocimiento.</p>
+            
+            <div id="actionContainer" class="action-container">
+                <button id="btnBuscarCarrera" class="btn-buscar-duelo btn-carrera">
+                    <i class="fas fa-user-graduate"></i> DUELO POR CARRERA
+                </button>
+                <button id="btnBuscarGeneral" class="btn-buscar-duelo btn-general">
+                    <i class="fas fa-globe"></i> DUELO GENERAL
+                </button>
+                <button id="btnCancelarBusqueda" class="btn-cancelar-duelo" style="display: none;">
+                    <i class="fas fa-times"></i> CANCELAR
+                </button>
+            </div>
+
+            <p id="statusText" class="status-text">Compite en tu área de especialidad o en cultura general.</p>
+        </main>
+
+        <aside class="info-panel">
+            <div class="tabs-container">
+                <div class="tabs">
+                    <button class="tab-link active" data-tab="tab-global">🌍 Global</button>
+                    <button class="tab-link" data-tab="tab-carrera">🎓 Carrera</button>
+                </div>
+
+                <div id="tab-global" class="tab-content active">
+                    <div id="rankingGlobalContainer" class="ranking-list"></div>
+                </div>
+
+                <div id="tab-carrera" class="tab-content">
+                    <select id="selectorCarrera">
+                        <option value="">Selecciona tu carrera</option>
+                    </select>
+                    <div id="rankingCarreraContainer" class="ranking-list"></div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- VISTA DE DUELO -->
+    <!-- ============================================================ -->
+    <div id="dueloView" class="duelo-body" style="display: none;">
+        <header class="duelo-header">
+            <div id="infoDuelo" class="info-duelo">
+                <span id="apuestaActual" class="apuesta-info">🎰 Bote: 0 pts</span>
+                <span id="dificultadActual" class="dificultad-info">📊 Dificultad: Normal</span>
+            </div>
+            <div id="marcador" class="marcador">
+                <span id="puntuacionTuya">0</span> - <span id="puntuacionOponente">0</span>
+            </div>
+            <div id="preguntaContainer" class="pregunta-container">
+                <p id="numeroPregunta">Pregunta 1 / 5</p>
+                <h2 id="textoPregunta">¡Duelo encontrado! Preparando la primera pregunta...</h2>
+            </div>
+            <div id="cronometro" class="cronometro">10</div>
+        </header>
+
+        <!-- FASE DE SELECCIÓN (DRAFT) -->
+        <div id="draftContainer" class="draft-container">
+            <h2 id="draftTitle">Selección de Campo de Batalla</h2>
+            <p id="draftInstruction">Esperando al oponente...</p>
+            
+            <!-- Botón de Gambito -->
+            <div id="gambitoContainer" class="gambito-container">
+                <button id="btnGambito" class="btn-gambito">
+                    <i class="fas fa-dice"></i> ACTIVAR GAMBITO
+                </button>
+                <p class="gambito-info">
+                    Si ganas todas las respuestas de tu categoría: <strong>+50% bonus</strong><br>
+                    Si fallas alguna: <strong>-25% de puntos</strong>
+                </p>
+            </div>
+
+        <!-- ✅ NUEVO: BOTÓN PARA ACTIVAR APUESTA -->
+        <div id="apuestaContainer" class="apuesta-container-draft">
+            <button id="btnQuieroApostar" class="btn-quiero-apostar">
+                💰 QUIERO APOSTAR
+            </button>
+            <p class="info-apuesta-draft">
+                <i class="fas fa-info-circle"></i> 
+                ¡Opcional! Negocia una apuesta con tu oponente
+            </p>
+        </div>
+
+        <!-- ✅ CONTENEDOR DE NEGOCIACIÓN (inicialmente oculto) -->
+        <div id="negociacionApuestaContainer" class="negociacion-apuesta-container" style="display: none;">
+            <div class="negociacion-header">
+                <h3>💰 Negociación de Apuesta</h3>
+                <p class="negociacion-ronda">Ronda <span id="rondaNegociacion">1</span>/3</p>
+            </div>
+            
+            <div class="negociacion-body">
+                <!-- Propuesta actual del oponente -->
+                <div id="propuestaActual" class="propuesta-actual" style="display: none;">
+                    <div class="avatar-propuesta">
+                        <img id="avatarProponente" src="/uploads/default_avatar.png" alt="Avatar">
+                    </div>
+                    <div class="texto-propuesta">
+                        <p id="textoProponente">Esperando propuesta...</p>
+                        <p class="cantidad-propuesta" id="cantidadPropuesta">-- pts</p>
+                    </div>
+                </div>
+                
+                <!-- Tu turno para proponer -->
+                <div id="tuTurno" class="tu-turno" style="display: none;">
+                    <p class="instruccion">💡 Es tu turno de proponer una cantidad</p>
+                    <div class="selector-cantidad">
+                        <button class="btn-cantidad-rapida" data-cantidad="10">10</button>
+                        <button class="btn-cantidad-rapida" data-cantidad="20">20</button>
+                        <button class="btn-cantidad-rapida" data-cantidad="50">50</button>
+                        <button class="btn-cantidad-rapida" data-cantidad="100">100</button>
+                    </div>
+                    <div class="input-custom-cantidad">
+                        <label for="inputCantidadCustom">O elige una cantidad personalizada:</label>
+                        <input type="number" id="inputCantidadCustom" min="10" max="100" step="10" value="20">
+                        <span class="limite-puntos">Máximo: <span id="maxApuesta">100</span> pts</span>
+                    </div>
+                    <button id="btnEnviarPropuesta" class="btn-enviar-propuesta">
+                        📤 Proponer Apuesta
+                    </button>
+                </div>
+                
+                <!-- Esperando respuesta -->
+                <div id="esperandoRespuesta" class="esperando-respuesta" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>⏳ Esperando respuesta del oponente...</p>
+                </div>
+                
+                <!-- Responder propuesta -->
+                <div id="responderPropuesta" class="responder-propuesta" style="display: none;">
+                    <p class="pregunta">🤔 ¿Aceptas esta apuesta?</p>
+                    <div class="botones-respuesta">
+                        <button id="btnAceptarApuesta" class="btn-aceptar-apuesta">
+                            ✓ Aceptar
+                        </button>
+                        <button id="btnContraoferta" class="btn-contraoferta">
+                            ✗ Hacer Contraoferta
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="negociacion-footer">
+                <p class="info-timeout">⏰ Tiempo restante: <span id="tiempoNegociacion">60</span>s</p>
+                <p class="info-default">Si no hay acuerdo en 60s, se jugará sin apuesta</p>
+            </div>
+        </div>
+
+        <!-- Grid de materias (ya existente) -->
+        <div id="materiasGrid" class="materias-grid"></div>
+    </div>    
+
+        <!-- ARENA DE COMBATE -->
+        <main id="arenaContainer" class="arena-container" style="display: none;">
+            <section id="zonaJugador" class="zona-jugador">
+                <div class="info-jugador">
+                    <img src="{{user.foto_perfil}}" alt="Tu Avatar" class="avatar">
+                    <h3>{{user.username}}</h3>
+                    <div class="jugador-stats">
+                        <span class="racha" id="tuRacha">🔥 x0</span>
+                        <span class="powerup" id="tuPowerUp" style="display: none;">
+                            <button id="btnUsarPowerUp" class="btn-powerup"></button>
+                        </span>
+                    </div>
+                </div>
+                <div id="opcionesContainer" class="opciones-container"></div>
+            </section>
+
+            <section id="zonaOponente" class="zona-jugador oponente">
+                <div class="info-jugador">
+                    <img id="oponenteAvatar" src="/uploads/default_avatar.png" alt="Avatar Oponente" class="avatar">
+                    <h3 id="oponenteUsername">Oponente</h3>
+                    <div class="jugador-stats">
+                        <span class="racha" id="oponenteRacha">🔥 x0</span>
+                        <span class="powerup" id="oponentePowerUp" style="display: none;"></span>
+                    </div>
+                </div>
+                <div id="estadoOponente" class="estado-oponente"></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MODAL DE DIFICULTAD -->
+    <!-- ============================================================ -->
+    <div id="modalDificultad" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Elige la Dificultad</h2>
+            <p>Las preguntas serán más difíciles, ¡pero la recompensa será mayor!</p>
+            <div class="dificultad-opciones">
+                <button data-dificultad="facil" class="dif-facil">
+                    <i class="fas fa-smile"></i> Fácil
+                    <small>Recompensa: 20 pts</small>
+                </button>
+                <button data-dificultad="normal" class="dif-normal">
+                    <i class="fas fa-meh"></i> Normal
+                    <small>Recompensa: 30 pts</small>
+                </button>
+                <button data-dificultad="dificil" class="dif-dificil">
+                    <i class="fas fa-fire"></i> Difícil
+                    <small>Recompensa: 50 pts</small>
+                </button>
+            </div>
+            <button id="cerrarModalDificultad" class="btn-cerrar-modal">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MODAL DE RESULTADO DETALLADO -->
+    <!-- ============================================================ -->
+    <div id="modalResultadoDetallado" class="modal-resultado-overlay">
+        <div id="resultadoContainer" class="resultado-container">
+            <canvas id="confettiCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;"></canvas>
+            
+            <div style="position: relative; z-index: 2;">
+                <div class="resultado-header">
+                    <div class="resultado-icono" id="resultIcono">🏆</div>
+                    <h1 class="resultado-titulo" id="resultTitulo">¡VICTORIA!</h1>
+                    <p class="resultado-subtitulo" id="resultSubtitulo">Has demostrado tu conocimiento</p>
+                </div>
+                
+                <div class="jugadores-row" id="jugadoresContainer"></div>
+                
+                <button class="btn-volver-portal" id="btnVolverPortal">
+                    🚪 Volver al Portal
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="modalConfirmarSalida" class="modal-abandono-overlay">
+    <div class="modal-abandono-content">
+        <div class="modal-abandono-header">
+            <div class="icono-advertencia-grande">⚠️</div>
+            <h2>¿Abandonar Duelo?</h2>
+        </div>
+        
+        <div class="modal-abandono-body">
+            <p id="mensajeSalida" class="mensaje-salida"></p>
+            
+            <div id="penalizacionInfo" class="penalizacion-info" style="display: none;">
+                <div class="penalizacion-box">
+                    <span class="penalizacion-icono">💸</span>
+                    <div class="penalizacion-texto">
+                        <strong>Penalización:</strong>
+                        <span id="cantidadPenalizacion" class="cantidad-penalizacion">0 pts</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-abandono-footer">
+            <button id="btnCancelarSalida" class="btn-cancelar-salida">
+                ✗ Cancelar
+            </button>
+            <button id="btnConfirmarSalida" class="btn-confirmar-salida"> {{!-- onclick="location.href='/portal'" --}}
+                ✓ Sí, abandonar
+            </button>
+        </div>
+    </div>
+</div>
+
+    <!-- ✅ PANTALLA: Abandono confirmado -->
+    <div id="pantallaAbandono" class="pantalla-resultado-abandono">
+        <div class="resultado-abandono-content">
+            <div class="resultado-abandono-header">
+                <div id="iconoAbandono" class="icono-resultado-abandono">😔</div>
+                <h1 id="tituloAbandono">Has Abandonado</h1>
+            </div>
+            
+            <div class="resultado-abandono-body">
+                <p id="mensajeAbandono" class="mensaje-resultado-abandono"></p>
+                
+                <div id="detallesAbandono" class="detalles-abandono">
+                    <div class="detalle-item">
+                        <span class="detalle-label">Penalización:</span>
+                        <span id="penalizacionAbandono" class="detalle-valor negativo">-0 pts</span>
+                    </div>
+                    <div class="detalle-item">
+                        <span class="detalle-label">Apuesta perdida:</span>
+                        <span id="apuestaAbandono" class="detalle-valor">0 pts</span>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="btnVolverPortalAbandono" class="btn-volver-portal-abandono">
+                🚪 Volver al Portal
+            </button>
+        </div>
+    </div>
+
+    <!-- ✅ PANTALLA: Victoria por abandono del oponente -->
+    <div id="pantallaVictoriaAbandono" class="pantalla-resultado-abandono victoria">
+        <div class="resultado-abandono-content">
+            <canvas id="confettiVictoria" class="confetti-canvas"></canvas>
+            
+            <div class="resultado-abandono-header">
+                <div class="icono-resultado-abandono">🏆</div>
+                <h1>¡Victoria!</h1>
+            </div>
+            
+            <div class="resultado-abandono-body">
+                <p id="mensajeVictoriaAbandono" class="mensaje-resultado-abandono"></p>
+                
+                <div id="detallesVictoria" class="detalles-abandono">
+                    <div class="detalle-item positivo">
+                        <span class="detalle-label">Ganancia:</span>
+                        <span id="gananciaVictoria" class="detalle-valor positivo">+0 pts</span>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="btnVolverPortalVictoria" class="btn-volver-portal-abandono">
+                🚪 Volver al Portal
+            </button>
+        </div>
+    </div>
+
+    <!-- ✅ PANTALLA: Error crítico -->
+    <div id="pantallaError" class="pantalla-resultado-abandono error">
+        <div class="resultado-abandono-content">
+            <div class="resultado-abandono-header">
+                <div class="icono-resultado-abandono">❌</div>
+                <h1>Error en el Duelo</h1>
+            </div>
+            
+            <div class="resultado-abandono-body">
+                <p id="mensajeError" class="mensaje-resultado-abandono">
+                    Hubo un problema con el duelo. No te preocupes, tus puntos están seguros.
+                </p>
+                
+                <div class="codigo-error">
+                    <strong>Código:</strong> <span id="codigoError">ERR_UNKNOWN</span>
+                </div>
+            </div>
+            
+            <div class="acciones-error">
+                <button id="btnReportarError" class="btn-reportar-error">
+                    📝 Reportar Error
+                </button>
+                <button id="btnVolverPortalError" class="btn-volver-portal-abandono">
+                    🚪 Volver al Portal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ INDICADOR: Oponente desconectado -->
+    <div id="indicadorDesconexion" class="indicador-desconexion">
+        <div class="indicador-contenido">
+            <div class="spinner-desconexion"></div>
+            <div class="texto-desconexion">
+                <strong id="nombreOponenteDesconectado">Oponente</strong> se desconectó
+                <div class="tiempo-restante">
+                    Esperando reconexión... <span id="tiempoRestanteReconexion">60</span>s
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ NOTIFICACIÓN: Reconexión exitosa -->
+    <div id="notificacionReconexion" class="notificacion-reconexion">
+        <div class="notificacion-icono">✅</div>
+        <div class="notificacion-texto">
+            <strong>¡Reconectado!</strong>
+            <span id="mensajeReconexion">Continuando duelo...</span>
+        </div>
+    </div>
+
+    <!-- ✅ BOTÓN: Abandonar duelo (agregar a la interfaz principal) -->
+    <button id="btnAbandonarDuelo" class="btn-abandonar-duelo" style="display: none;">
+        <i class="fas fa-door-open"></i> Abandonar
+    </button>
+
+    <style>
+    /* ================================================================ */
+    /* ESTILOS PARA MODALES Y PANTALLAS DE ERROR */
+    /* ================================================================ */
+
+    /* Modal de confirmación de abandono */
+    
+    </style>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        window.USER_DATA ={{{json user}}};
+    </script>
+    <script src="../../public/js/matchmaking.controller.js" defer></script>
+</body>
+</html>

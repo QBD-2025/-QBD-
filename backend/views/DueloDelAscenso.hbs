@@ -1,0 +1,60 @@
+<!-- src/views/DueloDelAscenso.hbs -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Configuración de codificación -->
+    <meta charset="UTF-8">
+    
+    <!-- Título de la página -->
+    <title>Duelos de Ascenso</title>
+    
+    <!-- Enlace al CSS específico de esta vista -->
+    <link rel="stylesheet" href="/css/competitivo-duelos.css">
+</head>
+<body>
+
+<!-- Contenedor principal que divide la pantalla -->
+<div class="main-container">
+
+    <!-- Panel izquierdo con matchmaking y botones de ranking -->
+    <div class="matchmaking-container">
+
+        <!-- Botón para buscar duelos rápidos -->
+        <button class="matchmaking-btn" onclick="location.href='/matchmaking'">
+            Buscar Duelos<br>Rapidos
+        </button>
+
+        <!-- Botón para ver el ranking por carrera -->
+        <div>
+            <button class="ranking-carrera-btn" onclick="location.href='/rankingCarrera'">
+                Ranking por Carrera 🏅
+            </button>
+        </div>
+
+        <!-- Panel informativo sobre el ranking global -->
+        <div class="info-panel">
+            <h3>🏆 Ranking Global</h3>
+            <p><strong>Desafía</strong> a jugadores que estén por encima de ti</p>
+            <p><strong>Gana puntos</strong> al vencer oponentes superiores</p>
+            <p><strong>Defiende</strong> tu posición de los desafíos</p>
+        </div>
+    </div>
+
+    <!-- Contenedor derecho para mostrar la tabla de clasificación global -->
+    <div id="rankingGlobalContainer">
+        <div class="ranking-header">
+            <h2>Tabla de Clasificación Global</h2>
+            <p class="ranking-subtitle">Los mejores jugadores del servidor</p>
+        </div>
+    </div>
+
+<script>
+    // Pasar datos del servidor a JavaScript
+    window.SALA_CONFIG = {
+        user: {{{json user}}}
+    };
+</script>
+<script src="/public/js/dueloAscenso.controller.js" defer></script>
+
+</body>
+</html>

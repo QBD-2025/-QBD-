@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MINIJUEGOS</title>
+
+  <!-- Estilos externos específicos para la selección de minijuegos -->
+  <link rel="stylesheet" href="/css/eleccion-minijuego.css" />
+</head>
+<body>
+
+  <!-- Contenedor principal del carrusel 3D -->
+  <div class="carousel-container">
+
+    <!-- Carrusel de tarjetas donde se mostrarán los minijuegos -->
+    <div class="carousel" id="carousel"></div>
+  
+    <!-- Controles debajo del carrusel -->
+    <div class="controls">
+      <!-- Botón para ir a la tarjeta anterior -->
+      <button id="prevBtn">◀ Anterior</button>
+
+      <!-- Botón para seleccionar un minijuego aleatorio -->
+      <button id="randomBtn" class="boton-aleatorio">Aleatorio 🎲</button>
+
+      <!-- Botón para ir a la tarjeta siguiente -->
+      <button id="nextBtn">Siguiente ▶</button>
+
+      <!-- Botón para regresar al menú principal -->
+      <div><button onclick="location.href='/menu_principal'">Regresar</button></div>
+    </div>  
+  </div>
+
+  <script>
+    window.MATERIAS_DATA= {{json materias}}
+  </script>
+
+  <script src="/public/js/eleccionMinijuegos.controller.js" defer></script>
+</body>
+</html>
