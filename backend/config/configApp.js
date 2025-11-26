@@ -90,6 +90,51 @@ app.engine('.hbs', exphbs.engine({
                 case '>=': return (v1 >= v2) ? options.fn(this) : options.inverse(this);
                 default: return options.inverse(this);
             }
+        },
+        // ════════════════════════════════════════════════════════════
+        // ✅ NUEVOS HELPERS PARA DUELOS DE CARRERA (AGREGAR AQUÍ)
+        // ════════════════════════════════════════════════════════════
+        
+        // Comparaciones adicionales
+        equals: (a, b) => a === b,
+        greaterThan: (a, b) => a > b,
+        lessThan: (a, b) => a < b,
+        greaterThanOrEqual: (a, b) => a >= b,
+        lessThanOrEqual: (a, b) => a <= b,
+        
+        // Operaciones lógicas
+        and: (a, b) => a && b,
+        not: (a) => !a,
+        
+        // Operaciones matemáticas adicionales
+        multiply: (a, b) => a * b,
+        divide: (a, b) => b !== 0 ? a / b : 0,
+        
+        // Formateo
+        formatNumber: (num) => {
+            if (num === undefined || num === null) return '0';
+            return Number(num).toLocaleString('es-MX');
+        },
+        
+        formatDate: (date) => {
+            if (!date) return 'N/A';
+            try {
+                return new Date(date).toLocaleString('es-MX', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (error) {
+                return 'N/A';
+            }
+        },
+        
+        // Debug helper (útil para desarrollo)
+        debug: (value) => {
+            console.log('[HANDLEBARS DEBUG]:', value);
+            return JSON.stringify(value, null, 2);
         }
     }
 }));
@@ -277,6 +322,7 @@ const usuarioR = require('../routes/usuario.router.js');
 const verificaAdminR = require('../routes/verificaAdmin.router.js');
 const verificationR = require('../routes/verification.router.js');
 const duelo_competitivo = require('../routes/duelo_competitivo.js');
+const duelosErrorHandler = require('../routes/dueloErrorHandler.js');
 
 // ════════════════════════════════════════════════════════════════
 // ✅✅✅ ORDEN CRÍTICO DE MONTAJE

@@ -193,6 +193,7 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
         conn = await pool.getConnection();
         await conn.beginTransaction();
 
+        // 1️⃣ Obtener notificación
         const [notificaciones] = await conn.query(
             `SELECT * FROM notificaciones 
              WHERE id_notificacion = ? AND id_usuario_destinatario = ?`,
@@ -340,70 +341,177 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             });
         }
         
-         // 🔥 Determinar remitente seguro
-        const remitente = extraData.remitente || { id_usuario: null, username: 'Desconocido' };
-        const salaId = extraData.salaId || `sala_${uuidv4()}`;
-
         // ════════════════════════════════════════════════════════
-        // 📚 DUELO POR EXAMEN 48 HORAS (MODO 2) - ✅✅✅ CORREGIDO
+        // 📚 DUELO POR EXAMEN 48 HORAS (MODO 2) - ✅✅✅ MEJORADO
+        // Solo hace SELECT del duelo que YA EXISTE en BD
         // ════════════════════════════════════════════════════════
-         if (notificacion.tipo === 'desafio_duelo') {
-            const fechaLimite = new Date(Date.now() + 48 * 60 * 60 * 1000);
-
-            await pool.query(
-                `INSERT INTO duelos (id_duelo, id_retador, id_defensor, fecha_limite, respondido_retador, respondido_oponente)
-                 VALUES (?, ?, ?, ?, 0, 0)
-                 ON DUPLICATE KEY UPDATE fecha_limite = VALUES(fecha_limite)`,
-                [salaId, remitente.id_usuario, userId, fechaLimite]
-            );
-
-            await pool.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
-            await pool.query(`DELETE FROM notificaciones WHERE id_usuario_destinatario = ? OR id_usuario_remitente = ?`, [remitente.id_usuario, remitente.id_usuario]);
-
-            const notifData = JSON.stringify({ salaId});
-
-            // Notificación al retador
-            if (remitente.id_usuario) {
-                await pool.query(
-                    `INSERT INTO notificaciones (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
-                    VALUES (?, ?, 'duelo_aceptado', ?, ?)`,
-                    [
-                        remitente.id_usuario,
-                        userId,
-                        `${req.session.user.username} aceptó tu desafío. Tienes 48h para hacer el examen.`,
-                        notifData
-                    ]
-                );
+        if (notificacion.tipo === 'desafio_duelo') {
+            console.log('[ACEPTAR]: 📚 PROCESANDO DUELO DE 48 HORAS');
+            console.log('[ACEPTAR]: Extra data completo:', JSON.stringify(extraData, null, 2));
+            
+            // ✅ Obtener id_duelo del extra_data
+            const idDuelo = extraData.id_duelo;
+            
+            if (!idDuelo) {
+                console.error('[ACEPTAR]: ❌ No hay id_duelo en extra_data');
+                await conn.rollback();
+                conn.release();
+                return res.status(400).json({
+                    success: false,
+                    message: 'Datos de duelo incompletos'
+                });
             }
+            
+            console.log('[ACEPTAR]: 🔍 Buscando duelo existente:', idDuelo);
+            
+            // ✅ VERIFICAR que el duelo EXISTA en BD
+            const [duelosExistentes] = await conn.query(
+                `SELECT 
+                    d.id_duelo,
+                    d.id_retador,
+                    d.id_defensor,
+                    d.id_carrera,
+                    d.dificultad,
+                    d.apuesta,
+                    d.fecha_limite,
+                    d.estado,
+                    u1.username as retador_username,
+                    u2.username as defensor_username
+                FROM duelos d
+                LEFT JOIN usuario u1 ON d.id_retador = u1.id_usuario
+                LEFT JOIN usuario u2 ON d.id_defensor = u2.id_usuario
+                WHERE d.id_duelo = ?
+                AND d.estado = 'activo'`,
+                [idDuelo]
+            );
+            
+            if (duelosExistentes.length === 0) {
+                console.error('[ACEPTAR]: ❌ DUELO NO EXISTE O YA FINALIZÓ');
+                await conn.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
+                await conn.commit();
+                conn.release();
+                return res.status(404).json({
+                    success: false,
+                    message: 'El duelo ya no está disponible'
+                });
+            }
+            
+            const duelo = duelosExistentes[0];
+            console.log('[ACEPTAR]: ✅ DUELO ENCONTRADO EN BD');
+            console.log('[ACEPTAR]: Duelo info:', {
+                id_duelo: duelo.id_duelo,
+                retador: duelo.retador_username,
+                defensor: duelo.defensor_username,
+                apuesta: duelo.apuesta,
+                dificultad: duelo.id_dificultad,
+                carrera: duelo.id_carrera
+            });
+            
+            // ✅ VERIFICAR que el usuario actual sea el defensor
+            if (parseInt(duelo.id_defensor) !== parseInt(userId)) {
+                console.error('[ACEPTAR]: ❌ Usuario no es el defensor');
+                await conn.rollback();
+                conn.release();
+                return res.status(403).json({
+                    success: false,
+                    message: 'No tienes permiso para aceptar este duelo'
+                });
+            }
+            
+            // ✅ Eliminar SOLO la notificación de desafío (NO el duelo)
+            await conn.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
+            console.log('[ACEPTAR]: ✅ Notificación de desafío eliminada');
+            
+            // ✅ Crear notificación de ACEPTACIÓN para ambos jugadores
+            const notifDataRetador = JSON.stringify({ 
+                salaId: duelo.id_duelo,
+                tipo_duelo: duelo.id_carrera ? 'carrera' : 'general',
+                apuesta: duelo.apuesta,
+                dificultad: duelo.id_dificultad
+            });
+            
+            const notifDataDefensor = JSON.stringify({ 
+                salaId: duelo.id_duelo,
+                tipo_duelo: duelo.id_carrera ? 'carrera' : 'general',
+                apuesta: duelo.apuesta,
+                dificultad: duelo.id_dificultad
+            });
 
-            // Notificación al defensor
-            await pool.query(
-                `INSERT INTO notificaciones (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
+            // Notificación al RETADOR
+            await conn.query(
+                `INSERT INTO notificaciones 
+                (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
+                VALUES (?, ?, 'duelo_aceptado', ?, ?)`,
+                [
+                    duelo.id_retador,
+                    userId,
+                    `✅ ${req.session.user.username} aceptó tu desafío. Tienes 48h para hacer el examen.`,
+                    notifDataRetador
+                ]
+            );
+            
+            console.log('[ACEPTAR]: ✅ Notificación enviada al RETADOR');
+
+            // Notificación al DEFENSOR (usuario actual)
+            await conn.query(
+                `INSERT INTO notificaciones 
+                (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
                 VALUES (?, ?, 'duelo_aceptado', ?, ?)`,
                 [
                     userId,
-                    remitente.id_usuario,
-                    `Duelo activo contra ${remitente.username}. Tienes 48h para hacer el examen.`,
-                    notifData
+                    duelo.id_retador,
+                    `⚔️ Duelo activo contra ${duelo.retador_username}. Tienes 48h para hacer el examen.`,
+                    notifDataDefensor
                 ]
             );
+            
+            console.log('[ACEPTAR]: ✅ Notificación enviada al DEFENSOR');
 
-            if (req.io) {
-                if (remitente.id_usuario) req.io.to(remitente.id_usuario.toString()).emit('notificacion_recibida');
-                req.io.to(userId.toString()).emit('notificacion_recibida');
+            // ✅ Emitir eventos socket
+            const io = req.app.get('io') || req.io || global.io;
+            if (io) {
+                const usuariosConectados = global.usuariosConectados || new Map();
+                
+                // Socket al RETADOR
+                const retadorSocketId = usuariosConectados.get(parseInt(duelo.id_retador));
+                if (retadorSocketId) {
+                    io.to(retadorSocketId).emit('notificacion_recibida', {
+                        tipo: 'duelo_aceptado',
+                        mensaje: `${req.session.user.username} aceptó tu desafío`,
+                        salaId: duelo.id_duelo
+                    });
+                    console.log('[ACEPTAR]: ✅ Socket emitido al RETADOR');
+                }
+                
+                // Socket al DEFENSOR
+                io.to(userId.toString()).emit('notificacion_recibida', {
+                    tipo: 'duelo_aceptado',
+                    mensaje: `Duelo activo contra ${duelo.retador_username}`,
+                    salaId: duelo.id_duelo
+                });
+                console.log('[ACEPTAR]: ✅ Socket emitido al DEFENSOR');
             }
+
+            await conn.commit();
+            conn.release();
+            
+            console.log('[ACEPTAR]: ✅ DUELO ACEPTADO EXITOSAMENTE (SOLO SELECT, NO INSERT)');
+            console.log('═══════════════════════════════════════════════════════════');
 
             return res.json({
                 success: true,
                 tipo: 'desafio_duelo',
-                salaId,
+                salaId: duelo.id_duelo,
                 message: `¡Desafío aceptado! Tienes 48h para hacer el examen`,
                 mostrarEnlace: true,
-                enlaceExamen: `/duelo/examen/${salaId}`,
-                fechaLimite,
-                id_remitente: remitente.id_usuario
+                enlaceExamen: `/duelo/examen/${duelo.id_duelo}`,
+                fechaLimite: duelo.fecha_limite,
+                apuesta: duelo.apuesta,
+                dificultad: duelo.id_dificultad,
+                tipoDuelo: duelo.id_carrera ? 'carrera' : 'general'
             });
         }
+        
         // ════════════════════════════════════════════════════════
         // 🎮 INVITACIONES A MINIJUEGOS
         // ════════════════════════════════════════════════════════
@@ -470,6 +578,7 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
         });
     }
 });
+
 
 // ================================================================
 // 🚫 RECHAZAR NOTIFICACIÓN - ✅ CON LÓGICA PARA duelo_aceptado

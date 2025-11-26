@@ -4,91 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resultados del Duelo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ================== VARIABLES CSS - TEMA CLARO Y OSCURO ================== */
         :root {
-            /* TEMA CLARO */
             --bg-page: #ffffff;
-            --bg-primary: #ffffff;
-            --bg-secondary: #f8f9fa;
-            --text-primary: #333333;
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #ffffff;
+            --text-primary: #1a1a1a;
             --text-secondary: #555555;
-            --accent-yellow: #FFC107;
-            --accent-blue: #0817eb;
-            
-            /* Cards y containers */
-            --card-bg: #ffffff;
-            --card-border: rgba(255, 193, 7, 0.2);
-            --card-shadow: rgba(0, 0, 0, 0.1);
-            --card-shadow-hover: rgba(0, 0, 0, 0.15);
-            
-            /* Botones */
-            --btn-primary-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --btn-primary-hover-shadow: rgba(102, 126, 234, 0.4);
-            
-            /* Estados */
-            --success-bg: #d4edda;
-            --success-text: #155724;
-            --success-border: #28a745;
-            
-            --error-bg: #f8d7da;
-            --error-text: #721c24;
-            --error-border: #dc3545;
-            
-            --warning-bg: #fff3cd;
-            --warning-text: #856404;
-            --warning-border: #ffc107;
-            
-            --info-bg: #e9ecef;
-            --info-text: #333333;
-            
-            /* Puntajes */
-            --puntaje-color: #667eea;
+            --accent-success: #10b981;
+            --accent-error: #ef4444;
+            --accent-warning: #f59e0b;
+            --accent-primary: #667eea;
+            --accent-secondary: #764ba2;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --card-shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.15);
         }
 
         [data-theme="dark"] {
-            /* TEMA OSCURO */
             --bg-page: #0a0e27;
-            --bg-primary: #0a0e27;
-            --bg-secondary: #151b3d;
+            --bg-primary: #151b3d;
+            --bg-secondary: #1e2950;
             --text-primary: #ffffff;
-            --text-secondary: #e0e0e0;
-            --accent-yellow: #FFC107;
-            --accent-blue: #4A90E2;
-            
-            /* Cards y containers */
-            --card-bg: #151b3d;
-            --card-border: rgba(108, 0, 255, 0.3);
-            --card-shadow: rgba(0, 0, 0, 0.5);
-            --card-shadow-hover: rgba(0, 0, 0, 0.7);
-            
-            /* Botones */
-            --btn-primary-bg: linear-gradient(135deg, #6c00ff 0%, #8b5cf6 100%);
-            --btn-primary-hover-shadow: rgba(108, 0, 255, 0.6);
-            
-            /* Estados */
-            --success-bg: rgba(40, 167, 69, 0.2);
-            --success-text: #4ade80;
-            --success-border: #4ade80;
-            
-            --error-bg: rgba(220, 53, 69, 0.2);
-            --error-text: #fb7185;
-            --error-border: #fb7185;
-            
-            --warning-bg: rgba(255, 193, 7, 0.2);
-            --warning-text: #fbbf24;
-            --warning-border: #fbbf24;
-            
-            --info-bg: #1e293b;
-            --info-text: #e0e0e0;
-            
-            /* Puntajes */
-            --puntaje-color: #8b5cf6;
+            --text-secondary: #cbd5e1;
+            --accent-success: #4ade80;
+            --accent-error: #fb7185;
+            --accent-warning: #fbbf24;
+            --accent-primary: #8b5cf6;
+            --accent-secondary: #a78bfa;
+            --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            --card-shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.6);
         }
 
-        /* ================== TRANSICIONES SUAVES ================== */
         * {
-            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
@@ -98,311 +49,750 @@
             min-height: 100vh;
             line-height: 1.6;
             padding-top: 100px;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* ===== CONTENIDO PRINCIPAL ===== */
-        .resultado-container { 
-            max-width: 800px; 
-            margin: 0 auto; 
-            padding: 20px; 
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
-        .puntajes { 
-            display: flex; 
-            justify-content: space-between; 
-            margin: 20px 0; 
+        /* ====================== HEADER ====================== */
+        .header-resultado {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            border-radius: 20px;
+            color: white;
+            box-shadow: var(--card-shadow);
+        }
+
+        .header-resultado h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header-resultado p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* ====================== PUNTAJES ====================== */
+        .puntajes-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
+            margin-bottom: 40px;
         }
 
-        .puntaje-card { 
-            background: var(--card-bg);
-            padding: 20px; 
-            border-radius: 12px; 
-            text-align: center; 
-            flex: 1;
-            box-shadow: 0 2px 8px var(--card-shadow);
-            transition: transform 0.2s;
-            border: 1px solid var(--card-border);
+        .puntaje-card {
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
         }
 
         .puntaje-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 4px 15px var(--card-shadow-hover);
+            box-shadow: var(--card-shadow-hover);
         }
 
-        .puntaje-numero { 
-            font-size: 2.5em; 
-            font-weight: bold; 
-            color: var(--puntaje-color);
+        .puntaje-card.mi-puntaje {
+            border-color: var(--accent-primary);
+        }
+
+        .puntaje-card.oponente-puntaje {
+            border-color: var(--accent-secondary);
+        }
+
+        .puntaje-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+        }
+
+        .puntaje-numero {
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 15px 0;
+        }
+
+        .puntaje-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .puntos-tipo {
+            background: var(--bg-primary);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .puntos-tipo span {
+            display: block;
+            font-size: 0.85rem;
+            margin: 8px 0;
+        }
+
+        .puntos-global {
+            color: var(--accent-primary);
+            font-weight: 700;
+        }
+
+        .puntos-carrera {
+            color: var(--accent-warning);
+            font-weight: 700;
+        }
+
+        .puntos-positivo {
+            color: var(--accent-success);
+        }
+
+        .puntos-negativo {
+            color: var(--accent-error);
+        }
+
+        /* ====================== RESULTADO FINAL ====================== */
+        .resultado-final {
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+            border-left: 8px solid var(--accent-primary);
+        }
+
+        .resultado-final.victoria {
+            border-left-color: var(--accent-success);
+        }
+
+        .resultado-final.derrota {
+            border-left-color: var(--accent-error);
+        }
+
+        .resultado-final.empate {
+            border-left-color: var(--accent-warning);
+        }
+
+        .resultado-titulo {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 900;
+        }
+
+        .resultado-subtitulo {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        .puntos-ganados {
+            font-size: 2rem;
+            font-weight: 900;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            background: var(--bg-primary);
+        }
+
+        .puntos-ganados.positivos {
+            color: var(--accent-success);
+        }
+
+        .puntos-ganados.negativos {
+            color: var(--accent-error);
+        }
+
+        .puntos-ganados.neutro {
+            color: var(--accent-warning);
+        }
+
+        .mensaje-final {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-top: 20px;
+            font-style: italic;
+        }
+
+        /* ====================== ESPERANDO ====================== */
+        .esperando-container {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+            border: 2px solid var(--accent-warning);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 40px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .esperando-container h3 {
+            color: var(--accent-warning);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .esperando-container p {
+            color: var(--text-secondary);
             margin: 10px 0;
         }
 
-        .pregunta-resultado { 
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            margin: 15px 0; 
-            padding: 20px; 
-            border-radius: 12px;
-            box-shadow: 0 2px 5px var(--card-shadow);
-        }
-
-        .respuesta-correcta { 
-            color: var(--success-text);
-            font-weight: bold; 
-        }
-
-        .respuesta-incorrecta { 
-            color: var(--error-text); 
-            font-weight: bold;
-        }
-
-        .esperando { 
-            background: var(--warning-bg);
-            border: 2px solid var(--warning-border);
-            color: var(--warning-text);
-            padding: 20px; 
-            border-radius: 12px; 
-            text-align: center; 
-            margin: 20px 0;
-            box-shadow: 0 2px 5px var(--card-shadow);
-        }
-
-        .oponente-pendiente { 
-            color: var(--text-secondary);
-            font-style: italic; 
-        }
-
-        .btn-volver { 
-            background: var(--btn-primary-bg);
-            color: white; 
-            padding: 12px 30px; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            text-decoration: none; 
+        .loader {
             display: inline-block;
-            font-size: 1.1rem;
-            font-weight: 500;
-            transition: transform 0.2s, box-shadow 0.2s;
+            width: 30px;
+            height: 30px;
+            border: 4px solid var(--bg-primary);
+            border-top-color: var(--accent-warning);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
         }
 
-        .btn-volver:hover { 
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px var(--btn-primary-hover-shadow);
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
-        .respuestas-comparacion { 
-            margin-top: 15px; 
-        }
-
-        .mi-respuesta, .oponente-respuesta { 
-            margin: 10px 0; 
-            padding: 12px; 
+        /* ====================== INFO DUELO ====================== */
+        .info-duelo {
             background: var(--bg-secondary);
-            border-radius: 8px;
-            border-left: 4px solid var(--puntaje-color);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 40px;
+            box-shadow: var(--card-shadow);
+            border-left: 5px solid var(--accent-primary);
         }
 
-        .info-duelo { 
-            background: var(--info-bg);
-            color: var(--info-text);
-            padding: 20px; 
-            border-radius: 12px; 
+        .info-duelo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .info-item {
+            background: var(--bg-primary);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .info-item label {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .info-item value {
+            display: block;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--accent-primary);
+        }
+
+        /* ====================== PREGUNTAS DETALLE ====================== */
+        .respuestas-detalle {
+            margin-bottom: 40px;
+        }
+
+        .respuestas-detalle h3 {
             margin-bottom: 20px;
-            box-shadow: 0 2px 8px var(--card-shadow);
-            border: 1px solid var(--card-border);
+            font-size: 1.3rem;
+            color: var(--text-primary);
         }
 
-        .resultado-final { 
-            margin-top: 30px; 
-            padding: 25px; 
-            background: var(--card-bg);
-            border-radius: 12px; 
-            text-align: center;
-            box-shadow: 0 2px 8px var(--card-shadow);
-            border: 1px solid var(--card-border);
-        }
-
-        .puntos-ganados { 
-            font-size: 1.8em; 
-            margin: 20px 0; 
-            padding: 20px; 
+        .pregunta-item {
+            background: var(--bg-secondary);
             border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: var(--card-shadow);
+            border-left: 5px solid var(--accent-primary);
+            transition: all 0.3s ease;
+        }
+
+        .pregunta-item:hover {
+            transform: translateX(5px);
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .pregunta-item.correcta {
+            border-left-color: var(--accent-success);
+        }
+
+        .pregunta-item.incorrecta {
+            border-left-color: var(--accent-error);
+        }
+
+        .pregunta-numero {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .pregunta-texto {
+            font-weight: 700;
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+            color: var(--text-primary);
+        }
+
+        .respuestas-comparacion {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .respuesta-box {
+            background: var(--bg-primary);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .respuesta-box.correcta {
+            border-left-color: var(--accent-success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .respuesta-box.incorrecta {
+            border-left-color: var(--accent-error);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .respuesta-box.pendiente {
+            border-left-color: var(--accent-warning);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .respuesta-titulo {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .respuesta-texto {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .respuesta-icono {
+            margin-right: 5px;
             font-weight: bold;
         }
 
-        .puntos-positivos { 
-            background: var(--success-bg);
-            color: var(--success-text);
-            border: 2px solid var(--success-border);
+        .respuesta-icono.correcto {
+            color: var(--accent-success);
         }
 
-        .puntos-negativos { 
-            background: var(--error-bg);
-            color: var(--error-text);
-            border: 2px solid var(--error-border);
+        .respuesta-icono.incorrecto {
+            color: var(--accent-error);
         }
 
-        .puntos-empate { 
-            background: var(--warning-bg);
-            color: var(--warning-text);
-            border: 2px solid var(--warning-border);
+        /* ====================== BOTONES ====================== */
+        .botones-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 40px 0 60px 0;
+            flex-wrap: wrap;
         }
 
-        /* Responsive */
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            color: white;
+            box-shadow: var(--card-shadow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--accent-primary);
+            border: 2px solid var(--accent-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-primary);
+            transform: translateY(-3px);
+        }
+
+        /* ====================== RESPONSIVE ====================== */
         @media (max-width: 768px) {
             body {
                 padding-top: 80px;
             }
 
-            .puntajes {
+            .container {
+                padding: 15px;
+            }
+
+            .header-resultado h1 {
+                font-size: 1.8rem;
+            }
+
+            .puntajes-container {
+                grid-template-columns: 1fr;
+            }
+
+            .puntaje-numero {
+                font-size: 2.5rem;
+            }
+
+            .respuestas-comparacion {
+                grid-template-columns: 1fr;
+            }
+
+            .botones-container {
                 flex-direction: column;
             }
 
-            .puntaje-card {
-                margin-bottom: 15px;
+            .btn {
+                width: 100%;
+                justify-content: center;
             }
+
+            .resultado-titulo {
+                font-size: 1.5rem;
+            }
+
+            .puntos-ganados {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* ====================== ANIMACIONES ====================== */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .puntaje-card,
+        .resultado-final,
+        .pregunta-item {
+            animation: slideIn 0.6s ease forwards;
+        }
+
+        .puntaje-card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .puntaje-card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .resultado-final {
+            animation-delay: 0.3s;
         }
     </style>
 </head>
 <body>
-    <div class="resultado-container">
-        <h1>Resultados del Duelo</h1>
-        
-        <!-- Información del duelo -->
-        <div class="info-duelo">
-            <h3>{{#if esRetador}}
-                Duelo: Tú vs {{duelo.defensor_username}}
-            {{else}}
-                Duelo: {{duelo.retador_username}} vs Tú
-            {{/if}}</h3>
-        </div>
-
-        <!-- Puntajes -->
-        <div class="puntajes">
-            <div class="puntaje-card">
-                <h4>Tu puntaje</h4>
-                <div class="puntaje-numero">{{correctas}}/{{totalPreguntas}}</div>
-                <div>Preguntas correctas</div>
-            </div>
-            
-            <div class="puntaje-card">
-                <h4>{{#if nombreOponente}}{{nombreOponente}}{{else}}Oponente{{/if}}</h4>
-                <div class="puntaje-numero">
-                    {{#if ambosTerminaron}}
-                        {{oponentePuntaje}}/{{totalPreguntas}}
-                    {{else}}
-                        <span class="oponente-pendiente">En progreso...</span>
-                    {{/if}}
-                </div>
-                <div>Preguntas correctas</div>
-            </div>
-        </div>
-
-        {{#unless ambosTerminaron}}
-        <div class="esperando">
-            <h4>⏳ Esperando a {{#if nombreOponente}}{{nombreOponente}}{{else}}tu oponente{{/if}}</h4>
-            <p>Tu oponente aún está realizando el examen. Los resultados completos aparecerán cuando termine.</p>
-            <p>Puedes cerrar esta página y volver más tarde, o esperar aquí.</p>
-        </div>
-        {{/unless}}
-
-        {{#if ambosTerminaron}}
-        <div class="resultado-final">
-            <h3>🏆 Resultado Final</h3>
-            
-            {{#if (eq miPuntaje oponentePuntaje)}}
-                <h4 style="color: var(--warning-text); font-size: 1.5em;">¡Empate!</h4>
-                <p style="font-size: 1.2em;">Ambos obtuvieron {{miPuntaje}} preguntas correctas</p>
-                <div class="puntos-ganados puntos-empate">
-                    <strong>0 puntos de ranking</strong>
-                    <p style="margin: 10px 0 0 0; font-size: 0.9em;">No hay cambios en el ranking</p>
-                </div>
-            {{else}}
-                {{#if (gt miPuntaje oponentePuntaje)}}
-                    <h4 style="color: var(--success-text); font-size: 1.5em;">¡Victoria! 🎉</h4>
-                    <p style="font-size: 1.2em;">{{miPuntaje}} vs {{oponentePuntaje}}</p>
-                    
-                    {{#if puntosGanados}}
-                        <div class="puntos-ganados puntos-positivos">
-                            <strong>+{{puntosGanados}} puntos de ranking</strong>
-                            {{#if infoRanking}}
-                                <p style="margin: 10px 0 0 0; font-size: 0.9em;">
-                                    Tu posición: #{{#if esRetador}}{{infoRanking.puestoRetador}}{{else}}{{infoRanking.puestoDefensor}}{{/if}} | 
-                                    Oponente: #{{#if esRetador}}{{infoRanking.puestoDefensor}}{{else}}{{infoRanking.puestoRetador}}{{/if}}
-                                </p>
-                            {{/if}}
-                        </div>
-                    {{/if}}
-                    <p style="margin-top: 15px;">¡Excelente desempeño! Sigue así 💪</p>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header-resultado">
+            <h1 id="headerTitulo">
+                <span id="headerIcono">🎮</span> Resultados del Duelo
+            </h1>
+            <p id="headerSubtitulo">
+                {{#if esRetador}}
+                    Tú <strong>{{duelo.retador_username}}</strong> vs <strong>{{duelo.defensor_username}}</strong>
                 {{else}}
-                    <h4 style="color: var(--error-text); font-size: 1.5em;">Derrota 😔</h4>
-                    <p style="font-size: 1.2em;">{{miPuntaje}} vs {{oponentePuntaje}}</p>
-                    
-                    {{#if puntosGanados}}
-                        <div class="puntos-ganados puntos-negativos">
-                            <strong>{{puntosGanados}} puntos de ranking</strong>
-                            {{#if infoRanking}}
-                                <p style="margin: 10px 0 0 0; font-size: 0.9em;">
-                                    Tu posición: #{{#if esRetador}}{{infoRanking.puestoRetador}}{{else}}{{infoRanking.puestoDefensor}}{{/if}} | 
-                                    Oponente: #{{#if esRetador}}{{infoRanking.puestoDefensor}}{{else}}{{infoRanking.puestoRetador}}{{/if}}
-                                </p>
-                            {{/if}}
-                        </div>
-                    {{/if}}
-                    <p style="margin-top: 15px;">No te desanimes. ¡La próxima será mejor! 💪</p>
+                    <strong>{{duelo.retador_username}}</strong> vs Tú <strong>{{duelo.defensor_username}}</strong>
                 {{/if}}
+            </p>
+        </div>
+
+        <!-- INFO DUELO -->
+        <div class="info-duelo">
+            <h3>📋 Información del Duelo</h3>
+            <div class="info-duelo-grid">
+                <div class="info-item">
+                    <label>Tipo</label>
+                    <value>
+                        {{#if (equals tipoDuelo "carrera")}}
+                            📚 Duelo de Carrera
+                        {{else}}
+                            🧠 Duelo General
+                        {{/if}}
+                    </value>
+                </div>
+                <div class="info-item">
+                    <label>Dificultad</label>
+                    <value>
+                        {{#if (equals dificultad "Fácil")}}
+                            😊 Fácil
+                        {{else if (equals dificultad "Medio")}}
+                            🤔 Medio
+                        {{else}}
+                            🔥 Difícil
+                        {{/if}}
+                    </value>
+                </div>
+                <div class="info-item">
+                    <label>Apuesta</label>
+                    <value>{{apuesta}} puntos</value>
+                </div>
+                <div class="info-item">
+                    <label>Total de Preguntas</label>
+                    <value>{{totalPreguntas}} preguntas</value>
+                </div>
+            </div>
+        </div>
+
+        <!-- PUNTAJES -->
+        <div class="puntajes-container">
+            <!-- MI PUNTAJE -->
+            <div class="puntaje-card mi-puntaje">
+                <h3>Tu Puntaje</h3>
+                <div class="puntaje-numero">{{correctas}}</div>
+                <div class="puntaje-label">de {{totalPreguntas}} correctas</div>
+
+                <div class="puntos-tipo">
+                    {{#if (equals tipoDuelo "general")}}
+                        <!-- DUELO GENERAL: Mostrar puntos globales -->
+                        <span>
+                            <i class="fas fa-globe"></i> <strong>Puntos Globales:</strong><br>
+                            {{#if (greaterThan puntosGanados 0)}}
+                                <span class="puntos-global puntos-positivo">+{{puntosGanados}} pts 🎉</span>
+                            {{else if (lessThan puntosGanados 0)}}
+                                <span class="puntos-global puntos-negativo">{{puntosGanados}} pts 😔</span>
+                            {{else}}
+                                <span class="puntos-global">0 pts (Empate) 🤝</span>
+                            {{/if}}
+                        </span>
+                        
+                    {{else if (equals tipoDuelo "carrera")}}
+                        <!-- DUELO DE CARRERA: Mostrar puntos de carrera -->
+                        <span>
+                            <i class="fas fa-graduation-cap"></i> <strong>Puntos de Carrera:</strong><br>
+                            <small style="opacity: 0.8;">{{duelo.nombre_carrera}}</small><br>
+                            {{#if (greaterThan puntosCarreraGanados 0)}}
+                                <span class="puntos-carrera puntos-positivo">+{{puntosCarreraGanados}} pts 🎓</span>
+                            {{else if (lessThan puntosCarreraGanados 0)}}
+                                <span class="puntos-carrera puntos-negativo">{{puntosCarreraGanados}} pts 😔</span>
+                            {{else}}
+                                <span class="puntos-carrera">0 pts (Empate) 🤝</span>
+                            {{/if}}
+                        </span>
+                    {{/if}}
+                </div>
+                
+                <!-- Debug info (remover en producción) -->
+                {{#if _debug}}
+                <div style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.05); 
+                            border-radius: 5px; font-size: 0.75rem;">
+                    <strong>🔍 Debug:</strong><br>
+                    Tipo: {{_debug.tipo_duelo}}<br>
+                    Es carrera: {{_debug.esDueloCarrera}}<br>
+                    ID Carrera: {{_debug.id_carrera}}<br>
+                    Pts carrera yo: {{_debug.miPuntosCarrera}}<br>
+                    Pts carrera oponente: {{_debug.oponentePuntosCarrera}}
+                </div>
+                {{/if}}
+            </div>
+
+            <!-- PUNTAJE OPONENTE -->
+            <div class="puntaje-card oponente-puntaje">
+                <h3>{{nombreOponente}}</h3>
+                {{#if ambosTerminaron}}
+                    <div class="puntaje-numero">{{oponentePuntaje}}</div>
+                    <div class="puntaje-label">de {{totalPreguntas}} correctas</div>
+                    
+                    <div class="puntos-tipo">
+                        {{#if (equals tipoDuelo "general")}}
+                            <span>
+                                <i class="fas fa-globe"></i> <strong>Puntos Globales:</strong><br>
+                                {{#if (greaterThan oponentePuntaje correctas)}}
+                                    <span class="puntos-global puntos-positivo">+{{apuesta}} pts</span>
+                                {{else if (lessThan oponentePuntaje correctas)}}
+                                    <span class="puntos-global puntos-negativo">-{{apuesta}} pts</span>
+                                {{else}}
+                                    <span class="puntos-global">0 pts (Empate)</span>
+                                {{/if}}
+                            </span>
+                        {{else if (equals tipoDuelo "carrera")}}
+                            <span>
+                                <i class="fas fa-graduation-cap"></i> <strong>Pts Carrera:</strong><br>
+                                <small style="opacity: 0.8;">{{duelo.nombre_carrera}}</small><br>
+                                {{#if (greaterThan oponentePuntaje correctas)}}
+                                    <span class="puntos-carrera puntos-positivo">+{{apuesta}} pts</span>
+                                {{else if (lessThan oponentePuntaje correctas)}}
+                                    <span class="puntos-carrera puntos-negativo">-{{apuesta}} pts</span>
+                                {{else}}
+                                    <span class="puntos-carrera">0 pts (Empate)</span>
+                                {{/if}}
+                            </span>
+                        {{/if}}
+                    </div>
+                {{else}}
+                    <div style="font-size: 2rem; margin: 20px 0;">
+                        <div class="loader"></div>
+                        <p style="margin-top: 15px;">En progreso...</p>
+                    </div>
+                {{/if}}
+            </div>
+        </div>
+
+        <!-- RESULTADO FINAL ACTUALIZADO -->
+        {{#if ambosTerminaron}}
+        <div class="resultado-final {{#if (eq correctas oponentePuntaje)}}empate{{else if (greaterThan correctas oponentePuntaje)}}victoria{{else}}derrota{{/if}}">
+            {{#if (eq correctas oponentePuntaje)}}
+                <!-- EMPATE -->
+                <div class="resultado-titulo">🤝 ¡EMPATE!</div>
+                <div class="resultado-subtitulo">{{correctas}} - {{oponentePuntaje}}</div>
+                <div class="puntos-ganados neutro">
+                    0 puntos {{#if (equals tipoDuelo "carrera")}}de carrera{{else}}globales{{/if}}
+                </div>
+                <div class="mensaje-final">
+                    Ambos tuvieron un desempeño excepcional. ¡Vuelvan a intentarlo! 💪
+                </div>
+
+            {{else if (greaterThan correctas oponentePuntaje)}}
+                <!-- VICTORIA -->
+                <div class="resultado-titulo">🏆 ¡VICTORIA!</div>
+                <div class="resultado-subtitulo">{{correctas}} - {{oponentePuntaje}}</div>
+                
+                {{#if (equals tipoDuelo "general")}}
+                    <div class="puntos-ganados positivos">
+                        <i class="fas fa-globe"></i> +{{puntosGanados}} puntos globales
+                    </div>
+                {{else}}
+                    <div class="puntos-ganados positivos">
+                        <i class="fas fa-graduation-cap"></i> +{{puntosCarreraGanados}} puntos de carrera
+                    </div>
+                    <small style="opacity: 0.8;">{{duelo.nombre_carrera}}</small>
+                {{/if}}
+                
+                <div class="mensaje-final">
+                    ¡Excelente! Derrotaste a {{nombreOponente}} de forma contundente. 🎉
+                </div>
+
+            {{else}}
+                <!-- DERROTA -->
+                <div class="resultado-titulo">😔 DERROTA</div>
+                <div class="resultado-subtitulo">{{correctas}} - {{oponentePuntaje}}</div>
+                
+                {{#if (equals tipoDuelo "general")}}
+                    <div class="puntos-ganados negativos">
+                        <i class="fas fa-globe"></i> {{puntosGanados}} puntos globales
+                    </div>
+                {{else}}
+                    <div class="puntos-ganados negativos">
+                        <i class="fas fa-graduation-cap"></i> {{puntosCarreraGanados}} puntos de carrera
+                    </div>
+                    <small style="opacity: 0.8;">{{duelo.nombre_carrera}}</small>
+                {{/if}}
+                
+                <div class="mensaje-final">
+                    {{nombreOponente}} fue mejor esta vez. ¡No te desanimes, aprende y vuelve más fuerte! 💪
+                </div>
             {{/if}}
         </div>
         {{/if}}
-
-        <!-- Resultados por pregunta -->
-        <h3 style="margin-top: 40px;">📝 Detalle de respuestas ({{respuestas.length}} preguntas)</h3>
         
-        {{#each respuestas}}
-        <div class="pregunta-resultado">
-            <h4>Pregunta {{orden}} de {{../respuestas.length}}</h4>
-            <p><strong>{{this.pregunta}}</strong></p>
-            
-            <div class="respuestas-comparacion">
-                <div class="mi-respuesta">
-                    <strong>Tu respuesta:</strong>
-                    <span class="{{#if this.mi_correcta}}respuesta-correcta{{else}}respuesta-incorrecta{{/if}}">
-                        {{#if this.mi_correcta}}✓{{else}}✗{{/if}} {{this.mi_respuesta_texto}}
-                    </span>
-                </div>
+        <!-- RESPUESTAS DETALLE -->
+        <div class="respuestas-detalle">
+            <h3>📝 Detalle de Respuestas</h3>
 
-                <div class="oponente-respuesta">
-                    <strong>{{#if ../nombreOponente}}{{../nombreOponente}}{{else}}Oponente{{/if}}:</strong>
-                    {{#if ../ambosTerminaron}}
-                        {{#if this.oponente_respuesta_texto}}
-                            <span class="{{#if this.oponente_correcta}}respuesta-correcta{{else}}respuesta-incorrecta{{/if}}">
-                                {{#if this.oponente_correcta}}✓{{else}}✗{{/if}} {{this.oponente_respuesta_texto}}
+            {{#each respuestas}}
+            <div class="pregunta-item {{#if this.mi_correcta}}correcta{{else}}incorrecta{{/if}}">
+                <div class="pregunta-numero">Pregunta {{orden}} de {{../totalPreguntas}}</div>
+                <div class="pregunta-texto">{{this.pregunta}}</div>
+
+                <div class="respuestas-comparacion">
+                    <!-- TU RESPUESTA -->
+                    <div class="respuesta-box {{#if this.mi_correcta}}correcta{{else}}incorrecta{{/if}}">
+                        <div class="respuesta-titulo">👤 Tu Respuesta</div>
+                        <div class="respuesta-texto">
+                            <span class="respuesta-icono {{#if this.mi_correcta}}correcto{{else}}incorrecto{{/if}}">
+                                {{#if this.mi_correcta}}✓{{else}}✗{{/if}}
                             </span>
-                        {{else}}
-                            <span class="oponente-pendiente">No respondió</span>
-                        {{/if}}
-                    {{else}}
-                        <span class="oponente-pendiente">Esperando respuesta...</span>
-                    {{/if}}
-                </div>  
-            </div>
-        </div>
-        {{/each}}
+                            {{this.mi_respuesta_texto}}
+                        </div>
+                    </div>
 
-        <!-- Botón para volver -->
-        <div style="text-align: center; margin-top: 30px; margin-bottom: 30px;">
-            <button id="btnVolver" class="btn-volver" data-duelo-id="{{duelo.id_duelo}}" onclick="location.href='/portal'">
-                🏠 Volver al Portal de Duelos
+                    <!-- RESPUESTA OPONENTE -->
+                    <div class="respuesta-box {{#if ../ambosTerminaron}}{{#if this.oponente_correcta}}correcta{{else}}incorrecta{{/if}}{{else}}pendiente{{/if}}">
+                        <div class="respuesta-titulo">👥 {{../nombreOponente}}</div>
+                        <div class="respuesta-texto">
+                            {{#if ../ambosTerminaron}}
+                                {{#if this.oponente_respuesta_texto}}
+                                    <span class="respuesta-icono {{#if this.oponente_correcta}}correcto{{else}}incorrecto{{/if}}">
+                                        {{#if this.oponente_correcta}}✓{{else}}✗{{/if}}
+                                    </span>
+                                    {{this.oponente_respuesta_texto}}
+                                {{else}}
+                                    <span style="color: var(--accent-warning);">⏳ No respondió</span>
+                                {{/if}}
+                            {{else}}
+                                <span style="color: var(--accent-warning);">⏳ Esperando...</span>
+                            {{/if}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+
+        <!-- BOTONES -->
+        <div class="botones-container">
+            <button class="btn btn-primary" onclick="location.href='/competitivo/duelo-ascenso'">
+                <i class="fas fa-swords"></i> Nuevos Desafíos
+            </button>
+            <button class="btn btn-secondary" onclick="location.href='/portal'">
+                <i class="fas fa-home"></i> Volver al Portal
             </button>
         </div>
     </div>
 
+    <!-- CONFIGURACIÓN GLOBAL -->
     <script>
         window.DUELO_DATA = {
             id_duelo: "{{duelo.id_duelo}}",
             ambosTerminaron: {{#if ambosTerminaron}}true{{else}}false{{/if}},
-            esRetador: {{#if esRetador}}true{{else}}false{{/if}}
+            esRetador: {{#if esRetador}}true{{else}}false{{/if}},
+            tipoDuelo: "{{tipoDuelo}}"
         };
     </script>
 
