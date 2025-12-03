@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/conexion');
+const { verificarPromocionDisponible } = require('../routes/rangos.router');
 
 // ===================================================================================
 // RUTA GET PARA MOSTRAR EL EXAMEN
@@ -185,6 +186,8 @@ router.post('/resultados', async (req, res) => {
       SET puntos = puntos + ?
       WHERE id_usuario = ?
     `, [puntosTotales, id_usuario]);
+
+    await verificarPromocionDisponible(id_usuario, puntosTotales);
 
     // 7️⃣ REDIRIGIR
     console.log(`🔄 Redirigiendo a /resultados/${id_examen}`);

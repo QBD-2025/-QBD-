@@ -4,6 +4,7 @@
 // ================================================================
 
 const db = require('../db/conexion');
+const { verificarPromocionDisponible } = require('../routes/rangos.router');
 
 // ================================================================
 // CONSTANTES CENTRALIZADAS (FUENTE ÚNICA DE VERDAD)
@@ -490,6 +491,8 @@ class GestorPuntuacion {
                     WHERE id_usuario = ?`,
                     [cambioTotal, jId]
                 );
+
+                verificarPromocionDisponible(jId, puntosIniciales)
                 
                 console.log(`[BD]: Usuario ${jId}: ${puntosIniciales} → ${puntosIniciales + cambioTotal} (${cambioTotal > 0 ? '+' : ''}${cambioTotal})`);
                 
@@ -507,7 +510,6 @@ class GestorPuntuacion {
                             ON DUPLICATE KEY UPDATE puntos = puntos + VALUES(puntos)`,
                             [jId, carreraData.id_carrera, resultado.puntosCarrera]
                         );
-                        
                         console.log(`[BD]: Usuario ${jId} Carrera ${carreraData.id_carrera}: +${resultado.puntosCarrera} pts`);
                     }
                 }

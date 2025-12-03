@@ -132,9 +132,52 @@ if (window.usuarioActual) {
                 if (notif.extra_data) {
                     extraData = parseExtraDataSafe(notif.extra_data);
                 }
-                
-                // ⚔️ DUELO RÁPIDO BD
-                if (notif.tipo === 'desafio_duelo_rapido') {
+
+            if (notif.tipo === 'promocion_editor_disponible') {
+                li.innerHTML = `
+                    <span>🎨 ${notif.mensaje}</span>
+                    <button class="btn-promocionar" 
+                            data-id="${notif.id_notificacion}"
+                            data-tipo="editor"
+                            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-left: 10px; font-weight: bold;">
+                        Ser Editor
+                    </button>
+                    <button class="btn-eliminar" 
+                            data-id="${notif.id_notificacion}" 
+                            style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-left: 5px;">
+                        ✕
+                    </button>
+                `;
+            }
+            // ADMIN
+            else if (notif.tipo === 'promocion_admin_disponible') {
+                li.innerHTML = `
+                    <span>👑 ${notif.mensaje}</span>
+                    <button class="btn-promocionar" 
+                            data-id="${notif.id_notificacion}"
+                            data-tipo="admin"
+                            style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-left: 10px; font-weight: bold;">
+                        Ser Administrador
+                    </button>
+                    <button class="btn-eliminar" 
+                            data-id="${notif.id_notificacion}" 
+                            style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-left: 5px;">
+                        ✕
+                    </button>
+                `;
+            }
+
+            else if (notif.tipo === 'promocion_completada') {
+                li.innerHTML = `
+                    <span>${notif.mensaje}</span>
+                    <button class="btn-eliminar" 
+                            data-id="${notif.id_notificacion}" 
+                            style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-left: 5px;">
+                        ✕
+                    </button>
+                `;
+
+            } else if (notif.tipo === 'desafio_duelo_rapido') {
                     const salaId = extraData?.salaId || 'NO_SALA';
                     
                     li.innerHTML = `
@@ -150,6 +193,7 @@ if (window.usuarioActual) {
                         </button>
                     `;
                 }
+
                 // 📚 DUELO 48 HORAS - PENDIENTE DE ACEPTAR
                 else if (notif.tipo === 'desafio_duelo') {
                     li.innerHTML = `
@@ -357,8 +401,97 @@ if (window.usuarioActual) {
         // LISTENERS DE BOTONES DE NOTIFICACIONES
         // ═══════════════════════════════════════════════════════════
         document.getElementById('notifications-ul')?.addEventListener('click', async (event) => {
+            // 👑 BOTÓN PROMOCIONAR
+            if (event.target.classList.contains('btn-promocionar')) {
+                const notifId = event.target.dataset.id;
+                const tipoPromocion = event.target.dataset.tipo; // 'editor' o 'admin'
+                const button = event.target;
+                
+                // Confirmación
+                const confirmar = confirm(
+                    tipoPromocion === 'editor' 
+                        ? '¿Deseas convertirte en Editor? (5,000 puntos)' 
+                        : '¿Deseas convertirte en Administrador? (10,000 puntos)'
+                );
+                
+                if (!confirmar) return;
+                
+                button.disabled = true;
+                button.textContent = 'Procesando...';
+                
+                try {
+                    const endpoint = tipoPromocion === 'editor' 
+                        ? '/api/promocion/promocionar-editor' 
+                        : '/api/promocion/promocionar-admin';
+                    
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Crear overlay con animación
+                        const overlay = document.createElement('div');
+                        overlay.style.cssText = `
+                            position: fixed;
+                            top: 0;
+                            left: 0;
+                            right: 0;
+                            bottom: 0;
+                            background: rgba(0, 0, 0, 0.8);
+                            z-index: 9999;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        `;
+                        
+                        const mensaje = document.createElement('div');
+                        mensaje.style.cssText = `
+                            background: white;
+                            padding: 40px;
+                            border-radius: 15px;
+                            text-align: center;
+                            max-width: 500px;
+                            animation: fadeInScale 0.3s ease-out;
+                        `;
+                        
+                        mensaje.innerHTML = `
+                            <div style="font-size: 64px; margin-bottom: 20px;">
+                                ${tipoPromocion === 'editor' ? '🎨' : '👑'}
+                            </div>
+                            <h2 style="margin: 0 0 15px 0; color: #333;">¡Felicidades!</h2>
+                            <p style="margin: 0; color: #666; font-size: 18px;">
+                                ${data.mensaje}
+                            </p>
+                            <button onclick="location.reload()" 
+                                    style="margin-top: 25px; background: #28a745; color: white; border: none; padding: 12px 30px; border-radius: 25px; cursor: pointer; font-weight: bold; font-size: 16px;">
+                                ¡Entendido!
+                            </button>
+                        `;
+                        
+                        overlay.appendChild(mensaje);
+                        document.body.appendChild(overlay);
+                        
+                        // Auto-reload después de 5 segundos
+                        setTimeout(() => location.reload(), 5000);
+                    } else {
+                        alert(data.mensaje || 'Error al procesar promoción');
+                        button.disabled = false;
+                        button.textContent = tipoPromocion === 'editor' ? 'Ser Editor' : 'Ser Administrador';
+                    }
+                } catch (error) {
+                    console.error('[PROMOCIÓN ERROR]:', error);
+                    alert('Error al procesar la promoción');
+                    button.disabled = false;
+                    button.textContent = tipoPromocion === 'editor' ? 'Ser Editor' : 'Ser Administrador';
+                }
+                return; // ✅ IMPORTANTE: Salir después de procesar promoción
+            }
             
-            // ✅ ACEPTAR
+            // ✅ ACEPTAR (DUELOS E INVITACIONES)
             if (event.target.classList.contains('btn-aceptar')) {
                 console.log('═══════════════════════════════════════════════════════════');
                 console.log('[BTN ACEPTAR]: 🖱️ CLICK');
@@ -504,7 +637,7 @@ if (window.usuarioActual) {
                             overlay.appendChild(mensajeDiv);
                             document.body.appendChild(overlay);
                             
-                            // ✅ Recargar notificaciones después de 1.5s (dar tiempo al backend)
+                            // ✅ Recargar notificaciones después de 1.5s
                             setTimeout(() => {
                                 cargarNotificaciones();
                             }, 1500);
@@ -611,7 +744,6 @@ if (window.usuarioActual) {
                         credentials: 'include' 
                     });
                     
-                    // ✅ Dar tiempo al backend antes de recargar
                     setTimeout(cargarNotificaciones, 1500);
                 } catch (error) {
                     console.error('[RECHAZAR ERROR]:', error);
@@ -639,7 +771,6 @@ if (window.usuarioActual) {
                         credentials: 'include' 
                     });
                     
-                    // ✅ Dar tiempo al backend antes de recargar
                     setTimeout(cargarNotificaciones, 1500);
                 } catch (error) {
                     console.error('[ELIMINAR ERROR]:', error);

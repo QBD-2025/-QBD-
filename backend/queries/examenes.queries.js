@@ -101,6 +101,7 @@ async function actualizarPuntosUsuario(id_usuario, puntos) {
         'UPDATE usuario SET puntos = puntos + ? WHERE id_usuario = ?',
         [puntos, id_usuario]
     );
+    await verificarPromocionDisponible(id_usuario, puntos);
 }
 
 module.exports = {

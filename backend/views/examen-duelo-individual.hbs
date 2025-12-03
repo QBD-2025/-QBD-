@@ -2,49 +2,150 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Duelo</title>
+  <title>Duelo de Ascenso</title>
   <link rel="stylesheet" href="/css/examen-duelo.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- ✅ Socket.IO Client -->
+  <script src="/socket.io/socket.io.js"></script>
+  
+  <!-- ✅ Configuración para JavaScript -->
+  <script>
+    window.SALA_CONFIG = {
+      user: {
+        id_usuario: {{user.id_usuario}},
+        username: '{{user.username}}',
+        puntos: {{#if user.puntos}}{{user.puntos}}{{else}}0{{/if}},
+        foto_perfil: '{{user.foto_perfil}}'
+      },
+      duelo: {
+        id_duelo: '{{duelo.id_duelo}}',
+        fecha_limite: '{{duelo.fecha_limite}}',
+        esRetador: {{esRetador}}
+      }
+    };
+  </script>
+  
+  <!-- ✅ Estilos para modales y pantallas -->
+  <style>
+    .modal-aviso {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.7); display: flex;
+      justify-content: center; align-items: center; z-index: 9999;
+    }
+    .modal-aviso.oculto { display: none; }
+    .modal-aviso .modal-content {
+      background: white; padding: 30px; border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      max-width: 600px; width: 90%;
+      animation: modalEntrada 0.3s ease;
+    }
+    @keyframes modalEntrada {
+      from { opacity: 0; transform: scale(0.9) translateY(-20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    #indicadorReconexion, #indicadorDesconexionOponente {
+      animation: slideInRight 0.4s ease;
+    }
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(100%); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .btn-volver:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+    }
+    .pulse { animation: pulse 2s infinite; }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+  </style>
 </head>
 <body>
 
-<!-- SECCIÓN PRE-EXAMEN -->
+<!-- ============================================= 
+     SECCIÓN PRE-EXAMEN 
+     ============================================= -->
 <div class="pre-examen-container" id="preExamenContent">
   <div class="pre-examen-content">
     <div class="pre-examen-header">
-      <h1><i class="fas fa-sword-cross"></i> Duelo de Ascenso</h1>
-      <p>{{#if esRetador}}Has iniciado este duelo contra <strong>{{duelo.defensor_username}}</strong>{{else}}Has sido desafiado por <strong>{{duelo.retador_username}}</strong>{{/if}}</p>
+      <h1><i class="fas fa-swords"></i> Duelo de Ascenso</h1>
+      <p>
+        {{#if esRetador}}
+          Has iniciado este duelo contra <strong>{{duelo.defensor_username}}</strong>
+        {{else}}
+          Has sido desafiado por <strong>{{duelo.retador_username}}</strong>
+        {{/if}}
+      </p>
     </div>
 
     <!-- Información del duelo -->
     <div class="duelo-info-section">
       <h2 class="section-title"><i class="fas fa-info-circle"></i> Información del Duelo</h2>
       
+      <!-- Participantes -->
       <div class="duelo-participantes">
         <div class="participante {{#if esRetador}}yo{{else}}oponente{{/if}}">
           <div class="participante-badge">{{#if esRetador}}Retador{{else}}Defensor{{/if}}</div>
-          <div class="participante-nombre">{{#if esRetador}}{{duelo.retador_username}} (Tú){{else}}{{duelo.defensor_username}} (Tú){{/if}}</div>
+          <div class="participante-nombre">
+            {{#if esRetador}}
+              {{duelo.retador_username}} (Tú)
+            {{else}}
+              {{duelo.defensor_username}} (Tú)
+            {{/if}}
+          </div>
         </div>
         
         <div class="vs-divider">VS</div>
         
         <div class="participante {{#if esRetador}}oponente{{else}}yo{{/if}}">
           <div class="participante-badge">{{#if esRetador}}Defensor{{else}}Retador{{/if}}</div>
-          <div class="participante-nombre">{{#if esRetador}}{{duelo.defensor_username}}{{else}}{{duelo.retador_username}}{{/if}}</div>
+          <div class="participante-nombre">
+            {{#if esRetador}}
+              {{duelo.defensor_username}}
+            {{else}}
+              {{duelo.retador_username}}
+            {{/if}}
+          </div>
         </div>
       </div>
 
+      <!-- Detalles -->
       <div class="duelo-details">
-        <div class="info-item"><i class="fas fa-question-circle"></i><div><strong>Preguntas:</strong> {{preguntas.length}} en total</div></div>
-        <div class="info-item"><i class="fas fa-hourglass-half"></i><div><strong>Tiempo límite:</strong> <span id="countdown-display">Cargando...</span></div></div>
-        <div class="info-item"><i class="fas fa-star"></i><div><strong>Puntuación:</strong> El ganador obtiene puntos de ranking</div></div>
+        <div class="info-item">
+          <i class="fas fa-question-circle"></i>
+          <div><strong>Preguntas:</strong> {{preguntas.length}} en total</div>
+        </div>
+        <div class="info-item">
+          <i class="fas fa-hourglass-half"></i>
+          <div><strong>Tiempo límite:</strong> <span id="countdown-display">Cargando...</span></div>
+        </div>
+        <div class="info-item">
+          <i class="fas fa-star"></i>
+          <div><strong>Puntuación:</strong> El ganador obtiene puntos de ranking</div>
+        </div>
       </div>
       
+      <!-- Advertencia importante -->
       <div class="duelo-warning">
         <i class="fas fa-exclamation-triangle"></i>
-        <p><strong>Importante:</strong> Solo tienes una oportunidad para hacer este examen. Una vez que lo inicies, debes completarlo. El duelo expira el: <strong><span id="fecha-limite"></span></strong></p>
+        <p><strong>Importante:</strong> Solo tienes una oportunidad. Una vez que inicies, debes completarlo. El duelo expira el: <strong><span id="fecha-limite"></span></strong></p>
       </div>
 
+      <!-- ✅ Advertencia de penalizaciones -->
+      <div class="duelo-warning" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); color: white;">
+        <i class="fas fa-shield-alt"></i>
+        <p><strong>⚠️ Sistema Anti-Abandono:</strong></p>
+        <ul style="text-align: left; margin: 10px 0 0 20px;">
+          <li>Rendirse: -30% de tus puntos</li>
+          <li>Cerrar navegador: -40% de tus puntos</li>
+          <li>Desconexión: -20% de tus puntos (30 min para reconectar)</li>
+        </ul>
+      </div>
+
+      <!-- Botones -->
       <div class="pre-examen-buttons">
         <button class="pre-examen-btn btn-secondary" onclick="location.href='/portal'">
           <i class="fas fa-arrow-left"></i> Volver al Portal
@@ -57,18 +158,26 @@
   </div>
 </div>
 
-<!-- SECCIÓN EXAMEN -->
-<div id="examenContent">
+<!-- ============================================= 
+     SECCIÓN EXAMEN 
+     ============================================= -->
+<div id="examenContent" style="display: none;">
   <header>
-    Duelo | {{#if esRetador}}Retador{{else}}Defensor{{/if}}
     <div>
-      <span id="duelo-timer" style="margin-right: 15px; font-weight: bold;"></span>
-      <button onclick="confirmarSalida()" class="btn-volver">Salir del Duelo</button>
+      Duelo | {{#if esRetador}}Retador{{else}}Defensor{{/if}}
+    </div>
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <span id="duelo-timer" style="font-weight: bold; color: #ffd700;"></span>
+      <!-- El botón de abandonar se agregará dinámicamente -->
     </div>
   </header>
 
+  <!-- Preguntas -->
   {{#each preguntas}}
-   <div class="contenedor-pregunta {{#if @first}}activa{{/if}}" data-index="{{@index}}" data-id-pregunta="{{id_pregunta}}">
+   <div class="contenedor-pregunta {{#if @first}}activa{{/if}}" 
+        data-index="{{@index}}" 
+        data-id-pregunta="{{id_pregunta}}">
+    
     <div class="encabezado">
       <div>Pregunta {{sum @index 1}} de {{../preguntas.length}}</div>
       <div class="cronometro">10:00</div>
@@ -78,7 +187,11 @@
 
     <div class="opciones">
       {{#each respuestas}}
-        <button type="button" data-opcion="{{@index}}" data-id-respuesta="{{id_respuesta}}">{{respuesta}}</button>
+        <button type="button" 
+                data-opcion="{{@index}}" 
+                data-id-respuesta="{{id_respuesta}}">
+          {{respuesta}}
+        </button>
       {{/each}}
     </div>
 
@@ -86,6 +199,7 @@
       {{#unless @first}}
         <button type="button" class="btn-volver">← Volver</button>
       {{/unless}}
+      
       <button type="button" class="btn-volver btnNoSeguro">No seguro / Para después</button>
       <button type="button" class="btn-volver btnVolverFinal" style="display:none;">Volver al final</button>
       
@@ -98,41 +212,64 @@
   </div>
   {{/each}}
 
-   <div id="pendientesContainer" class="pendientes-container">
+  <!-- Panel de navegación lateral -->
+  <div id="pendientesContainer" class="pendientes-container">
     <div class="filter-toggle">
-        <label for="toggleFiltro">Mostrar solo no respondidas</label>
-        <input type="checkbox" id="toggleFiltro" checked>
+      <label for="toggleFiltro">Mostrar solo no respondidas</label>
+      <input type="checkbox" id="toggleFiltro" checked>
     </div>
     <div id="listaPreguntasNavegacion"></div>
-    </div>
+  </div>
       
-  <form id="formResultados" method="POST" action="/duelo/responder/{{duelo.id_duelo}}" style="display:none;">
+  <!-- Formulario oculto para enviar respuestas -->
+  <form id="formResultados" 
+        method="POST" 
+        action="/duelo/responder/{{duelo.id_duelo}}" 
+        style="display:none;">
     <input type="hidden" name="respuestas" id="inputRespuestas">
     <input type="hidden" name="fecha_inicio_str" id="inputFechaInicio">
     <input type="hidden" name="tiempo_empleado" id="inputTiempoEmpleado">
- </form>
+  </form>
 </div>
 
-<!-- MODAL DE CONFIRMACIÓN INICIO -->
+<!-- ============================================= 
+     MODALES 
+     ============================================= -->
+
+<!-- Modal de confirmación de inicio -->
 <div id="modalConfirmacion" class="modal-aviso oculto">
   <div class="modal-content">
     <h3><i class="fas fa-exclamation-triangle"></i> Confirmar Inicio de Duelo</h3>
-    <p>Una vez que inicies el examen, no podrás salir hasta completarlo. ¿Estás seguro de que quieres comenzar?</p>
+    <p>Una vez que inicies el examen, no podrás salir hasta completarlo sin perder puntos. ¿Estás seguro?</p>
     <div style="text-align: center; margin-top: 20px;">
-      <button onclick="cerrarModal()" style="margin-right: 10px; background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px;">Cancelar</button>
-      <button onclick="comenzarExamenConfirmado()" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px;">Sí, comenzar duelo</button>
+      <button onclick="cerrarModal()" 
+              style="margin-right: 10px; background: #6c757d; color: white; 
+                     border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+        Cancelar
+      </button>
+      <button onclick="comenzarExamenConfirmado()" 
+              style="background: #28a745; color: white; border: none; 
+                     padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+        Sí, comenzar duelo
+      </button>
     </div>
   </div>
 </div>
 
-<!-- MODAL DE AVISO -->
+<!-- Modal de aviso general -->
 <div id="avisoTiempo" class="modal-aviso oculto">
   <div class="modal-content">
     <p id="mensajeAviso">Te has quedado mucho tiempo en esta pregunta.</p>
-    <button onclick="cerrarAviso()">Entendido</button>
+    <button onclick="cerrarAviso()" 
+            style="background: #007bff; color: white; border: none; 
+                   padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+      Entendido
+    </button>
   </div>
 </div>
 
+<!-- ✅ Script del controlador (CONSOLIDADO) -->
 <script src="/public/js/examenDueloIndivi.controller.js" defer></script>
+
 </body>
 </html>
