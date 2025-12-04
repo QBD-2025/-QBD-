@@ -83,9 +83,6 @@ async function finalizarDuelo(salaId, idGanador, idPerdedor, puntajeGanador, pun
         await conn.query('UPDATE usuario SET puntos = puntos + ? WHERE id_usuario = ?', [puntosRetador, duelo[0].id_retador]);
         await conn.query('UPDATE usuario SET puntos = puntos + ? WHERE id_usuario = ?', [puntosDefensor, duelo[0].id_defensor]);
 
-        await verificarPromocionDisponible(id_retador, puntos);
-        await verificarPromocionDisponible(id_defensor, puntos);
-
         // Registrar el duelo en el historial
         await conn.query(`
             INSERT INTO historial_duelos 

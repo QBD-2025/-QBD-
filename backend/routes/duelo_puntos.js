@@ -4,7 +4,6 @@
 // ================================================================
 
 const db = require('../db/conexion');
-const { verificarPromocionDisponible } = require('../routes/rangos.router');
 
 // ================================================================
 // CONSTANTES CENTRALIZADAS (FUENTE ÚNICA DE VERDAD)
@@ -491,8 +490,6 @@ class GestorPuntuacion {
                     WHERE id_usuario = ?`,
                     [cambioTotal, jId]
                 );
-
-                verificarPromocionDisponible(jId, puntosIniciales)
                 
                 console.log(`[BD]: Usuario ${jId}: ${puntosIniciales} → ${puntosIniciales + cambioTotal} (${cambioTotal > 0 ? '+' : ''}${cambioTotal})`);
                 

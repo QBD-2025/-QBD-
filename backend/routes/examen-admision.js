@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/conexion');
-const { verificarPromocionDisponible } = require('../routes/rangos.router');
 
     router.get('/examen-exani', async (req, res) => {
         try {
@@ -129,8 +128,6 @@ const { verificarPromocionDisponible } = require('../routes/rangos.router');
     'UPDATE usuario SET puntos = puntos + ? WHERE id_usuario = ?',
     [puntosObtenidos, id_usuario]
     );
-
-    await verificarPromocionDisponible(id_usuario, puntos);
 
     res.render('resultados_admision', {
         porcentaje,

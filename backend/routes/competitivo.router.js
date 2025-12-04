@@ -1,4 +1,3 @@
-const { verificarPromocionDisponible } = require('../routes/rangos.router');
 const express = require('express');
 const router = express.Router();
 const pool = require('../db/conexion');
@@ -1065,8 +1064,6 @@ router.post('/duelo/confirmarRendicion/:salaId', async (req, res) => {
                 'UPDATE usuario SET puntos = puntos + ? WHERE id_usuario = ?',
                 [gananciaOponente, idOponente]
             );
-
-            await verificarPromocionDisponible(idUsuario, puntos);
             
             console.log(`[ABANDONO] ✅ Puntos globales actualizados`);
         }
@@ -1115,8 +1112,6 @@ router.post('/duelo/confirmarRendicion/:salaId', async (req, res) => {
                 tipo_duelo: esDueloCarrera ? 'carrera' : 'general'
             })
         ]);
-
-        await verificarPromocionDisponible(idUsuario, puntos);
         
         await conn.commit();
         conn.release();
@@ -1611,8 +1606,6 @@ async function finalizarDueloConCarrera(
                 ON DUPLICATE KEY UPDATE puntos = ?
             `, [duelo.id_defensor, duelo.id_carrera, puntosDefensorNuevos, puntosDefensorNuevos]);
             
-            await verificarPromocionDisponible(idUsuario, puntos);
-            
         } else {
             console.log(`[FINALIZAR DUELO] 🌍 MODO GENERAL - Usando apuesta: ${apuesta}`);
             
@@ -1825,8 +1818,6 @@ router.post('/duelo/abandonar/:salaId', async (req, res) => {
             'UPDATE usuario SET puntos = puntos + ? WHERE id_usuario = ?',
             [gananciaOponente, idOponente]
         );
-
-        await verificarPromocionDisponible(idUsuario, puntos);
         
         // Registrar en historial
         await conn.query(`

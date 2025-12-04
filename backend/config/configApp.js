@@ -11,6 +11,7 @@ const passport = require('passport');
 require('./passport-config');
 const mailer = require('../utils/mail.js');
 const palabrasHelper = require('../minijuegos/socket-helpers');
+const { verificarPromocionDisponible } = require('../routes/rangos.router.js');
 
 // ------------------ Configuración de la base de datos ------------------
 const pool = mysql.createPool({
@@ -187,6 +188,26 @@ app.use((req, res, next) => {
     next();
 });
 console.log('[MIDDLEWARE]: ✅ req.io configurado en middleware');
+
+app.use(async (req, res, next) => {
+    if (!req.session?.user?.id_usuario) {
+        return next();
+    }
+    
+    const userId = req.session.user.id_usuario;
+    
+    setImmediate(async () => {
+        try {
+            await verificarPromocionDisponible(userId);
+        } catch (error) {
+            console.error('[AUTO NOTIF]: Error en verificación automática:', error.message);
+        }
+    });
+
+    next();
+});
+
+console.log('[MIDDLEWARE]: ✅ Auto-verificación de promociones activada');
 
 // ------------------ Routers ------------------
 // ════════════════════════════════════════════════════════════════
