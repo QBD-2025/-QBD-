@@ -97,7 +97,7 @@ router.get('/auth/google/callback',
                         case 3:
                             return res.redirect('/admin');
                         case 2:
-                            return res.redirect('/editor/panel');
+                            return res.redirect('/editor');
                         default:
                             try {
                                 const [datos] = await req.pool.query('SELECT dato, imagen FROM dato_curioso ORDER BY RAND() LIMIT 1');
