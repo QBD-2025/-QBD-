@@ -1,4 +1,4 @@
-// backend/config/configApp.js - VERSIÓN FINAL CORREGIDA
+// backend/config/configApp.js - VERSIÓN UNIFICADA (Estadísticas + Rangos)
 const express = require('express');
 const exphbs = require('express-handlebars');
 const path = require('path');
@@ -11,6 +11,7 @@ const passport = require('passport');
 require('./passport-config');
 const mailer = require('../utils/mail.js');
 const palabrasHelper = require('../minijuegos/socket-helpers');
+const { verificarPromocionDisponible } = require('../routes/rangos.router.js');
 
 // ------------------ Configuración de la base de datos ------------------
 const pool = mysql.createPool({
@@ -58,6 +59,9 @@ app.engine('.hbs', exphbs.engine({
     partialsDir: path.join(__dirname, '../views/partials'),
     extname: '.hbs',
     helpers: {
+        // ════════════════════════════════════════════════════════════
+        // ✅ HELPERS BÁSICOS (ORIGINALES)
+        // ════════════════════════════════════════════════════════════
         eq: (a, b) => a === b,
         or: (a, b) => a || b,
         ne: (a, b) => a !== b,
@@ -91,8 +95,9 @@ app.engine('.hbs', exphbs.engine({
                 default: return options.inverse(this);
             }
         },
+        
         // ════════════════════════════════════════════════════════════
-        // ✅ NUEVOS HELPERS PARA DUELOS DE CARRERA (AGREGAR AQUÍ)
+        // ✅ HELPERS EXTENDIDOS PARA DUELOS Y ESTADÍSTICAS
         // ════════════════════════════════════════════════════════════
         
         // Comparaciones adicionales
@@ -110,7 +115,7 @@ app.engine('.hbs', exphbs.engine({
         multiply: (a, b) => a * b,
         divide: (a, b) => b !== 0 ? a / b : 0,
         
-        // Formateo
+        // Formateo mejorado
         formatNumber: (num) => {
             if (num === undefined || num === null) return '0';
             return Number(num).toLocaleString('es-MX');
@@ -129,6 +134,18 @@ app.engine('.hbs', exphbs.engine({
             } catch (error) {
                 return 'N/A';
             }
+        },
+        
+        // Helper para índices seguros
+        incIndex: function(value) {
+            const num = parseInt(value);
+            return isNaN(num) ? 1 : num + 1;
+        },
+        
+        // Helper para contains
+        contains: (str, substr) => {
+            if (typeof str !== 'string' || typeof substr !== 'string') return false;
+            return str.includes(substr);
         },
         
         // Debug helper (útil para desarrollo)
@@ -166,21 +183,21 @@ app.use(passport.session());
 
 // ✅ Exponer usuario, pool, mailer e IO en todas las requests
 app.use((req, res, next) => {
-        if (req.session.user) {
-            let avatarUrl = req.session.user.foto_perfil || '/uploads/default_avatar.png';
-            
-            if (avatarUrl && !avatarUrl.startsWith('/') && !avatarUrl.startsWith('http')) {
-                avatarUrl = `/uploads/${avatarUrl}`;
-            }
-            
-            res.locals.user = {
-                ...req.session.user,
-                avatarUrl: avatarUrl,
-                foto_perfil: avatarUrl
-            };
-        } else {
-            res.locals.user = null;
+    if (req.session.user) {
+        let avatarUrl = req.session.user.foto_perfil || '/uploads/default_avatar.png';
+        
+        if (avatarUrl && !avatarUrl.startsWith('/') && !avatarUrl.startsWith('http')) {
+            avatarUrl = `/uploads/${avatarUrl}`;
         }
+        
+        res.locals.user = {
+            ...req.session.user,
+            avatarUrl: avatarUrl,
+            foto_perfil: avatarUrl
+        };
+    } else {
+        res.locals.user = null;
+    }
     req.pool = pool;
     req.mailer = mailer;
     req.io = io;
@@ -188,14 +205,31 @@ app.use((req, res, next) => {
 });
 console.log('[MIDDLEWARE]: ✅ req.io configurado en middleware');
 
-// ------------------ Routers ------------------
 // ════════════════════════════════════════════════════════════════
-// ✅ ORDEN CORRECTO DE ROUTERS EN configApp.js
+// ✅ NUEVO: MIDDLEWARE DE AUTO-VERIFICACIÓN DE PROMOCIONES
 // ════════════════════════════════════════════════════════════════
+app.use(async (req, res, next) => {
+    if (!req.session?.user?.id_usuario) {
+        return next();
+    }
+    
+    const userId = req.session.user.id_usuario;
+    
+    setImmediate(async () => {
+        try {
+            await verificarPromocionDisponible(userId);
+        } catch (error) {
+            console.error('[AUTO NOTIF]: Error en verificación automática:', error.message);
+        }
+    });
+
+    next();
+});
+
+console.log('[MIDDLEWARE]: ✅ Auto-verificación de promociones activada');
 
 // ════════════════════════════════════════════════════════════════
-// 🔍 SOLUCIÓN COMPLETA DE DEBUG + FIX (CORREGIDA)
-// Colocar en configApp.js después de la línea 134
+// 🔍 SISTEMA DE DEBUG Y PROTECCIÓN DE RUTAS
 // ════════════════════════════════════════════════════════════════
 
 // 1️⃣ MIDDLEWARE DE DEBUG MEJORADO
@@ -225,13 +259,10 @@ app.use((req, res, next) => {
 const originalRedirect = express.response.redirect;
 
 express.response.redirect = function(statusOrUrl, url) {
-    // Manejar redirect(url) y redirect(status, url)
     const targetUrl = typeof statusOrUrl === 'string' ? statusOrUrl : url;
     const status = typeof statusOrUrl === 'number' ? statusOrUrl : 302;
-    
     const requestPath = this.req.originalUrl;
     
-    // Detectar redirects sospechosos
     const isExamenRequest = requestPath.includes('/examen') || requestPath.includes('/resultados');
     const isRedirectingToAdmin = targetUrl && targetUrl.includes('/admin');
     
@@ -246,7 +277,6 @@ express.response.redirect = function(statusOrUrl, url) {
         console.error(new Error().stack);
         console.error('❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌\n');
         
-        // 🚨 BLOQUEAR EL REDIRECT INCORRECTO Y MOSTRAR ERROR
         return this.status(500).send(`
             <h1>🚨 Error detectado por sistema de debugging</h1>
             <p><strong>Intentó redirigir de:</strong> ${requestPath}</p>
@@ -258,7 +288,6 @@ express.response.redirect = function(statusOrUrl, url) {
         `);
     }
     
-    // Si no es un redirect problemático, continuar normalmente
     if (typeof statusOrUrl === 'string') {
         return originalRedirect.call(this, statusOrUrl);
     } else {
@@ -266,15 +295,13 @@ express.response.redirect = function(statusOrUrl, url) {
     }
 };
 
-// 3️⃣ MIDDLEWARE PROTECTOR DE RUTAS DE EXAMEN (SINTAXIS CORREGIDA)
+// 3️⃣ MIDDLEWARE PROTECTOR DE RUTAS DE EXAMEN
 app.use((req, res, next) => {
     const path = req.originalUrl;
     
-    // Verificar si es una ruta de examen o resultados
     if (path.startsWith('/examen') || path.startsWith('/resultados')) {
         console.log('[🛡️ PROTECTOR]: Ruta protegida detectada:', path);
         
-        // Si no hay usuario, redirigir a login (NO a admin)
         if (!req.session.user) {
             console.log('[🛡️ PROTECTOR]: Usuario no autenticado, redirigiendo a /login');
             return res.redirect('/login');
@@ -292,6 +319,7 @@ console.log('[DEBUG SYSTEM]: ✅ Interceptor de redirects activo');
 console.log('[DEBUG SYSTEM]: ✅ Protector de rutas de examen activo');
 console.log('[DEBUG SYSTEM]: 🔒 Redirects incorrectos serán BLOQUEADOS');
 console.log('═══════════════════════════════════════════════════════════\n');
+
 // ------------------ Routers ------------------
 const adminR = require('../routes/admin.router.js');
 const examenR = require('../routes/examen.router.js');
@@ -323,17 +351,18 @@ const verificaAdminR = require('../routes/verificaAdmin.router.js');
 const verificationR = require('../routes/verification.router.js');
 const duelo_competitivo = require('../routes/duelo_competitivo.js');
 const duelosErrorHandler = require('../routes/dueloErrorHandler.js');
+const promocionR = require("../routes/rangos.router.js");
 
 // ════════════════════════════════════════════════════════════════
 // ✅✅✅ ORDEN CRÍTICO DE MONTAJE
 // ════════════════════════════════════════════════════════════════
 
 // 1️⃣ PRIMERO: Rutas de invitaciones y notificaciones (más específicas)
-app.use('/', invitacionesR);  // ✅ DEBE IR PRIMERO - contiene /aceptar y /rechazar
+app.use('/', invitacionesR);
 app.use('/notificaciones', notificacionesR);
 
 // 2️⃣ SEGUNDO: Rutas de competitivo y duelos
-app.use('/', competitivoR);  // ✅ Contiene /desafiar_com/duelo/:idOponente
+app.use('/', competitivoR);
 app.use('/', duelo_competitivo);
 
 // 3️⃣ TERCERO: Rutas de autenticación
@@ -359,6 +388,7 @@ app.use('/', profileR);
 app.use('/', rankingR);
 app.use('/', rankingCarreraR);
 app.use('/', usuarioR);
+app.use('/api/promocion', promocionR); // ✅ NUEVO: Router de promociones
 
 // 6️⃣ SEXTO: Rutas de administración y editor
 app.use('/editor', editorR);
@@ -371,14 +401,16 @@ app.use('/', ligasR);
 app.use('/', formulario1R);
 
 // 8️⃣ ÚLTIMO: Rutas generales (menos específicas)
-app.use('/', generalR);  // ✅ DEBE IR AL FINAL - contiene rutas catch-all
+app.use('/', generalR);
 
 console.log('═══════════════════════════════════════════════════════════');
 console.log('[ROUTERS]: ✅ Routers montados en orden correcto');
 console.log('[ROUTERS]: 1. invitacionesR (contiene /aceptar y /rechazar)');
 console.log('[ROUTERS]: 2. competitivoR (contiene /desafiar_com)');
-console.log('[ROUTERS]: 3. Resto de routers...');
+console.log('[ROUTERS]: 3. promocionR (sistema de rangos) ✅ NUEVO');
+console.log('[ROUTERS]: 4. Resto de routers...');
 console.log('═══════════════════════════════════════════════════════════');
+
 // ════════════════════════════════════════════════════════════════
 // ✅✅✅ VARIABLES GLOBALES Y FUNCIÓN crearSalaPendienteBD
 // ════════════════════════════════════════════════════════════════
@@ -497,14 +529,12 @@ if (typeof global.crearSalaPendienteBD === 'function') {
     console.log('[CONFIG]: ✅ global.crearSalaPendienteBD EXISTE');
     
     try {
-        // Test rápido con valores dummy
         console.log('[CONFIG]: 🧪 Ejecutando test con valores dummy...');
         const testSalaId = global.crearSalaPendienteBD(999, 888, 'general', null, io);
         
         if (testSalaId && typeof testSalaId === 'string') {
             console.log('[CONFIG]: ✅ Test OK - SalaId generado:', testSalaId);
             
-            // Verificar que se guardó en los Maps
             const enPendientes = global.salasPendientes.has(testSalaId);
             const enEspera = global.salasEspera.has(testSalaId);
             
@@ -515,7 +545,6 @@ if (typeof global.crearSalaPendienteBD === 'function') {
             if (enPendientes && enEspera) {
                 console.log('[CONFIG]: ✅✅✅ TEST COMPLETAMENTE EXITOSO');
                 
-                // Limpiar test
                 const sala = global.salasPendientes.get(testSalaId);
                 if (sala.timeoutId) clearTimeout(sala.timeoutId);
                 global.salasPendientes.delete(testSalaId);
@@ -616,6 +645,10 @@ app.get('/api/test/verificar-sistema', (req, res) => {
         sockets: {
             conectados: io.engine.clientsCount
         },
+        sistema_rangos: {
+            verificarPromocionDisponible: typeof verificarPromocionDisponible,
+            middleware_activo: true
+        },
         test_completo: true
     });
 });
@@ -638,9 +671,11 @@ const PORT = process.env.PORT || 3005;
 server.listen(PORT, () => {
     console.log(`
 ╔═══════════════════════════════════════════════════════╗
-║  🎮 SERVIDOR QUE BUEN DATO                           ║
+║  🎮 SERVIDOR QUE BUEN DATO - VERSIÓN UNIFICADA       ║
 ║  🌐 http://localhost:${PORT}                         ║
 ║  ✅ Sistema de matchmaking competitivo activado      ║
+║  ✅ Sistema de rangos y promociones activado         ║
+║  ✅ Estadísticas de duelos rápidos activadas         ║
 ║  ✅ Sockets configurados correctamente               ║
 ║  ✅ Socket.IO expuesto en app.set('io')              ║
 ║  ✅ global.crearSalaPendienteBD definida             ║
@@ -649,7 +684,7 @@ server.listen(PORT, () => {
     
     setTimeout(() => {
         console.log('\n═══════════════════════════════════════════════════════════');
-        console.log('[CONFIG]: 🔍 VERIFICACIÓN POST-INICIO');
+        console.log('[CONFIG]: 🔍 VERIFICACIÓN POST-INICIO - VERSIÓN UNIFICADA');
         console.log('═══════════════════════════════════════════════════════════');
         console.log('  - Sockets conectados:', io.engine.clientsCount);
         console.log('  - Maps globales OK:', 
@@ -657,6 +692,8 @@ server.listen(PORT, () => {
             global.salasEspera instanceof Map
         );
         console.log('  - crearSalaPendienteBD:', typeof global.crearSalaPendienteBD);
+        console.log('  - Sistema de rangos:', typeof verificarPromocionDisponible);
+        console.log('  - Helpers de estadísticas: ✅ Activos');
         console.log('═══════════════════════════════════════════════════════════');
     }, 2000);
 });

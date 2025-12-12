@@ -2,6 +2,66 @@ const db = require('../db/conexion');
 const { v4: uuidv4 } = require('uuid');
 const { GestorPuntuacion, SISTEMA_PUNTOS } = require('../routes/duelo_puntos');
 
+// ================================================================
+// 🔧 FUNCIÓN AUXILIAR: DETECTAR MODO AUTOMÁTICAMENTE
+// Agregar al inicio de tu archivo socket o como módulo compartido
+// ================================================================
+
+async function detectarModoJugadores(idJugadorA, idJugadorB, db) {
+    try {
+        console.log(`[DETECTAR MODO]: 🔍 Analizando jugadores ${idJugadorA} y ${idJugadorB}`);
+        
+        // Consultar carreras de ambos jugadores
+        const [carrerasJugadorA] = await db.query(
+            'SELECT id_carrera FROM usuario_carrera WHERE id_usuario = ?',
+            [idJugadorA]
+        );
+        
+        const [carrerasJugadorB] = await db.query(
+            'SELECT id_carrera FROM usuario_carrera WHERE id_usuario = ?',
+            [idJugadorB]
+        );
+        
+        console.log(`[DETECTAR MODO]: Jugador A carreras:`, carrerasJugadorA.map(c => c.id_carrera));
+        console.log(`[DETECTAR MODO]: Jugador B carreras:`, carrerasJugadorB.map(c => c.id_carrera));
+        
+        // Si alguno no tiene carrera → GENERAL
+        if (carrerasJugadorA.length === 0 || carrerasJugadorB.length === 0) {
+            console.log(`[DETECTAR MODO]: 🌍 MODO GENERAL - Algún jugador sin carrera`);
+            return { modo: 'general', idCarrera: null };
+        }
+        
+        // Buscar carreras en común
+        const carrerasA = carrerasJugadorA.map(c => c.id_carrera);
+        const carrerasB = carrerasJugadorB.map(c => c.id_carrera);
+        const carrerasComunes = carrerasA.filter(id => carrerasB.includes(id));
+        
+        console.log(`[DETECTAR MODO]: Carreras en común:`, carrerasComunes);
+        
+        // Si tienen carrera en común → CARRERA
+        if (carrerasComunes.length > 0) {
+            const idCarrera = carrerasComunes[0]; // Usar la primera en común
+            console.log(`[DETECTAR MODO]: 🎓 MODO CARRERA - id_carrera: ${idCarrera}`);
+            return { modo: 'carrera', idCarrera };
+        }
+        
+        // Si tienen carreras pero NO en común → GENERAL
+        console.log(`[DETECTAR MODO]: 🌍 MODO GENERAL - Carreras diferentes`);
+        return { modo: 'general', idCarrera: null };
+        
+    } catch (error) {
+        console.error('[DETECTAR MODO ERROR]:', error);
+        // En caso de error, default a GENERAL
+        return { modo: 'general', idCarrera: null };
+    }
+}
+
+// ================================================================
+// ✅ EXPORTS PARA USAR EN OTROS ARCHIVOS
+// ================================================================
+
+module.exports.detectarModoJugadores = detectarModoJugadores;
+
 const MOTIVOS_ABANDONO = {
     VOLUNTARIO: 'voluntario',
     DESCONEXION: 'desconexion',
@@ -700,12 +760,13 @@ async function verificarEIniciarDuelo(salaId, io) {
     console.log(`[VERIFICAR]: 🔍 Analizando sala ${salaId}`);
     console.log(`[VERIFICAR]: Jugadores conectados: ${sala.jugadoresConectados?.size || 0}/2`);
     console.log(`[VERIFICAR]: Estado: ${sala.estado}`);
+    console.log(`[VERIFICAR]: Modo: ${sala.modo || 'sin definir'}`); // ✅ LOG NUEVO
 
     // ✅ Verificar que hay exactamente 2 jugadores
     if (!sala.jugadoresConectados || sala.jugadoresConectados.size < 2) {
         sala.intentosConexion = (sala.intentosConexion || 0) + 1;
         
-        if (sala.intentosConexion < 8) { // Aumentar a 8 intentos
+        if (sala.intentosConexion < 8) {
             console.log(`[VERIFICAR]: ⏳ Esperando jugadores... (intento ${sala.intentosConexion}/8)`);
             setTimeout(() => {
                 verificarEIniciarDuelo(salaId, io);
@@ -783,13 +844,23 @@ async function verificarEIniciarDuelo(salaId, io) {
 
         console.log(`[VERIFICAR]: ✅ Sockets unidos a sala ${salaId}`);
 
+        // ════════════════════════════════════════════════════════════
+        // ✅ CRÍTICO: PASAR MODO CORRECTO AL DUELO
+        // ════════════════════════════════════════════════════════════
+        
+        const modoFinal = sala.modo || 'general'; // ✅ Respetar modo de sala
+        const dificultadFinal = sala.dificultad || null;
+        
+        console.log(`[VERIFICAR]: 🎯 Creando duelo en modo: ${modoFinal}`);
+        console.log(`[VERIFICAR]: 🎯 Dificultad: ${dificultadFinal || 'N/A'}`);
         
         activeDuels.set(salaId, {
-            modo: sala.modo || 'general',
-            dificultad: sala.dificultad || null,
+            modo: modoFinal,                    // ✅ CRÍTICO
+            dificultad: dificultadFinal,        // ✅ CRÍTICO
+            idCarrera: sala.idCarrera || null,  // ✅ NUEVO
             apuesta: apuesta,
             bote: apuesta * 2,
-            recompensaBase: RECOMPENSAS[sala.dificultad] || RECOMPENSAS.normal,
+            recompensaBase: RECOMPENSAS[dificultadFinal] || RECOMPENSAS.normal,
             jugadores: {
                 [retadorId]: { 
                     ...retadorData[0], 
@@ -820,12 +891,12 @@ async function verificarEIniciarDuelo(salaId, io) {
             fechaCreacion: new Date(),
             respuestas: {},
             tiemposRespuesta: {},
-            // ✅ AGREGAR ESTAS LÍNEAS:
             desglosePuntos: {},
             respuestasCorrectas: {},
             negociacionApuesta: null,
             jugadoresQuierenApostar: {}
         });
+        
         if (sala.timeoutId) {
             clearTimeout(sala.timeoutId);
         }
@@ -841,8 +912,9 @@ async function verificarEIniciarDuelo(salaId, io) {
         io.to(salaId).emit('duelo:informacionInicial', {
             apuesta,
             bote: apuesta * 2,
-            recompensaBase: RECOMPENSAS[sala.dificultad] || RECOMPENSAS.normal,
-            dificultad: sala.dificultad
+            recompensaBase: RECOMPENSAS[dificultadFinal] || RECOMPENSAS.normal,
+            dificultad: dificultadFinal,
+            modo: modoFinal  // ✅ NUEVO
         });
 
         // ✅ Notificar que el duelo está listo
@@ -875,7 +947,11 @@ async function verificarEIniciarDuelo(salaId, io) {
 function crearSalaPendienteBD_Internal(idRetador, idRetado, modo, dificultad, io) {
     const salaId = uuidv4();
     
-    console.log(`[SALA BD]: 🏗️ Creando sala ${salaId}`);
+    console.log(`[SALA BD INTERNAL]: 🏗️ Creando sala ${salaId}`);
+    console.log(`[SALA BD INTERNAL]: Modo recibido: ${modo || 'sin especificar'}`);
+    
+    // ✅ DEFAULT a 'general' si no se especifica
+    const modoFinal = modo || 'general';
     
     const sala = {
         salaId,
@@ -889,8 +965,9 @@ function crearSalaPendienteBD_Internal(idRetador, idRetado, modo, dificultad, io
         jugadoresAceptados: new Set(),
         dueloCreado: false,
         tipo: 'notificacion_bd',
-        modo: modo || 'general',
+        modo: modoFinal,           // ✅ USAR MODO ESPECIFICADO
         dificultad: dificultad || null,
+        idCarrera: null,           // Se actualiza después
         apuesta: APUESTAS.DEFAULT,
         intentosConexion: 0
     };
@@ -900,6 +977,9 @@ function crearSalaPendienteBD_Internal(idRetador, idRetado, modo, dificultad, io
     global.salasPendientes.set(salaId, sala);
     global.salasEspera.set(salaId, sala);
     
+    console.log(`[SALA BD INTERNAL]: ✅ Sala creada con modo: ${modoFinal}`);
+    
+    // Timeout de 3 minutos
     const timeoutId = setTimeout(() => {
         const salaActual = salasPendientes.get(salaId);
         if (salaActual && (salaActual.estado === 'pendiente' || salaActual.estado === 'esperando_aceptacion')) {
@@ -929,6 +1009,7 @@ function crearSalaPendienteBD_Internal(idRetador, idRetado, modo, dificultad, io
     return salaId;
 }
 
+// Actualizar la global
 global.crearSalaPendienteBD = crearSalaPendienteBD_Internal;
 
 // ================================================================
@@ -2506,7 +2587,15 @@ module.exports = (io, socket) => {
     // ================================================================
     // INVITACIONES DE LOBBY
     // ================================================================
-    
+    // ================================================================
+    // PARTE DEL SOCKET: INVITACIONES LOBBY CORREGIDAS
+    // Agregar/Reemplazar en tu archivo socket principal
+    // ================================================================
+
+    // ================================================================
+    // ✅✅✅ INVITACIÓN LOBBY - CON DETECCIÓN DE MODO
+    // ================================================================
+
     socket.on('duelo:invitarLobby', async ({ idOponente, usernameOponente }) => {
         const idRetador = socket.userId;
         
@@ -2517,13 +2606,33 @@ module.exports = (io, socket) => {
         }
 
         try {
-            const [retadorData] = await db.query('SELECT username, foto_perfil FROM usuario WHERE id_usuario = ?', [idRetador]);
+            console.log('═══════════════════════════════════════════════════════════');
+            console.log('[LOBBY INVITACIÓN]: 🚀 INICIO');
+            console.log(`[LOBBY INVITACIÓN]: Retador: ${idRetador}`);
+            console.log(`[LOBBY INVITACIÓN]: Oponente: ${idOponente} (${usernameOponente})`);
+            
+            // ════════════════════════════════════════════════════════════
+            // 1️⃣ Cargar datos del retador
+            // ════════════════════════════════════════════════════════════
+            
+            const [retadorData] = await db.query(
+                'SELECT username, foto_perfil FROM usuario WHERE id_usuario = ?', 
+                [idRetador]
+            );
+            
             if (retadorData.length === 0) {
-                return socket.emit('duelo:invitacionLobbyError', { mensaje: 'Error: Usuario no encontrado.' });
+                return socket.emit('duelo:invitacionLobbyError', { 
+                    mensaje: 'Error: Usuario no encontrado.' 
+                });
             }
 
             const usernameRetador = retadorData[0].username;
             const fotoRetador = retadorData[0].foto_perfil || '/uploads/default_avatar.png';
+            
+            // ════════════════════════════════════════════════════════════
+            // 2️⃣ Verificar que el oponente está conectado
+            // ════════════════════════════════════════════════════════════
+            
             const oponenteSocketId = usuariosConectados.get(parseInt(idOponente));
             
             if (!oponenteSocketId) {
@@ -2531,7 +2640,24 @@ module.exports = (io, socket) => {
                     mensaje: `${usernameOponente} no está conectado.` 
                 });
             }
+            
+            // ════════════════════════════════════════════════════════════
+            // 3️⃣ ✅ DETECTAR MODO AUTOMÁTICAMENTE
+            // ════════════════════════════════════════════════════════════
+            
+            const { modo, idCarrera } = await detectarModoJugadores(
+                idRetador, 
+                idOponente, 
+                db
+            );
+            
+            console.log(`[LOBBY INVITACIÓN]: ✅ Modo detectado: ${modo}`);
+            console.log(`[LOBBY INVITACIÓN]: ID Carrera: ${idCarrera || 'N/A'}`);
 
+            // ════════════════════════════════════════════════════════════
+            // 4️⃣ Crear sala con modo correcto
+            // ════════════════════════════════════════════════════════════
+            
             const salaId = uuidv4();
             const timestamp = Date.now();
 
@@ -2549,27 +2675,42 @@ module.exports = (io, socket) => {
                 jugadoresAceptados: new Set([parseInt(idRetador)]),
                 dueloCreado: false,
                 tipo: 'lobby_directo',
-                modo: 'general'
+                modo: modo,           // ✅ MODO DETECTADO
+                idCarrera: idCarrera, // ✅ CARRERA DETECTADA
+                apuesta: APUESTAS.DEFAULT
             };
 
             salasEspera.set(salaId, nuevaSala);
             salasPendientes.set(salaId, nuevaSala);
 
-            console.log(`[LOBBY]: Invitación enviada - Sala ${salaId}`);
+            console.log(`[LOBBY INVITACIÓN]: ✅ Sala creada: ${salaId}`);
+            console.log(`[LOBBY INVITACIÓN]: Modo final: ${modo}`);
 
+            // ════════════════════════════════════════════════════════════
+            // 5️⃣ Enviar invitación con modo
+            // ════════════════════════════════════════════════════════════
+            
+            const modoTexto = modo === 'carrera' ? 'de carrera' : 'general';
+            
             io.to(oponenteSocketId).emit('duelo:recibirInvitacionLobby', {
-                mensaje: `${usernameRetador} te desafía a un duelo!`,
+                mensaje: `⚔️ ${usernameRetador} te desafía a un duelo ${modoTexto}!`,
                 id_retador: idRetador,
                 username_retador: usernameRetador,
                 foto_retador: fotoRetador,
                 salaId,
-                timestamp
+                timestamp,
+                modo: modo,         // ✅ ENVIAR MODO
+                idCarrera: idCarrera // ✅ ENVIAR CARRERA
             });
             
             socket.emit('duelo:invitacionLobbyEnviada', { 
-                mensaje: `Invitación enviada a ${usernameOponente}.`,
-                salaId
+                mensaje: `✅ Invitación ${modoTexto} enviada a ${usernameOponente}`,
+                salaId,
+                modo: modo
             });
+
+            console.log('[LOBBY INVITACIÓN]: ✅ Invitación enviada');
+            console.log('═══════════════════════════════════════════════════════════');
 
             // Timeout de 30 segundos
             const timeoutId = setTimeout(() => {
@@ -2579,12 +2720,12 @@ module.exports = (io, socket) => {
                     salasEspera.delete(salaId);
                     salasPendientes.delete(salaId);
                     
-                    socket.emit('duelo:invitacionExpirada', { mensaje: 'Invitación expiró.' });
+                    socket.emit('duelo:invitacionExpirada', { mensaje: 'Invitación expiró' });
                     
                     const currentOponenteSocketId = usuariosConectados.get(parseInt(idOponente));
                     if (currentOponenteSocketId) {
                         io.to(currentOponenteSocketId).emit('duelo:invitacionExpirada', { 
-                            mensaje: 'Desafío expiró.' 
+                            mensaje: 'Desafío expiró' 
                         });
                     }
                 }
@@ -2593,43 +2734,71 @@ module.exports = (io, socket) => {
             nuevaSala.timeoutId = timeoutId;
 
         } catch (error) {
-            console.error('[LOBBY ERROR]:', error);
+            console.error('[LOBBY INVITACIÓN ERROR]:', error);
             socket.emit('duelo:invitacionLobbyError', { 
                 mensaje: 'Error del servidor: ' + error.message 
             });
         }
     });
 
+    // ================================================================
+    // ✅ ACEPTAR INVITACIÓN LOBBY - MANTIENE MODO
+    // ================================================================
+
     socket.on('duelo:aceptarInvitacionLobby', ({ salaId }) => {
         const id_retado = socket.userId;
         if (!id_retado) return;
 
+        console.log('═══════════════════════════════════════════════════════════');
+        console.log('[LOBBY ACEPTAR]: 🚀 INICIO');
+        console.log(`[LOBBY ACEPTAR]: Sala: ${salaId}`);
+        console.log(`[LOBBY ACEPTAR]: Usuario: ${id_retado}`);
+        console.log('═══════════════════════════════════════════════════════════');
+
         const sala = salasEspera.get(salaId);
+        
         if (!sala || (sala.idRetado !== id_retado && sala.retado !== id_retado)) {
+            console.error('[LOBBY ACEPTAR]: ❌ Invitación inválida');
             return socket.emit('duelo:error', { mensaje: 'Invitación inválida.' });
         }
 
+        console.log('[LOBBY ACEPTAR]: ✅ Sala encontrada');
+        console.log(`[LOBBY ACEPTAR]: Modo: ${sala.modo}`);
+        console.log(`[LOBBY ACEPTAR]: ID Carrera: ${sala.idCarrera || 'N/A'}`);
+
+        // ✅ Marcar como aceptada (mantener modo)
         sala.estado = 'aceptada';
         salasEspera.set(salaId, sala);
         salasPendientes.set(salaId, sala);
 
-        console.log(`[LOBBY]: Invitación aceptada - Sala ${salaId}`);
+        console.log(`[LOBBY ACEPTAR]: ✅ Sala actualizada - Modo: ${sala.modo}`);
 
         const retadorId = sala.idRetador || sala.retador;
         const retadorSocketId = usuariosConectados.get(retadorId);
         
+        // Notificar al retador
         if (retadorSocketId) {
             io.to(retadorSocketId).emit('duelo:redirigirASala', { 
                 salaId,
-                mensaje: '¡Invitación aceptada! Redirigiendo...'
+                mensaje: '¡Invitación aceptada! Redirigiendo...',
+                modo: sala.modo
             });
         }
         
+        // Notificar al que aceptó
         socket.emit('duelo:redirigirASala', { 
             salaId,
-            mensaje: 'Invitación aceptada. Redirigiendo...'
+            mensaje: 'Invitación aceptada. Redirigiendo...',
+            modo: sala.modo
         });
+
+        console.log('[LOBBY ACEPTAR]: ✅ COMPLETADO');
+        console.log('═══════════════════════════════════════════════════════════');
     });
+
+    // ================================================================
+    // 🚫 RECHAZAR INVITACIÓN LOBBY (SIN CAMBIOS)
+    // ================================================================
 
     socket.on('duelo:rechazarInvitacionLobby', ({ salaId }) => {
         const sala = salasEspera.get(salaId);
@@ -2644,7 +2813,7 @@ module.exports = (io, socket) => {
             salasPendientes.delete(salaId);
         }
     });
-
+     
     // ================================================================
     // MATCHMAKING
     // ================================================================

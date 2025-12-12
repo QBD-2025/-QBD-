@@ -260,11 +260,13 @@ router.get('/api/usuario/historial', async (req, res) => {
                 u1.foto_perfil as retador_foto,
                 u2.username as defensor_username,  
                 u2.foto_perfil as defensor_foto,
-                ug.username as ganador_username
+                ug.username as ganador_username,
+                c.descripcion as carrera_nombre
             FROM historial_duelos h
             LEFT JOIN usuario u1 ON h.id_retador = u1.id_usuario
             LEFT JOIN usuario u2 ON h.id_defensor = u2.id_usuario  
             LEFT JOIN usuario ug ON h.id_ganador = ug.id_usuario
+            LEFT JOIN carrera c ON h.id_carrera = c.id_carrera
             WHERE h.id_retador = ? OR h.id_defensor = ?
             ORDER BY h.fecha_duelo DESC
             LIMIT 50

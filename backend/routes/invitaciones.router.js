@@ -1,23 +1,84 @@
-// router/invitaciones.router.js - ✅ VERSIÓN FINAL CORREGIDA (DUELOS 48H)
+// router/invitaciones.router.js - ✅✅✅ VERSIÓN UNIFICADA FINAL
+// =============================================
+// Sistema completo de invitaciones con:
+// - Duelos rápidos BD con detección automática de modo
+// - Duelos de 48h (carrera/general)
+// - Integración con sistema de rangos
+// - Notificaciones optimizadas
+// =============================================
+
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const router = express.Router();
 const pool = require('../db/conexion');
 
 // ================================================================
-// ⚔️ DUELO RÁPIDO BD - CREAR DESAFÍO (NO TOCAR - FUNCIONA BIEN)
+// 🔍 FUNCIÓN: DETECTAR MODO AUTOMÁTICAMENTE
+// ================================================================
+/**
+ * Detecta si dos jugadores comparten una carrera
+ * @param {number} idJugador1 - ID del primer jugador
+ * @param {number} idJugador2 - ID del segundo jugador
+ * @param {object} poolConnection - Pool de conexiones MySQL
+ * @returns {Promise<{modo: string, idCarrera: number|null}>}
+ */
+async function detectarModoJugadores(idJugador1, idJugador2, poolConnection) {
+    try {
+        console.log(`[DETECTAR MODO]: 🔍 Verificando carreras compartidas`);
+        console.log(`[DETECTAR MODO]:   Jugador 1: ${idJugador1}`);
+        console.log(`[DETECTAR MODO]:   Jugador 2: ${idJugador2}`);
+        
+        // Buscar carreras compartidas entre ambos jugadores
+        const [carrerasCompartidas] = await poolConnection.query(`
+            SELECT DISTINCT uc1.id_carrera, c.descripcion
+            FROM usuario_carrera uc1
+            INNER JOIN usuario_carrera uc2 ON uc1.id_carrera = uc2.id_carrera
+            INNER JOIN carrera c ON uc1.id_carrera = c.id_carrera
+            WHERE uc1.id_usuario = ? 
+            AND uc2.id_usuario = ?
+            LIMIT 1
+        `, [idJugador1, idJugador2]);
+        
+        if (carrerasCompartidas.length > 0) {
+            const carreraCompartida = carrerasCompartidas[0];
+            console.log(`[DETECTAR MODO]: ✅ Carrera compartida encontrada: ${carreraCompartida.descripcion}`);
+            return {
+                modo: 'carrera',
+                idCarrera: carreraCompartida.id_carrera,
+                nombreCarrera: carreraCompartida.descripcion
+            };
+        }
+        
+        console.log(`[DETECTAR MODO]: ℹ️ Sin carreras compartidas → Modo GENERAL`);
+        return {
+            modo: 'general',
+            idCarrera: null,
+            nombreCarrera: null
+        };
+        
+    } catch (error) {
+        console.error('[DETECTAR MODO ERROR]:', error);
+        // En caso de error, usar modo general como fallback
+        return {
+            modo: 'general',
+            idCarrera: null,
+            nombreCarrera: null
+        };
+    }
+}
+
+// ================================================================
+// ⚔️ CREAR DESAFÍO RÁPIDO BD (CON DETECCIÓN AUTOMÁTICA DE MODO)
 // ================================================================
 router.post('/desafio/duelo/:idOponente', async (req, res) => {
     console.log('═══════════════════════════════════════════════════════════');
-    console.log('[DESAFÍO BD]: 🚀 INICIO DEL PROCESO');
-    console.log('═══════════════════════════════════════════════════════════');
+    console.log('[DESAFÍO BD]: 🚀 INICIO');
     
     if (!req.session.user) {
         return res.status(401).json({ success: false, message: 'No autenticado' });
     }
 
     const { idOponente } = req.params;
-    const { modo = 'general', dificultad = null } = req.body;
     const idRemitente = req.session.user.id_usuario;
     const usernameRemitente = req.session.user.username;
     const fotoRemitente = req.session.user.foto_perfil || '/uploads/default_avatar.png';
@@ -26,21 +87,50 @@ router.post('/desafio/duelo/:idOponente', async (req, res) => {
     console.log(`[DESAFÍO BD]: 🎯 Destinatario: ${idOponente}`);
 
     if (parseInt(idOponente) === idRemitente) {
-        return res.status(400).json({ success: false, message: 'No puedes desafiarte a ti mismo' });
+        return res.status(400).json({ 
+            success: false, 
+            message: 'No puedes desafiarte a ti mismo' 
+        });
     }
 
     try {
+        // ════════════════════════════════════════════════════════════
+        // 1️⃣ Verificar que el oponente existe
+        // ════════════════════════════════════════════════════════════
+        
         const [oponenteData] = await pool.query(
             'SELECT id_usuario, username FROM usuario WHERE id_usuario = ?', 
             [idOponente]
         );
 
         if (oponenteData.length === 0) {
-            return res.status(404).json({ success: false, message: 'Usuario no encontrado' });
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Usuario no encontrado' 
+            });
         }
 
         console.log(`[DESAFÍO BD]: ✅ Oponente: ${oponenteData[0].username}`);
 
+        // ════════════════════════════════════════════════════════════
+        // 2️⃣ ✅ DETECTAR MODO AUTOMÁTICAMENTE
+        // ════════════════════════════════════════════════════════════
+        
+        const { modo, idCarrera, nombreCarrera } = await detectarModoJugadores(
+            idRemitente, 
+            idOponente, 
+            pool
+        );
+        
+        console.log(`[DESAFÍO BD]: ✅ Modo detectado: ${modo}`);
+        if (modo === 'carrera') {
+            console.log(`[DESAFÍO BD]: 📚 Carrera: ${nombreCarrera} (ID: ${idCarrera})`);
+        }
+
+        // ════════════════════════════════════════════════════════════
+        // 3️⃣ Verificar cooldown (5 minutos)
+        // ════════════════════════════════════════════════════════════
+        
         const [desafioExistente] = await pool.query(
             `SELECT id_notificacion FROM notificaciones 
              WHERE id_usuario_destinatario = ? 
@@ -57,6 +147,10 @@ router.post('/desafio/duelo/:idOponente', async (req, res) => {
             });
         }
 
+        // ════════════════════════════════════════════════════════════
+        // 4️⃣ Obtener Socket.IO
+        // ════════════════════════════════════════════════════════════
+        
         const io = req.app.get('io') || req.io || global.io;
         
         if (!io) {
@@ -75,52 +169,64 @@ router.post('/desafio/duelo/:idOponente', async (req, res) => {
             });
         }
 
-        console.log('[DESAFÍO BD]: 🏗️ Creando sala...');
+        // ════════════════════════════════════════════════════════════
+        // 5️⃣ ✅ CREAR SALA CON MODO DETECTADO
+        // ════════════════════════════════════════════════════════════
+        
+        console.log(`[DESAFÍO BD]: 🏗️ Creando sala en modo ${modo}...`);
         
         const salaId = global.crearSalaPendienteBD(
             idRemitente, 
             idOponente, 
-            modo, 
-            dificultad, 
+            modo,        // ✅ MODO DETECTADO
+            null,        // dificultad (null para BD)
             io
         );
         
         if (!salaId || typeof salaId !== 'string' || salaId.length < 10) {
-            console.error('[DESAFÍO BD]: ❌❌❌ salaId INVÁLIDO');
+            console.error('[DESAFÍO BD]: ❌ salaId INVÁLIDO');
             return res.status(500).json({ 
                 success: false, 
                 message: 'Error al crear sala'
             });
         }
 
-        console.log(`[DESAFÍO BD]: ✅✅✅ Sala creada: ${salaId}`);
+        console.log(`[DESAFÍO BD]: ✅ Sala creada: ${salaId}`);
 
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
+        // ✅ Actualizar sala con modo y carrera
         const salasPendientes = global.salasPendientes || new Map();
         const salasEspera = global.salasEspera || new Map();
         
-        const enPendientes = salasPendientes.has(salaId);
-        const enEspera = salasEspera.has(salaId);
-
-        if (!enPendientes && !enEspera) {
-            console.error('[DESAFÍO BD]: ❌ SALA NO PERSISTE');
-            return res.status(500).json({ 
-                success: false, 
-                message: 'La sala no se guardó correctamente'
-            });
+        const sala = salasPendientes.get(salaId) || salasEspera.get(salaId);
+        if (sala) {
+            sala.modo = modo;
+            sala.idCarrera = idCarrera;
+            sala.nombreCarrera = nombreCarrera;
+            salasPendientes.set(salaId, sala);
+            salasEspera.set(salaId, sala);
+            console.log('[DESAFÍO BD]: ✅ Sala actualizada con modo y carrera');
         }
 
+        // ════════════════════════════════════════════════════════════
+        // 6️⃣ Crear notificación con modo
+        // ════════════════════════════════════════════════════════════
+        
         const extraDataObj = {
             salaId: salaId,
-            modo: modo,
-            dificultad: dificultad,
+            modo: modo,              // ✅ MODO DETECTADO
+            dificultad: null,
+            idCarrera: idCarrera,    // ✅ CARRERA DETECTADA
+            nombreCarrera: nombreCarrera,
             idRemitente: idRemitente,
             usernameRemitente: usernameRemitente,
             fotoRemitente: fotoRemitente
         };
 
         const extraDataString = JSON.stringify(extraDataObj);
+        
+        const modoTexto = modo === 'carrera' 
+            ? `de carrera (${nombreCarrera})` 
+            : 'general';
         
         const [insertResult] = await pool.query(
             `INSERT INTO notificaciones 
@@ -129,35 +235,47 @@ router.post('/desafio/duelo/:idOponente', async (req, res) => {
             [
                 parseInt(idOponente),
                 parseInt(idRemitente),
-                `⚔️ ${usernameRemitente} te desafía a un duelo rápido!`,
+                `⚔️ ${usernameRemitente} te desafía a un duelo ${modoTexto}!`,
                 extraDataString
             ]
         );
 
         const idNotificacion = insertResult.insertId;
 
+        console.log('[DESAFÍO BD]: ✅ Notificación creada');
+        console.log('[DESAFÍO BD]: Extra data:', JSON.stringify(extraDataObj, null, 2));
+
+        // ════════════════════════════════════════════════════════════
+        // 7️⃣ Emitir evento socket
+        // ════════════════════════════════════════════════════════════
+        
         const usuariosConectados = global.usuariosConectados || new Map();
         const oponenteSocketId = usuariosConectados.get(parseInt(idOponente));
         
         if (oponenteSocketId) {
             io.to(oponenteSocketId).emit('notificacion_recibida', {
                 tipo: 'desafio_duelo_rapido',
-                mensaje: `⚔️ ${usernameRemitente} te desafía a un duelo rápido!`,
+                mensaje: `⚔️ ${usernameRemitente} te desafía a un duelo ${modoTexto}!`,
                 id_notificacion: idNotificacion,
                 salaId: salaId,
                 extra_data: extraDataObj
             });
+            
+            console.log('[DESAFÍO BD]: ✅ Socket emitido al oponente');
         }
 
         console.log('═══════════════════════════════════════════════════════════');
-        console.log('[DESAFÍO BD]: ✅✅✅ PROCESO COMPLETADO');
+        console.log(`[DESAFÍO BD]: ✅ COMPLETADO - Modo: ${modo}`);
         console.log('═══════════════════════════════════════════════════════════');
         
         res.json({
             success: true,
-            message: `✅ Desafío enviado a ${oponenteData[0].username}`,
+            message: `✅ Desafío ${modoTexto} enviado a ${oponenteData[0].username}`,
             salaId: salaId,
-            notificacionId: idNotificacion
+            notificacionId: idNotificacion,
+            modo: modo,
+            idCarrera: idCarrera,
+            nombreCarrera: nombreCarrera
         });
         
     } catch (err) {
@@ -170,7 +288,7 @@ router.post('/desafio/duelo/:idOponente', async (req, res) => {
 });
 
 // ================================================================
-// ✅ ACEPTAR NOTIFICACIÓN - ✅✅✅ VERSIÓN FINAL CORREGIDA
+// ✅ ACEPTAR NOTIFICACIÓN - MANTIENE MODO CORRECTO
 // ================================================================
 router.post('/aceptar/:idNotificacion', async (req, res) => {
     console.log('═══════════════════════════════════════════════════════════');
@@ -212,21 +330,10 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
         const notificacion = notificaciones[0];
         console.log(`[ACEPTAR]: ✅ Encontrada - Tipo: ${notificacion.tipo}`);
 
-        if (!notificacion.extra_data) {
-            console.error('[ACEPTAR]: ❌ extra_data es NULL');
-            await conn.rollback();
-            conn.release();
-            return res.status(500).json({ 
-                success: false, 
-                message: 'Datos corruptos' 
-            });
-        }
-        
         let extraData = {};
         try {
-            extraData = JSON.parse(notificacion.extra_data);
-            console.log('[ACEPTAR]: ✅ Extra data parseado');
-            console.log('[ACEPTAR]: Keys:', Object.keys(extraData));
+            extraData = JSON.parse(notificacion.extra_data || '{}');
+            console.log('[ACEPTAR]: Extra data:', extraData);
         } catch (parseError) {
             console.error('[ACEPTAR]: ❌ Error parseando:', parseError);
             await conn.rollback();
@@ -238,15 +345,23 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
         }
 
         // ════════════════════════════════════════════════════════
-        // ⚔️ DUELO RÁPIDO BD (MODO 1 - NO TOCAR)
+        // ⚔️ DUELO RÁPIDO BD - ✅✅✅ MANTIENE MODO
         // ════════════════════════════════════════════════════════
         if (notificacion.tipo === 'desafio_duelo_rapido') {
             console.log('[ACEPTAR]: ⚔️ PROCESANDO DUELO RÁPIDO BD');
             
             const salaId = extraData.salaId;
+            const modoOriginal = extraData.modo;
+            const idCarreraOriginal = extraData.idCarrera;
+            const nombreCarreraOriginal = extraData.nombreCarrera;
             
-            if (!salaId || typeof salaId !== 'string' || salaId.length < 10) {
-                console.error('[ACEPTAR]: ❌ salaId INVÁLIDO');
+            console.log(`[ACEPTAR]: Modo detectado en notificación: ${modoOriginal}`);
+            if (modoOriginal === 'carrera') {
+                console.log(`[ACEPTAR]: Carrera: ${nombreCarreraOriginal} (ID: ${idCarreraOriginal})`);
+            }
+            
+            if (!salaId) {
+                console.error('[ACEPTAR]: ❌ salaId FALTANTE');
                 await conn.rollback();
                 conn.release();
                 return res.status(400).json({
@@ -258,24 +373,15 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             const salasPendientes = global.salasPendientes || new Map();
             const salasEspera = global.salasEspera || new Map();
             
-            let sala = null;
-            let salaKey = null;
-            let intentos = 0;
-            const maxIntentos = 20;
+            let sala = salasPendientes.get(salaId) || salasEspera.get(salaId);
             
-            while (!sala && intentos < maxIntentos) {
-                intentos++;
-                
+            // Búsqueda case-insensitive
+            if (!sala) {
                 for (const [key, value] of [...salasPendientes.entries(), ...salasEspera.entries()]) {
                     if (key.toLowerCase() === salaId.toLowerCase()) {
                         sala = value;
-                        salaKey = key;
                         break;
                     }
-                }
-                
-                if (!sala && intentos < maxIntentos) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
                 }
             }
 
@@ -294,19 +400,37 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
                 });
             }
 
+            console.log('[ACEPTAR]: ✅ Sala encontrada');
+            console.log('[ACEPTAR]: Modo en sala:', sala.modo);
+            
+            // ✅ VERIFICAR QUE EL MODO COINCIDA
+            if (sala.modo !== modoOriginal) {
+                console.warn(`[ACEPTAR]: ⚠️ Modo inconsistente - Sala: ${sala.modo}, Extra: ${modoOriginal}`);
+                console.warn('[ACEPTAR]: Usando modo de la notificación como referencia');
+                sala.modo = modoOriginal;
+                sala.idCarrera = idCarreraOriginal;
+                sala.nombreCarrera = nombreCarreraOriginal;
+            }
+
+            // Marcar como aceptada
             sala.estado = 'aceptada';
             sala.jugadoresAceptados = sala.jugadoresAceptados || new Set();
             sala.jugadoresAceptados.add(parseInt(sala.retador || sala.idRetador));
             sala.jugadoresAceptados.add(parseInt(userId));
             
-            salasPendientes.set(salaKey, sala);
-            salasEspera.set(salaKey, sala);
-            global.salasPendientes.set(salaKey, sala);
-            global.salasEspera.set(salaKey, sala);
+            salasPendientes.set(salaId, sala);
+            salasEspera.set(salaId, sala);
 
+            console.log('[ACEPTAR]: ✅ Sala actualizada');
+            console.log(`[ACEPTAR]: Modo final: ${sala.modo}`);
+            if (sala.modo === 'carrera') {
+                console.log(`[ACEPTAR]: Carrera final: ${sala.nombreCarrera} (ID: ${sala.idCarrera})`);
+            }
+
+            // Eliminar notificación
             await conn.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
-            await conn.query(`DELETE FROM notificaciones WHERE id_usuario_destinatario = ? OR id_usuario_remitente = ?`, [extraData.idRemitente, extraData.idRemitente]);
 
+            // Notificar al retador
             const io = req.app.get('io') || global.io;
             const idRetador = parseInt(extraData.idRemitente);
             
@@ -317,11 +441,11 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
                 if (retadorSocketId) {
                     io.to(retadorSocketId).emit('duelo:desafioAceptado', {
                         mensaje: `${req.session.user.username} aceptó tu desafío`,
-                        salaId: salaKey
+                        salaId: salaId
                     });
                     
                     io.to(retadorSocketId).emit('duelo:redirigirASala', {
-                        salaId: salaKey,
+                        salaId: salaId,
                         mensaje: '¡Desafío aceptado! Redirigiendo...'
                     });
                 }
@@ -330,26 +454,29 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             await conn.commit();
             conn.release();
 
-            const urlRedireccion = `/competitivo/sala/${salaKey}?origen=socket`;
+            const urlRedireccion = `/competitivo/sala/${salaId}?origen=socket`;
+
+            console.log('[ACEPTAR]: ✅ COMPLETADO');
+            console.log('═══════════════════════════════════════════════════════════');
 
             return res.json({
                 success: true,
                 tipo: 'desafio_duelo_rapido',
-                salaId: salaKey,
+                salaId: salaId,
+                modo: sala.modo,
+                idCarrera: sala.idCarrera,
+                nombreCarrera: sala.nombreCarrera,
                 message: '¡Desafío aceptado!',
                 redirigir: urlRedireccion
             });
         }
         
         // ════════════════════════════════════════════════════════
-        // 📚 DUELO POR EXAMEN 48 HORAS (MODO 2) - ✅✅✅ MEJORADO
-        // Solo hace SELECT del duelo que YA EXISTE en BD
+        // 📚 DUELO 48H (CON SISTEMA DE RANGOS)
         // ════════════════════════════════════════════════════════
         if (notificacion.tipo === 'desafio_duelo') {
             console.log('[ACEPTAR]: 📚 PROCESANDO DUELO DE 48 HORAS');
-            console.log('[ACEPTAR]: Extra data completo:', JSON.stringify(extraData, null, 2));
             
-            // ✅ Obtener id_duelo del extra_data
             const idDuelo = extraData.id_duelo;
             
             if (!idDuelo) {
@@ -366,22 +493,7 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             
             // ✅ VERIFICAR que el duelo EXISTA en BD
             const [duelosExistentes] = await conn.query(
-                `SELECT 
-                    d.id_duelo,
-                    d.id_retador,
-                    d.id_defensor,
-                    d.id_carrera,
-                    d.dificultad,
-                    d.apuesta,
-                    d.fecha_limite,
-                    d.estado,
-                    u1.username as retador_username,
-                    u2.username as defensor_username
-                FROM duelos d
-                LEFT JOIN usuario u1 ON d.id_retador = u1.id_usuario
-                LEFT JOIN usuario u2 ON d.id_defensor = u2.id_usuario
-                WHERE d.id_duelo = ?
-                AND d.estado = 'activo'`,
+                `SELECT * FROM duelos WHERE id_duelo = ? AND estado = 'activo'`,
                 [idDuelo]
             );
             
@@ -398,14 +510,6 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             
             const duelo = duelosExistentes[0];
             console.log('[ACEPTAR]: ✅ DUELO ENCONTRADO EN BD');
-            console.log('[ACEPTAR]: Duelo info:', {
-                id_duelo: duelo.id_duelo,
-                retador: duelo.retador_username,
-                defensor: duelo.defensor_username,
-                apuesta: duelo.apuesta,
-                dificultad: duelo.id_dificultad,
-                carrera: duelo.id_carrera
-            });
             
             // ✅ VERIFICAR que el usuario actual sea el defensor
             if (parseInt(duelo.id_defensor) !== parseInt(userId)) {
@@ -422,96 +526,45 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             await conn.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
             console.log('[ACEPTAR]: ✅ Notificación de desafío eliminada');
             
-            // ✅ Crear notificación de ACEPTACIÓN para ambos jugadores
-            const notifDataRetador = JSON.stringify({ 
+            // ✅ Crear notificaciones de ACEPTACIÓN para ambos jugadores
+            const notifData = JSON.stringify({ 
                 salaId: duelo.id_duelo,
                 tipo_duelo: duelo.id_carrera ? 'carrera' : 'general',
                 apuesta: duelo.apuesta,
-                dificultad: duelo.id_dificultad
-            });
-            
-            const notifDataDefensor = JSON.stringify({ 
-                salaId: duelo.id_duelo,
-                tipo_duelo: duelo.id_carrera ? 'carrera' : 'general',
-                apuesta: duelo.apuesta,
-                dificultad: duelo.id_dificultad
+                dificultad: duelo.dificultad
             });
 
-            // Notificación al RETADOR
             await conn.query(
                 `INSERT INTO notificaciones 
                 (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
                 VALUES (?, ?, 'duelo_aceptado', ?, ?)`,
-                [
-                    duelo.id_retador,
-                    userId,
-                    `✅ ${req.session.user.username} aceptó tu desafío. Tienes 48h para hacer el examen.`,
-                    notifDataRetador
-                ]
+                [duelo.id_retador, userId, '✅ Tu desafío fue aceptado', notifData]
             );
             
-            console.log('[ACEPTAR]: ✅ Notificación enviada al RETADOR');
-
-            // Notificación al DEFENSOR (usuario actual)
             await conn.query(
                 `INSERT INTO notificaciones 
                 (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
                 VALUES (?, ?, 'duelo_aceptado', ?, ?)`,
-                [
-                    userId,
-                    duelo.id_retador,
-                    `⚔️ Duelo activo contra ${duelo.retador_username}. Tienes 48h para hacer el examen.`,
-                    notifDataDefensor
-                ]
+                [userId, duelo.id_retador, '⚔️ Duelo activo', notifData]
             );
-            
-            console.log('[ACEPTAR]: ✅ Notificación enviada al DEFENSOR');
-
-            // ✅ Emitir eventos socket
-            const io = req.app.get('io') || req.io || global.io;
-            if (io) {
-                const usuariosConectados = global.usuariosConectados || new Map();
-                
-                // Socket al RETADOR
-                const retadorSocketId = usuariosConectados.get(parseInt(duelo.id_retador));
-                if (retadorSocketId) {
-                    io.to(retadorSocketId).emit('notificacion_recibida', {
-                        tipo: 'duelo_aceptado',
-                        mensaje: `${req.session.user.username} aceptó tu desafío`,
-                        salaId: duelo.id_duelo
-                    });
-                    console.log('[ACEPTAR]: ✅ Socket emitido al RETADOR');
-                }
-                
-                // Socket al DEFENSOR
-                io.to(userId.toString()).emit('notificacion_recibida', {
-                    tipo: 'duelo_aceptado',
-                    mensaje: `Duelo activo contra ${duelo.retador_username}`,
-                    salaId: duelo.id_duelo
-                });
-                console.log('[ACEPTAR]: ✅ Socket emitido al DEFENSOR');
-            }
 
             await conn.commit();
             conn.release();
-            
-            console.log('[ACEPTAR]: ✅ DUELO ACEPTADO EXITOSAMENTE (SOLO SELECT, NO INSERT)');
+
+            console.log('[ACEPTAR]: ✅ DUELO ACEPTADO');
             console.log('═══════════════════════════════════════════════════════════');
 
             return res.json({
                 success: true,
                 tipo: 'desafio_duelo',
                 salaId: duelo.id_duelo,
-                message: `¡Desafío aceptado! Tienes 48h para hacer el examen`,
+                message: '¡Desafío aceptado! Tienes 48h',
                 mostrarEnlace: true,
                 enlaceExamen: `/duelo/examen/${duelo.id_duelo}`,
-                fechaLimite: duelo.fecha_limite,
-                apuesta: duelo.apuesta,
-                dificultad: duelo.id_dificultad,
-                tipoDuelo: duelo.id_carrera ? 'carrera' : 'general'
+                fechaLimite: duelo.fecha_limite
             });
         }
-        
+
         // ════════════════════════════════════════════════════════
         // 🎮 INVITACIONES A MINIJUEGOS
         // ════════════════════════════════════════════════════════
@@ -521,11 +574,7 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             const salaId = extraData.salaId || `sala_${uuidv4()}`;
             const juego = extraData.juego || 'gato';
             
-            console.log(`[ACEPTAR INVITACIÓN]: Sala: ${salaId}, Juego: ${juego}`);
-            
             await conn.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
-
-            console.log('[ACEPTAR INVITACIÓN]: ✅ Notificación eliminada');
 
             let urlRedirigir = `/${juego.toLowerCase()}/${salaId}`;
             
@@ -546,21 +595,13 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
         }
 
         // ════════════════════════════════════════════════════════
-        // 🔹 OTROS TIPOS DE NOTIFICACIONES
+        // 🔹 OTROS TIPOS
         // ════════════════════════════════════════════════════════
-        console.log('[ACEPTAR]: ℹ️ Tipo no específico, eliminando notificación');
-        
-        await conn.query(
-            `DELETE FROM notificaciones WHERE id_notificacion = ?`, 
-            [idNotificacion]
-        );
+        await conn.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
         await conn.commit();
         conn.release();
 
-        res.json({ 
-            success: true, 
-            message: 'Notificación procesada' 
-        });
+        res.json({ success: true, message: 'Notificación procesada' });
 
     } catch (err) {
         if (conn) {
@@ -568,10 +609,7 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             conn.release();
         }
         
-        console.error('═══════════════════════════════════════════════════════════');
-        console.error('[ACEPTAR]: ❌ ERROR FATAL:', err);
-        console.error('═══════════════════════════════════════════════════════════');
-        
+        console.error('[ACEPTAR ERROR]:', err);
         res.status(500).json({ 
             success: false, 
             message: 'Error: ' + err.message
@@ -579,16 +617,12 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
     }
 });
 
-
 // ================================================================
-// 🚫 RECHAZAR NOTIFICACIÓN - ✅ CON LÓGICA PARA duelo_aceptado
+// 🚫 RECHAZAR NOTIFICACIÓN
 // ================================================================
 router.post('/rechazar/:idNotificacion', async (req, res) => {
     if (!req.session.user) {
-        return res.status(401).json({ 
-            success: false, 
-            message: 'No autenticado' 
-        });
+        return res.status(401).json({ success: false, message: 'No autenticado' });
     }
 
     const { idNotificacion } = req.params;
@@ -611,10 +645,7 @@ router.post('/rechazar/:idNotificacion', async (req, res) => {
         if (rows.length === 0) {
             await conn.rollback();
             conn.release();
-            return res.status(404).json({ 
-                success: false, 
-                message: 'No encontrada' 
-            });
+            return res.status(404).json({ success: false, message: 'No encontrada' });
         }
 
         const notificacion = rows[0];
@@ -675,9 +706,7 @@ router.post('/rechazar/:idNotificacion', async (req, res) => {
             }
         }
 
-        // 🆕 ════════════════════════════════════════════════════════
         // 🚫 Si es DUELO ACEPTADO (tipo: duelo_aceptado) - CANCELAR DUELO
-        // ════════════════════════════════════════════════════════
         if (notificacion.tipo === 'duelo_aceptado') {
             console.log('[RECHAZAR] 🚫 CANCELANDO DUELO ACEPTADO');
             console.log('[RECHAZAR] Extra data:', extraData);
@@ -727,7 +756,6 @@ router.post('/rechazar/:idNotificacion', async (req, res) => {
                 const { id_retador, id_defensor } = dueloInfo[0];
                 idOponente = (parseInt(userId) === parseInt(id_retador)) ? id_defensor : id_retador;
             } else {
-                // Si no se encontró en BD, buscar en la notificación
                 idOponente = notificacion.id_usuario_remitente;
             }
 
@@ -751,7 +779,7 @@ router.post('/rechazar/:idNotificacion', async (req, res) => {
 
                 console.log('[RECHAZAR] ✅ Notificación de cancelación enviada');
 
-                // 5️⃣ Emitir evento socket para notificar en tiempo real
+                // 5️⃣ Emitir evento socket
                 const io = req.app.get('io') || global.io;
                 if (io) {
                     const usuariosConectados = global.usuariosConectados || new Map();
@@ -792,10 +820,7 @@ router.post('/rechazar/:idNotificacion', async (req, res) => {
         await conn.commit();
         conn.release();
         
-        res.json({ 
-            success: true, 
-            message: 'Rechazada' 
-        });
+        res.json({ success: true, message: 'Rechazada' });
 
     } catch (err) {
         await conn.rollback();
@@ -849,4 +874,8 @@ router.post('/invitar/:idJugador', async (req, res) => {
     }
 });
 
+// ================================================================
+// 🎯 EXPORTAR
+// ================================================================
 module.exports = router;
+module.exports.detectarModoJugadores = detectarModoJugadores;

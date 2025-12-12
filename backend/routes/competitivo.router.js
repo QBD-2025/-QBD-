@@ -1,6 +1,7 @@
+// backend/routes/competitivo.router.js - VERSIÓN UNIFICADA FINAL
 // =============================================
-// 🎮 ROUTER COMPETITIVO MEJORADO
-// Con sistema de dificultad, apuestas y puntos por carrera
+// 🎮 ROUTER COMPETITIVO COMPLETO
+// Con sistema de dificultad, apuestas, puntos por carrera y estadísticas avanzadas
 // =============================================
 
 const express = require('express');
@@ -10,12 +11,6 @@ const pool = require('../db/conexion');
 // =============================================
 // 📊 CONFIGURACIÓN DEL SISTEMA
 // =============================================
-router.get('/duelo/penalizaciones', (req, res) => {
-    res.json({
-        penalizaciones: PENALIZACIONES,
-        tiempos: TIEMPOS
-    });
-});
 
 const DIFICULTADES = {
     1: { nombre: 'Fácil', apuesta: 50, preguntas: 10 },
@@ -24,15 +19,89 @@ const DIFICULTADES = {
 };
 
 const PENALIZACIONES = {
-    DESCONEXION: 0.50,      // 50% de la apuesta
-    ABANDONO_VOLUNTARIO: 1.0 // 100% de la apuesta
+    DESCONEXION: 0.50,           // 50% de la apuesta
+    ABANDONO_VOLUNTARIO: 1.0,    // 100% de la apuesta
+    NAVEGACION: 1.0              // 100% de la apuesta (cierre de navegador)
 };
+
+const TIEMPOS = {
+    DUELO: 48 * 60 * 60 * 1000,  // 48 horas en milisegundos
+    EXPIRACION: 7 * 24 * 60 * 60 * 1000  // 7 días para limpieza
+};
+
+// Endpoint de configuración
+router.get('/duelo/penalizaciones', (req, res) => {
+    res.json({
+        penalizaciones: PENALIZACIONES,
+        tiempos: TIEMPOS,
+        dificultades: DIFICULTADES
+    });
+});
+
+// =============================================
+// 🛠️ FUNCIONES AUXILIARES
+// =============================================
+
+// Convertir valores a números de forma segura
+function toNumber(value, defaultValue = 0) {
+    if (value === null || value === undefined || value === '') return defaultValue;
+    const num = typeof value === 'string' ? parseFloat(value) : Number(value);
+    return isNaN(num) ? defaultValue : num;
+}
+
+// Actualizar notificaciones cuando ambos terminan
+async function actualizarNotificacionesAlTerminar(salaId, conn) {
+    try {
+        console.log(`[ACTUALIZAR NOTIF] Verificando sala: ${salaId}`);
+        
+        const [duelo] = await conn.query(`
+            SELECT respondido_retador, respondido_oponente, id_retador, id_defensor
+            FROM duelos 
+            WHERE id_duelo = ?
+        `, [salaId]);
+        
+        if (duelo.length === 0) return;
+        
+        const ambosTerminaron = duelo[0].respondido_retador && duelo[0].respondido_oponente;
+        
+        if (ambosTerminaron) {
+            await conn.query(`
+                UPDATE notificaciones 
+                SET 
+                    mensaje = 'Duelo completado - Ver resultados',
+                    tipo = 'duelo_completado'
+                WHERE tipo = 'duelo_aceptado' 
+                AND (
+                    JSON_EXTRACT(extra_data, '$.salaId') = ?
+                    OR JSON_EXTRACT(extra_data, '$.id_duelo') = ?
+                )
+            `, [salaId, salaId]);
+            
+            console.log(`[ACTUALIZAR NOTIF] ✅ Notificaciones actualizadas`);
+        }
+    } catch (error) {
+        console.error('❌ Error actualizando notificaciones:', error);
+    }
+}
+
+// Obtener ranking del usuario
+async function obtenerRankingUsuario(idUsuario) {
+    const [ranking] = await pool.query(`
+        SELECT COUNT(*) + 1 as puesto
+        FROM usuario
+        WHERE puntos > (SELECT puntos FROM usuario WHERE id_usuario = ?)
+    `, [idUsuario]);
+    
+    return ranking[0].puesto;
+}
 
 // =============================================
 // 🏠 PORTAL PRINCIPAL
 // =============================================
 
 router.get('/portal', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    
     try {
         const userId = req.session.user.id_usuario;
         
@@ -47,7 +116,7 @@ router.get('/portal', async (req, res) => {
         
         const carrera = carreras.length > 0 ? carreras[0] : null;
         
-        // Obtener estadísticas (puntos globales)
+        // Obtener estadísticas globales
         const [userData] = await pool.query(`
             SELECT 
                 u.puntos,
@@ -55,7 +124,7 @@ router.get('/portal', async (req, res) => {
                           WHERE id_retador = u.id_usuario OR id_defensor = u.id_usuario), 0) AS duelos_jugados,
                 COALESCE((SELECT COUNT(*) FROM historial_duelos 
                           WHERE id_ganador = u.id_usuario), 0) AS victorias,
-                u.racha_victorias
+                COALESCE(u.racha_victorias, 0) AS racha_victorias
             FROM usuario u 
             WHERE u.id_usuario = ?
         `, [userId]);
@@ -93,7 +162,7 @@ router.get('/portal', async (req, res) => {
 });
 
 // =============================================
-// 📚 OBTENER CARRERAS DEL USUARIO
+// 📚 API - CARRERAS DEL USUARIO
 // =============================================
 
 router.get('/api/usuario/carreras', async (req, res) => {
@@ -122,7 +191,7 @@ router.get('/api/usuario/carreras', async (req, res) => {
 });
 
 // =============================================
-// 💰 OBTENER PUNTOS ACTUALES DEL USUARIO
+// 💰 API - PUNTOS ACTUALES
 // =============================================
 
 router.get('/api/usuario/puntos-actuales', async (req, res) => {
@@ -149,6 +218,11 @@ router.get('/api/usuario/puntos-actuales', async (req, res) => {
         res.status(500).json({ error: 'Error al obtener puntos' });
     }
 });
+
+// =============================================
+// 📊 API - RANKINGS
+// =============================================
+
 router.get('/api/ranking/global', async (req, res) => {
     try {
         const [jugadores] = await pool.query(`
@@ -233,9 +307,6 @@ router.get('/api/duelo/verificar/:idOponente', async (req, res) => {
 });
 
 // =============================================
-// ⚔️ CREAR DESAFÍO CON DIFICULTAD
-// =============================================
-// =============================================
 // ⚔️ CREAR DESAFÍO GENERAL (Sin carrera)
 // =============================================
 
@@ -256,7 +327,7 @@ router.post('/desafiar/duelo-general/:idOponente', async (req, res) => {
     try {
         await conn.beginTransaction();
         
-        // 1️⃣ Validar dificultad
+        // Validar dificultad
         if (!DIFICULTADES[id_dificultad]) {
             await conn.rollback();
             conn.release();
@@ -274,7 +345,7 @@ router.post('/desafiar/duelo-general/:idOponente', async (req, res) => {
             });
         }
         
-        // 2️⃣ Verificar puntos GLOBALES
+        // Verificar puntos GLOBALES
         const [puntosUsuario] = await conn.query(
             'SELECT puntos FROM usuario WHERE id_usuario = ?',
             [idRemitente]
@@ -297,21 +368,17 @@ router.post('/desafiar/duelo-general/:idOponente', async (req, res) => {
             });
         }
         
-        console.log(`[DUELO GENERAL] ✅ Verificación de puntos exitosa`);
-        
-        // 3️⃣ Generar ID único
+        // Generar ID único
         const timestamp = Date.now();
         const random = Math.random().toString(36).substr(2, 9);
         const id_duelo = `duelo_general_${timestamp}_${random}`;
         
-        console.log(`[DUELO GENERAL] 🔑 ID Duelo: ${id_duelo}`);
-        
-        // 4️⃣ Seleccionar preguntas GENERALES
+        // Seleccionar preguntas GENERALES
         const [preguntas] = await conn.query(`
             SELECT DISTINCT p.id_pregunta, p.pregunta
             FROM pregunta p
             WHERE p.id_dificultad = ?
-            AND id_tematica is null
+            AND p.id_tematica IS NULL
             AND p.id_pregunta IN (
                 SELECT id_pregunta 
                 FROM respuesta 
@@ -319,31 +386,26 @@ router.post('/desafiar/duelo-general/:idOponente', async (req, res) => {
                 HAVING COUNT(*) >= 2
             )
             ORDER BY RAND() 
-            LIMIT 20
+            LIMIT ?
         `, [id_dificultad, dificultadConfig.preguntas]);
         
         if (preguntas.length < dificultadConfig.preguntas) {
             await conn.rollback();
             conn.release();
-            console.log(`[DUELO GENERAL] ❌ Solo ${preguntas.length} preguntas disponibles`);
             return res.status(500).json({ 
                 message: `No hay suficientes preguntas de dificultad "${dificultadConfig.nombre}"` 
             });
         }
         
-        console.log(`[DUELO GENERAL] ✅ ${preguntas.length} preguntas seleccionadas`);
-        
-        // 5️⃣ ✅ PRIMERO: Crear duelo en BD
+        // Crear duelo en BD
         await conn.query(`
             INSERT INTO duelos 
             (id_duelo, id_retador, id_defensor, id_carrera, dificultad, apuesta, 
-             fecha_inicio, fecha_limite, estado)
-            VALUES (?, ?, ?, NULL, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 48 HOUR), 'activo')
+             fecha_inicio, fecha_limite, estado, tipo_duelo)
+            VALUES (?, ?, ?, NULL, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 48 HOUR), 'activo', 'general')
         `, [id_duelo, idRemitente, idOponente, id_dificultad, apuesta]);
         
-        console.log(`[DUELO GENERAL] ✅ Duelo insertado en BD`);
-        
-        // 6️⃣ Insertar preguntas en duelos_preguntas
+        // Insertar preguntas
         for (let i = 0; i < preguntas.length; i++) {
             await conn.query(`
                 INSERT INTO duelos_preguntas (id_duelo, id_pregunta, orden) 
@@ -351,9 +413,7 @@ router.post('/desafiar/duelo-general/:idOponente', async (req, res) => {
             `, [id_duelo, preguntas[i].id_pregunta, i + 1]);
         }
         
-        console.log(`[DUELO GENERAL] ✅ Preguntas insertadas`);
-        
-        // 7️⃣ ✅ DESPUÉS: Crear notificación
+        // Crear notificación
         const extraData = {
             remitente: {
                 id_usuario: idRemitente,
@@ -364,7 +424,7 @@ router.post('/desafiar/duelo-general/:idOponente', async (req, res) => {
             dificultad: dificultadConfig.nombre,
             apuesta,
             tipo_duelo: 'general',
-            id_carrera: null, // ✅ AGREGADO
+            id_carrera: null,
             tiempoLimite: 48 * 60 * 60
         };
         
@@ -376,12 +436,10 @@ router.post('/desafiar/duelo-general/:idOponente', async (req, res) => {
             VALUES (?, ?, 'desafio_duelo', ?, ?)
         `, [idOponente, idRemitente, mensajeNotificacion, JSON.stringify(extraData)]);
         
-        console.log(`[DUELO GENERAL] ✅ Notificación creada`);
-        
         await conn.commit();
         conn.release();
         
-        // 8️⃣ Emitir socket
+        // Emitir socket
         if (req.io) {
             req.io.to(idOponente.toString()).emit('notificacion_recibida');
         }
@@ -407,11 +465,9 @@ router.post('/desafiar/duelo-general/:idOponente', async (req, res) => {
 });
 
 // =============================================
-// 📚 CREAR DESAFÍO DE CARRERA - ✅ CORREGIDO
+// 📚 CREAR DESAFÍO DE CARRERA
 // =============================================
 
-// 📝 CARGAR EXAMEN
-// =============================================
 router.post('/desafiar/duelo/:idOponente', async (req, res) => {
     if (!req.session.user) return res.status(401).json({ message: 'No autorizado' });
     
@@ -428,11 +484,10 @@ router.post('/desafiar/duelo/:idOponente', async (req, res) => {
     try {
         await conn.beginTransaction();
         
-        // 1️⃣ VALIDAR DIFICULTAD
+        // Validar dificultad
         if (!DIFICULTADES[id_dificultad]) {
             await conn.rollback();
             conn.release();
-            console.log(`[DESAFÍO CARRERA] ❌ Dificultad inválida`);
             return res.status(400).json({ message: 'Dificultad inválida' });
         }
         
@@ -442,13 +497,12 @@ router.post('/desafiar/duelo/:idOponente', async (req, res) => {
         if (parseInt(apuesta) !== apuestaEsperada) {
             await conn.rollback();
             conn.release();
-            console.log(`[DESAFÍO CARRERA] ❌ Apuesta incorrecta. Esperada: ${apuestaEsperada}, Recibida: ${apuesta}`);
             return res.status(400).json({ 
                 message: `La apuesta debe ser ${apuestaEsperada} puntos` 
             });
         }
         
-        // 2️⃣ VERIFICAR QUE LA CARRERA EXISTE
+        // Verificar que la carrera existe
         const [carreraExiste] = await conn.query(
             'SELECT id_carrera, descripcion FROM carrera WHERE id_carrera = ?',
             [id_carrera]
@@ -457,13 +511,12 @@ router.post('/desafiar/duelo/:idOponente', async (req, res) => {
         if (!carreraExiste.length) {
             await conn.rollback();
             conn.release();
-            console.log(`[DESAFÍO CARRERA] ❌ Carrera no encontrada`);
             return res.status(400).json({ message: 'Carrera no válida' });
         }
         
         const nombreCarrera = carreraExiste[0].descripcion;
         
-        // 3️⃣ VERIFICAR PUNTOS DE CARRERA DEL RETADOR
+        // Verificar puntos de carrera del retador
         const [puntosRetador] = await conn.query(
             'SELECT puntos FROM usuario_puntos_carrera WHERE id_usuario = ? AND id_carrera = ?',
             [idRemitente, id_carrera]
@@ -472,7 +525,6 @@ router.post('/desafiar/duelo/:idOponente', async (req, res) => {
         if (!puntosRetador.length) {
             await conn.rollback();
             conn.release();
-            console.log(`[DESAFÍO CARRERA] ❌ Usuario no tiene puntos en esta carrera`);
             return res.status(400).json({ message: 'No tienes puntos en esta carrera' });
         }
         
@@ -481,15 +533,12 @@ router.post('/desafiar/duelo/:idOponente', async (req, res) => {
         if (puntosActualesRetador < apuesta) {
             await conn.rollback();
             conn.release();
-            console.log(`[DESAFÍO CARRERA] ❌ Puntos insuficientes: ${puntosActualesRetador}/${apuesta}`);
             return res.status(400).json({ 
                 message: `No tienes suficientes puntos de carrera. Necesitas ${apuesta}, tienes ${puntosActualesRetador}` 
             });
         }
         
-        console.log(`[DESAFÍO CARRERA] ✅ Puntos de carrera verificados: ${puntosActualesRetador}`);
-        
-        // 4️⃣ VERIFICAR QUE AMBOS USUARIOS TENGAN LA CARRERA
+        // Verificar que el oponente tiene la carrera
         const [puntosDefensor] = await conn.query(
             'SELECT puntos FROM usuario_puntos_carrera WHERE id_usuario = ? AND id_carrera = ?',
             [idOponente, id_carrera]
@@ -498,18 +547,15 @@ router.post('/desafiar/duelo/:idOponente', async (req, res) => {
         if (!puntosDefensor.length) {
             await conn.rollback();
             conn.release();
-            console.log(`[DESAFÍO CARRERA] ❌ Oponente no tiene puntos en esta carrera`);
             return res.status(400).json({ message: 'El oponente no tiene esta carrera' });
         }
         
-        // 5️⃣ GENERAR ID ÚNICO DEL DUELO
+        // Generar ID único
         const timestamp = Date.now();
         const random = Math.random().toString(36).substr(2, 9);
         const id_duelo = `duelo_carrera_${timestamp}_${random}`;
         
-        console.log(`[DESAFÍO CARRERA] 🔑 ID Duelo: ${id_duelo}`);
-        
-        // 6️⃣ SELECCIONAR PREGUNTAS ESPECÍFICAS DE LA CARRERA
+        // Seleccionar preguntas de la carrera
         const [preguntas] = await conn.query(`
             SELECT DISTINCT p.id_pregunta, p.pregunta, p.puntos_carrera
             FROM pregunta p
@@ -528,15 +574,12 @@ router.post('/desafiar/duelo/:idOponente', async (req, res) => {
         if (preguntas.length < dificultadConfig.preguntas) {
             await conn.rollback();
             conn.release();
-            console.log(`[DESAFÍO CARRERA] ❌ Solo ${preguntas.length} preguntas disponibles`);
             return res.status(500).json({ 
                 message: `No hay suficientes preguntas de "${dificultadConfig.nombre}" en ${nombreCarrera}` 
             });
         }
         
-        console.log(`[DESAFÍO CARRERA] ✅ ${preguntas.length} preguntas seleccionadas`);
-        
-        // 7️⃣ CREAR DUELO EN BD
+        // Crear duelo
         await conn.query(`
             INSERT INTO duelos 
             (id_duelo, id_retador, id_defensor, id_carrera, dificultad, apuesta, 
@@ -544,9 +587,7 @@ router.post('/desafiar/duelo/:idOponente', async (req, res) => {
             VALUES (?, ?, ?, ?, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 48 HOUR), 'activo', 'carrera')
         `, [id_duelo, idRemitente, idOponente, id_carrera, id_dificultad, apuesta]);
         
-        console.log(`[DESAFÍO CARRERA] ✅ Duelo insertado en BD`);
-        
-        // 8️⃣ INSERTAR PREGUNTAS DEL DUELO
+        // Insertar preguntas
         for (let i = 0; i < preguntas.length; i++) {
             await conn.query(`
                 INSERT INTO duelos_preguntas (id_duelo, id_pregunta, orden) 
@@ -554,9 +595,7 @@ router.post('/desafiar/duelo/:idOponente', async (req, res) => {
             `, [id_duelo, preguntas[i].id_pregunta, i + 1]);
         }
         
-        console.log(`[DESAFÍO CARRERA] ✅ Preguntas insertadas`);
-        
-        // 9️⃣ CREAR NOTIFICACIÓN
+        // Crear notificación
         const extraData = {
             remitente: {
                 id_usuario: idRemitente,
@@ -580,17 +619,15 @@ router.post('/desafiar/duelo/:idOponente', async (req, res) => {
             VALUES (?, ?, 'desafio_duelo', ?, ?)
         `, [idOponente, idRemitente, mensajeNotificacion, JSON.stringify(extraData)]);
         
-        console.log(`[DESAFÍO CARRERA] ✅ Notificación creada`);
-        
         await conn.commit();
         conn.release();
         
-        // 🔟 EMITIR SOCKET
+        // Emitir socket
         if (req.io) {
             req.io.to(idOponente.toString()).emit('notificacion_recibida');
         }
         
-        console.log(`[DESAFÍO CARRERA] ✅ ÉXITO - Desafío enviado`);
+        console.log(`[DESAFÍO CARRERA] ✅ ÉXITO`);
         
         res.json({ 
             success: true, 
@@ -606,10 +643,10 @@ router.post('/desafiar/duelo/:idOponente', async (req, res) => {
         try { await conn.rollback(); } catch(e) {}
         conn.release();
         console.error('❌ [DESAFÍO CARRERA] Error:', err);
-        console.error('❌ [DESAFÍO CARRERA] Stack:', err.stack);
         res.status(500).json({ message: 'Error: ' + err.message });
     }
 });
+
 // =============================================
 // 📝 CARGAR EXAMEN DEL DUELO
 // =============================================
@@ -675,7 +712,7 @@ router.get('/duelo/examen/:salaId', async (req, res) => {
             pregunta.respuestas = respuestas;
         }
         
-        const dificultadNombre = DIFICULTADES[duelo.id_dificultad]?.nombre || 'Desconocida';
+        const dificultadNombre = DIFICULTADES[duelo.dificultad]?.nombre || 'Desconocida';
         
         res.render('examen-duelo-individual', {
             layout: 'main',
@@ -694,227 +731,7 @@ router.get('/duelo/examen/:salaId', async (req, res) => {
         res.redirect('/portal?error=error_servidor');
     }
 });
-// =============================================
-// 🚪 ABANDONAR DUELO - VERSIÓN CORREGIDA
-// Coloca esto DESPUÉS de la ruta /duelo/responder y ANTES de cualquier otra ruta de abandono
-// =============================================
 
-// =============================================
-// 🚪 ABANDONAR DUELO - VERSIÓN CORREGIDA CON SOPORTE DE CARRERA
-// =============================================
-
-router.post('/duelo/confirmarRendicion/:salaId', async (req, res) => {
-    if (!req.session.user) return res.status(401).json({ error: 'No autorizado' });
-    
-    const { salaId } = req.params;
-    const { motivo } = req.body;
-    const idUsuario = req.session.user.id_usuario;
-    
-    console.log(`[ABANDONO] ==========================================`);
-    console.log(`[ABANDONO] 🚪 Usuario ${idUsuario} abandonando duelo ${salaId}`);
-    console.log(`[ABANDONO] 📋 Motivo: ${motivo}`);
-    
-    const conn = await pool.getConnection();
-    try {
-        await conn.beginTransaction();
-        
-        // 1️⃣ Obtener duelo
-        const [duelo] = await conn.query(
-            'SELECT * FROM duelos WHERE id_duelo = ? AND (id_retador = ? OR id_defensor = ?)',
-            [salaId, idUsuario, idUsuario]
-        );
-        
-        if (!duelo.length) {
-            await conn.rollback();
-            conn.release();
-            return res.status(404).json({ error: 'Duelo no encontrado' });
-        }
-        
-        const dueloData = duelo[0];
-        const apuesta = dueloData.apuesta;
-        const esRetador = dueloData.id_retador === idUsuario;
-        const idOponente = esRetador ? dueloData.id_defensor : dueloData.id_retador;
-        const esDueloCarrera = dueloData.id_carrera !== null && dueloData.tipo_duelo === 'carrera';
-        
-        console.log(`[ABANDONO] 💰 Apuesta: ${apuesta} pts`);
-        console.log(`[ABANDONO] 📋 Es carrera: ${esDueloCarrera}`);
-        console.log(`[ABANDONO] 🎯 ID Carrera: ${dueloData.id_carrera}`);
-        
-        // 2️⃣ Calcular penalización según motivo (PORCENTAJE DE LA APUESTA)
-        let porcentajePenalizacion = 0;
-        let descripcionMotivo = '';
-        
-        switch (motivo) {
-            case 'voluntario':
-            case 'rendirse':
-                porcentajePenalizacion = PENALIZACIONES.ABANDONO_VOLUNTARIO;
-                descripcionMotivo = 'Abandono voluntario';
-                break;
-            case 'navegacion':
-                porcentajePenalizacion = PENALIZACIONES.NAVEGACION || 1.0;
-                descripcionMotivo = 'Cierre de navegador';
-                break;
-            case 'desconexion':
-                porcentajePenalizacion = PENALIZACIONES.DESCONEXION;
-                descripcionMotivo = 'Desconexión';
-                break;
-            default:
-                porcentajePenalizacion = PENALIZACIONES.ABANDONO_VOLUNTARIO;
-                descripcionMotivo = 'Abandono';
-        }
-        
-        const penalizacion = Math.floor(apuesta * porcentajePenalizacion);
-        const gananciaOponente = penalizacion;
-        
-        console.log(`[ABANDONO] 📊 Porcentaje: ${porcentajePenalizacion * 100}%`);
-        console.log(`[ABANDONO] 💸 Penalización: ${penalizacion} pts`);
-        console.log(`[ABANDONO] 💰 Ganancia oponente: ${gananciaOponente} pts`);
-        
-        if (esDueloCarrera) {
-            // ============ DUELO DE CARRERA ============
-            console.log(`[ABANDONO] 💎 PROCESANDO ABANDONO EN MODO CARRERA`);
-            
-            // Verificar puntos de carrera del usuario
-            const [puntosCarrera] = await conn.query(
-                'SELECT puntos FROM usuario_puntos_carrera WHERE id_usuario = ? AND id_carrera = ?',
-                [idUsuario, dueloData.id_carrera]
-            );
-            
-            const puntosCarreraActuales = puntosCarrera[0]?.puntos || 0;
-            console.log(`[ABANDONO] 💎 Puntos carrera actuales: ${puntosCarreraActuales}`);
-            
-            // Ajustar penalización si no tiene suficientes puntos
-            const penalizacionFinal = Math.min(penalizacion, puntosCarreraActuales);
-            const gananciaFinal = penalizacionFinal;
-            
-            console.log(`[ABANDONO] 💎 Penalización final: ${penalizacionFinal}`);
-            
-            // Restar puntos de carrera al que abandona
-            const nuevosPuntosAbandono = Math.max(0, puntosCarreraActuales - penalizacionFinal);
-            
-            await conn.query(`
-                INSERT INTO usuario_puntos_carrera (id_usuario, id_carrera, puntos)
-                VALUES (?, ?, ?)
-                ON DUPLICATE KEY UPDATE puntos = ?
-            `, [idUsuario, dueloData.id_carrera, nuevosPuntosAbandono, nuevosPuntosAbandono]);
-            
-            console.log(`[ABANDONO] ✅ Usuario: ${puntosCarreraActuales} → ${nuevosPuntosAbandono}`);
-            
-            // Sumar puntos de carrera al oponente
-            const [puntosOponente] = await conn.query(
-                'SELECT puntos FROM usuario_puntos_carrera WHERE id_usuario = ? AND id_carrera = ?',
-                [idOponente, dueloData.id_carrera]
-            );
-            
-            const puntosOponenteActuales = puntosOponente[0]?.puntos || 0;
-            const nuevosPuntosOponente = puntosOponenteActuales + gananciaFinal;
-            
-            await conn.query(`
-                INSERT INTO usuario_puntos_carrera (id_usuario, id_carrera, puntos)
-                VALUES (?, ?, ?)
-                ON DUPLICATE KEY UPDATE puntos = ?
-            `, [idOponente, dueloData.id_carrera, nuevosPuntosOponente, nuevosPuntosOponente]);
-            
-            console.log(`[ABANDONO] ✅ Oponente: ${puntosOponenteActuales} → ${nuevosPuntosOponente}`);
-            
-        } else {
-            // ============ DUELO GENERAL ============
-            console.log(`[ABANDONO] 🌍 PROCESANDO ABANDONO EN MODO GENERAL`);
-            
-            await conn.query(
-                'UPDATE usuario SET puntos = GREATEST(0, puntos - ?) WHERE id_usuario = ?',
-                [penalizacion, idUsuario]
-            );
-            
-            await conn.query(
-                'UPDATE usuario SET puntos = puntos + ? WHERE id_usuario = ?',
-                [gananciaOponente, idOponente]
-            );
-            
-            console.log(`[ABANDONO] ✅ Puntos globales actualizados`);
-        }
-        
-        // 6️⃣ Registrar en historial
-        await conn.query(`
-            INSERT INTO historial_duelos 
-            (id_duelo, id_retador, id_defensor, id_ganador, puntos_retador, puntos_defensor, 
-             fecha_duelo, motivo_abandono, penalizacion_aplicada, tipo_duelo)
-            VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?)
-        `, [
-            salaId,
-            dueloData.id_retador,
-            dueloData.id_defensor,
-            idOponente,
-            esRetador ? -penalizacion : gananciaOponente,
-            esRetador ? gananciaOponente : -penalizacion,
-            descripcionMotivo,
-            penalizacion,
-            esDueloCarrera ? 'carrera' : 'general'
-        ]);
-        
-        // 7️⃣ Marcar duelo como abandonado
-        await conn.query('UPDATE duelos SET estado = ? WHERE id_duelo = ?', ['abandonado', salaId]);
-        
-        // 8️⃣ Limpiar datos
-        await conn.query('DELETE FROM duelos_preguntas WHERE id_duelo = ?', [salaId]);
-        await conn.query('DELETE FROM duelos_respuestas WHERE id_duelo = ?', [salaId]);
-        
-        // 9️⃣ Notificar oponente
-        const [abandonador] = await conn.query('SELECT username FROM usuario WHERE id_usuario = ?', [idUsuario]);
-        const nombreAbandono = abandonador[0]?.username || 'Usuario';
-        
-        await conn.query(`
-            INSERT INTO notificaciones 
-            (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data)
-            VALUES (?, ?, 'duelo_abandonado', ?, ?)
-        `, [
-            idOponente,
-            idUsuario,
-            `¡${nombreAbandono} abandonó el duelo! Ganaste ${gananciaOponente} puntos ${esDueloCarrera ? 'de carrera' : 'globales'} 🏆`,
-            JSON.stringify({ 
-                id_duelo: salaId, 
-                motivo: descripcionMotivo,
-                ganancia: gananciaOponente,
-                tipo_duelo: esDueloCarrera ? 'carrera' : 'general'
-            })
-        ]);
-        
-        await conn.commit();
-        conn.release();
-        
-        // 🔟 Emitir sockets
-        if (req.io) {
-            req.io.to(idOponente.toString()).emit('duelo:oponenteAbandono', {
-                ganaste: true,
-                mensaje: `${nombreAbandono} ha abandonado el duelo`,
-                gananciaOponente,
-                motivo: descripcionMotivo,
-                salaId,
-                tipoDuelo: esDueloCarrera ? 'carrera' : 'general'
-            });
-            
-            req.io.to(idOponente.toString()).emit('notificacion_recibida');
-        }
-        
-        console.log(`[ABANDONO] ✅ Proceso completado`);
-        console.log(`[ABANDONO] ==========================================`);
-        
-        res.json({
-            success: true,
-            message: `Has abandonado el duelo. Perdiste ${penalizacion} puntos ${esDueloCarrera ? 'de carrera' : 'globales'}`,
-            penalizacion,
-            gananciaOponente,
-            motivo: descripcionMotivo,
-            tipoDuelo: esDueloCarrera ? 'carrera' : 'general'
-        });
-        
-    } catch (error) {
-        try { await conn.rollback(); } catch(e) {}
-        conn.release();
-        console.error('❌ [ABANDONO] Error:', error);
-        res.status(500).json({ error: 'Error al abandonar duelo: ' + error.message });
-    }
-});
 // =============================================
 // 💾 GUARDAR RESPUESTAS
 // =============================================
@@ -938,7 +755,7 @@ router.post('/duelo/responder/:salaId', async (req, res) => {
         
         if (!duelos.length) {
             await conn.rollback();
-            await conn.release();
+            conn.release();
             return res.status(404).json({ error: 'Duelo no encontrado' });
         }
         
@@ -947,7 +764,7 @@ router.post('/duelo/responder/:salaId', async (req, res) => {
         
         if ((esRetador && duelo.respondido_retador) || (!esRetador && duelo.respondido_oponente)) {
             await conn.rollback();
-            await conn.release();
+            conn.release();
             return res.status(400).json({ error: 'Ya completaste este examen' });
         }
         
@@ -966,26 +783,25 @@ router.post('/duelo/responder/:salaId', async (req, res) => {
             await conn.query(`UPDATE duelos SET respondido_oponente = 1 WHERE id_duelo = ?`, [salaId]);
         }
         
+        console.log(`[RESPONDER] ✅ Duelo marcado como respondido`);
+        
+        await actualizarNotificacionesAlTerminar(salaId, conn);
+        
         await conn.commit();
-        await conn.release();
+        conn.release();
         
         res.redirect(`/duelo/resultados/${salaId}`);
         
     } catch (error) {
         await conn.rollback();
-        await conn.release();
+        conn.release();
         console.error('❌ Error guardando respuestas:', error);
         res.status(500).json({ error: 'Error del servidor: ' + error.message });
     }
 });
 
 // =============================================
-// 🏆 RESULTADOS (con puntos de carrera)
-// =============================================
-
-// =============================================
-// 🏆 RESULTADOS (CORREGIDO) - competitivo.router.js
-// Línea ~850 aproximadamente
+// 🏆 RESULTADOS DEL DUELO
 // =============================================
 
 router.get('/duelo/resultados/:salaId', async (req, res) => {
@@ -998,7 +814,7 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
     console.log(`[RESULTADOS] 📊 Sala: ${salaId}, Usuario: ${idUsuario}`);
     
     try {
-        // 1️⃣ Obtener duelo
+        // Obtener duelo
         const [duelos] = await pool.query(`
             SELECT d.*, 
                    u1.username as retador_username,
@@ -1021,12 +837,11 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
         const duelo = duelos[0];
         const esRetador = duelo.id_retador === idUsuario;
         const esDueloCarrera = duelo.id_carrera !== null && duelo.tipo_duelo === 'carrera';
+        const idOponente = esRetador ? duelo.id_defensor : duelo.id_retador;
         
         console.log(`[RESULTADOS] 📋 Tipo: ${esDueloCarrera ? 'CARRERA' : 'GENERAL'}`);
-        console.log(`[RESULTADOS] 📋 Es retador: ${esRetador}`);
-        console.log(`[RESULTADOS] 📋 Carrera: ${duelo.id_carrera || 'N/A'}`);
         
-        // 2️⃣ Obtener mis respuestas
+        // Obtener mis respuestas
         const [misRespuestas] = await pool.query(`
             SELECT 
                 dr.id_pregunta,
@@ -1045,38 +860,29 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
         `, [salaId, idUsuario]);
         
         if (!misRespuestas.length) {
-            console.log(`[RESULTADOS] ⚠️ Usuario no ha respondido aún`);
             return res.redirect(`/duelo/examen/${salaId}?mensaje=Completa el examen primero`);
         }
         
-        // 3️⃣ Calcular mi puntaje
+        // Calcular mi puntaje
         const miPuntaje = misRespuestas.filter(r => r.es_correcta).length;
         const miPuntosCarrera = esDueloCarrera 
             ? misRespuestas.filter(r => r.es_correcta).reduce((sum, r) => sum + (r.puntos_carrera || 0), 0)
             : 0;
         
         console.log(`[RESULTADOS] ✅ Mi puntaje: ${miPuntaje}/${misRespuestas.length}`);
-        console.log(`[RESULTADOS] 💎 Mis puntos carrera: ${miPuntosCarrera}`);
         
-        // 4️⃣ Verificar si ambos terminaron
+        // Verificar si ambos terminaron
         const ambosTerminaron = duelo.respondido_retador && duelo.respondido_oponente;
-        console.log(`[RESULTADOS] 🎯 Ambos terminaron: ${ambosTerminaron}`);
         
         let respuestasOponente = [];
         let oponentePuntaje = null;
-        let oponentePuntosCarrera = 0;
-        let nombreOponente = '';
+        let nombreOponente = esRetador ? duelo.defensor_username : duelo.retador_username;
         let resultado = null;
         let puntosGanados = 0;
         let puntosCarreraGanados = 0;
         
         if (ambosTerminaron) {
-            const idOponente = esRetador ? duelo.id_defensor : duelo.id_retador;
-            nombreOponente = esRetador ? duelo.defensor_username : duelo.retador_username;
-            
-            console.log(`[RESULTADOS] 👤 Oponente: ${nombreOponente} (ID: ${idOponente})`);
-            
-            // 5️⃣ Obtener respuestas del oponente
+            // Obtener respuestas del oponente
             const [respOponente] = await pool.query(`
                 SELECT 
                     dr.id_pregunta,
@@ -1091,17 +897,9 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
             
             respuestasOponente = respOponente;
             oponentePuntaje = respuestasOponente.filter(r => r.es_correcta).length;
-            oponentePuntosCarrera = esDueloCarrera
-                ? respuestasOponente.filter(r => r.es_correcta).reduce((sum, r) => sum + (r.puntos_carrera || 0), 0)
-                : 0;
             
-            console.log(`[RESULTADOS] 👤 Puntaje oponente: ${oponentePuntaje}/${respuestasOponente.length}`);
-            console.log(`[RESULTADOS] 💎 Puntos carrera oponente: ${oponentePuntosCarrera}`);
-            
-            // 6️⃣ Finalizar duelo si no está finalizado
+            // Finalizar duelo si no está finalizado
             if (duelo.estado !== 'finalizado') {
-                console.log(`[RESULTADOS] 🏁 Finalizando duelo...`);
-                
                 resultado = await finalizarDueloConCarrera(
                     salaId, 
                     duelo, 
@@ -1110,53 +908,41 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
                     miPuntaje,
                     oponentePuntaje,
                     miPuntosCarrera,
-                    oponentePuntosCarrera
+                    respuestasOponente.filter(r => r.es_correcta).reduce((sum, r) => sum + (r.puntos_carrera || 0), 0)
                 );
                 
-                console.log(`[RESULTADOS] ✅ Resultado:`, resultado);
-                
-                // ✅ ASIGNAR CORRECTAMENTE LOS PUNTOS SEGÚN TIPO
                 if (esDueloCarrera) {
                     puntosCarreraGanados = resultado.puntosCarreraGanados || 0;
-                    puntosGanados = 0; // No hay puntos globales en duelos de carrera
                 } else {
                     puntosGanados = resultado.puntosGanados || 0;
-                    puntosCarreraGanados = 0; // No hay puntos de carrera en duelos generales
                 }
-                
             } else {
-                // 7️⃣ Obtener del historial
-                console.log(`[RESULTADOS] 📖 Obteniendo del historial...`);
-                
+                // Obtener del historial
                 const [historial] = await pool.query(`
                     SELECT * FROM historial_duelos WHERE id_duelo = ?
                 `, [salaId]);
                 
-                if (historial.length) {
+                if (historial.length > 0) {
+                    const hist = historial[0];
                     resultado = {
-                        ganador: historial[0].id_ganador,
+                        ganador: hist.id_ganador,
                         esDueloCarrera: esDueloCarrera
                     };
                     
-                    // ✅ OBTENER PUNTOS CORRECTOS SEGÚN TIPO Y ROL
                     if (esDueloCarrera) {
                         puntosCarreraGanados = esRetador 
-                            ? (historial[0].puntos_retador || 0)
-                            : (historial[0].puntos_defensor || 0);
-                        puntosGanados = 0;
+                            ? (hist.puntos_retador || 0)
+                            : (hist.puntos_defensor || 0);
                     } else {
                         puntosGanados = esRetador 
-                            ? (historial[0].puntos_retador || 0)
-                            : (historial[0].puntos_defensor || 0);
-                        puntosCarreraGanados = 0;
+                            ? (hist.puntos_retador || 0)
+                            : (hist.puntos_defensor || 0);
                     }
-                    
-                    console.log(`[RESULTADOS] 📖 Historial - Puntos asignados correctamente`);
                 }
             }
         }
         
-        // 8️⃣ Combinar respuestas
+        // Combinar respuestas
         const respuestasCombinadas = misRespuestas.map((miResp, index) => {
             const respOp = respuestasOponente.find(r => r.id_pregunta === miResp.id_pregunta);
             return {
@@ -1169,18 +955,24 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
             };
         });
         
-        // 9️⃣ Preparar datos para la vista
         const tipoDuelo = esDueloCarrera ? 'carrera' : 'general';
+        const totalPreguntas = misRespuestas.length;
         
-        console.log(`[RESULTADOS] 📊 Resumen final:`);
-        console.log(`[RESULTADOS]   - Tipo: ${tipoDuelo}`);
-        console.log(`[RESULTADOS]   - Mi puntaje: ${miPuntaje}`);
-        console.log(`[RESULTADOS]   - Oponente: ${oponentePuntaje}`);
-        console.log(`[RESULTADOS]   - Puntos ganados (globales): ${puntosGanados}`);
-        console.log(`[RESULTADOS]   - Puntos ganados (carrera): ${puntosCarreraGanados}`);
+        // Limpiar notificaciones
+        try {
+            await pool.query(`
+                DELETE FROM notificaciones 
+                WHERE (id_usuario_destinatario = ? OR id_usuario_remitente = ?)
+                AND tipo = 'desafio_duelo'
+                AND JSON_EXTRACT(extra_data, '$.id_duelo') = ?
+            `, [idUsuario, idUsuario, salaId]);
+        } catch (cleanupError) {
+            console.warn('⚠️ No se pudieron limpiar las notificaciones');
+        }
+        
         console.log(`[RESULTADOS] ==========================================`);
         
-        // 🔟 Renderizar vista
+        // Renderizar vista
         res.render('resultados-duelo', {
             layout: 'main',
             user: req.session.user,
@@ -1196,44 +988,25 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
             ambosTerminaron,
             esRetador,
             correctas: miPuntaje,
-            totalPreguntas: misRespuestas.length,
-            puntosGanados: puntosGanados,           // ✅ Puntos globales
-            puntosCarreraGanados: puntosCarreraGanados, // ✅ Puntos de carrera
-            dificultad: DIFICULTADES[duelo.id_dificultad]?.nombre || 'Desconocida',
-            apuesta: duelo.apuesta,
-            // ✅ AGREGAR ESTOS DATOS PARA DEBUGGING
-            _debug: {
-                esDueloCarrera,
-                id_carrera: duelo.id_carrera,
-                tipo_duelo: duelo.tipo_duelo,
-                miPuntosCarrera,
-                oponentePuntosCarrera
-            }
+            totalPreguntas,
+            puntosGanados,
+            puntosCarreraGanados,
+            dificultad: DIFICULTADES[duelo.dificultad]?.nombre || 'Desconocida',
+            apuesta: duelo.apuesta
         });
         
     } catch (error) {
         console.error('❌ [RESULTADOS] Error:', error);
-        console.error('❌ [RESULTADOS] Stack:', error.stack);
         res.status(500).send(`
             <h1>Error al mostrar resultados</h1>
             <p>${error.message}</p>
-            <pre>${error.stack}</pre>
             <a href="/portal">Volver al portal</a>
         `);
     }
 });
 
-
 // =============================================
-// 🏁 FINALIZAR DUELO (con puntos de carrera)
-// =============================================
-
-// =============================================
-// 🏁 FINALIZAR DUELO - VERSIÓN CORREGIDA
-// =============================================
-
-// =============================================
-// 🏁 FINALIZAR DUELO - VERSIÓN MEJORADA CON MÉTRICAS
+// 🏁 FINALIZAR DUELO
 // =============================================
 
 async function finalizarDueloConCarrera(
@@ -1250,28 +1023,22 @@ async function finalizarDueloConCarrera(
     try {
         await conn.beginTransaction();
         
-        console.log(`[FINALIZAR DUELO] ==========================================`);
-        console.log(`[FINALIZAR DUELO] 🎯 Duelo: ${salaId}`);
-        console.log(`[FINALIZAR DUELO] 👤 Usuario: ${idUsuario}, Oponente: ${idOponente}`);
-        console.log(`[FINALIZAR DUELO] 📊 Mi puntaje: ${miPuntaje}, Oponente: ${oponentePuntaje}`);
+        console.log(`[FINALIZAR DUELO] 🏁 Iniciando finalización...`);
         
         const esRetador = duelo.id_retador === idUsuario;
         const apuesta = duelo.apuesta;
         const esDueloCarrera = duelo.id_carrera !== null && duelo.tipo_duelo === 'carrera';
         
-        // ✅ Obtener total de preguntas
+        // Obtener total de preguntas
         const [totalPreguntas] = await conn.query(
             'SELECT COUNT(*) as total FROM duelos_preguntas WHERE id_duelo = ?',
             [salaId]
         );
         
         const numPreguntas = totalPreguntas[0].total;
-        
-        // ✅ Calcular preguntas correctas según rol
         const correctasRetador = esRetador ? miPuntaje : oponentePuntaje;
         const correctasDefensor = esRetador ? oponentePuntaje : miPuntaje;
         
-        // ✅ Calcular porcentajes
         const porcentajeRetador = numPreguntas > 0 
             ? ((correctasRetador / numPreguntas) * 100).toFixed(2)
             : 0;
@@ -1279,44 +1046,30 @@ async function finalizarDueloConCarrera(
             ? ((correctasDefensor / numPreguntas) * 100).toFixed(2)
             : 0;
         
-        console.log(`[FINALIZAR DUELO] 📈 Total preguntas: ${numPreguntas}`);
-        console.log(`[FINALIZAR DUELO] 📈 Retador: ${correctasRetador}/${numPreguntas} (${porcentajeRetador}%)`);
-        console.log(`[FINALIZAR DUELO] 📈 Defensor: ${correctasDefensor}/${numPreguntas} (${porcentajeDefensor}%)`);
-        
         let idGanador = null;
         let puntosRetador = 0;
         let puntosDefensor = 0;
         let puntosCarreraRetador = 0;
         let puntosCarreraDefensor = 0;
         
-        // ✅ DETERMINAR GANADOR
+        // Determinar ganador
         if (correctasRetador > correctasDefensor) {
             idGanador = duelo.id_retador;
-            console.log(`[FINALIZAR DUELO] 🏆 GANADOR: Retador`);
         } else if (correctasDefensor > correctasRetador) {
             idGanador = duelo.id_defensor;
-            console.log(`[FINALIZAR DUELO] 🏆 GANADOR: Defensor`);
-        } else {
-            idGanador = null;
-            console.log(`[FINALIZAR DUELO] 🤝 EMPATE`);
         }
         
-        // ✅ CALCULAR PUNTOS SEGÚN TIPO DE DUELO
+        // Calcular puntos según tipo
         if (esDueloCarrera) {
-            console.log(`[FINALIZAR DUELO] 💎 MODO CARRERA - Usando apuesta: ${apuesta}`);
-            
             if (idGanador === duelo.id_retador) {
                 puntosCarreraRetador = apuesta;
                 puntosCarreraDefensor = -apuesta;
             } else if (idGanador === duelo.id_defensor) {
                 puntosCarreraDefensor = apuesta;
                 puntosCarreraRetador = -apuesta;
-            } else {
-                puntosCarreraRetador = 0;
-                puntosCarreraDefensor = 0;
             }
             
-            // ✅ ACTUALIZAR PUNTOS DE CARRERA
+            // Actualizar puntos de carrera
             const [puntosRetadorActuales] = await conn.query(
                 'SELECT puntos FROM usuario_puntos_carrera WHERE id_usuario = ? AND id_carrera = ?',
                 [duelo.id_retador, duelo.id_carrera]
@@ -1347,23 +1100,16 @@ async function finalizarDueloConCarrera(
                 ON DUPLICATE KEY UPDATE puntos = ?
             `, [duelo.id_defensor, duelo.id_carrera, puntosDefensorNuevos, puntosDefensorNuevos]);
             
-            console.log(`[FINALIZAR DUELO] ✅ Puntos de carrera actualizados`);
-            
         } else {
-            console.log(`[FINALIZAR DUELO] 🌍 MODO GENERAL - Usando apuesta: ${apuesta}`);
-            
             if (idGanador === duelo.id_retador) {
                 puntosRetador = apuesta;
                 puntosDefensor = -apuesta;
             } else if (idGanador === duelo.id_defensor) {
                 puntosDefensor = apuesta;
                 puntosRetador = -apuesta;
-            } else {
-                puntosRetador = 0;
-                puntosDefensor = 0;
             }
             
-            // ✅ ACTUALIZAR PUNTOS GLOBALES
+            // Actualizar puntos globales
             await conn.query(
                 'UPDATE usuario SET puntos = GREATEST(0, puntos + ?) WHERE id_usuario = ?',
                 [puntosRetador, duelo.id_retador]
@@ -1373,19 +1119,17 @@ async function finalizarDueloConCarrera(
                 'UPDATE usuario SET puntos = GREATEST(0, puntos + ?) WHERE id_usuario = ?',
                 [puntosDefensor, duelo.id_defensor]
             );
-            
-            console.log(`[FINALIZAR DUELO] ✅ Puntos globales actualizados`);
         }
         
-        // ✅ REGISTRAR EN HISTORIAL CON MÉTRICAS COMPLETAS
+        // Registrar en historial
         await conn.query(`
             INSERT INTO historial_duelos 
             (id_duelo, id_retador, id_defensor, id_ganador, 
              puntos_retador, puntos_defensor, 
              total_preguntas, correctas_retador, correctas_defensor,
              porcentaje_retador, porcentaje_defensor,
-             fecha_duelo, motivo_abandono, penalizacion_aplicada, tipo_duelo)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NULL, 0, ?)
+             fecha_duelo, tipo_duelo)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)
         `, [
             salaId, 
             duelo.id_retador, 
@@ -1401,19 +1145,17 @@ async function finalizarDueloConCarrera(
             esDueloCarrera ? 'carrera' : 'general'
         ]);
         
-        // ✅ MARCAR DUELO COMO FINALIZADO
+        // Marcar duelo como finalizado
         await conn.query('UPDATE duelos SET estado = ? WHERE id_duelo = ?', ['finalizado', salaId]);
         
-        // ✅ ELIMINAR NOTIFICACIÓN DEL DESAFÍO
+        // Eliminar notificación del desafío
         await conn.query(`
             DELETE FROM notificaciones 
             WHERE tipo = 'desafio_duelo' 
             AND JSON_EXTRACT(extra_data, '$.id_duelo') = ?
         `, [salaId]);
         
-        console.log(`[FINALIZAR DUELO] ✅ Notificación de desafío eliminada`);
-        
-        // ✅ CREAR NOTIFICACIÓN DE RESULTADO PARA AMBOS
+        // Crear notificaciones de resultado
         const [retadorInfo] = await conn.query(
             'SELECT username FROM usuario WHERE id_usuario = ?',
             [duelo.id_retador]
@@ -1440,7 +1182,7 @@ async function finalizarDueloConCarrera(
             mensajeDefensor = `🤝 Empate con ${retadorUsername} (${correctasDefensor}/${numPreguntas})`;
         }
         
-        // Notificación para retador
+        // Notificaciones
         await conn.query(`
             INSERT INTO notificaciones 
             (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data)
@@ -1453,12 +1195,10 @@ async function finalizarDueloConCarrera(
                 id_duelo: salaId,
                 resultado: idGanador === duelo.id_retador ? 'victoria' : (idGanador ? 'derrota' : 'empate'),
                 correctas: correctasRetador,
-                total: numPreguntas,
-                porcentaje: porcentajeRetador
+                total: numPreguntas
             })
         ]);
         
-        // Notificación para defensor
         await conn.query(`
             INSERT INTO notificaciones 
             (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data)
@@ -1471,44 +1211,39 @@ async function finalizarDueloConCarrera(
                 id_duelo: salaId,
                 resultado: idGanador === duelo.id_defensor ? 'victoria' : (idGanador ? 'derrota' : 'empate'),
                 correctas: correctasDefensor,
-                total: numPreguntas,
-                porcentaje: porcentajeDefensor
+                total: numPreguntas
             })
         ]);
         
         await conn.commit();
-        await conn.release();
+        conn.release();
         
-        console.log(`[FINALIZAR DUELO] ✅ PROCESO COMPLETADO`);
-        console.log(`[FINALIZAR DUELO] ==========================================`);
+        console.log(`[FINALIZAR DUELO] ✅ Completado`);
         
-        // ✅ RETORNAR VALORES CORRECTOS
         return {
             puntosGanados: !esDueloCarrera ? (esRetador ? puntosRetador : puntosDefensor) : 0,
             puntosCarreraGanados: esDueloCarrera ? (esRetador ? puntosCarreraRetador : puntosCarreraDefensor) : 0,
             ganador: idGanador,
-            esDueloCarrera,
-            correctas: esRetador ? correctasRetador : correctasDefensor,
-            totalPreguntas: numPreguntas,
-            porcentaje: esRetador ? porcentajeRetador : porcentajeDefensor
+            esDueloCarrera
         };
         
     } catch (error) {
         await conn.rollback();
-        await conn.release();
+        conn.release();
         console.error('❌ [FINALIZAR DUELO] Error:', error);
         throw error;
     }
 }
+
 // =============================================
-// 🚪 ABANDONAR DUELO (Sistema mejorado)
+// 🚪 ABANDONAR DUELO
 // =============================================
 
-router.post('/duelo/abandonar/:salaId', async (req, res) => {
+router.post('/duelo/confirmarRendicion/:salaId', async (req, res) => {
     if (!req.session.user) return res.status(401).json({ error: 'No autorizado' });
     
     const { salaId } = req.params;
-    const { motivo } = req.body; // 'voluntario' o 'desconexion'
+    const { motivo } = req.body;
     const idUsuario = req.session.user.id_usuario;
     
     console.log(`[ABANDONO] Usuario ${idUsuario} abandonando duelo ${salaId} (${motivo})`);
@@ -1517,7 +1252,6 @@ router.post('/duelo/abandonar/:salaId', async (req, res) => {
     try {
         await conn.beginTransaction();
         
-        // Obtener duelo
         const [duelo] = await conn.query(
             'SELECT * FROM duelos WHERE id_duelo = ? AND (id_retador = ? OR id_defensor = ?)',
             [salaId, idUsuario, idUsuario]
@@ -1525,7 +1259,7 @@ router.post('/duelo/abandonar/:salaId', async (req, res) => {
         
         if (!duelo.length) {
             await conn.rollback();
-            await conn.release();
+            conn.release();
             return res.status(404).json({ error: 'Duelo no encontrado' });
         }
         
@@ -1533,89 +1267,132 @@ router.post('/duelo/abandonar/:salaId', async (req, res) => {
         const apuesta = dueloData.apuesta;
         const esRetador = dueloData.id_retador === idUsuario;
         const idOponente = esRetador ? dueloData.id_defensor : dueloData.id_retador;
+        const esDueloCarrera = dueloData.id_carrera !== null && dueloData.tipo_duelo === 'carrera';
         
-        // Calcular penalización
-        let penalizacion = 0;
-        let gananciaOponente = 0;
+        let porcentajePenalizacion = 0;
+        let descripcionMotivo = '';
         
-        if (motivo === 'voluntario') {
-            // Pierde 100% de la apuesta
-            penalizacion = apuesta;
-            gananciaOponente = apuesta;
-        } else {
-            // Pierde 50% de la apuesta (desconexión)
-            penalizacion = Math.floor(apuesta * PENALIZACIONES.DESCONEXION);
-            gananciaOponente = penalizacion;
+        switch (motivo) {
+            case 'voluntario':
+            case 'rendirse':
+                porcentajePenalizacion = PENALIZACIONES.ABANDONO_VOLUNTARIO;
+                descripcionMotivo = 'Abandono voluntario';
+                break;
+            case 'navegacion':
+                porcentajePenalizacion = PENALIZACIONES.NAVEGACION || 1.0;
+                descripcionMotivo = 'Cierre de navegador';
+                break;
+            case 'desconexion':
+                porcentajePenalizacion = PENALIZACIONES.DESCONEXION;
+                descripcionMotivo = 'Desconexión';
+                break;
+            default:
+                porcentajePenalizacion = PENALIZACIONES.ABANDONO_VOLUNTARIO;
+                descripcionMotivo = 'Abandono';
         }
         
-        console.log(`[ABANDONO] Penalización: -${penalizacion} pts, Ganancia oponente: +${gananciaOponente} pts`);
+        const penalizacion = Math.floor(apuesta * porcentajePenalizacion);
+        const gananciaOponente = penalizacion;
         
-        // Aplicar penalización
-        await conn.query(
-            'UPDATE usuario SET puntos = GREATEST(0, puntos - ?) WHERE id_usuario = ?',
-            [penalizacion, idUsuario]
-        );
-        
-        // Recompensar oponente
-        await conn.query(
-            'UPDATE usuario SET puntos = puntos + ? WHERE id_usuario = ?',
-            [gananciaOponente, idOponente]
-        );
+        if (esDueloCarrera) {
+            // Duelo de carrera
+            const [puntosCarrera] = await conn.query(
+                'SELECT puntos FROM usuario_puntos_carrera WHERE id_usuario = ? AND id_carrera = ?',
+                [idUsuario, dueloData.id_carrera]
+            );
+            
+            const puntosCarreraActuales = puntosCarrera[0]?.puntos || 0;
+            const penalizacionFinal = Math.min(penalizacion, puntosCarreraActuales);
+            const gananciaFinal = penalizacionFinal;
+            const nuevosPuntosAbandono = Math.max(0, puntosCarreraActuales - penalizacionFinal);
+            
+            await conn.query(`
+                INSERT INTO usuario_puntos_carrera (id_usuario, id_carrera, puntos)
+                VALUES (?, ?, ?)
+                ON DUPLICATE KEY UPDATE puntos = ?
+            `, [idUsuario, dueloData.id_carrera, nuevosPuntosAbandono, nuevosPuntosAbandono]);
+            
+            const [puntosOponente] = await conn.query(
+                'SELECT puntos FROM usuario_puntos_carrera WHERE id_usuario = ? AND id_carrera = ?',
+                [idOponente, dueloData.id_carrera]
+            );
+            
+            const puntosOponenteActuales = puntosOponente[0]?.puntos || 0;
+            const nuevosPuntosOponente = puntosOponenteActuales + gananciaFinal;
+            
+            await conn.query(`
+                INSERT INTO usuario_puntos_carrera (id_usuario, id_carrera, puntos)
+                VALUES (?, ?, ?)
+                ON DUPLICATE KEY UPDATE puntos = ?
+            `, [idOponente, dueloData.id_carrera, nuevosPuntosOponente, nuevosPuntosOponente]);
+            
+        } else {
+            // Duelo general
+            await conn.query(
+                'UPDATE usuario SET puntos = GREATEST(0, puntos - ?) WHERE id_usuario = ?',
+                [penalizacion, idUsuario]
+            );
+            
+            await conn.query(
+                'UPDATE usuario SET puntos = puntos + ? WHERE id_usuario = ?',
+                [gananciaOponente, idOponente]
+            );
+        }
         
         // Registrar en historial
         await conn.query(`
             INSERT INTO historial_duelos 
             (id_duelo, id_retador, id_defensor, id_ganador, puntos_retador, puntos_defensor, 
-             fecha_duelo, motivo_abandono, penalizacion_aplicada)
-            VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?)
+             fecha_duelo, motivo_abandono, penalizacion_aplicada, tipo_duelo)
+            VALUES (?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?)
         `, [
             salaId,
             dueloData.id_retador,
             dueloData.id_defensor,
-            idOponente, // Ganador
+            idOponente,
             esRetador ? -penalizacion : gananciaOponente,
             esRetador ? gananciaOponente : -penalizacion,
-            motivo,
-            penalizacion
+            descripcionMotivo,
+            penalizacion,
+            esDueloCarrera ? 'carrera' : 'general'
         ]);
         
-        // Marcar duelo como abandonado
         await conn.query('UPDATE duelos SET estado = ? WHERE id_duelo = ?', ['abandonado', salaId]);
-        
-        // Limpiar datos
         await conn.query('DELETE FROM duelos_preguntas WHERE id_duelo = ?', [salaId]);
         await conn.query('DELETE FROM duelos_respuestas WHERE id_duelo = ?', [salaId]);
         
         // Notificar oponente
-        const [ganador] = await conn.query('SELECT username FROM usuario WHERE id_usuario = ?', [idOponente]);
+        const [abandonador] = await conn.query('SELECT username FROM usuario WHERE id_usuario = ?', [idUsuario]);
+        const nombreAbandono = abandonador[0]?.username || 'Usuario';
         
-        if (ganador.length) {
-            await conn.query(`
-                INSERT INTO notificaciones 
-                (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data)
-                VALUES (?, ?, 'duelo_abandonado', ?, ?)
-            `, [
-                idOponente,
-                idUsuario,
-                `¡${req.session.user.username} abandonó el duelo! Ganaste ${gananciaOponente} puntos 🏆`,
-                JSON.stringify({ 
-                    id_duelo: salaId, 
-                    motivo,
-                    ganancia: gananciaOponente
-                })
-            ]);
-        }
+        await conn.query(`
+            INSERT INTO notificaciones 
+            (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data)
+            VALUES (?, ?, 'duelo_abandonado', ?, ?)
+        `, [
+            idOponente,
+            idUsuario,
+            `¡${nombreAbandono} abandonó el duelo! Ganaste ${gananciaOponente} puntos ${esDueloCarrera ? 'de carrera' : 'globales'} 🏆`,
+            JSON.stringify({ 
+                id_duelo: salaId, 
+                motivo: descripcionMotivo,
+                ganancia: gananciaOponente,
+                tipo_duelo: esDueloCarrera ? 'carrera' : 'general'
+            })
+        ]);
         
         await conn.commit();
-        await conn.release();
+        conn.release();
         
         // Emitir sockets
         if (req.io) {
-            req.io.to(idOponente.toString()).emit('duelo:abandonado', {
+            req.io.to(idOponente.toString()).emit('duelo:oponenteAbandono', {
                 ganaste: true,
-                mensaje: `${req.session.user.username} ha abandonado el duelo`,
-                ganancia: gananciaOponente,
-                id_duelo: salaId
+                mensaje: `${nombreAbandono} ha abandonado el duelo`,
+                gananciaOponente,
+                motivo: descripcionMotivo,
+                salaId,
+                tipoDuelo: esDueloCarrera ? 'carrera' : 'general'
             });
             
             req.io.to(idOponente.toString()).emit('notificacion_recibida');
@@ -1625,16 +1402,18 @@ router.post('/duelo/abandonar/:salaId', async (req, res) => {
         
         res.json({
             success: true,
-            message: `Has abandonado el duelo. Penalización: -${penalizacion} puntos`,
+            message: `Has abandonado el duelo. Perdiste ${penalizacion} puntos ${esDueloCarrera ? 'de carrera' : 'globales'}`,
             penalizacion,
-            redirigir: '/portal'
+            gananciaOponente,
+            motivo: descripcionMotivo,
+            tipoDuelo: esDueloCarrera ? 'carrera' : 'general'
         });
         
     } catch (error) {
-        await conn.rollback();
-        await conn.release();
-        console.error('❌ Error al abandonar duelo:', error);
-        res.status(500).json({ error: 'Error al abandonar: ' + error.message });
+        try { await conn.rollback(); } catch(e) {}
+        conn.release();
+        console.error('❌ [ABANDONO] Error:', error);
+        res.status(500).json({ error: 'Error al abandonar duelo: ' + error.message });
     }
 });
 
@@ -1659,7 +1438,7 @@ router.post('/duelo/volver/:salaId', async (req, res) => {
 
         if (!dueloRows.length) {
             await conn.rollback();
-            await conn.release();
+            conn.release();
             return res.status(404).json({ error: 'Duelo no encontrado' });
         }
 
@@ -1668,7 +1447,7 @@ router.post('/duelo/volver/:salaId', async (req, res) => {
         // Solo permitir volver si NINGUNO ha respondido aún
         if (duelo.respondido_retador || duelo.respondido_oponente) {
             await conn.rollback();
-            await conn.release();
+            conn.release();
             return res.status(400).json({ 
                 error: 'No puedes volver porque alguien ya inició el duelo' 
             });
@@ -1687,7 +1466,7 @@ router.post('/duelo/volver/:salaId', async (req, res) => {
         `, [salaId]);
 
         await conn.commit();
-        await conn.release();
+        conn.release();
 
         console.log(`[VOLVER] Duelo ${salaId} eliminado (volver sin iniciar)`);
 
@@ -1695,7 +1474,7 @@ router.post('/duelo/volver/:salaId', async (req, res) => {
 
     } catch (error) {
         await conn.rollback();
-        await conn.release();
+        conn.release();
         console.error('❌ Error procesando volver:', error);
         res.status(500).json({ error: 'Error al procesar volver' });
     }
@@ -1801,7 +1580,7 @@ router.post('/admin/limpiar-duelos-antiguos', async (req, res) => {
         }
         
         await conn.commit();
-        await conn.release();
+        conn.release();
         
         res.json({ 
             success: true, 
@@ -1811,9 +1590,317 @@ router.post('/admin/limpiar-duelos-antiguos', async (req, res) => {
         
     } catch (error) {
         await conn.rollback();
-        await conn.release();
+        conn.release();
         console.error('❌ Error limpiando duelos:', error);
         res.status(500).json({ error: 'Error al limpiar duelos' });
+    }
+});
+
+// =============================================
+// 📊 ESTADÍSTICAS AVANZADAS - RESUMEN GENERAL
+// =============================================
+
+router.get('/api/estadisticas/resumen', async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ error: 'No autorizado' });
+    
+    try {
+        const idUsuario = req.session.user.id_usuario;
+        
+        console.log('[ESTADÍSTICAS] 📊 Resumen para usuario:', idUsuario);
+        
+        // Estadísticas generales
+        const [stats] = await pool.query(`
+            SELECT 
+                COUNT(*) as total_duelos,
+                SUM(CASE WHEN id_ganador = ? THEN 1 ELSE 0 END) as victorias,
+                SUM(CASE WHEN id_ganador IS NOT NULL AND id_ganador != ? THEN 1 ELSE 0 END) as derrotas,
+                SUM(CASE WHEN id_ganador IS NULL THEN 1 ELSE 0 END) as empates,
+                AVG(CASE 
+                    WHEN id_retador = ? THEN correctas_retador 
+                    ELSE correctas_defensor 
+                END) as promedio_correctas,
+                AVG(CASE 
+                    WHEN id_retador = ? THEN porcentaje_retador 
+                    ELSE porcentaje_defensor 
+                END) as promedio_porcentaje
+            FROM historial_duelos
+            WHERE id_retador = ? OR id_defensor = ?
+        `, [idUsuario, idUsuario, idUsuario, idUsuario, idUsuario, idUsuario]);
+        
+        // Puntos totales ganados/perdidos
+        const [puntos] = await pool.query(`
+            SELECT 
+                SUM(CASE 
+                    WHEN id_retador = ? THEN puntos_retador 
+                    ELSE puntos_defensor 
+                END) as puntos_netos
+            FROM historial_duelos
+            WHERE id_retador = ? OR id_defensor = ?
+        `, [idUsuario, idUsuario, idUsuario]);
+        
+        // Racha actual
+        const [usuario] = await pool.query(
+            'SELECT racha_victorias, puntos FROM usuario WHERE id_usuario = ?',
+            [idUsuario]
+        );
+        
+        // ✅ CONVERTIR TODOS LOS VALORES A NÚMEROS
+        const resultado = {
+            total_duelos: toNumber(stats[0]?.total_duelos),
+            victorias: toNumber(stats[0]?.victorias),
+            derrotas: toNumber(stats[0]?.derrotas),
+            empates: toNumber(stats[0]?.empates),
+            promedio_correctas: toNumber(stats[0]?.promedio_correctas),
+            promedio_porcentaje: toNumber(stats[0]?.promedio_porcentaje),
+            puntos_netos: toNumber(puntos[0]?.puntos_netos),
+            racha_actual: toNumber(usuario[0]?.racha_victorias),
+            puntos_actuales: toNumber(usuario[0]?.puntos)
+        };
+        
+        console.log('[ESTADÍSTICAS] ✅ Resumen generado:', resultado);
+        
+        res.json(resultado);
+        
+    } catch (error) {
+        console.error('❌ [ESTADÍSTICAS] Error obteniendo resumen:', error);
+        res.status(500).json({ error: 'Error al obtener estadísticas' });
+    }
+});
+
+// =============================================
+// 📊 ESTADÍSTICAS POR DIFICULTAD
+// =============================================
+
+router.get('/api/estadisticas/por-dificultad', async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ error: 'No autorizado' });
+    
+    try {
+        const idUsuario = req.session.user.id_usuario;
+        
+        console.log('[ESTADÍSTICAS] 📊 Por dificultad para usuario:', idUsuario);
+        
+        const [stats] = await pool.query(`
+            SELECT 
+                d.dificultad,
+                COUNT(*) as total,
+                SUM(CASE WHEN hd.id_ganador = ? THEN 1 ELSE 0 END) as victorias,
+                AVG(CASE 
+                    WHEN hd.id_retador = ? THEN hd.correctas_retador 
+                    ELSE hd.correctas_defensor 
+                END) as promedio_correctas,
+                AVG(CASE 
+                    WHEN hd.id_retador = ? THEN hd.porcentaje_retador 
+                    ELSE hd.porcentaje_defensor 
+                END) as promedio_porcentaje
+            FROM historial_duelos hd
+            INNER JOIN duelos d ON hd.id_duelo = d.id_duelo
+            WHERE hd.id_retador = ? OR hd.id_defensor = ?
+            GROUP BY d.dificultad
+            ORDER BY d.dificultad
+        `, [idUsuario, idUsuario, idUsuario, idUsuario, idUsuario]);
+        
+        // ✅ CONVERTIR CADA REGISTRO A NÚMEROS
+        const resultado = stats.map(row => ({
+            dificultad: toNumber(row.dificultad, 1),
+            total: toNumber(row.total),
+            victorias: toNumber(row.victorias),
+            promedio_correctas: toNumber(row.promedio_correctas),
+            promedio_porcentaje: toNumber(row.promedio_porcentaje)
+        }));
+        
+        console.log('[ESTADÍSTICAS] ✅ Por dificultad:', resultado);
+        
+        res.json(resultado);
+        
+    } catch (error) {
+        console.error('❌ [ESTADÍSTICAS] Error por dificultad:', error);
+        res.status(500).json({ error: 'Error al obtener estadísticas' });
+    }
+});
+
+// =============================================
+// 📊 HISTORIAL DE RENDIMIENTO
+// =============================================
+
+router.get('/api/estadisticas/historial-rendimiento', async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ error: 'No autorizado' });
+    
+    try {
+        const idUsuario = req.session.user.id_usuario;
+        
+        console.log('[ESTADÍSTICAS] 📊 Historial rendimiento para usuario:', idUsuario);
+        
+        const [historial] = await pool.query(`
+            SELECT 
+                hd.fecha_duelo,
+                CASE 
+                    WHEN hd.id_retador = ? THEN hd.porcentaje_retador 
+                    ELSE hd.porcentaje_defensor 
+                END as porcentaje,
+                CASE 
+                    WHEN hd.id_ganador = ? THEN 'Victoria'
+                    WHEN hd.id_ganador IS NULL THEN 'Empate'
+                    ELSE 'Derrota'
+                END as resultado,
+                CASE 
+                    WHEN hd.id_retador = ? THEN hd.correctas_retador 
+                    ELSE hd.correctas_defensor 
+                END as correctas,
+                hd.total_preguntas,
+                d.dificultad
+            FROM historial_duelos hd
+            LEFT JOIN duelos d ON hd.id_duelo = d.id_duelo
+            WHERE hd.id_retador = ? OR hd.id_defensor = ?
+            ORDER BY hd.fecha_duelo DESC
+            LIMIT 30
+        `, [idUsuario, idUsuario, idUsuario, idUsuario, idUsuario]);
+        
+        // ✅ CONVERTIR CADA REGISTRO A NÚMEROS
+        const resultado = historial.map(row => ({
+            fecha_duelo: row.fecha_duelo,
+            porcentaje: toNumber(row.porcentaje),
+            resultado: row.resultado,
+            correctas: toNumber(row.correctas),
+            total_preguntas: toNumber(row.total_preguntas),
+            dificultad: toNumber(row.dificultad, 1)
+        }));
+        
+        console.log('[ESTADÍSTICAS] ✅ Historial:', resultado.length, 'registros');
+        
+        res.json(resultado);
+        
+    } catch (error) {
+        console.error('❌ [ESTADÍSTICAS] Error historial:', error);
+        res.status(500).json({ error: 'Error al obtener historial' });
+    }
+});
+
+// =============================================
+// 📊 ESTADÍSTICAS POR TIPO (GENERAL/CARRERA)
+// =============================================
+
+router.get('/api/estadisticas/por-tipo', async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ error: 'No autorizado' });
+    
+    try {
+        const idUsuario = req.session.user.id_usuario;
+        
+        console.log('[ESTADÍSTICAS] 📊 Por tipo para usuario:', idUsuario);
+        
+        const [stats] = await pool.query(`
+            SELECT 
+                COALESCE(hd.tipo_duelo, 'general') as tipo_duelo,
+                COUNT(*) as total,
+                SUM(CASE WHEN hd.id_ganador = ? THEN 1 ELSE 0 END) as victorias,
+                AVG(CASE 
+                    WHEN hd.id_retador = ? THEN hd.porcentaje_retador 
+                    ELSE hd.porcentaje_defensor 
+                END) as promedio_porcentaje
+            FROM historial_duelos hd
+            WHERE hd.id_retador = ? OR hd.id_defensor = ?
+            GROUP BY COALESCE(hd.tipo_duelo, 'general')
+        `, [idUsuario, idUsuario, idUsuario, idUsuario]);
+        
+        // ✅ CONVERTIR CADA REGISTRO A NÚMEROS
+        const resultado = stats.map(row => ({
+            tipo_duelo: row.tipo_duelo || 'general',
+            total: toNumber(row.total),
+            victorias: toNumber(row.victorias),
+            promedio_porcentaje: toNumber(row.promedio_porcentaje)
+        }));
+        
+        console.log('[ESTADÍSTICAS] ✅ Por tipo:', resultado);
+        
+        res.json(resultado);
+        
+    } catch (error) {
+        console.error('❌ [ESTADÍSTICAS] Error por tipo:', error);
+        res.status(500).json({ error: 'Error al obtener estadísticas' });
+    }
+});
+
+// =============================================
+// 📊 COMPARACIÓN CON TOP JUGADORES
+// =============================================
+
+router.get('/api/estadisticas/comparacion', async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ error: 'No autorizado' });
+    
+    try {
+        const idUsuario = req.session.user.id_usuario;
+        
+        console.log('[ESTADÍSTICAS] 📊 Comparación para usuario:', idUsuario);
+        
+        const [ranking] = await pool.query(`
+            SELECT 
+                u.id_usuario,
+                u.username,
+                u.puntos,
+                u.foto_perfil,
+                COUNT(hd.id_duelo) as total_duelos,
+                SUM(CASE WHEN hd.id_ganador = u.id_usuario THEN 1 ELSE 0 END) as victorias,
+                ROUND(
+                    (SUM(CASE WHEN hd.id_ganador = u.id_usuario THEN 1 ELSE 0 END) * 100.0) / 
+                    NULLIF(COUNT(hd.id_duelo), 0), 2
+                ) as tasa_victoria
+            FROM usuario u
+            LEFT JOIN historial_duelos hd ON u.id_usuario = hd.id_retador OR u.id_usuario = hd.id_defensor
+            GROUP BY u.id_usuario, u.username, u.puntos, u.foto_perfil
+            ORDER BY u.puntos DESC
+            LIMIT 5
+        `);
+        
+        // Posición del usuario actual
+        const [miPosicion] = await pool.query(`
+            SELECT COUNT(*) + 1 as posicion
+            FROM usuario
+            WHERE puntos > (SELECT puntos FROM usuario WHERE id_usuario = ?)
+        `, [idUsuario]);
+        
+        // ✅ CONVERTIR RANKING A NÚMEROS
+        const rankingConvertido = ranking.map(row => ({
+            id_usuario: toNumber(row.id_usuario),
+            username: row.username,
+            puntos: toNumber(row.puntos),
+            foto_perfil: row.foto_perfil,
+            total_duelos: toNumber(row.total_duelos),
+            victorias: toNumber(row.victorias),
+            tasa_victoria: toNumber(row.tasa_victoria)
+        }));
+        
+        const resultado = {
+            top_jugadores: rankingConvertido,
+            mi_posicion: toNumber(miPosicion[0]?.posicion, 1)
+        };
+        
+        console.log('[ESTADÍSTICAS] ✅ Comparación generada');
+        
+        res.json(resultado);
+        
+    } catch (error) {
+        console.error('❌ [ESTADÍSTICAS] Error comparación:', error);
+        res.status(500).json({ error: 'Error al obtener comparación' });
+    }
+});
+
+// =============================================
+// 🎨 VISTA DE ESTADÍSTICAS
+// =============================================
+
+router.get('/estadisticas', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    
+    try {
+        console.log('[ESTADÍSTICAS] 🎨 Cargando vista para:', req.session.user.username);
+        
+        res.render('estadisticas-duelo', {
+            layout: 'main',
+            title: 'Estadísticas de Duelos',
+            user: req.session.user
+        });
+    } catch (error) {
+        console.error('❌ [ESTADÍSTICAS] Error cargando vista:', error);
+        res.redirect('/portal?error=error_estadisticas');
     }
 });
 
