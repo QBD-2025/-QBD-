@@ -2591,6 +2591,129 @@ socket.on('duelo:abandonoRapido', async ({ salaId, userId }) => {
         console.error('[ABANDONO RÁPIDO ERROR]:', error);
     }
 });
+// ================================================================
+// ✅ LISTENER: MOSTRAR ANIMACIÓN DE CARGA
+// ================================================================
 
+socket.on('duelo:mostrarAnimacionCarga', ({ mensaje, duracion }) => {
+    console.log('[ANIMACIÓN CARGA]: Mostrando animación...');
+    
+    // Banco de preguntas ejemplo
+    const preguntasEjemplo = [
+        "¿Cuál es la capital de Francia?",
+        "¿Quién pintó la Mona Lisa?",
+        "¿En qué año llegó el hombre a la Luna?",
+        "¿Cuál es el río más largo del mundo?",
+        "¿Quién escribió Don Quijote?",
+        "¿Cuál es la fórmula del agua?",
+        "¿Cuántos continentes hay?",
+        "¿Qué es un algoritmo?",
+        "¿Cuál es la velocidad de la luz?",
+        "¿Quién descubrió América?",
+        "¿Cuál es el planeta más grande?",
+        "¿Qué es una base de datos?",
+        "¿Cuál es la capital de Japón?",
+        "¿Quién fue Albert Einstein?",
+        "¿Qué es Python?",
+        "¿Cuál es el océano más grande?",
+        "¿Qué es JavaScript?",
+        "¿Cuántos días tiene un año bisiesto?",
+        "¿Qué es HTML?",
+        "¿Quién fue Isaac Newton?",
+        "¿Qué es CSS?",
+        "¿Cuál es el metal más pesado?",
+        "¿Qué es React?",
+        "¿Cuál es la montaña más alta?",
+        "¿Qué es Node.js?"
+    ];
+    
+    // Mostrar modal
+    const modal = document.getElementById('modalCargaPreguntas');
+    modal.style.display = 'flex';
+    
+    // Limpiar contenedores
+    document.getElementById('preguntasFlotantes').innerHTML = '';
+    document.getElementById('particulasContainer').innerHTML = '';
+    document.getElementById('porcentajeCarga').textContent = '0%';
+    
+    // Crear partículas
+    crearParticulas();
+    
+    // Animar porcentaje
+    animarPorcentaje(duracion);
+    
+    // Generar preguntas flotantes (4 oleadas)
+    const totalPreguntas = 4;
+    const intervalo = duracion / (totalPreguntas + 1);
+    
+    for (let i = 0; i < totalPreguntas; i++) {
+        const preguntaRandom = preguntasEjemplo[Math.floor(Math.random() * preguntasEjemplo.length)];
+        const delay = (i * intervalo) / 1000;
+        
+        crearPreguntaFlotante(preguntaRandom, delay);
+    }
+    
+    // Ocultar modal automáticamente después de la duración
+    setTimeout(() => {
+        modal.style.display = 'none';
+        console.log('[ANIMACIÓN CARGA]: ✅ Animación completada');
+    }, duracion);
+});
+
+// ================================================================
+// FUNCIONES AUXILIARES PARA LA ANIMACIÓN
+// ================================================================
+
+function crearPreguntaFlotante(texto, delay) {
+    const container = document.getElementById('preguntasFlotantes');
+    const pregunta = document.createElement('div');
+    pregunta.className = 'pregunta-flotante';
+    pregunta.textContent = texto;
+
+    const angle = Math.random() * 360;
+    const distance = 250 + Math.random() * 100;
+    const startX = Math.cos(angle * Math.PI / 180) * distance;
+    const startY = Math.sin(angle * Math.PI / 180) * distance;
+
+    pregunta.style.setProperty('--startX', `${startX}px`);
+    pregunta.style.setProperty('--startY', `${startY}px`);
+    pregunta.style.animationDelay = `${delay}s`;
+
+    container.appendChild(pregunta);
+
+    setTimeout(() => {
+        pregunta.remove();
+    }, (delay + 3) * 1000);
+}
+
+function crearParticulas() {
+    const container = document.getElementById('particulasContainer');
+    
+    for (let i = 0; i < 20; i++) {
+        const particula = document.createElement('div');
+        particula.className = 'particula';
+        particula.style.left = `${Math.random() * 100}%`;
+        particula.style.top = `${Math.random() * 100}%`;
+        particula.style.animationDelay = `${Math.random() * 4}s`;
+        
+        container.appendChild(particula);
+    }
+}
+
+function animarPorcentaje(duracionTotal) {
+    const porcentajeEl = document.getElementById('porcentajeCarga');
+    const inicio = Date.now();
+    
+    const interval = setInterval(() => {
+        const transcurrido = Date.now() - inicio;
+        const progreso = Math.min((transcurrido / duracionTotal) * 100, 100);
+        
+        porcentajeEl.textContent = `${Math.floor(progreso)}%`;
+        
+        if (progreso >= 100) {
+            clearInterval(interval);
+        }
+    }, 50);
+}
 
 console.log('[DUELO]: ✅ Sistema completamente inicializado');

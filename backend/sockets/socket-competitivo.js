@@ -1,3 +1,4 @@
+//sockets/socket-competitivo.js
 const db = require('../db/conexion');
 const { v4: uuidv4 } = require('uuid');
 const { GestorPuntuacion, SISTEMA_PUNTOS } = require('../routes/duelo_puntos');
@@ -1911,61 +1912,146 @@ module.exports = (io, socket) => {
     async function iniciarPartida(salaId, duelo) {
         console.log(`[PARTIDA ${salaId}]: 🎮 Iniciando partida...`);
         
+        // ✅ EMITIR ANIMACIÓN DE CARGA AL CLIENTE
+        io.to(salaId).emit('duelo:mostrarAnimacionCarga', {
+            mensaje: 'Revolviendo preguntas...',
+            duracion: 5000
+        });
+        
         try {
             const [idJugadorA, idJugadorB] = Object.keys(duelo.jugadores);
             const idCategoriaA = duelo.selecciones[idJugadorA];
             const idCategoriaB = duelo.selecciones[idJugadorB];
             
-            console.log(`[PARTIDA]: Jugador A (${idJugadorA}) eligió: ${idCategoriaA}`);
-            console.log(`[PARTIDA]: Jugador B (${idJugadorB}) eligió: ${idCategoriaB}`);
+            console.log(`[PARTIDA]: 👤 Jugador A (${idJugadorA}) eligió: ${idCategoriaA}`);
+            console.log(`[PARTIDA]: 👤 Jugador B (${idJugadorB}) eligió: ${idCategoriaB}`);
+            console.log(`[PARTIDA]: 🎯 Modo detectado: ${duelo.modo}`);
             
             let queryField = duelo.modo === 'carrera' ? 'id_tematica' : 'id_materia';
             let preguntas = [];
 
+            // ════════════════════════════════════════════════════════════
             // ✅ CASO 1: MISMA CATEGORÍA (Duelo de Expertos)
+            // ════════════════════════════════════════════════════════════
+            
             if (idCategoriaA === idCategoriaB) {
-                console.log(`[PARTIDA]: 🎓 MISMA CATEGORÍA - Duelo de Expertos`);
+                console.log(`[PARTIDA]: 🏆 MISMA CATEGORÍA DETECTADA - Aplicando lógica especial`);
                 
-                // Cargar 10 preguntas de la categoría seleccionada
-                const [preguntasCategoria] = await db.query(
+                // ✅ 5 preguntas de la categoría que ambos eligieron
+                const [preguntasComunes] = await db.query(
                     `SELECT p.id_pregunta, p.pregunta, p.retroalimentacion, p.puntos, p.puntos_carrera 
                     FROM pregunta p
                     WHERE p.${queryField} = ?
-                    ORDER BY RAND() LIMIT 10`, 
+                    ORDER BY RAND() LIMIT 5`, 
                     [idCategoriaA]
                 );
                 
-                if (preguntasCategoria.length < 10) {
-                    console.warn(`[PARTIDA]: ⚠️ Solo ${preguntasCategoria.length} preguntas disponibles`);
+                console.log(`[PARTIDA]: ✅ ${preguntasComunes.length} preguntas de categoría común cargadas`);
+                
+                // ✅ 5 PREGUNTAS DE UNA CATEGORÍA DIFERENTE DE LA MISMA CARRERA
+                let preguntasAlternas = [];
+                
+                if (duelo.modo === 'carrera') {
+                    console.log(`[PARTIDA]: 🔍 Buscando categoría alternativa de la misma carrera...`);
+                    
+                    // Obtener id_carrera de la categoría seleccionada
+                    const [carreraInfo] = await db.query(
+                        'SELECT id_carrera FROM tematica WHERE id_tematica = ? LIMIT 1',
+                        [idCategoriaA]
+                    );
+                    
+                    if (carreraInfo.length > 0) {
+                        const idCarrera = carreraInfo[0].id_carrera;
+                        console.log(`[PARTIDA]: 🎓 Carrera identificada: ${idCarrera}`);
+                        
+                        // Buscar otra temática de la misma carrera
+                        const [otraCategoria] = await db.query(`
+                            SELECT DISTINCT t.id_tematica AS id
+                            FROM tematica t
+                            INNER JOIN pregunta p ON t.id_tematica = p.id_tematica
+                            WHERE t.id_carrera = ?
+                            AND t.id_tematica != ?
+                            AND (SELECT COUNT(*) FROM pregunta WHERE id_tematica = t.id_tematica) >= 5
+                            ORDER BY RAND() LIMIT 1
+                        `, [idCarrera, idCategoriaA]);
+                        
+                        if (otraCategoria.length > 0) {
+                            const idCategoriaAlterna = otraCategoria[0].id;
+                            console.log(`[PARTIDA]: ✅ Categoría alternativa encontrada: ${idCategoriaAlterna}`);
+                            
+                            [preguntasAlternas] = await db.query(`
+                                SELECT id_pregunta, pregunta, retroalimentacion, puntos, puntos_carrera 
+                                FROM pregunta 
+                                WHERE id_tematica = ?
+                                ORDER BY RAND() LIMIT 5
+                            `, [idCategoriaAlterna]);
+                            
+                            console.log(`[PARTIDA]: ✅ ${preguntasAlternas.length} preguntas alternativas cargadas`);
+                        } else {
+                            console.warn(`[PARTIDA]: ⚠️ No se encontró categoría alternativa`);
+                        }
+                    }
+                } else {
+                    // Modo general: otra materia aleatoria
+                    console.log(`[PARTIDA]: 🔍 Buscando materia alternativa...`);
+                    
+                    const [otraMateria] = await db.query(`
+                        SELECT m.id_materia AS id
+                        FROM materias m
+                        WHERE m.id_materia != ?
+                        AND (SELECT COUNT(*) FROM pregunta WHERE id_materia = m.id_materia AND id_carrera IS NULL) >= 5
+                        ORDER BY RAND() LIMIT 1
+                    `, [idCategoriaA]);
+                    
+                    if (otraMateria.length > 0) {
+                        console.log(`[PARTIDA]: ✅ Materia alternativa encontrada: ${otraMateria[0].id}`);
+                        
+                        [preguntasAlternas] = await db.query(`
+                            SELECT id_pregunta, pregunta, retroalimentacion, puntos, puntos_carrera 
+                            FROM pregunta 
+                            WHERE id_materia = ? AND id_carrera IS NULL
+                            ORDER BY RAND() LIMIT 5
+                        `, [otraMateria[0].id]);
+                        
+                        console.log(`[PARTIDA]: ✅ ${preguntasAlternas.length} preguntas alternativas cargadas`);
+                    }
                 }
+
+                // ✅ Combinar preguntas (5+5 = 10 total)
+                preguntas = [
+                    ...preguntasComunes.map(p => ({ ...p, tipo: 'comun', categoria: idCategoriaA })),
+                    ...preguntasAlternas.map(p => ({ ...p, tipo: 'alternativa', categoria: null }))
+                ];
                 
                 // Multiplicar puntos x1.5 para duelo de expertos
-                preguntas = preguntasCategoria.map(p => ({
+                preguntas = preguntas.map(p => ({
                     ...p,
                     puntos: Math.floor(p.puntos * 1.5),
-                    puntos_carrera: Math.floor(p.puntos_carrera * 1.5),
-                    tipo: 'experto',
-                    categoria: idCategoriaA
+                    puntos_carrera: Math.floor(p.puntos_carrera * 1.5)
                 }));
+                
+                console.log(`[PARTIDA]: 🎯 Total de preguntas para duelo de expertos: ${preguntas.length}`);
                 
                 io.to(salaId).emit('duelo:notificacionEspecial', {
                     titulo: '🎓 DUELO DE EXPERTOS',
-                    mensaje: 'Ambos eligieron la misma categoría. ¡10 preguntas de expertos, puntos x1.5!'
+                    mensaje: `Ambos eligieron la misma categoría. ¡5 preguntas comunes + 5 sorpresa, puntos x1.5!`
                 });
                 
             } 
-            // ✅ CASO 2: DIFERENTES CATEGORÍAS (Duelo Mixto) - CORREGIDO
+            // ════════════════════════════════════════════════════════════
+            // ✅ CASO 2: DIFERENTES CATEGORÍAS (Duelo Mixto)
+            // ════════════════════════════════════════════════════════════
             else {
                 console.log(`[PARTIDA]: 🔀 CATEGORÍAS DIFERENTES - Duelo Mixto`);
                 
-                // ✅ 3 preguntas de categoría A (antes era 5)
+                // ✅ 3 preguntas de categoría A
                 const [preguntasA] = await db.query(
                     `SELECT id_pregunta, pregunta, retroalimentacion, puntos, puntos_carrera 
                     FROM pregunta WHERE ${queryField} = ? ORDER BY RAND() LIMIT 3`, 
                     [idCategoriaA]
                 );
                 
-                // ✅ 3 preguntas de categoría B (antes era 5)
+                // ✅ 3 preguntas de categoría B
                 const [preguntasB] = await db.query(
                     `SELECT id_pregunta, pregunta, retroalimentacion, puntos, puntos_carrera 
                     FROM pregunta WHERE ${queryField} = ? ORDER BY RAND() LIMIT 3`, 
@@ -1973,12 +2059,11 @@ module.exports = (io, socket) => {
                 );
 
                 // ✅ 4 PREGUNTAS DE UNA TERCERA CATEGORÍA ALEATORIA
-                console.log(`[PARTIDA]: Cargando 4 preguntas de categoría aleatoria...`);
+                console.log(`[PARTIDA]: 🎲 Cargando 4 preguntas de categoría aleatoria...`);
                 
                 let preguntasAleatorias = [];
                 
                 if (duelo.modo === 'carrera') {
-                    // Buscar otra temática de la misma carrera
                     const [otraTematica] = await db.query(`
                         SELECT DISTINCT t.id_tematica AS id
                         FROM tematica t
@@ -2000,7 +2085,6 @@ module.exports = (io, socket) => {
                         `, [otraTematica[0].id]);
                     }
                 } else {
-                    // Modo general: otra materia aleatoria
                     const [otraMateria] = await db.query(`
                         SELECT m.id_materia AS id
                         FROM materias m
@@ -2019,9 +2103,9 @@ module.exports = (io, socket) => {
                     }
                 }
                 
-                console.log(`[PARTIDA]: Preguntas A: ${preguntasA.length}`);
-                console.log(`[PARTIDA]: Preguntas B: ${preguntasB.length}`);
-                console.log(`[PARTIDA]: Preguntas aleatorias: ${preguntasAleatorias.length}`);
+                console.log(`[PARTIDA]: ✅ Preguntas A: ${preguntasA.length}`);
+                console.log(`[PARTIDA]: ✅ Preguntas B: ${preguntasB.length}`);
+                console.log(`[PARTIDA]: ✅ Preguntas aleatorias: ${preguntasAleatorias.length}`);
 
                 // Combinar todas las preguntas (3+3+4 = 10 total)
                 preguntas = [
@@ -2036,8 +2120,9 @@ module.exports = (io, socket) => {
                 });
             }
 
-            console.log(`[PARTIDA]: Total de preguntas cargadas: ${preguntas.length}`);
+            console.log(`[PARTIDA]: 📊 Total de preguntas cargadas: ${preguntas.length}`);
 
+            // ✅ VALIDACIÓN FINAL
             if (preguntas.length === 0) {
                 console.error('[PARTIDA]: ❌ No hay preguntas disponibles');
                 io.to(salaId).emit('duelo:error', { mensaje: 'No hay preguntas disponibles.' });
@@ -2045,18 +2130,30 @@ module.exports = (io, socket) => {
                 return;
             }
 
-            // Mezclar preguntas aleatoriamente
-            duelo.examen = preguntas.sort(() => Math.random() - 0.5);
+            // ✅ MEZCLAR PREGUNTAS ALEATORIAMENTE (FISHER-YATES)
+            console.log(`[PARTIDA]: 🎲 Mezclando preguntas con algoritmo Fisher-Yates...`);
+            
+            for (let i = preguntas.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [preguntas[i], preguntas[j]] = [preguntas[j], preguntas[i]];
+            }
+            
+            console.log(`[PARTIDA]: ✅ Preguntas mezcladas correctamente`);
+
+            // Guardar examen y configuración inicial
+            duelo.examen = preguntas;
             duelo.preguntaActual = 0;
             duelo.respuestas = {};
             duelo.tiemposRespuesta = {};
 
-            console.log(`[PARTIDA]: ✅ Iniciando preguntas en 3 segundos...`);
+            console.log(`[PARTIDA]: 🚀 Iniciando preguntas en 3 segundos...`);
             
+            // ✅ Esperar 3 segundos antes de enviar la primera pregunta
             setTimeout(() => enviarSiguientePregunta(salaId, duelo), 3000);
             
         } catch (error) {
             console.error(`[PARTIDA ${salaId}] ERROR:`, error);
+            console.error('  - Stack:', error.stack);
             io.to(salaId).emit('duelo:error', { mensaje: 'Error preparando preguntas.' });
         }
     }
