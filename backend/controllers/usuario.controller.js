@@ -255,13 +255,93 @@ async function verDetalleExamen(req, res) {
     res.status(500).send('Error al cargar el examen');
   }
 }
-
+async function verHistorialUnificado(req, res) {
+  try {
+    const id_usuario = req.session.user.id_usuario;
+    
+    // 1️⃣ Obtener historial de EXÁMENES
+    const [historialExamenes] = await db.query(queries.getHistorialExamenes, [id_usuario]);
+    
+    const examenes = historialExamenes.map(h => ({
+      id_examen: h.id_examen,
+      materia: h.materia || 'EXAMEN DE ADMISIÓN',
+      puntos: h.obtenido,
+      total: h.maximo,
+      porcentaje: h.porcentaje,
+      fecha: new Date(h.fecha).toLocaleString('es-MX', { dateStyle: 'long', timeStyle: 'short' })
+    }));
+    
+    // 2️⃣ Obtener historial de DUELOS
+    const [historialDuelos] = await db.query(`
+      SELECT 
+        hd.id_duelo,
+        hd.fecha_duelo,
+        hd.tipo_duelo,
+        hd.id_ganador,
+        hd.total_preguntas,
+        hd.Id_dificultad,
+        hd.apuesta,
+        CASE 
+          WHEN hd.id_retador = ? THEN hd.correctas_retador 
+          ELSE hd.correctas_defensor 
+        END as mis_correctas,
+        CASE 
+          WHEN hd.id_retador = ? THEN hd.porcentaje_retador 
+          ELSE hd.porcentaje_defensor 
+        END as mi_porcentaje,
+        CASE 
+          WHEN hd.id_ganador = ? THEN 'Victoria'
+          WHEN hd.id_ganador IS NULL THEN 'Empate'
+          ELSE 'Derrota'
+        END as resultado,
+        CASE 
+          WHEN hd.id_retador = ? THEN u2.username 
+          ELSE u1.username 
+        END as oponente
+      FROM historial_duelos hd
+      LEFT JOIN usuario u1 ON hd.id_retador = u1.id_usuario
+      LEFT JOIN usuario u2 ON hd.id_defensor = u2.id_usuario
+      WHERE hd.id_retador = ? OR hd.id_defensor = ?
+      ORDER BY hd.fecha_duelo DESC
+      LIMIT 50
+    `, [id_usuario, id_usuario, id_usuario, id_usuario, id_usuario, id_usuario]);
+    
+    const duelos = historialDuelos.map(d => ({
+      id_duelo: d.id_duelo,
+      tipo: d.tipo_duelo,
+      oponente: d.oponente,
+      resultado: d.resultado,
+      mis_correctas: d.mis_correctas,
+      total: d.total_preguntas,
+      porcentaje: d.mi_porcentaje,
+      dificultad: d.dificultad === 1 ? 'Fácil' : d.dificultad === 2 ? 'Medio' : 'Difícil',
+      apuesta: d.apuesta,
+      fecha: new Date(d.fecha_duelo).toLocaleString('es-MX', { dateStyle: 'long', timeStyle: 'short' })
+    }));
+    
+    // 3️⃣ Renderizar vista unificada
+    res.render('historialUsuario', {
+      layout: 'main',
+      title: 'Historial y Estadísticas',
+      user: req.session.user,
+      examenes: examenes,
+      duelos: duelos,
+      tieneExamenes: examenes.length > 0,
+      tieneDuelos: duelos.length > 0
+    });
+    
+  } catch (error) {
+    console.error('❌ Error al cargar historial unificado:', error);
+    res.status(500).send('Error al cargar el historial');
+  }
+}
 // ==================== EXPORTACIÓN ====================
 module.exports = {
   verPerfil,
   vistaEditarUsuario,
   editarUsuario,
   verHistorial,
+  verHistorialUnificado,
   verDetalleExamen,
   upload // exportamos también multer si quieres usarlo desde las rutas
 };

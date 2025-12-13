@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Estadísticas de Duelos</title>
+    <link rel="stylesheet" href="/css/estadisticas-duelo.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="stats-header">
+            <h1>📊 Tus Estadísticas de Duelos</h1>
+            <a href="/portal" class="btn-back">⬅ Volver al Portal</a>
+        </header>
+
+        <!-- Loading Overlay -->
+        <div id="loading" class="loading-overlay">
+            <div class="spinner"></div>
+            <p>Cargando estadísticas...</p>
+        </div>
+
+        <!-- Resumen General -->
+        <section class="stats-summary">
+            <div class="stat-card">
+                <div class="stat-icon">🏆</div>
+                <div class="stat-content">
+                    <h3 id="victorias">-</h3>
+                    <p>Victorias</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">😔</div>
+                <div class="stat-content">
+                    <h3 id="derrotas">-</h3>
+                    <p>Derrotas</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🤝</div>
+                <div class="stat-content">
+                    <h3 id="empates">-</h3>
+                    <p>Empates</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-content">
+                    <h3 id="promedio">-%</h3>
+                    <p>Promedio</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">💎</div>
+                <div class="stat-content">
+                    <h3 id="puntos">-</h3>
+                    <p>Puntos</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-content">
+                    <h3 id="racha">-</h3>
+                    <p>Racha</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Gráficas -->
+        <div class="charts-grid">
+            <!-- Gráfica de Pastel: Resultados -->
+            <div class="chart-container">
+                <h2>📊 Distribución de Resultados</h2>
+                <canvas id="chartResultados"></canvas>
+            </div>
+
+            <!-- Gráfica de Barras: Por Dificultad -->
+            <div class="chart-container">
+                <h2>📊 Rendimiento por Dificultad</h2>
+                <canvas id="chartDificultad"></canvas>
+            </div>
+
+            <!-- Gráfica de Línea: Evolución -->
+            <div class="chart-container full-width">
+                <h2>📈 Evolución de Rendimiento (Últimos 30 duelos)</h2>
+                <canvas id="chartEvolucion"></canvas>
+            </div>
+
+            <!-- Gráfica de Barras: Tipo de Duelo -->
+            <div class="chart-container">
+                <h2>⚔️ Por Tipo de Duelo</h2>
+                <canvas id="chartTipo"></canvas>
+            </div>
+
+            <!-- Comparación con Top 5 -->
+            <div class="chart-container">
+                <h2>🏅 Top 5 Jugadores</h2>
+                <canvas id="chartTop5"></canvas>
+            </div>
+        </div>
+
+        <!-- Recomendaciones -->
+        <section class="recommendations" id="recommendations">
+            <h2>💡 Recomendaciones</h2>
+            <div id="recommendationsContent"></div>
+        </section>
+    </div>
+
+    <script>
+        let charts = {};
+
+        // Cargar todas las estadísticas
+        async function cargarEstadisticas() {
+            try {
+                document.getElementById('loading').style.display = 'flex';
+
+                // Obtener datos
+                const resumen = await fetch('/api/estadisticas/resumen').then(r => r.json());
+                const porDificultad = await fetch('/api/estadisticas/por-dificultad').then(r => r.json());
+                const historial = await fetch('/api/estadisticas/historial-rendimiento').then(r => r.json());
+                const porTipo = await fetch('/api/estadisticas/por-tipo').then(r => r.json());
+                const comparacion = await fetch('/api/estadisticas/comparacion').then(r => r.json());
+
+                // Actualizar resumen
+                actualizarResumen(resumen);
+
+                // Crear gráficas
+                crearGraficaResultados(resumen);
+                crearGraficaDificultad(porDificultad);
+                crearGraficaEvolucion(historial);
+                crearGraficaTipo(porTipo);
+                crearGraficaTop5(comparacion);
+
+                // Generar recomendaciones
+                generarRecomendaciones(resumen, porDificultad, historial);
+
+                document.getElementById('loading').style.display = 'none';
+
+            } catch (error) {
+                console.error('Error cargando estadísticas:', error);
+                alert('Error al cargar estadísticas');
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function actualizarResumen(data) {
+            document.getElementById('victorias').textContent = data.victorias || 0;
+            document.getElementById('derrotas').textContent = data.derrotas || 0;
+            document.getElementById('empates').textContent = data.empates || 0;
+            document.getElementById('promedio').textContent = 
+                (data.promedio_porcentaje || 0).toFixed(1) + '%';
+            document.getElementById('puntos').textContent = data.puntos_actuales || 0;
+            document.getElementById('racha').textContent = data.racha_actual || 0;
+        }
+
+        function crearGraficaResultados(data) {
+            const ctx = document.getElementById('chartResultados');
+            if (charts.resultados) charts.resultados.destroy();
+
+            charts.resultados = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Victorias', 'Derrotas', 'Empates'],
+                    datasets: [{
+                        data: [data.victorias || 0, data.derrotas || 0, data.empates || 0],
+                        backgroundColor: ['#4caf50', '#f44336', '#ff9800'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#fff', font: { size: 14 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return `${context.label}: ${context.parsed} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function crearGraficaDificultad(data) {
+            const ctx = document.getElementById('chartDificultad');
+            if (charts.dificultad) charts.dificultad.destroy();
+
+            const dificultades = { 1: 'Fácil', 2: 'Medio', 3: 'Difícil' };
+            const labels = data.map(d => dificultades[d.dificultad] || 'Desconocida');
+            const promedios = data.map(d => parseFloat(d.promedio_porcentaje || 0));
+            const victorias = data.map(d => d.victorias || 0);
+
+            charts.dificultad = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Promedio de Aciertos (%)',
+                            data: promedios,
+                            backgroundColor: '#2196f3',
+                            borderColor: '#1976d2',
+                            borderWidth: 2,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Victorias',
+                            data: victorias,
+                            backgroundColor: '#4caf50',
+                            borderColor: '#388e3c',
+                            borderWidth: 2,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            title: { display: true, text: 'Porcentaje (%)', color: '#fff' },
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            title: { display: true, text: 'Victorias', color: '#fff' },
+                            ticks: { color: '#fff' },
+                            grid: { display: false }
+                        },
+                        x: {
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#fff', font: { size: 14 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function crearGraficaEvolucion(data) {
+            const ctx = document.getElementById('chartEvolucion');
+            if (charts.evolucion) charts.evolucion.destroy();
+
+            // Invertir para mostrar más reciente a la derecha
+            const datosInvertidos = [...data].reverse();
+            const labels = datosInvertidos.map((d, i) => `Duelo ${i + 1}`);
+            const porcentajes = datosInvertidos.map(d => parseFloat(d.porcentaje || 0));
+            const colores = datosInvertidos.map(d => {
+                if (d.resultado === 'Victoria') return '#4caf50';
+                if (d.resultado === 'Derrota') return '#f44336';
+                return '#ff9800';
+            });
+
+            charts.evolucion = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Porcentaje de Aciertos',
+                        data: porcentajes,
+                        borderColor: '#00bcd4',
+                        backgroundColor: 'rgba(0, 188, 212, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointBackgroundColor: colores,
+                        pointBorderColor: '#fff',
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: { display: true, text: 'Porcentaje (%)', color: '#fff' },
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        x: {
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#fff', font: { size: 14 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                afterLabel: function(context) {
+                                    return datosInvertidos[context.dataIndex].resultado;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function crearGraficaTipo(data) {
+            const ctx = document.getElementById('chartTipo');
+            if (charts.tipo) charts.tipo.destroy();
+
+            const labels = data.map(d => d.tipo_duelo === 'carrera' ? 'Carrera' : 'General');
+            const victorias = data.map(d => d.victorias || 0);
+            const totales = data.map(d => d.total || 0);
+
+            charts.tipo = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Victorias',
+                            data: victorias,
+                            backgroundColor: '#4caf50',
+                            borderColor: '#388e3c',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Total Duelos',
+                            data: totales,
+                            backgroundColor: '#2196f3',
+                            borderColor: '#1976d2',
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        x: {
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#fff', font: { size: 14 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function crearGraficaTop5(data) {
+            const ctx = document.getElementById('chartTop5');
+            if (charts.top5) charts.top5.destroy();
+
+            const jugadores = data.top_jugadores;
+            const labels = jugadores.map(j => j.username);
+            const puntos = jugadores.map(j => j.puntos || 0);
+            const colores = jugadores.map((j, i) => {
+                const hue = (i * 60) % 360;
+                return `hsl(${hue}, 70%, 60%)`;
+            });
+
+            charts.top5 = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Puntos',
+                        data: puntos,
+                        backgroundColor: colores,
+                        borderColor: colores.map(c => c.replace('60%', '40%')),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        y: {
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: `Tu posición: #${data.mi_posicion}`,
+                            color: '#ffd700',
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function generarRecomendaciones(resumen, dificultad, historial) {
+            const container = document.getElementById('recommendationsContent');
+            const recomendaciones = [];
+
+            // Análisis de tasa de victoria
+            const total = resumen.total_duelos || 1;
+            const tasaVictoria = ((resumen.victorias / total) * 100).toFixed(1);
+
+            if (tasaVictoria < 40) {
+                recomendaciones.push({
+                    icon: '⚠️',
+                    text: 'Tu tasa de victoria es baja. Considera practicar más en modo entrenamiento.',
+                    type: 'warning'
+                });
+            } else if (tasaVictoria > 70) {
+                recomendaciones.push({
+                    icon: '🌟',
+                    text: '¡Excelente tasa de victoria! Intenta duelos de mayor dificultad.',
+                    type: 'success'
+                });
+            }
+
+            // Análisis de promedio
+            if (resumen.promedio_porcentaje < 60) {
+                recomendaciones.push({
+                    icon: '📚',
+                    text: 'Revisa los temas donde fallas más seguido y estudia con las tarjetas educativas.',
+                    type: 'info'
+                });
+            }
+
+            // Análisis de racha
+            if (resumen.racha_actual >= 5) {
+                recomendaciones.push({
+                    icon: '🔥',
+                    text: `¡Racha de ${resumen.racha_actual} victorias! Sigue así.`,
+                    type: 'success'
+                });
+            }
+
+            // Si no hay recomendaciones, agregar una genérica
+            if (recomendaciones.length === 0) {
+                recomendaciones.push({
+                    icon: '💪',
+                    text: 'Continúa practicando para mejorar tus habilidades.',
+                    type: 'info'
+                });
+            }
+
+            // Renderizar
+            container.innerHTML = recomendaciones.map(r => `
+                <div class="recommendation-card ${r.type}">
+                    <span class="rec-icon">${r.icon}</span>
+                    <p>${r.text}</p>
+                </div>
+            `).join('');
+        }
+
+        // Cargar al iniciar
+        window.addEventListener('DOMContentLoaded', cargarEstadisticas);
+    </script>
+</body>
+</html>

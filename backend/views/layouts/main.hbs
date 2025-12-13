@@ -1,4 +1,3 @@
-{{!-- Main.hbs - CON SISTEMA DE TEMAS INTEGRADO --}}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -24,7 +23,6 @@
         <div class="top-right-nav">
             {{#if user}}
                 <span class="nav-username">Hola, {{user.username}}</span>
-
                 {{!-- 🎨 TOGGLE DE TEMA --}}
                 <div class="theme-toggle-wrapper">
                     <label class="theme-toggle-container"> 
@@ -74,6 +72,9 @@
                         <li><a href="/menu_principal">Menu Principal</a></li>
                         <li><a href="/usuario/editar">Mi Perfil</a></li>
                         <li><a href="/usuario">Configuración</a></li>
+                        <li>
+                        <a href="/usuario/historial" >Historial</a> <!-- Redirige al historial de exámenes -->
+                        </li>
                         {{#if (eq user.id_tp_usuario 3)}}
                             <li><a href="/admin">Permisos</a></li>
                             <li><a href="/editor">Editor</a></li>

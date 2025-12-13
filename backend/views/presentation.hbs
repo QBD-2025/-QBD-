@@ -23,7 +23,7 @@
         </div>
         <div class="text-content cta-text">
             <h1 class="hero-main-headline">La forma más divertida de potenciar tu mente.</h1>
-            <button type="button" class="btn-start-duo" id="btnEmpezar">Empezar Ahora</button>
+            <button type="button" class="btn-start-duo" onclick="location.href='/video'">Empezar Ahora</button>
             <button type="button" class="btn-secondary-duo" onclick="location.href='/login'">Ya tengo una cuenta</button>
         </div>
     </section>
@@ -72,17 +72,6 @@
             </video>
         </div>
     </section>
-
-
-<script>
-    const btnEmpezar = document.getElementById("btnEmpezar");
-
-    btnEmpezar.addEventListener("click", () => {
-        localStorage.setItem("startClicked", "true");
-
-        window.location.href = "/video";
-    });
-</script>
 
 </div>
 </html>

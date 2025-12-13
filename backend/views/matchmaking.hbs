@@ -8,6 +8,32 @@
 </head>
 <body>
     <!-- ============================================================ -->
+    <!-- ✅ NUEVO: MODAL DE CARGA DE PREGUNTAS -->
+    <!-- ============================================================ -->
+    <div class="modal-carga-overlay" id="modalCargaPreguntas" style="display: none;">
+        <div class="modal-carga-content">
+            <!-- Centro absorbente (agujero negro de luz) -->
+            <div class="centro-absorcion"></div>
+            
+            <!-- Anillo giratorio -->
+            <div class="anillo-giratorio"></div>
+            
+            <!-- Porcentaje -->
+            <div class="porcentaje-carga" id="porcentajeCarga">0%</div>
+            
+            <!-- Texto descriptivo -->
+            <div class="texto-carga">
+                🎲 Revolviendo preguntas...
+            </div>
+            
+            <!-- Contenedor de preguntas flotantes -->
+            <div id="preguntasFlotantes"></div>
+            
+            <!-- Partículas de fondo -->
+            <div id="particulasContainer"></div>
+        </div>
+    </div>
+    <!-- ============================================================ -->
     <!-- VISTA DE MATCHMAKING/PORTAL -->
     <!-- ============================================================ -->
     <div id="matchmakingView" class="duelo-container">
@@ -408,7 +434,7 @@
     /* ================================================================ */
     /* ESTILOS PARA MODALES Y PANTALLAS DE ERROR */
     /* ================================================================ */
-
+    
     /* Modal de confirmación de abandono */
     
     </style>

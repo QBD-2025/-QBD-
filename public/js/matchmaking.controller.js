@@ -1,3 +1,4 @@
+// Matchmaking Controller JS
 // ================================================================
 // CONFIGURACIÓN INICIAL Y VARIABLES GLOBALES
 // ================================================================
@@ -15,6 +16,7 @@ let socketRegistrado = false;
 let gambitoActivado = false;
 let miPowerUp = null;
 let escudoActivo = false;
+let modoActualSala = null; // Variable global para trackear el modo de la sala actual
 
 // ✅ ESTADO DE NEGOCIACIÓN
 let estadoNegociacion = {
@@ -124,6 +126,39 @@ socket.on('sala:conectado', (data) => {
     statusText.innerHTML = `<i class="fas fa-check-circle"></i> ${data.mensaje}`;
     salaActual = data.salaId;
 });
+socket.on('sala:modoDetectado', ({ modo, idCarrera }) => {
+    console.log('[SALA]: Modo detectado por servidor:', modo);
+    console.log('[SALA]: ID Carrera:', idCarrera || 'N/A');
+    
+    modoActualSala = modo;
+    
+    // ✅ ACTUALIZAR UI SEGÚN MODO
+    const modoTexto = modo === 'carrera' ? '🎓 Duelo de Carrera' : '🌍 Duelo General';
+    const modoColor = modo === 'carrera' ? '#3b82f6' : '#10b981';
+    
+    // Crear indicador visual del modo
+    const indicadorModo = document.getElementById('indicadorModo') || document.createElement('div');
+    indicadorModo.id = 'indicadorModo';
+    indicadorModo.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${modoColor};
+        color: white;
+        padding: 12px 24px;
+        border-radius: 10px;
+        font-weight: bold;
+        font-size: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 1000;
+        animation: slideInRight 0.3s ease;
+    `;
+    indicadorModo.textContent = modoTexto;
+    
+    if (!document.getElementById('indicadorModo')) {
+        document.body.appendChild(indicadorModo);
+    }
+});
 
 socket.on('sala:error', (data) => {
     console.error('[SALA ERROR]:', data.mensaje);
@@ -186,6 +221,21 @@ socket.on('duelo:oponenteInfo', ({ oponenteId, oponente: oponenteData }) => {
 // ================================================================
 socket.on('duelo:iniciarMiniDraft', ({ categorias, permitirGambito }) => {
     console.log('[DRAFT]: Recibidas', categorias.length, 'categorías');
+    console.log('[DRAFT]: Modo actual de sala:', modoActualSala || 'sin definir');
+    
+    // ✅ VERIFICACIÓN: Las categorías deben coincidir con el modo
+    if (categorias && categorias.length > 0) {
+        const primeraCat = categorias[0];
+        console.log('[DRAFT]: Primera categoría:', primeraCat);
+        
+        // Si es modo carrera, debe tener id_tematica
+        // Si es modo general, debe tener id_materia
+        if (modoActualSala === 'carrera' && !primeraCat.id_tematica && primeraCat.id) {
+            console.log('[DRAFT]: ✅ Categorías de CARRERA (tematicas)');
+        } else if (modoActualSala === 'general' && !primeraCat.id_carrera) {
+            console.log('[DRAFT]: ✅ Categorías GENERALES (materias)');
+        }
+    }
     
     document.getElementById('draftTitle').textContent = "ELIGE TU CAMPO DE BATALLA";
     document.getElementById('draftInstruction').textContent = "Selecciona una categoría y decide si quieres apostar.";
@@ -209,7 +259,6 @@ socket.on('duelo:iniciarMiniDraft', ({ categorias, permitirGambito }) => {
             card.classList.add('seleccionada');
             document.getElementById('draftInstruction').textContent = "Esperando oponente...";
             
-            // ✅ Enviar selección con estado de apuesta
             socket.emit('duelo:seleccionarCategoria', { 
                 salaId: salaActual || salaId, 
                 userId: user.id_usuario, 
@@ -222,7 +271,6 @@ socket.on('duelo:iniciarMiniDraft', ({ categorias, permitirGambito }) => {
         materiasGrid.appendChild(card);
     });
 });
-
 // Botón de Gambito
 btnGambito.addEventListener('click', () => {
     gambitoActivado = !gambitoActivado;
@@ -236,6 +284,11 @@ btnGambito.addEventListener('click', () => {
     }
 });
 
+setInterval(() => {
+    if (modoActualSala) {
+        console.log('[DEBUG]: Modo actual de sala:', modoActualSala);
+    }
+}, 30000); // Cada 30 segundos
 socket.on('duelo:oponenteSelecciono', ({ gambitoActivado, quiereApostar }) => {
     if (gambitoActivado) {
         console.log('[DRAFT]: ⚠️ El oponente activó GAMBITO');
@@ -1428,6 +1481,11 @@ socket.on('duelo:invitacionLobbyEnviada', (data) => {
 
 socket.on('duelo:recibirInvitacionLobby', (data) => {
     console.log('[LOBBY]: Invitación recibida de', data.username_retador);
+    console.log('[LOBBY]: Modo:', data.modo || 'sin especificar');
+    console.log('[LOBBY]: ID Carrera:', data.idCarrera || 'N/A');
+    
+    // ✅ GUARDAR EL MODO DE LA INVITACIÓN
+    modoActualSala = data.modo || 'general';
     
     const modal = document.createElement('div');
     modal.id = 'modal-invitacion-lobby';
@@ -1444,6 +1502,10 @@ socket.on('duelo:recibirInvitacionLobby', (data) => {
         z-index: 10000;
     `;
     
+    // ✅ MOSTRAR MODO EN LA UI
+    const modoTexto = data.modo === 'carrera' ? '🎓 Carrera' : '🌍 General';
+    const modoColor = data.modo === 'carrera' ? '#3b82f6' : '#10b981';
+    
     modal.innerHTML = `
         <div style="
             background: white;
@@ -1458,8 +1520,20 @@ socket.on('duelo:recibirInvitacionLobby', (data) => {
             <div style="margin: 20px 0;">
                 ${data.foto_retador ? `<img src="${data.foto_retador}" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 10px;">` : ''}
                 <p style="font-size: 18px; color: #555; margin: 10px 0;">
-                    <strong>${data.username_retador}</strong> te desafía!
+                    <strong>${data.username_retador}</strong> te desafía
                 </p>
+                <div style="
+                    display: inline-block;
+                    background: ${modoColor};
+                    color: white;
+                    padding: 8px 20px;
+                    border-radius: 20px;
+                    font-size: 14px;
+                    font-weight: bold;
+                    margin-top: 10px;
+                ">
+                    ${modoTexto}
+                </div>
             </div>
             
             <div style="margin-top: 30px; display: flex; gap: 10px; justify-content: center;">
@@ -1510,7 +1584,15 @@ socket.on('duelo:recibirInvitacionLobby', (data) => {
         clearInterval(countdownInterval);
         modal.remove();
         
-        socket.emit('duelo:aceptarInvitacionLobby', { salaId: data.salaId });
+        console.log('[LOBBY]: Aceptando invitación con modo:', data.modo);
+        
+        // ✅ EMITIR CON MODO
+        socket.emit('duelo:aceptarInvitacionLobby', { 
+            salaId: data.salaId,
+            modo: data.modo,
+            idCarrera: data.idCarrera
+        });
+        
         statusText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Aceptando desafío...';
     });
     
@@ -1569,6 +1651,7 @@ async function enviarDesafioBD(idOponente, usernameOponente, btnElement) {
     }
 
     console.log(`[BD DESAFÍO]: Enviando a ${usernameOponente}`);
+    console.log(`[BD DESAFÍO]: (El modo se detectará automáticamente en el servidor)`);
     
     if (btnElement) {
         btnElement.disabled = true;
@@ -1580,8 +1663,7 @@ async function enviarDesafioBD(idOponente, usernameOponente, btnElement) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                modo: 'general',
-                dificultad: null
+                // ✅ NO ENVIAR MODO - EL SERVIDOR LO DETECTA
             })
         });
         
@@ -1594,10 +1676,21 @@ async function enviarDesafioBD(idOponente, usernameOponente, btnElement) {
         
         if (data.success && data.salaId) {
             console.log(`[BD DESAFÍO]: ✅ Enviado. Sala: ${data.salaId}`);
+            console.log(`[BD DESAFÍO]: Modo detectado: ${data.modo}`);
+            console.log(`[BD DESAFÍO]: ID Carrera: ${data.idCarrera || 'N/A'}`);
             
-            mostrarNotificacion(`✅ Desafío enviado a ${usernameOponente}`, 'success');
+            // ✅ GUARDAR MODO
+            modoActualSala = data.modo;
             
-            statusText.innerHTML = `<i class="fas fa-paper-plane"></i> Desafío enviado a <strong>${usernameOponente}</strong>`;
+            const modoTexto = data.modo === 'carrera' ? 'de carrera' : 'general';
+            
+            mostrarNotificacion(
+                `✅ Desafío ${modoTexto} enviado a ${usernameOponente}`, 
+                'success'
+            );
+            
+            statusText.innerHTML = `<i class="fas fa-paper-plane"></i> Desafío ${modoTexto} enviado a <strong>${usernameOponente}</strong>`;
+            
             setTimeout(() => {
                 statusText.textContent = 'Compite en tu área de especialidad o en cultura general.';
             }, 5000);
@@ -1624,6 +1717,7 @@ async function enviarDesafioBD(idOponente, usernameOponente, btnElement) {
     }
 }
 
+// ✅ MANTENER EXPORT GLOBAL
 window.enviarDesafioBD = enviarDesafioBD;
 
 socket.on('duelo:desafioAceptado', ({ mensaje, salaId }) => {
@@ -2497,6 +2591,129 @@ socket.on('duelo:abandonoRapido', async ({ salaId, userId }) => {
         console.error('[ABANDONO RÁPIDO ERROR]:', error);
     }
 });
+// ================================================================
+// ✅ LISTENER: MOSTRAR ANIMACIÓN DE CARGA
+// ================================================================
 
+socket.on('duelo:mostrarAnimacionCarga', ({ mensaje, duracion }) => {
+    console.log('[ANIMACIÓN CARGA]: Mostrando animación...');
+    
+    // Banco de preguntas ejemplo
+    const preguntasEjemplo = [
+        "¿Cuál es la capital de Francia?",
+        "¿Quién pintó la Mona Lisa?",
+        "¿En qué año llegó el hombre a la Luna?",
+        "¿Cuál es el río más largo del mundo?",
+        "¿Quién escribió Don Quijote?",
+        "¿Cuál es la fórmula del agua?",
+        "¿Cuántos continentes hay?",
+        "¿Qué es un algoritmo?",
+        "¿Cuál es la velocidad de la luz?",
+        "¿Quién descubrió América?",
+        "¿Cuál es el planeta más grande?",
+        "¿Qué es una base de datos?",
+        "¿Cuál es la capital de Japón?",
+        "¿Quién fue Albert Einstein?",
+        "¿Qué es Python?",
+        "¿Cuál es el océano más grande?",
+        "¿Qué es JavaScript?",
+        "¿Cuántos días tiene un año bisiesto?",
+        "¿Qué es HTML?",
+        "¿Quién fue Isaac Newton?",
+        "¿Qué es CSS?",
+        "¿Cuál es el metal más pesado?",
+        "¿Qué es React?",
+        "¿Cuál es la montaña más alta?",
+        "¿Qué es Node.js?"
+    ];
+    
+    // Mostrar modal
+    const modal = document.getElementById('modalCargaPreguntas');
+    modal.style.display = 'flex';
+    
+    // Limpiar contenedores
+    document.getElementById('preguntasFlotantes').innerHTML = '';
+    document.getElementById('particulasContainer').innerHTML = '';
+    document.getElementById('porcentajeCarga').textContent = '0%';
+    
+    // Crear partículas
+    crearParticulas();
+    
+    // Animar porcentaje
+    animarPorcentaje(duracion);
+    
+    // Generar preguntas flotantes (4 oleadas)
+    const totalPreguntas = 4;
+    const intervalo = duracion / (totalPreguntas + 1);
+    
+    for (let i = 0; i < totalPreguntas; i++) {
+        const preguntaRandom = preguntasEjemplo[Math.floor(Math.random() * preguntasEjemplo.length)];
+        const delay = (i * intervalo) / 1000;
+        
+        crearPreguntaFlotante(preguntaRandom, delay);
+    }
+    
+    // Ocultar modal automáticamente después de la duración
+    setTimeout(() => {
+        modal.style.display = 'none';
+        console.log('[ANIMACIÓN CARGA]: ✅ Animación completada');
+    }, duracion);
+});
+
+// ================================================================
+// FUNCIONES AUXILIARES PARA LA ANIMACIÓN
+// ================================================================
+
+function crearPreguntaFlotante(texto, delay) {
+    const container = document.getElementById('preguntasFlotantes');
+    const pregunta = document.createElement('div');
+    pregunta.className = 'pregunta-flotante';
+    pregunta.textContent = texto;
+
+    const angle = Math.random() * 360;
+    const distance = 250 + Math.random() * 100;
+    const startX = Math.cos(angle * Math.PI / 180) * distance;
+    const startY = Math.sin(angle * Math.PI / 180) * distance;
+
+    pregunta.style.setProperty('--startX', `${startX}px`);
+    pregunta.style.setProperty('--startY', `${startY}px`);
+    pregunta.style.animationDelay = `${delay}s`;
+
+    container.appendChild(pregunta);
+
+    setTimeout(() => {
+        pregunta.remove();
+    }, (delay + 3) * 1000);
+}
+
+function crearParticulas() {
+    const container = document.getElementById('particulasContainer');
+    
+    for (let i = 0; i < 20; i++) {
+        const particula = document.createElement('div');
+        particula.className = 'particula';
+        particula.style.left = `${Math.random() * 100}%`;
+        particula.style.top = `${Math.random() * 100}%`;
+        particula.style.animationDelay = `${Math.random() * 4}s`;
+        
+        container.appendChild(particula);
+    }
+}
+
+function animarPorcentaje(duracionTotal) {
+    const porcentajeEl = document.getElementById('porcentajeCarga');
+    const inicio = Date.now();
+    
+    const interval = setInterval(() => {
+        const transcurrido = Date.now() - inicio;
+        const progreso = Math.min((transcurrido / duracionTotal) * 100, 100);
+        
+        porcentajeEl.textContent = `${Math.floor(progreso)}%`;
+        
+        if (progreso >= 100) {
+            clearInterval(interval);
+        }
+    }, 50);
+}
 
 console.log('[DUELO]: ✅ Sistema completamente inicializado');

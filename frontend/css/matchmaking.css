@@ -2610,3 +2610,204 @@ button:disabled {
         right: 15px;
     }
 }
+/* ================================================================ */
+/* MODAL DE CARGA DE PREGUNTAS */
+/* ================================================================ */
+.modal-carga-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-carga-content {
+    position: relative;
+    width: 600px;
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Centro: Agujero Negro / Luz Absorbente */
+.centro-absorcion {
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle at center, 
+        rgba(255, 255, 255, 1) 0%,
+        rgba(200, 200, 255, 0.8) 20%,
+        rgba(139, 92, 246, 0.6) 40%,
+        rgba(59, 130, 246, 0.4) 60%,
+        transparent 100%
+    );
+    box-shadow: 
+        0 0 60px rgba(255, 255, 255, 0.8),
+        0 0 120px rgba(139, 92, 246, 0.6),
+        inset 0 0 60px rgba(255, 255, 255, 0.4);
+    animation: pulseGlow 2s ease-in-out infinite;
+    z-index: 10;
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 
+            0 0 60px rgba(255, 255, 255, 0.8),
+            0 0 120px rgba(139, 92, 246, 0.6),
+            inset 0 0 60px rgba(255, 255, 255, 0.4);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 
+            0 0 90px rgba(255, 255, 255, 1),
+            0 0 180px rgba(139, 92, 246, 0.9),
+            inset 0 0 80px rgba(255, 255, 255, 0.6);
+    }
+}
+
+/* Anillo Giratorio */
+.anillo-giratorio {
+    position: absolute;
+    width: 240px;
+    height: 240px;
+    border: 3px solid transparent;
+    border-top-color: rgba(255, 255, 255, 0.6);
+    border-right-color: rgba(139, 92, 246, 0.4);
+    border-radius: 50%;
+    animation: spin 3s linear infinite;
+    z-index: 9;
+}
+
+/* Porcentaje */
+.porcentaje-carga {
+    position: absolute;
+    z-index: 11;
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--texto-principal);
+    text-shadow: 
+        0 0 20px rgba(255, 255, 255, 0.8),
+        0 0 40px rgba(139, 92, 246, 0.6);
+    animation: fadeInOut 1.5s ease-in-out infinite;
+}
+
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+/* Texto */
+.texto-carga {
+    position: absolute;
+    bottom: -80px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #8b5cf6;
+    text-align: center;
+    animation: slideUp 0.6s ease;
+}
+
+/* Preguntas Flotantes - COLOR BRONCE */
+.pregunta-flotante {
+    position: absolute;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, 
+        rgba(205, 127, 50, 0.9), 
+        rgba(184, 115, 51, 0.8)
+    );
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 8px;
+    box-shadow: 
+        0 4px 15px rgba(205, 127, 50, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    white-space: nowrap;
+    opacity: 0;
+    z-index: 5;
+    pointer-events: none;
+    animation: floatToCenter 3s ease-in-out forwards;
+}
+
+@keyframes floatToCenter {
+    0% {
+        opacity: 0;
+        transform: translate(var(--startX), var(--startY)) scale(0.8);
+    }
+    20% {
+        opacity: 1;
+        transform: translate(var(--startX), var(--startY)) scale(1);
+    }
+    80% {
+        opacity: 1;
+        transform: translate(0, 0) scale(0.8);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(0, 0) scale(0.3);
+    }
+}
+
+/* Partículas */
+.particula {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(139, 92, 246, 0.6);
+    border-radius: 50%;
+    animation: floatParticle 4s ease-in-out infinite;
+}
+
+@keyframes floatParticle {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+        opacity: 0.6;
+    }
+    50% {
+        transform: translateY(-30px) scale(1.5);
+        opacity: 1;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .modal-carga-content {
+        width: 90%;
+        height: 400px;
+    }
+
+    .centro-absorcion {
+        width: 120px;
+        height: 120px;
+    }
+
+    .anillo-giratorio {
+        width: 160px;
+        height: 160px;
+    }
+
+    .porcentaje-carga {
+        font-size: 2rem;
+    }
+
+    .texto-carga {
+        font-size: 1.2rem;
+        bottom: -60px;
+    }
+
+    .pregunta-flotante {
+        font-size: 0.75rem;
+        padding: 8px 12px;
+    }
+}

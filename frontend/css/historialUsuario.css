@@ -11,12 +11,12 @@ Fecha: [Fecha de creación o última edición]
     /* TEMA CLARO */
     --bg-primary: #f5f7fa;
     --bg-secondary: #fff;
-    --bg-header: linear-gradient(90deg, #1565c0, #1e88e5);
+    --bg-header: linear-gradient(90deg, #1534c0, #b61af3);
     --text-primary: #212121;
     --text-secondary: #757575;
     --text-light: #fff;
-    --accent-primary: #1e88e5;
-    --accent-secondary: #1565c0;
+    --accent-primary: #1e32e5;
+    --accent-secondary: #7315c0;
     --accent-warning: #ffca28;
     --border-color: #e0e0e0;
     --shadow: 0 6px 16px rgba(0,0,0,0.1);
