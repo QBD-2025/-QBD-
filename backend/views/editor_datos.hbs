@@ -32,7 +32,6 @@
 <div class="editor-container container mt-4">
   <h2 class="editor-subtitle mb-4">Gestión de Datos</h2>
   <!-- Accesos rápidos a otras gestiones -->
-  <a href="/editor/encuesta" class="editor-btn">Gestión de Encuesta</a>
   <a href="/editor" class="editor-btn">Gestión de Examenes</a>
 
   <!-- Tabla de datos -->
@@ -63,11 +62,12 @@
         <td>
           <!-- Botón editar con datos almacenados en atributos -->
           <button class="editor-btn"
-            data-id="{{id_dato}}"
-            data-dato="{{dato}}"
-            data-fuente="{{fuente}}"
-            data-id-materia="{{id_materia}}"
-            onclick="editarDatoDesdeAtributos(this)">✏️ Editar</button>
+          data-id="{{id_dato}}"
+          data-dato="{{dato}}"
+          data-fuente="{{fuente}}"
+          data-id-materia="{{id_materia}}"
+          data-tiene-imagen="{{#if imagen}}true{{else}}false{{/if}}"
+          onclick="editarDatoDesdeAtributos(this)">✏️ Editar</button>
           <!-- Botón eliminar -->
           <button class="editor-btn btn-danger btn-eliminar" data-id="{{id_dato}}">🗑️ Eliminar</button>
         </td>
@@ -85,17 +85,35 @@
 <div id="overlay-eliminar" onclick="cerrarModalEliminar()"></div>
 
 <!-- Formulario oculto para agregar o editar datos -->
-<form id="formEditarDato" action="/editor/agregar-dato" method="POST" enctype="multipart/form-data">
+<form id="formEditarDato">
   <h3 id="form-titulo">Agregar Dato</h3>
   <input type="hidden" name="id" id="editar-id">
+  
   <label>Dato:</label>
   <input type="text" name="dato" id="editar-dato" required>
+  
   <label>ID Materia:</label>
   <input type="number" name="id_materia" id="editar-id-materia" required>
+  
   <label>Fuente:</label>
-  <input type="text" name="fuente" id="editar-fuente">
+  <input type="text" name="fuente" id="editar-fuente" required>
+  
+  <!-- ✅ Campo de imagen habilitado -->
   <label>Imagen (opcional):</label>
   <input type="file" name="imagen" id="editar-imagen" accept="image/*">
+  
+  <!-- ✅ Contenedor para mostrar imagen actual al editar -->
+  <div id="imagen-actual-container" style="display: none; margin: 10px 0;">
+    <p><strong>Imagen actual:</strong></p>
+    <img id="imagen-actual-preview" src="" alt="Imagen actual" style="max-width: 200px; border: 1px solid #ccc; border-radius: 4px;">
+    <div style="margin-top: 10px;">
+      <label>
+        <input type="checkbox" id="eliminar-imagen-check">
+        Eliminar imagen actual
+      </label>
+    </div>
+  </div>
+  
   <button type="submit" class="editor-btn">Guardar</button>
   <button type="button" class="editor-btn" onclick="cerrarForm()">Cancelar</button>
 </form>

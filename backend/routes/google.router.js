@@ -1,3 +1,4 @@
+const revisorController = require('../controllers/revisor.controller.js');
 const express = require('express');
 const passport = require('passport');
 const router = express.Router();
@@ -15,7 +16,6 @@ router.get('/auth/google/callback',
                 return res.redirect('/login?error=serverError');
             }
 
-            // ✅ Si no hay usuario pero hay info, verificar el estado
             if (!user && info) {
                 // Usuario pendiente
                 if (info.message === 'pending') {
@@ -44,7 +44,7 @@ router.get('/auth/google/callback',
                 return res.redirect('/login?error=Error al autenticar con Google');
             }
 
-            // ✅ Login exitoso, establecer sesión manualmente
+            // Login exitoso, establecer sesión manualmente
             req.logIn(user, async (loginErr) => {
                 if (loginErr) {
                     console.error('Error al establecer sesión:', loginErr);
@@ -98,6 +98,8 @@ router.get('/auth/google/callback',
                             return res.redirect('/admin');
                         case 2:
                             return res.redirect('/editor');
+                        case 4: 
+                            return res.redirect('/revisor')
                         default:
                             try {
                                 const [datos] = await req.pool.query('SELECT dato, imagen FROM dato_curioso ORDER BY RAND() LIMIT 1');

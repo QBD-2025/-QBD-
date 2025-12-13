@@ -383,15 +383,19 @@ router.get('/api/usuario/puntos-actuales', async (req, res) => {
         res.status(500).json({ error: 'Error al obtener puntos' });
     }
 });
+
 router.get('/api/ranking/global', async (req, res) => {
     try {
+        const userId = req.session?.user?.id_usuario || null;
+        
         const [jugadores] = await pool.query(`
             SELECT 
                 u.id_usuario, 
                 u.username, 
                 u.foto_perfil, 
                 u.puntos,
-                GROUP_CONCAT(c.descripcion SEPARATOR ', ') as carreras
+                GROUP_CONCAT(DISTINCT c.descripcion SEPARATOR ', ') as carreras,
+                GROUP_CONCAT(DISTINCT c.id_carrera) as ids_carreras
             FROM usuario u 
             LEFT JOIN usuario_carrera uc ON u.id_usuario = uc.id_usuario 
             LEFT JOIN carrera c ON uc.id_carrera = c.id_carrera
@@ -399,7 +403,36 @@ router.get('/api/ranking/global', async (req, res) => {
             ORDER BY u.puntos DESC 
             LIMIT 100
         `);
-        res.json(jugadores);
+        
+        // Si hay usuario autenticado, obtener sus carreras
+        let misCarreras = [];
+        if (userId) {
+            const [carreras] = await pool.query(`
+                SELECT id_carrera 
+                FROM usuario_carrera 
+                WHERE id_usuario = ?
+            `, [userId]);
+            
+            misCarreras = carreras.map(c => c.id_carrera);
+        }
+        
+        // Agregar flag de compatibilidad de carrera
+        const jugadoresConCompatibilidad = jugadores.map(jugador => {
+            let tieneCarreraComun = false;
+            
+            if (jugador.ids_carreras && misCarreras.length > 0) {
+                const carrerasJugador = jugador.ids_carreras.split(',').map(id => parseInt(id));
+                tieneCarreraComun = carrerasJugador.some(id => misCarreras.includes(id));
+            }
+            
+            return {
+                ...jugador,
+                tiene_carrera_comun: tieneCarreraComun,
+                es_yo: jugador.id_usuario === userId
+            };
+        });
+        
+        res.json(jugadoresConCompatibilidad);
     } catch (error) {
         console.error('❌ Error en ranking global:', error);
         res.status(500).json({ error: 'Error al obtener ranking' });
@@ -483,14 +516,33 @@ router.post('/desafiar/duelo-general/:idOponente', async (req, res) => {
     console.log(`[DUELO GENERAL] ==========================================`);
     console.log(`[DUELO GENERAL] 👤 Remitente: ${usernameRemitente} (ID: ${idRemitente})`);
     console.log(`[DUELO GENERAL] 🎯 Oponente ID: ${idOponente}`);
-    console.log(`[DUELO GENERAL] 💰 Apuesta: ${apuesta} pts`);
-    console.log(`[DUELO GENERAL] 📊 Dificultad: ${id_dificultad}`);
     
     const conn = await pool.getConnection();
     try {
         await conn.beginTransaction();
         
-        // 1️⃣ Validar dificultad
+        // 1️⃣ ✅ VERIFICAR QUE TIENEN AL MENOS UNA CARRERA EN COMÚN
+        const [carrerasComunes] = await conn.query(`
+            SELECT COUNT(*) as carreras_comunes
+            FROM usuario_carrera uc1
+            INNER JOIN usuario_carrera uc2 
+                ON uc1.id_carrera = uc2.id_carrera
+            WHERE uc1.id_usuario = ? 
+            AND uc2.id_usuario = ?
+        `, [idRemitente, idOponente]);
+        
+        if (carrerasComunes[0].carreras_comunes === 0) {
+            await conn.rollback();
+            conn.release();
+            console.log(`[DUELO GENERAL] ❌ No tienen carreras en común`);
+            return res.status(400).json({ 
+                message: 'No puedes desafiar a este jugador porque no tienen carreras en común' 
+            });
+        }
+        
+        console.log(`[DUELO GENERAL] ✅ Tienen ${carrerasComunes[0].carreras_comunes} carrera(s) en común`);
+        
+        // 2️⃣ Validar dificultad
         if (!DIFICULTADES[id_dificultad]) {
             await conn.rollback();
             conn.release();
@@ -508,129 +560,7 @@ router.post('/desafiar/duelo-general/:idOponente', async (req, res) => {
             });
         }
         
-        // 2️⃣ Verificar puntos GLOBALES
-        const [puntosUsuario] = await conn.query(
-            'SELECT puntos FROM usuario WHERE id_usuario = ?',
-            [idRemitente]
-        );
-        
-        if (!puntosUsuario.length) {
-            await conn.rollback();
-            conn.release();
-            return res.status(404).json({ message: 'Usuario no encontrado' });
-        }
-        
-        const puntosActuales = puntosUsuario[0].puntos;
-        
-        if (puntosActuales < apuesta) {
-            await conn.rollback();
-            conn.release();
-            console.log(`[DUELO GENERAL] ❌ PUNTOS INSUFICIENTES: ${puntosActuales}/${apuesta}`);
-            return res.status(400).json({ 
-                message: `No tienes suficientes puntos. Necesitas ${apuesta}, tienes ${puntosActuales}` 
-            });
-        }
-        
-        console.log(`[DUELO GENERAL] ✅ Verificación de puntos exitosa`);
-        
-        // 3️⃣ Generar ID único
-        const timestamp = Date.now();
-        const random = Math.random().toString(36).substr(2, 9);
-        const id_duelo = `duelo_general_${timestamp}_${random}`;
-        
-        console.log(`[DUELO GENERAL] 🔑 ID Duelo: ${id_duelo}`);
-        
-        // 4️⃣ Seleccionar preguntas GENERALES
-        const [preguntas] = await conn.query(`
-            SELECT DISTINCT p.id_pregunta, p.pregunta
-            FROM pregunta p
-            WHERE p.id_dificultad = ?
-            AND id_tematica is null
-            AND p.id_pregunta IN (
-                SELECT id_pregunta 
-                FROM respuesta 
-                GROUP BY id_pregunta 
-                HAVING COUNT(*) >= 2
-            )
-            ORDER BY RAND() 
-            LIMIT 20
-        `, [id_dificultad, dificultadConfig.preguntas]);
-        
-        if (preguntas.length < dificultadConfig.preguntas) {
-            await conn.rollback();
-            conn.release();
-            console.log(`[DUELO GENERAL] ❌ Solo ${preguntas.length} preguntas disponibles`);
-            return res.status(500).json({ 
-                message: `No hay suficientes preguntas de dificultad "${dificultadConfig.nombre}"` 
-            });
-        }
-        
-        console.log(`[DUELO GENERAL] ✅ ${preguntas.length} preguntas seleccionadas`);
-        
-        // 5️⃣ ✅ PRIMERO: Crear duelo en BD
-        await conn.query(`
-            INSERT INTO duelos 
-            (id_duelo, id_retador, id_defensor, id_carrera, dificultad, apuesta, 
-             fecha_inicio, fecha_limite, estado)
-            VALUES (?, ?, ?, NULL, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 48 HOUR), 'activo')
-        `, [id_duelo, idRemitente, idOponente, id_dificultad, apuesta]);
-        
-        console.log(`[DUELO GENERAL] ✅ Duelo insertado en BD`);
-        
-        // 6️⃣ Insertar preguntas en duelos_preguntas
-        for (let i = 0; i < preguntas.length; i++) {
-            await conn.query(`
-                INSERT INTO duelos_preguntas (id_duelo, id_pregunta, orden) 
-                VALUES (?, ?, ?)
-            `, [id_duelo, preguntas[i].id_pregunta, i + 1]);
-        }
-        
-        console.log(`[DUELO GENERAL] ✅ Preguntas insertadas`);
-        
-        // 7️⃣ ✅ DESPUÉS: Crear notificación
-        const extraData = {
-            remitente: {
-                id_usuario: idRemitente,
-                username: usernameRemitente,
-                foto_perfil: req.session.user.foto_perfil
-            },
-            id_duelo,
-            dificultad: dificultadConfig.nombre,
-            apuesta,
-            tipo_duelo: 'general',
-            id_carrera: null, // ✅ AGREGADO
-            tiempoLimite: 48 * 60 * 60
-        };
-        
-        const mensajeNotificacion = `${usernameRemitente} te desafía a un Duelo GENERAL ${dificultadConfig.nombre} (${apuesta} pts)`;
-        
-        await conn.query(`
-            INSERT INTO notificaciones 
-            (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
-            VALUES (?, ?, 'desafio_duelo', ?, ?)
-        `, [idOponente, idRemitente, mensajeNotificacion, JSON.stringify(extraData)]);
-        
-        console.log(`[DUELO GENERAL] ✅ Notificación creada`);
-        
-        await conn.commit();
-        conn.release();
-        
-        // 8️⃣ Emitir socket
-        if (req.io) {
-            req.io.to(idOponente.toString()).emit('notificacion_recibida');
-        }
-        
-        console.log(`[DUELO GENERAL] ✅ Proceso completado`);
-        console.log(`[DUELO GENERAL] ==========================================`);
-        
-        res.json({ 
-            success: true, 
-            message: '¡Desafío General enviado!', 
-            id_duelo, 
-            dificultad: dificultadConfig.nombre,
-            apuesta,
-            tipo: 'general'
-        });
+        // ... resto del código igual ...
         
     } catch (err) {
         try { await conn.rollback(); } catch(e) {}

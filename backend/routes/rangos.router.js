@@ -3,20 +3,15 @@ const router = express.Router();
 const pool = require('../db/conexion');
 
 const verificarAutenticacion = (req, res, next) => {
-    // ✅ Verificar ambas formas de almacenar el ID de usuario
     const userId = req.session?.userId || req.session?.user?.id_usuario;
     
     if (!userId) {
-        console.log('[AUTH]: ❌ Usuario no autenticado');
-        console.log('[AUTH]: req.session.userId:', req.session?.userId);
-        console.log('[AUTH]: req.session.user?.id_usuario:', req.session?.user?.id_usuario);
         return res.status(401).json({ 
             success: false, 
             mensaje: 'Debes iniciar sesión' 
         });
     }
     
-    // ✅ Guardar en req para uso posterior
     req.userId = userId;
     next();
 };
@@ -26,20 +21,39 @@ async function crearNotificacionPromocion(userId, puntos, conn = null) {
     const shouldRelease = !conn;
     
     try {
+        const [usuario] = await connection.query(
+            'SELECT id_tp_usuario FROM usuario WHERE id_usuario = ?',
+            [userId]
+        );
+        
+        if (usuario.length === 0) return;
+        
+        const id_tp_usuario = usuario[0].id_tp_usuario;
+        
         let tipoPromocion = null;
         let mensaje = null;
         
-        if (puntos >= 10000) {
-            tipoPromocion = 'promocion_admin_disponible';
-            mensaje = '👑 ¡Felicidades! Has alcanzado 10,000 puntos. Ya puedes ser Administrador';
-        } else if (puntos >= 5000) {
+        // ✅ LÓGICA CORREGIDA: Permitir notificaciones según el rol actual
+        if (puntos >= 5000 && id_tp_usuario === 1) {
+            // Usuario normal con 5000+ puntos → puede ser Revisor
+            tipoPromocion = 'promocion_revisor_disponible';
+            mensaje = 'Felicidades! Has alcanzado 5,000 puntos. Ya puedes ser Revisor';
+        } else if (puntos >= 5000 && id_tp_usuario === 2) {
+            // ✅ Editor con 5000+ puntos → puede ser Revisor
+            tipoPromocion = 'promocion_revisor_disponible';
+            mensaje = 'Felicidades! Has alcanzado 5,000 puntos. Ya puedes ser Revisor';
+        } else if (puntos >= 2500 && id_tp_usuario === 1) {
+            // Usuario normal con 2500+ puntos → puede ser Editor
             tipoPromocion = 'promocion_editor_disponible';
-            mensaje = '🎨 ¡Felicidades! Has alcanzado 5,000 puntos. Ya puedes ser Editor';
+            mensaje = 'Felicidades! Has alcanzado 2,500 puntos. Ya puedes ser Editor';
+        } else {
+            // Admin (3) o Revisor (4) → no mostrar notificaciones
+            return;
         }
         
         if (!tipoPromocion) return;
         
-        // Verificar si ya existe una notificación de este tipo sin leer
+        // Verificar si ya existe una notificación del mismo tipo sin leer
         const [existente] = await connection.query(`
             SELECT id_notificacion 
             FROM notificaciones 
@@ -49,109 +63,81 @@ async function crearNotificacionPromocion(userId, puntos, conn = null) {
         `, [userId, tipoPromocion]);
         
         if (existente.length > 0) {
-            console.log('[NOTIF PROMOCIÓN]: Ya existe notificación sin leer');
             return;
         }
         
-        // ✅ CORRECCIÓN: 4 placeholders = 4 valores
+        // Si es Editor alcanzando 5000 puntos, eliminar notificación de Editor (ya no la necesita)
+        if (tipoPromocion === 'promocion_revisor_disponible' && id_tp_usuario === 2) {
+            await connection.query(`
+                DELETE FROM notificaciones 
+                WHERE id_usuario_destinatario = ? 
+                AND tipo = 'promocion_editor_disponible'
+            `, [userId]);
+        }
+        
+        // Crear la nueva notificación
         await connection.query(`
             INSERT INTO notificaciones 
             (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, leido, fecha_creacion) 
             VALUES (?, ?, ?, ?, FALSE, NOW())
-        `, [userId, userId, tipoPromocion, mensaje]);  // ✅ 4 valores: userId, userId, tipo, mensaje
+        `, [userId, userId, tipoPromocion, mensaje]);
         
-        console.log(`[NOTIF PROMOCIÓN]: ✅ Creada para usuario ${userId} - Tipo: ${tipoPromocion}`);
+        console.log(`[PROMOCIÓN] ✅ Notificación creada: ${tipoPromocion} para usuario ${userId}`);
         
+        // Emitir evento de socket si está disponible
         const io = global.io;
         if (io) {
             io.to(userId.toString()).emit('notificacion_recibida');
-            console.log(`[NOTIF PROMOCIÓN]: 📡 Socket emitido a usuario ${userId}`);
         }
         
     } catch (error) {
-        console.error('[NOTIF PROMOCIÓN ERROR]:', error);
+        console.error('Error al crear notificacion de promocion:', error);
     } finally {
         if (shouldRelease) connection.release();
     }
 }
 
-// ✅✅✅ FUNCIÓN CORREGIDA - SIEMPRE CONSULTA PUNTOS TOTALES
 async function verificarPromocionDisponible(userId, puntosNuevos = null) {
     try {
-        console.log(`\n═══════════════════════════════════════════════════════════`);
-        console.log(`[VERIFICAR PROMOCIÓN]: Iniciando para usuario ${userId}`);
-        console.log(`[VERIFICAR PROMOCIÓN]: Puntos del evento: ${puntosNuevos || 'N/A'}`);
         
-        // ✅ SIEMPRE consultar los puntos TOTALES actuales del usuario
         const [usuario] = await pool.query(
             'SELECT puntos, id_tp_usuario FROM usuario WHERE id_usuario = ?',
             [userId]
         );
         
         if (usuario.length === 0) {
-            console.log(`[VERIFICAR PROMOCIÓN]: ❌ Usuario ${userId} no encontrado`);
-            console.log(`═══════════════════════════════════════════════════════════\n`);
             return;
         }
         
         const { puntos, id_tp_usuario } = usuario[0];
         
-        // ✅ Mapear id_tp_usuario a rol legible
         let rolActual = 'usuario';
         if (id_tp_usuario === 2) rolActual = 'editor';
         else if (id_tp_usuario === 3) rolActual = 'admin';
+        else if (id_tp_usuario === 4) rolActual = 'revisor';
         
-        console.log(`[VERIFICAR PROMOCIÓN]: Estado del usuario:`);
-        console.log(`  - ID: ${userId}`);
-        console.log(`  - Puntos TOTALES: ${puntos}`);
-        console.log(`  - id_tp_usuario: ${id_tp_usuario}`);
-        console.log(`  - Rol actual: ${rolActual}`);
-        
-        // Si ya es admin, no hacer nada
-        if (id_tp_usuario === 3) {
-            console.log(`[VERIFICAR PROMOCIÓN]: ℹ️ Usuario ya es admin, no verificar`);
-            console.log(`═══════════════════════════════════════════════════════════\n`);
-            return;
-        }
-        
-        // Verificar umbrales CON LOS PUNTOS TOTALES
         let notificacionCreada = false;
         
-        if (id_tp_usuario === 1 && puntos >= 10000) {
-            console.log(`[VERIFICAR PROMOCIÓN]: 🎯 Usuario saltó directo a 10000+ puntos`);
+        if (puntos >= 2500) {
             await crearNotificacionPromocion(userId, puntos);
             notificacionCreada = true;
-        } else if (id_tp_usuario === 1 && puntos >= 5000) {
-            console.log(`[VERIFICAR PROMOCIÓN]: 🎯 Usuario alcanzó 5000+ puntos (Editor disponible)`);
-            await crearNotificacionPromocion(userId, puntos);
-            notificacionCreada = true;
-        } else if (id_tp_usuario === 2 && puntos >= 10000) {
-            console.log(`[VERIFICAR PROMOCIÓN]: 🎯 Editor alcanzó 10000+ puntos (Admin disponible)`);
+        } else if (puntos >= 5000) {
             await crearNotificacionPromocion(userId, puntos);
             notificacionCreada = true;
         } else {
-            const puntosNecesarios = id_tp_usuario === 1 ? 5000 - puntos : 10000 - puntos;
-            console.log(`[VERIFICAR PROMOCIÓN]: ⏳ Aún no alcanza umbrales`);
-            console.log(`  - Necesita ${puntosNecesarios} puntos más para ${id_tp_usuario === 1 ? 'Editor' : 'Admin'}`);
+            const puntosNecesarios = 5000 - puntos;
         }
         
         if (notificacionCreada) {
-            console.log(`[VERIFICAR PROMOCIÓN]: ✅ Notificación de promoción enviada`);
         }
         
-        console.log(`═══════════════════════════════════════════════════════════\n`);
-        
     } catch (error) {
-        console.error('\n❌❌❌ [VERIFICAR PROMOCIÓN ERROR] ❌❌❌');
-        console.error('Error:', error.message);
-        console.error('Stack:', error.stack);
-        console.error('═══════════════════════════════════════════════════════════\n');
     }
 }
 
 router.get('/verificar-promocion', verificarAutenticacion, async (req, res) => {
     try {
-        const userId = req.userId; // ✅ Usar el ID verificado del middleware
+        const userId = req.userId;
         
         const [rows] = await pool.query(
             'SELECT puntos, id_tp_usuario FROM usuario WHERE id_usuario = ?',
@@ -167,22 +153,22 @@ router.get('/verificar-promocion', verificarAutenticacion, async (req, res) => {
 
         const usuario = rows[0];
         
-        // Mapear id_tp_usuario a rol
         let rolActual = 'usuario';
         if (usuario.id_tp_usuario === 2) rolActual = 'editor';
         else if (usuario.id_tp_usuario === 3) rolActual = 'admin';
+        else if (usuario.id_tp_usuario === 4) rolActual = 'revisor';
 
         res.json({ 
             success: true, 
             puntos: usuario.puntos,
             rol_actual: rolActual,
-            puede_editor: usuario.puntos >= 5000 && usuario.id_tp_usuario === 1,
-            puede_admin: usuario.puntos >= 10000 && usuario.id_tp_usuario !== 3,
-            puntos_faltantes_editor: Math.max(0, 5000 - usuario.puntos),
-            puntos_faltantes_admin: Math.max(0, 10000 - usuario.puntos)
+            puede_editor: usuario.puntos >= 2500 && usuario.id_tp_usuario === 1,
+            puede_revisor: usuario.puntos >= 5000 && usuario.id_tp_usuario === 1,
+            puntos_faltantes_editor: Math.max(0, 2500 - usuario.puntos),
+            puntos_faltantes_revisor: Math.max(0, 5000 - usuario.puntos)
         });
     } catch (err) {
-        console.error('Error al verificar promoción:', err);
+        console.error('Error al verificar promocion:', err);
         res.status(500).json({ 
             success: false, 
             mensaje: 'Error al verificar estado' 
@@ -196,7 +182,7 @@ router.post('/promocionar-editor', verificarAutenticacion, async (req, res) => {
     try {
         await connection.beginTransaction();
         
-        const userId = req.userId; // ✅ Usar el ID verificado del middleware
+        const userId = req.userId;
         
         const [rows] = await connection.query(
             'SELECT puntos, id_tp_usuario FROM usuario WHERE id_usuario = ?',
@@ -213,11 +199,11 @@ router.post('/promocionar-editor', verificarAutenticacion, async (req, res) => {
 
         const usuario = rows[0];
 
-        if (usuario.puntos < 5000) {
+        if (usuario.puntos < 2500) {
             await connection.rollback();
             return res.status(400).json({ 
                 success: false, 
-                mensaje: `Necesitas 5000 puntos. Actualmente tienes: ${usuario.puntos}` 
+                mensaje: `Necesitas 2500 puntos. Actualmente tienes: ${usuario.puntos}` 
             });
         }
 
@@ -229,7 +215,6 @@ router.post('/promocionar-editor', verificarAutenticacion, async (req, res) => {
             });
         }
 
-        // Actualizar a editor (id_tp_usuario = 2)
         await connection.query(
             'UPDATE usuario SET id_tp_usuario = 2 WHERE id_usuario = ?',
             [userId]
@@ -238,18 +223,17 @@ router.post('/promocionar-editor', verificarAutenticacion, async (req, res) => {
         await connection.query(`
             DELETE FROM notificaciones 
             WHERE id_usuario_destinatario = ? 
-            AND tipo = 'promocion_editor_disponible'
+            AND tipo IN ('promocion_editor_disponible', 'promocion_revisor_disponible')
         `, [userId]);
         
         await connection.query(`
             INSERT INTO notificaciones 
             (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, leido, fecha_creacion) 
-            VALUES (?, ?, 'promocion_completada', '🎉 ¡Felicidades! Ahora eres Editor', FALSE, NOW())
+            VALUES (?, ?, 'promocion_completada', 'Felicidades! Ahora eres Editor', FALSE, NOW())
         `, [userId, userId]);
 
         await connection.commit();
 
-        // ✅ Actualizar sesión correctamente
         if (req.session.user) {
             req.session.user.id_tp_usuario = 2;
         }
@@ -261,7 +245,7 @@ router.post('/promocionar-editor', verificarAutenticacion, async (req, res) => {
 
         res.json({ 
             success: true, 
-            mensaje: '¡Felicidades! Has sido promovido a Editor',
+            mensaje: 'Felicidades! Has sido promovido a Editor',
             nuevo_rol: 'editor'
         });
     } catch (err) {
@@ -269,20 +253,20 @@ router.post('/promocionar-editor', verificarAutenticacion, async (req, res) => {
         console.error('Error al promocionar a editor:', err);
         res.status(500).json({ 
             success: false, 
-            mensaje: 'Error al procesar la promoción' 
+            mensaje: 'Error al procesar la promocion' 
         });
     } finally {
         connection.release();
     }
 });
 
-router.post('/promocionar-admin', verificarAutenticacion, async (req, res) => {
+router.post('/promocionar-revisor', verificarAutenticacion, async (req, res) => {
     const connection = await pool.getConnection();
     
     try {
         await connection.beginTransaction();
         
-        const userId = req.userId; // ✅ Usar el ID verificado del middleware
+        const userId = req.userId;
         
         const [rows] = await connection.query(
             'SELECT puntos, id_tp_usuario FROM usuario WHERE id_usuario = ?',
@@ -299,45 +283,49 @@ router.post('/promocionar-admin', verificarAutenticacion, async (req, res) => {
 
         const usuario = rows[0];
 
-        if (usuario.puntos < 10000) {
+        // ✅ Validar puntos mínimos
+        if (usuario.puntos < 5000) {
             await connection.rollback();
             return res.status(400).json({ 
                 success: false, 
-                mensaje: `Necesitas 10000 puntos. Actualmente tienes: ${usuario.puntos}` 
+                mensaje: `Necesitas 5000 puntos. Actualmente tienes: ${usuario.puntos}` 
             });
         }
 
-        if (usuario.id_tp_usuario === 3) {
+        // ✅ Permitir promoción desde Usuario (1) o Editor (2)
+        if (usuario.id_tp_usuario !== 1 && usuario.id_tp_usuario !== 2) {
             await connection.rollback();
             return res.status(400).json({ 
                 success: false, 
-                mensaje: 'Ya eres administrador' 
+                mensaje: 'Ya tienes un rol superior o no puedes ser promovido a Revisor' 
             });
         }
 
-        // Actualizar a admin (id_tp_usuario = 3)
+        // ✅ Promover a Revisor (tipo 4)
         await connection.query(
-            'UPDATE usuario SET id_tp_usuario = 3 WHERE id_usuario = ?',
+            'UPDATE usuario SET id_tp_usuario = 4 WHERE id_usuario = ?',
             [userId]
         );
         
+        // ✅ Eliminar todas las notificaciones de promoción anteriores
         await connection.query(`
             DELETE FROM notificaciones 
             WHERE id_usuario_destinatario = ? 
-            AND tipo IN ('promocion_editor_disponible', 'promocion_admin_disponible')
+            AND tipo IN ('promocion_editor_disponible', 'promocion_revisor_disponible')
         `, [userId]);
         
+        // ✅ Crear notificación de confirmación
         await connection.query(`
             INSERT INTO notificaciones 
             (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, leido, fecha_creacion) 
-            VALUES (?, ?, 'promocion_completada', '🎉 ¡Felicidades! Ahora eres Administrador', FALSE, NOW())
+            VALUES (?, ?, 'promocion_completada', 'Felicidades! Ahora eres Revisor', FALSE, NOW())
         `, [userId, userId]);
 
         await connection.commit();
 
-        // ✅ Actualizar sesión correctamente
+        // ✅ Actualizar sesión
         if (req.session.user) {
-            req.session.user.id_tp_usuario = 3;
+            req.session.user.id_tp_usuario = 4;
         }
         
         const io = global.io;
@@ -345,22 +333,24 @@ router.post('/promocionar-admin', verificarAutenticacion, async (req, res) => {
             io.to(userId.toString()).emit('notificacion_recibida');
         }
 
+
         res.json({ 
             success: true, 
-            mensaje: '¡Felicidades! Has sido promovido a Administrador',
-            nuevo_rol: 'admin'
+            mensaje: 'Felicidades! Has sido promovido a Revisor',
+            nuevo_rol: 'revisor'
         });
     } catch (err) {
         await connection.rollback();
-        console.error('Error al promocionar a admin:', err);
+        console.error('Error al promocionar a Revisor:', err);
         res.status(500).json({ 
             success: false, 
-            mensaje: 'Error al procesar la promoción' 
+            mensaje: 'Error al procesar la promocion' 
         });
     } finally {
         connection.release();
     }
 });
+
 
 module.exports = router;
 module.exports.verificarPromocionDisponible = verificarPromocionDisponible;

@@ -16,7 +16,7 @@ async function obtenerDatosPorMateria(idMateria) {
         SELECT dc.dato, dc.imagen, m.descripcion AS materia
         FROM dato_curioso dc
         JOIN materias m ON dc.id_materia = m.id_materia
-        WHERE dc.id_materia = ?
+        WHERE dc.id_materia = ? and dc.id_estatus_p = 1
     `, [idMateria]);
     return datos; // Array de objetos {dato, imagen, materia}
 }
@@ -25,7 +25,7 @@ async function obtenerDatosPorMateria(idMateria) {
 // Obtiene un dato curioso aleatorio de toda la base de datos
 // ===========================
 async function obtenerDatoAleatorio() {
-    const [rows] = await pool.query('SELECT dato, imagen FROM dato_curioso ORDER BY RAND() LIMIT 1');
+    const [rows] = await pool.query('SELECT dato, imagen FROM dato_curioso where id_estatus_p = 1 ORDER BY RAND() LIMIT 1');
     return rows[0]; // Objeto {dato, imagen}
 }
 

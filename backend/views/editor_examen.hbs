@@ -42,27 +42,34 @@
   <!-- Botones rápidos de navegación interna -->
   <div class="mb-4">
     <a href="/editor/datos" class="editor-btn">Gestión de Datos</a>
-    <a href="/editor/encuesta" class="editor-btn">Gestión de Encuestas</a>
   </div>
 
   <!-- Tabla de preguntas -->
   <table class="editor-table table table-striped">
-    <thead>
+    <thead> 
       <tr>
         <th>ID Materia</th>
+        <th>ID Temática</th>
         <th>Pregunta</th>
+        <th>Retroalimentación</th>
         <th>Opciones</th>
         <th>Acciones</th>
       </tr>
     </thead>
     <tbody>
-      <!-- Iteramos sobre las preguntas -->
       {{#each preguntas}}
       <tr>
         <td>{{id_materia}}</td>
+        <td>{{#if id_tematica}}{{id_tematica}}{{else}}<span style="color: gray;">Sin temática</span>{{/if}}</td>
         <td><strong>{{pregunta}}</strong></td>
         <td>
-          <!-- Lista de respuestas -->
+          {{#if retroalimentacion}}
+            <small>{{retroalimentacion}}</small>
+          {{else}}
+            <span style="color: gray; font-style: italic;">Sin retroalimentación</span>
+          {{/if}}
+        </td>
+        <td>
           <ul style="list-style:none; padding-left:0;">
             {{#each respuestas}}
             <li style="margin-bottom:5px;">
@@ -74,10 +81,10 @@
           </ul>
         </td>
         <td>
-          <!-- Botón de editar pregunta -->
           <button type="button" class="editor-btn"
             data-id-pregunta="{{id_pregunta}}"
             data-id-materia="{{id_materia}}"
+            data-id-tematica="{{id_tematica}}"
             data-pregunta="{{pregunta}}"
             data-retroalimentacion="{{retroalimentacion}}"
             {{#each respuestas}}
@@ -87,8 +94,6 @@
               data-res{{@index}}-correcta="{{correcta}}"
             {{/each}}
             onclick="editarPreguntaDesdeAtributos(this)">✏️ Editar</button>
-
-          <!-- Botón de eliminar pregunta -->
           <button type="button" class="editor-btn btn-danger" onclick="abrirModalEliminar({{id_pregunta}})">🗑️ Eliminar</button>
         </td>
       </tr>
@@ -120,20 +125,36 @@
 <!-- ---------------------- FORMULARIO DE EDICIÓN ---------------------- -->
 <form id="formulario-edicion">
   <h3>Editar / Agregar Pregunta</h3>
-  <!-- Campos ocultos y básicos -->
+  
   <input type="hidden" id="editar-id" name="id_pregunta">
-  <label>ID Materia:</label>
-  <input type="number" id="editar-id-materia" name="id_materia" required>
+  
+  <!-- ✅ SELECT de Materia -->
+  <label>Materia:</label>
+  <select id="editar-id-materia" name="id_materia" required onchange="filtrarTematicas()">
+    <option value="">Selecciona una materia</option>
+    {{#each materias}}
+      <option value="{{id_materia}}">{{descripcion}}</option>
+    {{/each}}
+  </select>
+  
+  <!-- ✅ SELECT de Temática -->
+  <label>Temática (opcional):</label>
+  <select id="editar-id-tematica" name="id_tematica">
+    <option value="">Selecciona una temática</option>
+    {{#each tematicas}}
+      <option value="{{id_tematica}}" data-carrera="{{id_carrera}}">{{descripcion}}</option>
+    {{/each}}
+  </select>
+  
   <label>Texto de la Pregunta:</label>
-  <input type="text" id="editar-pregunta" name="pregunta" required>
+  <textarea id="editar-pregunta" name="pregunta" required rows="3"></textarea>
+  
   <label>Retroalimentación:</label>
-  <input type="text" id="editar-retroalimentacion" name="retroalimentacion">
+  <textarea id="editar-retroalimentacion" name="retroalimentacion" rows="3" placeholder="Explicación de la respuesta correcta..."></textarea>
 
-  <!-- Contenedor de opciones de respuesta -->
   <h4>Opciones de Respuesta:</h4>
   <div id="respuestas-container"></div>
 
-  <!-- Botones de acción -->
   <button type="submit" class="editor-btn">Guardar cambios</button>
   <button type="button" class="editor-btn" onclick="cerrarForm()">Cancelar</button>
 </form>
