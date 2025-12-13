@@ -67,7 +67,7 @@ router.get('/restablecer-contrasena', async (req, res) => {
         );
 
         if (users.length === 0) {
-            return res.render('error', {
+            return res.render('/', {
                 layout: 'main',
                 mensajeError: 'El enlace para restablecer la contraseña es inválido o ha expirado. Por favor, solicita uno nuevo.'
             });
@@ -80,7 +80,7 @@ router.get('/restablecer-contrasena', async (req, res) => {
 
     } catch (error) {
         console.error("Error al verificar el token de reseteo:", error);
-        res.status(500).render('error', {
+        res.status(500).render('/', {
             layout: 'main',
             mensajeError: 'Error del servidor'
         });
@@ -107,7 +107,7 @@ router.post('/restablecer-contrasena', async (req, res) => {
         );
         
         if (users.length === 0) {
-            return res.render('error', {
+            return res.render('/', {
                 layout: 'main',
                 mensajeError: 'El enlace para restablecer la contraseña es inválido o ha expirado.'
             });

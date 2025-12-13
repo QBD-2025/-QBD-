@@ -254,7 +254,7 @@ body.light-mode .btn-desafiar {
 
 
 /* ==========================================================
-   BADGE “YO”
+   BADGE "YO"
    ========================================================== */
 .badge-yo {
     background: linear-gradient(135deg, #8e24aa, #5e1780);
@@ -303,4 +303,3 @@ body.light-mode .ranking-item.current-user {
         margin-bottom: 10px;
     }
 }
-

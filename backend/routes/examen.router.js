@@ -17,7 +17,7 @@ router.get('/examen/:id_materia', async (req, res) => {
         const [preguntas] = await db.query(
           `SELECT id_pregunta, pregunta, retroalimentacion, puntos 
           FROM pregunta 
-          WHERE id_materia = ? 
+          WHERE id_materia = ? and id_estatus_p = 1
           AND RAND() < (SELECT 20 / COUNT(*) FROM pregunta WHERE id_materia = ?)
           LIMIT 20`,
           [id_materia, id_materia]

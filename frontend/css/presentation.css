@@ -1,3 +1,22 @@
+/* ===========================================================
+ESTILOS DE PÁGINA DE PRESENTACIÓN
+-----------------------------------------------------------
+Archivo CSS diseñado para:
+    - Layout principal de la página de presentación
+    - Carrusel de videos y contenido destacado
+    - Estilo tipo Duolingo para botones y secciones informativas
+    - Adaptabilidad responsive para tablets y móviles
+-----------------------------------------------------------
+Contenido:
+    1. Reset básico y body
+    2. Contenedores principales
+    3. Encabezados y títulos
+    4. Botones principales y secundarios
+    5. Sección de videos y placeholders
+    6. Estilo tipo Duolingo (info-section, promo-video)
+    7. Responsive
+Fecha: [Fecha de creación o última edición]
+=========================================================== */
 :root {
     --bg-primary: #ffffff;
     --bg-secondary: #f8f9fa;
@@ -280,7 +299,6 @@ body {
     object-fit: cover;
     border-radius: 10px;
 }
-
 @media (max-width: 900px) {
     .info-section, .info-section.reverse {
         flex-direction: column;

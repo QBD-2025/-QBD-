@@ -1,3 +1,21 @@
+/* ===========================================================
+Archivo: ligas.css
+-----------------------------------------------------------
+Este archivo contiene:
+1. Variables globales de colores
+2. Estilos generales del body y contenedor principal
+3. Header y navegación entre secciones
+4. Secciones y tarjetas de universidades
+5. Recursos adicionales
+6. Footer
+7. Botón flotante con animación
+8. Responsive (adaptaciones móviles)
+9. Mejoras visuales: badges y buscador
+-----------------------------------------------------------
+Todos los elementos tienen transiciones y sombras para
+dar dinamismo y jerarquía visual.
+Fecha: [Fecha de creación o última edición]
+=========================================================== */
 :root {
     --bg-primary: #ffffff;
     --bg-secondary: #f8f9fa;

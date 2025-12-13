@@ -63,19 +63,65 @@ app.engine('.hbs', exphbs.engine({
         // ✅ HELPERS BÁSICOS (ORIGINALES)
         // ════════════════════════════════════════════════════════════
         eq: (a, b) => a === b,
-        or: (a, b) => a || b,
+        equals: (a, b) => a === b,
         ne: (a, b) => a !== b,
         gt: (a, b) => a > b,
+        greaterThan: (a, b) => a > b,
         gte: (a, b) => a >= b,
+        greaterThanOrEqual: (a, b) => a >= b,
         lt: (a, b) => a < b,
+        lessThan: (a, b) => a < b,
         lte: (a, b) => a <= b,
+        lessThanOrEqual: (a, b) => a <= b,
+        
+        // ════════════════════════════════════════════════════════════
+        // HELPERS DE LÓGICA
+        // ════════════════════════════════════════════════════════════
+        or: (a, b) => a || b,
+        and: (a, b) => a && b,
+        not: (a) => !a,
+        
+        // ════════════════════════════════════════════════════════════
+        // HELPERS DE MATEMÁTICAS
+        // ════════════════════════════════════════════════════════════
         inc: v => parseInt(v) + 1,
         dec: v => parseInt(v) - 1,
         sum: (a, b) => a + b,
-        subtract: (a, b) => a - b,
         add: (a, b) => a + b,
+        subtract: (a, b) => a - b,
+        multiply: (a, b) => a * b,
+        divide: (a, b) => b !== 0 ? a / b : 0,
+        
+        // ════════════════════════════════════════════════════════════
+        // HELPERS DE SWITCH/CASE ✅✅✅ NUEVOS
+        // ════════════════════════════════════════════════════════════
+        switch: function(value, options) {
+            this.switch_value = value;
+            this.switch_break = false;
+            var html = options.fn(this);
+            delete this.switch_break;
+            delete this.switch_value;
+            return html;
+        },
+        
+        case: function(value, options) {
+            if (value == this.switch_value) {
+                this.switch_break = true;
+                return options.fn(this);
+            }
+        },
+        
+        default: function(options) {
+            if (!this.switch_break) {
+                return options.fn(this);
+            }
+        },
+        
+        // ════════════════════════════════════════════════════════════
+        // HELPERS DE UTILIDAD
+        // ════════════════════════════════════════════════════════════
         json: ctx => JSON.stringify(ctx),
-        ifEquals: (a, b, options) => a == b ? options.fn(this) : options.inverse(this),
+        
         range(start, end) {
             const arr = [];
             for (let i = start; i <= end; i++) {
@@ -83,15 +129,24 @@ app.engine('.hbs', exphbs.engine({
             }
             return arr;
         },
+        
+        // ════════════════════════════════════════════════════════════
+        // HELPERS CONDICIONALES AVANZADOS
+        // ════════════════════════════════════════════════════════════
+        ifEquals: (a, b, options) => a == b ? options.fn(this) : options.inverse(this),
+        
         ifCond: (v1, op, v2, options) => {
             switch (op) {
                 case '==': return (v1 == v2) ? options.fn(this) : options.inverse(this);
                 case '===': return (v1 === v2) ? options.fn(this) : options.inverse(this);
                 case '!=': return (v1 != v2) ? options.fn(this) : options.inverse(this);
+                case '!==': return (v1 !== v2) ? options.fn(this) : options.inverse(this);
                 case '<': return (v1 < v2) ? options.fn(this) : options.inverse(this);
                 case '<=': return (v1 <= v2) ? options.fn(this) : options.inverse(this);
                 case '>': return (v1 > v2) ? options.fn(this) : options.inverse(this);
                 case '>=': return (v1 >= v2) ? options.fn(this) : options.inverse(this);
+                case '&&': return (v1 && v2) ? options.fn(this) : options.inverse(this);
+                case '||': return (v1 || v2) ? options.fn(this) : options.inverse(this);
                 default: return options.inverse(this);
             }
         },
@@ -136,6 +191,7 @@ app.engine('.hbs', exphbs.engine({
             }
         },
         
+
         // Helper para índices seguros
         incIndex: function(value) {
             const num = parseInt(value);
@@ -149,6 +205,22 @@ app.engine('.hbs', exphbs.engine({
         },
         
         // Debug helper (útil para desarrollo)
+        formatDateShort: (date) => {
+            if (!date) return 'N/A';
+            try {
+                return new Date(date).toLocaleDateString('es-MX', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+            } catch (error) {
+                return 'N/A';
+            }
+        },
+        
+        // ════════════════════════════════════════════════════════════
+        // HELPER DE DEBUG
+        // ════════════════════════════════════════════════════════════
         debug: (value) => {
             console.log('[HANDLEBARS DEBUG]:', value);
             return JSON.stringify(value, null, 2);
@@ -206,7 +278,7 @@ app.use((req, res, next) => {
 console.log('[MIDDLEWARE]: ✅ req.io configurado en middleware');
 
 // ════════════════════════════════════════════════════════════════
-// ✅ NUEVO: MIDDLEWARE DE AUTO-VERIFICACIÓN DE PROMOCIONES
+//  MIDDLEWARE DE AUTO-VERIFICACIÓN DE PROMOCIONES
 // ════════════════════════════════════════════════════════════════
 app.use(async (req, res, next) => {
     if (!req.session?.user?.id_usuario) {
@@ -228,6 +300,7 @@ app.use(async (req, res, next) => {
 
 console.log('[MIDDLEWARE]: ✅ Auto-verificación de promociones activada');
 
+// ------------------ Routers ------------------
 // ════════════════════════════════════════════════════════════════
 // 🔍 SISTEMA DE DEBUG Y PROTECCIÓN DE RUTAS
 // ════════════════════════════════════════════════════════════════
@@ -347,11 +420,11 @@ const registerR = require('../routes/register.router.js');
 const simuladorR = require('../routes/simulador.router.js');
 const sopaLetrasR = require('../routes/sopa_letras.router.js');
 const usuarioR = require('../routes/usuario.router.js');
-const verificaAdminR = require('../routes/verificaAdmin.router.js');
 const verificationR = require('../routes/verification.router.js');
 const duelo_competitivo = require('../routes/duelo_competitivo.js');
 const duelosErrorHandler = require('../routes/dueloErrorHandler.js');
-const promocionR = require("../routes/rangos.router.js");
+const promocionR = require("../routes/rangos.router.js")
+const revisorR = require ("../routes/revisor.router.js")
 
 // ════════════════════════════════════════════════════════════════
 // ✅✅✅ ORDEN CRÍTICO DE MONTAJE
@@ -388,11 +461,11 @@ app.use('/', profileR);
 app.use('/', rankingR);
 app.use('/', rankingCarreraR);
 app.use('/', usuarioR);
-app.use('/api/promocion', promocionR); // ✅ NUEVO: Router de promociones
+app.use('/api/promocion', promocionR);
 
 // 6️⃣ SEXTO: Rutas de administración y editor
 app.use('/editor', editorR);
-app.use('/', verificaAdminR);
+app.use('/revisor', revisorR)
 
 // 7️⃣ SÉPTIMO: Rutas de contenido
 app.use('/', datoR);

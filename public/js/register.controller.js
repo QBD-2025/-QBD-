@@ -17,7 +17,6 @@ function validarFormulario() {
     if (!email.value.trim()) {
         mostrarError(email, "El correo es obligatorio");
         valido = false;
-    
     } else if (!/^[\w\.-]+@[\w\.-]+\.\w{2,4}$/.test(email.value)) {
         mostrarError(email, "Correo inválido");
         valido = false;

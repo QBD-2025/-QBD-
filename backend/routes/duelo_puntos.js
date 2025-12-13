@@ -524,7 +524,6 @@ class GestorPuntuacion {
                         ON DUPLICATE KEY UPDATE puntos = GREATEST(0, puntos + VALUES(puntos))`,
                         [jId, idCarrera, cambioCarrera]
                     );
-                    
                     console.log(`[BD]: Usuario ${jId} → Carrera ${idCarrera}: ${cambioCarrera > 0 ? '+' : ''}${cambioCarrera} pts`);
                 }
             }

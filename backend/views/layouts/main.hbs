@@ -78,9 +78,13 @@
                         {{#if (eq user.id_tp_usuario 3)}}
                             <li><a href="/admin">Permisos</a></li>
                             <li><a href="/editor">Editor</a></li>
+                            <li><a href="/revisor">Revisor</a></li>
                         {{/if}}
                         {{#if (eq user.id_tp_usuario 2)}}
                             <li><a href="/editor">Editor</a></li>
+                        {{/if}}
+                        {{#if (eq user.id_tp_usuario 4)}}
+                            <li><a href="/revisor">Revisor</a></li>
                         {{/if}}
                         <li><a href="/logout" class="cerrar-sesion">Cerrar sesión</a></li>
                     </ul>

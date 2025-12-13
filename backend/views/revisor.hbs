@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Revisión</title>
+    <link rel="stylesheet" href="/css/revisor.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <section class="welcome-section">
+            <h2 class="welcome-title">Bienvenido al Panel de Revisión</h2>
+            <p class="welcome-text">
+                Desde aquí puedes gestionar la revisión de datos informativos y preguntas pendientes de aprobación.
+                Revisa los elementos pendientes y toma decisiones de aprobación o rechazo.
+            </p>
+        </section>
+
+        <!-- Estadísticas -->
+        <div class="stats-grid">
+            <div class="stat-card pendientes">
+                <div class="stat-title">Pendientes</div>
+                <div class="stat-number">{{stats.pendientes}}</div>
+                <div class="stat-description">Esperando revisión</div>
+            </div>
+            <div class="stat-card aprobados">
+                <div class="stat-title">Aprobados</div>
+                <div class="stat-number">{{stats.aprobados}}</div>
+                <div class="stat-description">Esta semana</div>
+            </div>
+            <div class="stat-card rechazados">
+                <div class="stat-title">Rechazados</div>
+                <div class="stat-number">{{stats.rechazados}}</div>
+                <div class="stat-description">Esta semana</div>
+            </div>
+            <div class="stat-card total">
+                <div class="stat-title">Total</div>
+                <div class="stat-number">{{stats.total}}</div>
+                <div class="stat-description">Elementos revisados</div>
+            </div>
+        </div>
+
+        <!-- Accesos rápidos -->
+        <div class="quick-access-grid">
+            <div class="access-card datos">
+                <div class="card-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <h3 class="card-title">Revisar Datos</h3>
+                <p class="card-description">
+                    Revisa datos informativos pendientes de aprobación. Verifica fuentes, contenido y calidad de la información.
+                </p>
+                <a href="/revisor/datos" class="revisor-btn">
+                    <i class="fas fa-arrow-right"></i> Ir a Revisión de Datos
+                </a>
+            </div>
+
+            <div class="access-card revision">
+                <div class="card-icon">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <h3 class="card-title">Preguntas Pendientes</h3>
+                <p class="card-description">
+                    Revisa preguntas pendientes de revisión. Aprobar o rechazar.
+                </p>
+                <a href="/revisor/preguntas" class="revisor-btn">
+                    <i class="fas fa-arrow-right"></i> Ir a Revisión de Preguntas
+                </a>
+                <div class="mt-3">
+                    <span class="badge-count">{{preguntas.length}} pendientes</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de preguntas pendientes (vista previa) -->
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-clipboard-list"></i> Vista Previa: Preguntas Pendientes de Revisión
+                </h3>
+            </div>
+            
+            {{#if preguntas.length}}
+            <table class="revisor-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>MATERIA</th>
+                        <th>PREGUNTA</th>
+                        <th>OPCIONES</th>
+                        <th>ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each preguntas}}
+                    <tr>
+                        <td>{{id_pregunta}}</td>
+                        <td>{{nombre_materia}}</td>
+                        <td>{{pregunta}}</td>
+                        <td>{{opciones}}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-action btn-aprobar" data-id="{{id_pregunta}}" data-tipo="pregunta">
+                                    <i class="fas fa-check"></i> Aprobar
+                                </button>
+                                <button class="btn-action btn-rechazar" data-id="{{id_pregunta}}" data-tipo="pregunta">
+                                    <i class="fas fa-times"></i> Rechazar
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+            {{else}}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-clipboard"></i>
+                </div>
+                <h4 class="empty-state-title">No hay preguntas pendientes</h4>
+                <p class="empty-state-description">Todas las preguntas han sido revisadas.</p>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div id="modal-confirmacion" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 1001;">
+        <h3 id="modal-titulo">¿Confirmar acción?</h3>
+        <p id="modal-mensaje"></p>
+        <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+            <button id="modal-cancelar" class="revisor-btn" style="background: #6c757d;">Cancelar</button>
+            <button id="modal-confirmar" class="revisor-btn">Confirmar</button>
+        </div>
+    </div>
+    <div id="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;"></div>
+
+    <script src="/public/js/revisor.controller.js"></script>
+</body>
+</html>

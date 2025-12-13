@@ -1,6 +1,25 @@
-/* ========================================
-   FIX PARA QUE LA NAVBAR ABARQUE TODO EL ANCHO
-   ======================================== */
+/* =========================================================================
+Archivo: styles.css
+Descripción: Estilos generales y específicos para la plataforma.
+
+Contenido principal:
+1. Sistema de notificaciones: estilos para iconos, conteo, dropdown,
+    botones de acción y animaciones.
+2. Scrollbars personalizadas: globales para toda la página.
+3. Cabecera global y elementos topbar: logo, links, bolitas decorativas,
+    enlaces, menú hamburguesa y avatar.
+4. Menú Kebab: dropdown del perfil, animaciones GSAP y estilos activos.
+5. Página de presentación y estilo tipo Duolingo: secciones de info,
+    hero, videos, titulares y botones principales/CTA.
+6. Formularios de login/registro: inputs, labels y validaciones visuales.
+7. Responsividad: ajustes para tablets y móviles.
+8. Estilos varios adicionales: botones, efectos hover y ajustes de layout.
+
+Nota: Este CSS integra correcciones visuales y mejoras de UX para la
+experiencia completa del usuario, manteniendo coherencia en colores,
+tipografía y animaciones.
+Fecha: [Fecha de creación o última edición]
+=========================================================================== */
 
 /* 1. Asegurar que body no tenga padding/margin que afecte */
 body {
@@ -233,6 +252,12 @@ main {
     justify-content: center;
     font-size: 11px;
     font-weight: bold;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
 }
 
 .notification-dropdown {
@@ -247,6 +272,30 @@ main {
     max-height: 500px;
     overflow-y: auto;
     z-index: 1000;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.notification-dropdown::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    right: 30px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid white;
     border: 1px solid var(--bg-secondary) !important;
 }
 
@@ -282,18 +331,23 @@ main {
     background: linear-gradient(135deg, #00b894, #00d2a0);
     color: white;
 }
-
+.btn-aceptar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
+}
 .btn-rechazar {
     background: linear-gradient(135deg, #d63031, #e74c3c);
     color: white;
 }
-
+.btn-rechazar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(214, 48, 49, 0.4);
+}
 .btn-ir-examen {
     background: linear-gradient(135deg, #28a745, #34ce57);
     color: white;
     font-weight: bold;
 }
-
 .kebab-menu {
     position: relative;
     display: inline-block;
@@ -313,9 +367,17 @@ main {
     gap: 8px;
     font-weight: 600;
     color: white;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
     height: 40px;
 }
 
+.kebab-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+/* Avatar dentro del botón */
 .kebab-avatar {
     width: 32px;
     height: 32px;
@@ -327,9 +389,16 @@ main {
     color: white;
     font-weight: bold;
     font-size: 14px;
+    flex-shrink: 0;
     border: 2px solid #FFC107;
 }
 
+.kebab-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
 .kebab-dropdown {
     position: absolute;
     right: 0;
@@ -403,10 +472,20 @@ main {
 
 .profile-details span {
     display: block;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     opacity: 0.9;
+    margin-bottom: 2px;
 }
 
+.profile-details small {
+    display: block;
+    font-size: 0.75rem;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Items del menú */
 .kebab-dropdown li a {
     display: flex;
     align-items: center;

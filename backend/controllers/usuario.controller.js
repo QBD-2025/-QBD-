@@ -181,7 +181,6 @@ async function verHistorial(req, res) {
     res.status(500).send('Error al cargar el historial de exámenes');
   }
 }
-
 async function verDetalleExamen(req, res) {
   try {
     const { id_examen } = req.params;

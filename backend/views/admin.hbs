@@ -63,6 +63,8 @@
                 <span class="badge bg-danger">ADMIN</span>
               {{else if (eq this.id_tp_usuario 2)}}
                 <span class="badge bg-warning text-dark">EDITOR</span>
+              {{else if (eq id_tp_usuario 4)}}
+                <span class="badge bg-warning text-dark">REVISOR</span>
               {{else}}
                 <span class="badge bg-primary">USUARIO</span>
               {{/if}}
@@ -73,6 +75,7 @@
                 <option value="1" {{#if (eq this.id_tp_usuario 1)}}selected{{/if}}>USUARIO</option>
                 <option value="2" {{#if (eq this.id_tp_usuario 2)}}selected{{/if}}>EDITOR</option>
                 <option value="3" {{#if (eq this.id_tp_usuario 3)}}selected{{/if}}>ADMIN</option>
+                <option value="4"{{#if (eq this.id_tp_usuario 4)}}selected{{/if}}>REVISOR</option>
               </select>
             </td>
             <td>

@@ -3,7 +3,6 @@
 Archivo: serpientes-escaleras.css                  
 Fecha: [Fecha de creación o última edición] */
 /* ============================================= */
-
 /* ================== VARIABLES CSS ================== */
 :root {
     /* TEMA CLARO */
@@ -38,7 +37,6 @@ Fecha: [Fecha de creación o última edición] */
     --chat-bg: #2d2b55;
     --system-chat-bg: #1a1a2e;
 }
-
 /* Reinicio básico y fuente global */
 * {
     margin: 0;
@@ -348,7 +346,6 @@ body {
 /* ============================================= */
 /* CONTROLES DEL JUEGO (DADO, BOTONES, INFO)    */
 /* ============================================= */
-
 .game-controls { 
     display: flex; 
     flex-direction: column; 

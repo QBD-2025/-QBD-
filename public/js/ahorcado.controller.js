@@ -423,31 +423,25 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarJugadoresActivos();
     setInterval(cargarJugadoresActivos, 15000);
 
-
-
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    const themeToggle = document.getElementById('theme-toggle');
-    const currentTheme = localStorage.getItem('theme') || 'light';
-    
-    // Aplicar el tema guardado
-    if (currentTheme === 'dark') {
-        document.body.setAttribute('data-theme', 'dark');
-        themeToggle.checked = true;
-    }
-    
-    // Escuchar cambios en el toggle
-    themeToggle.addEventListener('change', function() {
-        if (this.checked) {
+    document.addEventListener('DOMContentLoaded', function() {
+        const themeToggle = document.getElementById('theme-toggle');
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        
+        // Aplicar el tema guardado
+        if (currentTheme === 'dark') {
             document.body.setAttribute('data-theme', 'dark');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            document.body.removeAttribute('data-theme');
-            localStorage.setItem('theme', 'light');
+            themeToggle.checked = true;
         }
+        
+        // Escuchar cambios en el toggle
+        themeToggle.addEventListener('change', function() {
+            if (this.checked) {
+                document.body.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            }
+        });
     });
-});
-
-
 });

@@ -18,7 +18,6 @@ router.post('/register', async (req, res) => {
     if (username.length > 50) {
         errorMessage = 'usernameTooLong';
     }
-
     // Validaciones básicas
     if (!emailRegex.test(email)) {
         errorMessage = 'invalidEmail';

@@ -12,7 +12,7 @@ const db = require('../db/conexion');
     for (const materia of materias) {
         // ✅ CORRECCIÓN AQUÍ: Se limpió la consulta SELECT para quitar espacios
     const [preguntas] = await db.query(
-        `SELECT id_pregunta, id_materia, pregunta, retroalimentacion, puntos FROM pregunta WHERE id_materia = ? ORDER BY RAND() LIMIT ?`,
+        `SELECT id_pregunta, id_materia, pregunta, retroalimentacion, puntos FROM pregunta WHERE id_materia = ? and id_estatus_p = 1 ORDER BY RAND() LIMIT ?`,
         [materia.id_materia, preguntasPorMateria]
     );
     for (const p of preguntas) {

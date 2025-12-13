@@ -1,3 +1,10 @@
+/* ==============================
+Archivo: register.css
+Estilos para la página de registro e inicio de sesión
+Incluye contenedor principal, paneles, logos, títulos, 
+botones y toggle de contraseña
+Fecha: [Fecha de creación o última edición]
+   ============================== */
 :root {
     --color-primary-dark: #0515a8;
     --color-primary-darker: #09012c;

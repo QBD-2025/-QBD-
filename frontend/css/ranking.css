@@ -1,8 +1,13 @@
 /* ===========================================================
 Archivo: ranking.css
 -----------------------------------------------------------
-CSS limpio sin colores morados. Mantiene podio dorado,
-tabla clara, botón amarillo y diseño minimalista.
+Archivo CSS diseñado para:
+    - Podio de los 3 primeros lugares con colores y gradientes
+    - Tabla de ranking con avatars y categorías
+    - Botón flotante de acción rápida
+    - Variables CSS para colores primarios y de medallas
+    - Adaptabilidad responsive para móviles
+    Fecha: [Fecha de creación o última edición]
 =========================================================== */
 
 /* ================== Variables globales ================== */
@@ -179,7 +184,6 @@ td {
     padding: 14px 15px;
     font-size: 1rem;
 }
-
 td:first-child {
     text-align: center;
     font-weight: 700;
@@ -252,7 +256,6 @@ td:first-child {
         flex-direction: column;
         align-items: center;
     }
-
     .podium-item {
         width: 100%;
         max-width: 300px;
@@ -260,13 +263,15 @@ td:first-child {
         margin-bottom: 20px;
         flex-direction: row;
         text-align: left;
+        justify-content: flex-start;
     }
-
-    .podium-avatar {
-        margin-right: 15px;
-        margin-bottom: 0;
-        width: 60px;
-        height: 60px;
-        font-size: 1.4rem;
-    }
+    
 }
+.podium-avatar {
+    margin-right: 15px;
+    margin-bottom: 0;
+    width: 60px;
+    height: 60px;
+    font-size: 1.4rem;
+}
+

@@ -214,8 +214,6 @@
         document.getElementById('formResultados').submit();
     }
 
-
-   
     // Sistema de temas
     document.addEventListener('DOMContentLoaded', function() {
         const themeToggle = document.getElementById('theme-toggle');
@@ -234,6 +232,5 @@
         }
     });
 
-    
     // Iniciar (solo prepara, no inicia el examen hasta que se presione el botón)
     document.body.classList.remove('mostrar-examen');

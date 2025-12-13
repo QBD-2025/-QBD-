@@ -18,12 +18,6 @@ const DIFICULTADES = {
     3: { nombre: 'Difícil', apuesta: 200, preguntas: 10 }
 };
 
-const PENALIZACIONES = {
-    DESCONEXION: 0.50,           // 50% de la apuesta
-    ABANDONO_VOLUNTARIO: 1.0,    // 100% de la apuesta
-    NAVEGACION: 1.0              // 100% de la apuesta (cierre de navegador)
-};
-
 const TIEMPOS = {
     DUELO: 48 * 60 * 60 * 1000,  // 48 horas en milisegundos
     EXPIRACION: 7 * 24 * 60 * 60 * 1000  // 7 días para limpieza
@@ -47,6 +41,205 @@ function toNumber(value, defaultValue = 0) {
     if (value === null || value === undefined || value === '') return defaultValue;
     const num = typeof value === 'string' ? parseFloat(value) : Number(value);
     return isNaN(num) ? defaultValue : num;
+}
+
+async function obtenerRespuestas(idUsuario, salaId) {
+    const [respuestas] = await pool.query(`
+        SELECT 
+            dp.id_pregunta,
+            dr.id_respuesta,
+            p.pregunta,
+            r.respuesta as texto_respuesta,
+            COALESCE(r.correcta, 0) as es_correcta,
+            dp.orden,
+            CASE WHEN dr.id_respuesta IS NULL THEN 1 ELSE 0 END as sin_responder
+        FROM duelos_preguntas dp
+        INNER JOIN pregunta p ON dp.id_pregunta = p.id_pregunta
+        LEFT JOIN duelos_respuestas dr ON dr.id_duelo = dp.id_duelo 
+            AND dr.id_pregunta = dp.id_pregunta 
+            AND dr.id_usuario = ?
+        LEFT JOIN respuesta r ON dr.id_respuesta = r.id_respuesta
+        WHERE dp.id_duelo = ?
+        ORDER BY dp.orden
+    `, [idUsuario, salaId]);
+    return respuestas;
+}
+
+// Función para verificar si ambos jugadores terminaron el duelo
+async function verificarAmbosTerminaron(salaId) {
+    const [duelo] = await pool.query(`
+        SELECT respondido_retador, respondido_oponente 
+        FROM duelos 
+        WHERE id_duelo = ?
+    `, [salaId]);
+    
+    if (duelo.length === 0) return false;
+    
+    return duelo[0].respondido_retador && duelo[0].respondido_oponente;
+}
+
+// Función para obtener información del oponente
+async function obtenerOponente(idUsuario, salaId) {
+    const [duelo] = await pool.query(`
+        SELECT id_retador, id_defensor 
+        FROM duelos 
+        WHERE id_duelo = ?
+    `, [salaId]);
+    
+    if (duelo.length === 0) return null;
+    
+    const idOponente = duelo[0].id_retador === idUsuario 
+        ? duelo[0].id_defensor 
+        : duelo[0].id_retador;
+    
+    const [oponente] = await pool.query(`
+        SELECT id_usuario as id, username 
+        FROM usuario 
+        WHERE id_usuario = ?
+    `, [idOponente]);
+    
+    return oponente[0];
+}
+
+function calcularPuntaje(respuestas) {
+    // Contar solo las que fueron respondidas Y correctas
+    return respuestas.filter(r => r.id_respuesta !== null && r.es_correcta).length;
+}
+
+async function obtenerTotalPreguntasDuelo(salaId) {
+    const [result] = await pool.query(`
+        SELECT COUNT(*) as total 
+        FROM duelos_preguntas 
+        WHERE id_duelo = ?
+    `, [salaId]);
+    
+    return result[0]?.total || 0;
+}
+
+// Función para obtener el puesto/ranking de un usuario
+async function obtenerRankingUsuario(idUsuario) {
+    const [ranking] = await pool.query(`
+        SELECT COUNT(*) + 1 as puesto
+        FROM usuario
+        WHERE puntos > (SELECT puntos FROM usuario WHERE id_usuario = ?)
+    `, [idUsuario]);
+    
+    return ranking[0].puesto;
+}
+
+// Función para calcular puntos según diferencia de ranking
+function calcularPuntosSegunRanking(puestoRetador, puestoDefensor, ganoRetador) {
+    const PUNTOS_BASE_VICTORIA = 10;
+    const BONUS_POR_PUESTO = 2;
+    const PENALIZACION_POR_PUESTO = 1;
+    const PUNTOS_MINIMOS = 5;
+    const BONUS_MAXIMO = 20;
+    const PUNTOS_PERDIDA = -5;
+    const PUNTOS_PERDIDA_CONTRA_PEOR = -8;
+    
+    const diferencia = puestoDefensor - puestoRetador;
+    
+    let puntosRetador = 0;
+    let puntosDefensor = 0;
+    
+    if (ganoRetador) {
+        if (diferencia < 0) {
+            const bonus = Math.min(Math.abs(diferencia) * BONUS_POR_PUESTO, BONUS_MAXIMO);
+            puntosRetador = PUNTOS_BASE_VICTORIA + bonus;
+        } else {
+            puntosRetador = Math.max(PUNTOS_BASE_VICTORIA - (diferencia * PENALIZACION_POR_PUESTO), PUNTOS_MINIMOS);
+        }
+        
+        if (diferencia < 0) {
+            puntosDefensor = PUNTOS_PERDIDA_CONTRA_PEOR;
+        } else {
+            puntosDefensor = PUNTOS_PERDIDA;
+        }
+    } else {
+        if (diferencia > 0) {
+            const bonus = Math.min(diferencia * BONUS_POR_PUESTO, BONUS_MAXIMO);
+            puntosDefensor = PUNTOS_BASE_VICTORIA + bonus;
+        } else {
+            puntosDefensor = Math.max(PUNTOS_BASE_VICTORIA - (Math.abs(diferencia) * PENALIZACION_POR_PUESTO), PUNTOS_MINIMOS);
+        }
+        
+        if (diferencia > 0) {
+            puntosRetador = PUNTOS_PERDIDA_CONTRA_PEOR;
+        } else {
+            puntosRetador = PUNTOS_PERDIDA;
+        }
+    }
+    
+    return { puntosRetador, puntosDefensor };
+}
+
+// Función para registrar el duelo en el historial y actualizar puntos
+async function finalizarDuelo(salaId, idGanador, idPerdedor, puntajeGanador, puntajePerdedor) {
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+        
+        const [duelo] = await conn.query('SELECT * FROM duelos WHERE id_duelo = ?', [salaId]);
+        if (!duelo.length) throw new Error('Duelo no encontrado');
+        
+        const esRetadorGanador = duelo[0].id_retador === idGanador;
+        
+        const puestoRetador = await obtenerRankingUsuario(duelo[0].id_retador);
+        const puestoDefensor = await obtenerRankingUsuario(duelo[0].id_defensor);
+        
+        const { puntosRetador, puntosDefensor } = calcularPuntosSegunRanking(
+            puestoRetador, 
+            puestoDefensor, 
+            esRetadorGanador
+        );
+        
+        await conn.query(
+            'UPDATE usuario SET puntos = puntos + ? WHERE id_usuario = ?',
+            [puntosRetador, duelo[0].id_retador]
+        );
+        
+        await conn.query(
+            'UPDATE usuario SET puntos = puntos + ? WHERE id_usuario = ?',
+            [puntosDefensor, duelo[0].id_defensor]
+        );
+        
+        await conn.query(`
+            INSERT INTO historial_duelos 
+            (id_duelo, id_retador, id_defensor, id_ganador, puntos_retador, puntos_defensor, fecha_duelo)
+            VALUES (?, ?, ?, ?, ?, ?, NOW())
+        `, [salaId, duelo[0].id_retador, duelo[0].id_defensor, idGanador, 
+            esRetadorGanador ? puntajeGanador : puntajePerdedor,
+            esRetadorGanador ? puntajePerdedor : puntajeGanador]);
+        
+        await conn.query('UPDATE duelos SET estado = ? WHERE id_duelo = ?', ['finalizado', salaId]);
+        
+        await conn.commit();
+        await conn.release();
+        
+        return { puntosRetador, puntosDefensor, puestoRetador, puestoDefensor };
+    } catch (error) {
+        await conn.rollback();
+        await conn.release();
+        throw error;
+    }
+}
+
+// Función para obtener información completa del duelo
+async function obtenerDuelo(salaId) {
+    const [duelo] = await pool.query(`
+        SELECT 
+            d.*,
+            u1.username as retador_username,
+            u1.id_usuario as retador_id,
+            u2.username as defensor_username,
+            u2.id_usuario as defensor_id
+        FROM duelos d
+        LEFT JOIN usuario u1 ON d.id_retador = u1.id_usuario
+        LEFT JOIN usuario u2 ON d.id_defensor = u2.id_usuario
+        WHERE d.id_duelo = ?
+    `, [salaId]);
+    
+    return duelo[0];
 }
 
 // Actualizar notificaciones cuando ambos terminan
@@ -83,6 +276,10 @@ async function actualizarNotificacionesAlTerminar(salaId, conn) {
         console.error('❌ Error actualizando notificaciones:', error);
     }
 }
+const PENALIZACIONES = {
+    DESCONEXION: 0.50,      // 50% de la apuesta
+    ABANDONO_VOLUNTARIO: 1.0 // 100% de la apuesta
+};
 
 // Obtener ranking del usuario
 async function obtenerRankingUsuario(idUsuario) {
@@ -116,7 +313,6 @@ router.get('/portal', async (req, res) => {
         
         const carrera = carreras.length > 0 ? carreras[0] : null;
         
-        // Obtener estadísticas globales
         const [userData] = await pool.query(`
             SELECT 
                 u.puntos,
@@ -225,13 +421,16 @@ router.get('/api/usuario/puntos-actuales', async (req, res) => {
 
 router.get('/api/ranking/global', async (req, res) => {
     try {
+        const userId = req.session?.user?.id_usuario || null;
+        
         const [jugadores] = await pool.query(`
             SELECT 
                 u.id_usuario, 
                 u.username, 
                 u.foto_perfil, 
                 u.puntos,
-                GROUP_CONCAT(c.descripcion SEPARATOR ', ') as carreras
+                GROUP_CONCAT(DISTINCT c.descripcion SEPARATOR ', ') as carreras,
+                GROUP_CONCAT(DISTINCT c.id_carrera) as ids_carreras
             FROM usuario u 
             LEFT JOIN usuario_carrera uc ON u.id_usuario = uc.id_usuario 
             LEFT JOIN carrera c ON uc.id_carrera = c.id_carrera
@@ -239,7 +438,36 @@ router.get('/api/ranking/global', async (req, res) => {
             ORDER BY u.puntos DESC 
             LIMIT 100
         `);
-        res.json(jugadores);
+        
+        // Si hay usuario autenticado, obtener sus carreras
+        let misCarreras = [];
+        if (userId) {
+            const [carreras] = await pool.query(`
+                SELECT id_carrera 
+                FROM usuario_carrera 
+                WHERE id_usuario = ?
+            `, [userId]);
+            
+            misCarreras = carreras.map(c => c.id_carrera);
+        }
+        
+        // Agregar flag de compatibilidad de carrera
+        const jugadoresConCompatibilidad = jugadores.map(jugador => {
+            let tieneCarreraComun = false;
+            
+            if (jugador.ids_carreras && misCarreras.length > 0) {
+                const carrerasJugador = jugador.ids_carreras.split(',').map(id => parseInt(id));
+                tieneCarreraComun = carrerasJugador.some(id => misCarreras.includes(id));
+            }
+            
+            return {
+                ...jugador,
+                tiene_carrera_comun: tieneCarreraComun,
+                es_yo: jugador.id_usuario === userId
+            };
+        });
+        
+        res.json(jugadoresConCompatibilidad);
     } catch (error) {
         console.error('❌ Error en ranking global:', error);
         res.status(500).json({ error: 'Error al obtener ranking' });
@@ -320,14 +548,13 @@ router.post('/desafiar/duelo-general/:idOponente', async (req, res) => {
     console.log(`[DUELO GENERAL] ==========================================`);
     console.log(`[DUELO GENERAL] 👤 Remitente: ${usernameRemitente} (ID: ${idRemitente})`);
     console.log(`[DUELO GENERAL] 🎯 Oponente ID: ${idOponente}`);
-    console.log(`[DUELO GENERAL] 💰 Apuesta: ${apuesta} pts`);
-    console.log(`[DUELO GENERAL] 📊 Dificultad: ${id_dificultad}`);
+    console.log(`[DUELO GENERAL] 📊 Dificultad: ${id_dificultad}, Apuesta: ${apuesta}`);
     
     const conn = await pool.getConnection();
     try {
         await conn.beginTransaction();
         
-        // Validar dificultad
+        // 1️⃣ Validar dificultad
         if (!DIFICULTADES[id_dificultad]) {
             await conn.rollback();
             conn.release();
@@ -345,7 +572,7 @@ router.post('/desafiar/duelo-general/:idOponente', async (req, res) => {
             });
         }
         
-        // Verificar puntos GLOBALES
+        // 2️⃣ Verificar puntos GLOBALES
         const [puntosUsuario] = await conn.query(
             'SELECT puntos FROM usuario WHERE id_usuario = ?',
             [idRemitente]
@@ -368,17 +595,40 @@ router.post('/desafiar/duelo-general/:idOponente', async (req, res) => {
             });
         }
         
-        // Generar ID único
+        // 3️⃣ Verificar carreras en común
+        const [carrerasComunes] = await conn.query(`
+            SELECT COUNT(*) as carreras_comunes
+            FROM usuario_carrera uc1
+            INNER JOIN usuario_carrera uc2 
+                ON uc1.id_carrera = uc2.id_carrera
+            WHERE uc1.id_usuario = ? 
+            AND uc2.id_usuario = ?
+        `, [idRemitente, idOponente]);
+        
+        if (carrerasComunes[0].carreras_comunes === 0) {
+            await conn.rollback();
+            conn.release();
+            console.log(`[DUELO GENERAL] ❌ No tienen carreras en común`);
+            return res.status(400).json({ 
+                message: 'No puedes desafiar a este jugador porque no tienen carreras en común' 
+            });
+        }
+        
+        console.log(`[DUELO GENERAL] ✅ Tienen ${carrerasComunes[0].carreras_comunes} carrera(s) en común`);
+        
+        // 4️⃣ Generar ID único
         const timestamp = Date.now();
         const random = Math.random().toString(36).substr(2, 9);
         const id_duelo = `duelo_general_${timestamp}_${random}`;
         
-        // Seleccionar preguntas GENERALES
+        console.log(`[DUELO GENERAL] 🔑 ID Duelo: ${id_duelo}`);
+        
+        // 5️⃣ Seleccionar preguntas GENERALES
         const [preguntas] = await conn.query(`
             SELECT DISTINCT p.id_pregunta, p.pregunta
             FROM pregunta p
             WHERE p.id_dificultad = ?
-            AND p.id_tematica IS NULL
+            AND p.id_carrera IS NULL
             AND p.id_pregunta IN (
                 SELECT id_pregunta 
                 FROM respuesta 
@@ -388,6 +638,405 @@ router.post('/desafiar/duelo-general/:idOponente', async (req, res) => {
             ORDER BY RAND() 
             LIMIT ?
         `, [id_dificultad, dificultadConfig.preguntas]);
+        
+        if (preguntas.length < dificultadConfig.preguntas) {
+            await conn.rollback();
+            conn.release();
+            console.log(`[DUELO GENERAL] ❌ Preguntas insuficientes: ${preguntas.length}/${dificultadConfig.preguntas}`);
+            return res.status(500).json({ 
+                message: `No hay suficientes preguntas generales de dificultad "${dificultadConfig.nombre}"` 
+            });
+        }
+        
+        console.log(`[DUELO GENERAL] ✅ Preguntas seleccionadas: ${preguntas.length}`);
+        
+        // 6️⃣ Crear duelo en BD
+        await conn.query(`
+            INSERT INTO duelos 
+            (id_duelo, id_retador, id_defensor, id_carrera, dificultad, apuesta, 
+             fecha_inicio, fecha_limite, estado, tipo_duelo)
+            VALUES (?, ?, ?, NULL, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 48 HOUR), 'activo', 'general')
+        `, [id_duelo, idRemitente, idOponente, id_dificultad, apuesta]);
+        
+        console.log(`[DUELO GENERAL] ✅ Duelo creado en BD`);
+        
+        // 7️⃣ Insertar preguntas
+        for (let i = 0; i < preguntas.length; i++) {
+            await conn.query(`
+                INSERT INTO duelos_preguntas (id_duelo, id_pregunta, orden) 
+                VALUES (?, ?, ?)
+            `, [id_duelo, preguntas[i].id_pregunta, i + 1]);
+        }
+        
+        console.log(`[DUELO GENERAL] ✅ Preguntas insertadas`);
+        
+        // 8️⃣ Crear notificación
+        const extraData = {
+            remitente: {
+                id_usuario: idRemitente,
+                username: usernameRemitente,
+                foto_perfil: req.session.user.foto_perfil
+            },
+            id_duelo,
+            dificultad: dificultadConfig.nombre,
+            apuesta,
+            tipo_duelo: 'general',
+            id_carrera: null,
+            tiempoLimite: 48 * 60 * 60
+        };
+        
+        const mensajeNotificacion = `${usernameRemitente} te desafía a un Duelo GENERAL ${dificultadConfig.nombre} (${apuesta} pts)`;
+        
+        await conn.query(`
+            INSERT INTO notificaciones 
+            (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
+            VALUES (?, ?, 'desafio_duelo', ?, ?)
+        `, [idOponente, idRemitente, mensajeNotificacion, JSON.stringify(extraData)]);
+        
+        console.log(`[DUELO GENERAL] ✅ Notificación creada`);
+        
+        await conn.commit();
+        conn.release();
+        
+        // 9️⃣ Emitir socket
+        if (req.io) {
+            req.io.to(idOponente.toString()).emit('notificacion_recibida');
+            console.log(`[DUELO GENERAL] ✅ Socket emitido`);
+        }
+        
+        console.log(`[DUELO GENERAL] ✅ Proceso completado exitosamente`);
+        console.log(`[DUELO GENERAL] ==========================================`);
+        
+        res.json({ 
+            success: true, 
+            message: '¡Desafío General enviado!', 
+            id_duelo, 
+            dificultad: dificultadConfig.nombre,
+            apuesta,
+            tipo: 'general'
+        });
+        
+    } catch (err) {
+        try { await conn.rollback(); } catch(e) {}
+        conn.release();
+        console.error('❌ [DUELO GENERAL] Error:', err);
+        res.status(500).json({ message: 'Error del servidor: ' + err.message });
+    }
+});
+
+// =============================================
+// 📚 CREAR DESAFÍO DE CARRERA - ✅ CORREGIDO
+// =============================================
+
+router.post('/desafiar/duelo-carrera/:idOponente', async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ message: 'No autorizado' });
+    
+    const { idOponente } = req.params;
+    const { id_dificultad, apuesta, id_carrera } = req.body;
+    const { id_usuario: idRemitente, username: usernameRemitente } = req.session.user;
+    
+    console.log(`[DESAFÍO CARRERA] ==========================================`);
+    console.log(`[DESAFÍO CARRERA] 👤 Remitente: ${usernameRemitente} (${idRemitente})`);
+    console.log(`[DESAFÍO CARRERA] 🎯 Oponente: ${idOponente}`);
+    console.log(`[DESAFÍO CARRERA] 📚 Carrera: ${id_carrera}, Dificultad: ${id_dificultad}, Apuesta: ${apuesta}`);
+    
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+        
+        // 1️⃣ Validar dificultad
+        if (!DIFICULTADES[id_dificultad]) {
+            await conn.rollback();
+            conn.release();
+            return res.status(400).json({ message: 'Dificultad inválida' });
+        }
+        
+        const dificultadConfig = DIFICULTADES[id_dificultad];
+        const apuestaEsperada = dificultadConfig.apuesta;
+        
+        if (parseInt(apuesta) !== apuestaEsperada) {
+            await conn.rollback();
+            conn.release();
+            return res.status(400).json({ 
+                message: `La apuesta debe ser ${apuestaEsperada} puntos` 
+            });
+        }
+        
+        // 2️⃣ Verificar que la carrera existe
+        const [carreraExiste] = await conn.query(
+            'SELECT id_carrera, descripcion FROM carrera WHERE id_carrera = ?',
+            [id_carrera]
+        );
+        
+        if (!carreraExiste.length) {
+            await conn.rollback();
+            conn.release();
+            return res.status(400).json({ message: 'Carrera no válida' });
+        }
+        
+        const nombreCarrera = carreraExiste[0].descripcion;
+        console.log(`[DESAFÍO CARRERA] ✅ Carrera: ${nombreCarrera}`);
+        
+        // 3️⃣ Verificar puntos de carrera del retador
+        const [puntosRetador] = await conn.query(
+            'SELECT puntos FROM usuario_puntos_carrera WHERE id_usuario = ? AND id_carrera = ?',
+            [idRemitente, id_carrera]
+        );
+        
+        if (!puntosRetador.length) {
+            await conn.rollback();
+            conn.release();
+            return res.status(400).json({ message: 'No tienes puntos en esta carrera' });
+        }
+        
+        const puntosActualesRetador = puntosRetador[0].puntos;
+        
+        if (puntosActualesRetador < apuesta) {
+            await conn.rollback();
+            conn.release();
+            console.log(`[DESAFÍO CARRERA] ❌ Puntos insuficientes: ${puntosActualesRetador}/${apuesta}`);
+            return res.status(400).json({ 
+                message: `No tienes suficientes puntos de carrera. Necesitas ${apuesta}, tienes ${puntosActualesRetador}` 
+            });
+        }
+        
+        console.log(`[DESAFÍO CARRERA] ✅ Puntos verificados: ${puntosActualesRetador}`);
+        
+        // 4️⃣ Verificar que el oponente tiene la carrera
+        const [puntosDefensor] = await conn.query(
+            'SELECT puntos FROM usuario_puntos_carrera WHERE id_usuario = ? AND id_carrera = ?',
+            [idOponente, id_carrera]
+        );
+        
+        if (!puntosDefensor.length) {
+            await conn.rollback();
+            conn.release();
+            return res.status(400).json({ message: 'El oponente no tiene esta carrera' });
+        }
+        
+        // 5️⃣ Generar ID único
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).substr(2, 9);
+        const id_duelo = `duelo_carrera_${timestamp}_${random}`;
+        
+        console.log(`[DESAFÍO CARRERA] 🔑 ID Duelo: ${id_duelo}`);
+        
+        // 6️⃣ Seleccionar preguntas de la carrera
+        const [preguntas] = await conn.query(`
+            SELECT DISTINCT p.id_pregunta, p.pregunta, p.puntos_carrera
+            FROM pregunta p
+            WHERE p.id_carrera = ?
+            AND p.id_dificultad = ?
+            AND p.id_pregunta IN (
+                SELECT id_pregunta 
+                FROM respuesta 
+                GROUP BY id_pregunta 
+                HAVING COUNT(*) >= 2
+            )
+            ORDER BY RAND() 
+            LIMIT ?
+        `, [id_carrera, id_dificultad, dificultadConfig.preguntas]);
+        
+        if (preguntas.length < dificultadConfig.preguntas) {
+            await conn.rollback();
+            conn.release();
+            return res.status(500).json({ 
+                message: `No hay suficientes preguntas de "${dificultadConfig.nombre}" en ${nombreCarrera}` 
+            });
+        }
+        
+        console.log(`[DESAFÍO CARRERA] ✅ Preguntas seleccionadas: ${preguntas.length}`);
+        
+        // 7️⃣ Crear duelo
+        await conn.query(`
+            INSERT INTO duelos 
+            (id_duelo, id_retador, id_defensor, id_carrera, dificultad, apuesta, 
+             fecha_inicio, fecha_limite, estado, tipo_duelo)
+            VALUES (?, ?, ?, ?, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 48 HOUR), 'activo', 'carrera')
+        `, [id_duelo, idRemitente, idOponente, id_carrera, id_dificultad, apuesta]);
+        
+        console.log(`[DESAFÍO CARRERA] ✅ Duelo creado en BD`);
+        
+        // 8️⃣ Insertar preguntas
+        for (let i = 0; i < preguntas.length; i++) {
+            await conn.query(`
+                INSERT INTO duelos_preguntas (id_duelo, id_pregunta, orden) 
+                VALUES (?, ?, ?)
+            `, [id_duelo, preguntas[i].id_pregunta, i + 1]);
+        }
+        
+        console.log(`[DESAFÍO CARRERA] ✅ Preguntas insertadas`);
+        
+        // 9️⃣ Crear notificación
+        const extraData = {
+            remitente: {
+                id_usuario: idRemitente,
+                username: usernameRemitente,
+                foto_perfil: req.session.user.foto_perfil
+            },
+            id_duelo,
+            dificultad: dificultadConfig.nombre,
+            apuesta,
+            tipo_duelo: 'carrera',
+            id_carrera,
+            nombre_carrera: nombreCarrera,
+            tiempoLimite: 48 * 60 * 60
+        };
+        
+        const mensajeNotificacion = `${usernameRemitente} te desafía en ${nombreCarrera} - ${dificultadConfig.nombre} (${apuesta} pts)`;
+        
+        await conn.query(`
+            INSERT INTO notificaciones 
+            (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data) 
+            VALUES (?, ?, 'desafio_duelo', ?, ?)
+        `, [idOponente, idRemitente, mensajeNotificacion, JSON.stringify(extraData)]);
+        
+        console.log(`[DESAFÍO CARRERA] ✅ Notificación creada`);
+        
+        await conn.commit();
+        conn.release();
+        
+        // 🔟 Emitir socket
+        if (req.io) {
+            req.io.to(idOponente.toString()).emit('notificacion_recibida');
+            console.log(`[DESAFÍO CARRERA] ✅ Socket emitido`);
+        }
+        
+        console.log(`[DESAFÍO CARRERA] ✅ Proceso completado exitosamente`);
+        console.log(`[DESAFÍO CARRERA] ==========================================`);
+        
+        res.json({ 
+            success: true, 
+            message: `¡Desafío de Carrera en ${nombreCarrera} enviado!`, 
+            id_duelo,
+            dificultad: dificultadConfig.nombre,
+            apuesta,
+            tipo: 'carrera',
+            carrera: nombreCarrera
+        });
+        
+    } catch (err) {
+        try { await conn.rollback(); } catch(e) {}
+        conn.release();
+        console.error('❌ [DESAFÍO CARRERA] Error:', err);
+        res.status(500).json({ message: 'Error: ' + err.message });
+    }
+});
+
+// 📝 CARGAR EXAMEN
+
+router.post('/desafiar/duelo/:idOponente', async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ message: 'No autorizado' });
+    
+    const { idOponente } = req.params;
+    const { id_dificultad, apuesta, id_carrera } = req.body;
+    const { id_usuario: idRemitente, username: usernameRemitente } = req.session.user;
+    
+    console.log(`[DESAFÍO CARRERA] Iniciando...`);
+    console.log(`[DESAFÍO CARRERA] Remitente: ${usernameRemitente} (${idRemitente})`);
+    console.log(`[DESAFÍO CARRERA] Oponente: ${idOponente}`);
+    console.log(`[DESAFÍO CARRERA] Carrera: ${id_carrera}, Dificultad: ${id_dificultad}, Apuesta: ${apuesta}`);
+    
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+        
+        // 1️⃣ VALIDAR DIFICULTAD
+        if (!DIFICULTADES[id_dificultad]) {
+            await conn.rollback();
+            conn.release();
+            console.log(`[DESAFÍO CARRERA] ❌ Dificultad inválida`);
+            return res.status(400).json({ message: 'Dificultad inválida' });
+        }
+        
+        const dificultadConfig = DIFICULTADES[id_dificultad];
+        const apuestaEsperada = dificultadConfig.apuesta;
+        
+        if (parseInt(apuesta) !== apuestaEsperada) {
+            await conn.rollback();
+            conn.release();
+            console.log(`[DESAFÍO CARRERA] ❌ Apuesta incorrecta. Esperada: ${apuestaEsperada}, Recibida: ${apuesta}`);
+            return res.status(400).json({ 
+                message: `La apuesta debe ser ${apuestaEsperada} puntos` 
+            });
+        }
+        
+        // 2️⃣ VERIFICAR QUE LA CARRERA EXISTE
+        const [carreraExiste] = await conn.query(
+            'SELECT id_carrera, descripcion FROM carrera WHERE id_carrera = ?',
+            [id_carrera]
+        );
+        
+        if (!carreraExiste.length) {
+            await conn.rollback();
+            conn.release();
+            console.log(`[DESAFÍO CARRERA] ❌ Carrera no encontrada`);
+            return res.status(400).json({ message: 'Carrera no válida' });
+        }
+        
+        const nombreCarrera = carreraExiste[0].descripcion;
+        
+        // 3️⃣ VERIFICAR PUNTOS DE CARRERA DEL RETADOR
+        const [puntosRetador] = await conn.query(
+            'SELECT puntos FROM usuario_puntos_carrera WHERE id_usuario = ? AND id_carrera = ?',
+            [idRemitente, id_carrera]
+        );
+        
+        if (!puntosRetador.length) {
+            await conn.rollback();
+            conn.release();
+            console.log(`[DESAFÍO CARRERA] ❌ Usuario no tiene puntos en esta carrera`);
+            return res.status(400).json({ message: 'No tienes puntos en esta carrera' });
+        }
+        
+        const puntosActualesRetador = puntosRetador[0].puntos;
+        
+        if (puntosActualesRetador < apuesta) {
+            await conn.rollback();
+            conn.release();
+            console.log(`[DESAFÍO CARRERA] ❌ Puntos insuficientes: ${puntosActualesRetador}/${apuesta}`);
+            return res.status(400).json({ 
+                message: `No tienes suficientes puntos de carrera. Necesitas ${apuesta}, tienes ${puntosActualesRetador}` 
+            });
+        }
+        
+        console.log(`[DESAFÍO CARRERA] ✅ Puntos de carrera verificados: ${puntosActualesRetador}`);
+        
+        // 4️⃣ VERIFICAR QUE AMBOS USUARIOS TENGAN LA CARRERA
+        const [puntosDefensor] = await conn.query(
+            'SELECT puntos FROM usuario_puntos_carrera WHERE id_usuario = ? AND id_carrera = ?',
+            [idOponente, id_carrera]
+        );
+        
+        if (!puntosDefensor.length) {
+            await conn.rollback();
+            conn.release();
+            console.log(`[DESAFÍO CARRERA] ❌ Oponente no tiene puntos en esta carrera`);
+            return res.status(400).json({ message: 'El oponente no tiene esta carrera' });
+        }
+        
+        // 5️⃣ GENERAR ID ÚNICO DEL DUELO
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).substr(2, 9);
+        const id_duelo = `duelo_carrera_${timestamp}_${random}`;
+        
+        console.log(`[DESAFÍO CARRERA] 🔑 ID Duelo: ${id_duelo}`);
+        
+        // 6️⃣ SELECCIONAR PREGUNTAS ESPECÍFICAS DE LA CARRERA
+        const [preguntas] = await conn.query(`
+            SELECT DISTINCT p.id_pregunta, p.pregunta, p.puntos_carrera
+            FROM pregunta p
+            WHERE p.id_carrera = ?
+            AND p.id_dificultad = ?
+            AND p.id_pregunta IN (
+                SELECT id_pregunta 
+                FROM respuesta 
+                GROUP BY id_pregunta 
+                HAVING COUNT(*) >= 2
+            )
+            ORDER BY RAND() 
+            LIMIT ?
+        `, [id_carrera, id_dificultad, dificultadConfig.preguntas]);
         
         if (preguntas.length < dificultadConfig.preguntas) {
             await conn.rollback();
@@ -413,7 +1062,6 @@ router.post('/desafiar/duelo-general/:idOponente', async (req, res) => {
             `, [id_duelo, preguntas[i].id_pregunta, i + 1]);
         }
         
-        // Crear notificación
         const extraData = {
             remitente: {
                 id_usuario: idRemitente,
@@ -423,6 +1071,7 @@ router.post('/desafiar/duelo-general/:idOponente', async (req, res) => {
             id_duelo,
             dificultad: dificultadConfig.nombre,
             apuesta,
+
             tipo_duelo: 'general',
             id_carrera: null,
             tiempoLimite: 48 * 60 * 60
@@ -772,7 +1421,7 @@ router.post('/duelo/responder/:salaId', async (req, res) => {
         
         for (const [id_pregunta, id_respuesta] of Object.entries(respuestasObj)) {
             await conn.query(`
-                INSERT INTO duelos_respuestas (id_duelo, id_usuario, id_pregunta, id_respuesta) 
+                INSERT INTO duelos_respuestas (id_duelo, id_usuario, id_pregunta, id_respuesta)
                 VALUES (?, ?, ?, ?)
             `, [salaId, id_usuario, id_pregunta, id_respuesta]);
         }
@@ -841,63 +1490,118 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
         
         console.log(`[RESULTADOS] 📋 Tipo: ${esDueloCarrera ? 'CARRERA' : 'GENERAL'}`);
         
-        // Obtener mis respuestas
+        // ✅ OBTENER **TODAS** LAS PREGUNTAS DEL DUELO (10 preguntas)
+        const [todasPreguntas] = await pool.query(`
+            SELECT 
+                dp.id_pregunta,
+                p.pregunta,
+                p.puntos_carrera,
+                dp.orden
+            FROM duelos_preguntas dp
+            INNER JOIN pregunta p ON dp.id_pregunta = p.id_pregunta
+            WHERE dp.id_duelo = ?
+            ORDER BY dp.orden
+        `, [salaId]);
+        
+        if (!todasPreguntas.length) {
+            console.log(`[RESULTADOS] ❌ No hay preguntas`);
+            return res.redirect('/portal?error=sin_preguntas');
+        }
+        
+        console.log(`[RESULTADOS] 📚 Total de preguntas del duelo: ${todasPreguntas.length}`);
+        
+        // ✅ OBTENER MIS RESPUESTAS (pueden ser menos de 10)
         const [misRespuestas] = await pool.query(`
             SELECT 
                 dr.id_pregunta,
                 dr.id_respuesta,
-                p.pregunta,
-                p.puntos_carrera,
                 r.respuesta as texto_respuesta,
-                r.correcta as es_correcta,
-                dp.orden
+                r.correcta as es_correcta
             FROM duelos_respuestas dr
-            INNER JOIN duelos_preguntas dp ON dr.id_duelo = dp.id_duelo AND dr.id_pregunta = dp.id_pregunta
-            INNER JOIN pregunta p ON dr.id_pregunta = p.id_pregunta
             INNER JOIN respuesta r ON dr.id_respuesta = r.id_respuesta
             WHERE dr.id_duelo = ? AND dr.id_usuario = ?
-            ORDER BY dp.orden
         `, [salaId, idUsuario]);
         
-        if (!misRespuestas.length) {
-            return res.redirect(`/duelo/examen/${salaId}?mensaje=Completa el examen primero`);
-        }
+        console.log(`[RESULTADOS] 📝 Mis respuestas guardadas: ${misRespuestas.length}`);
         
-        // Calcular mi puntaje
-        const miPuntaje = misRespuestas.filter(r => r.es_correcta).length;
+        // ✅ OBTENER RESPUESTAS DEL OPONENTE (pueden ser menos de 10)
+        const [respuestasOponente] = await pool.query(`
+            SELECT 
+                dr.id_pregunta,
+                dr.id_respuesta,
+                r.respuesta as texto_respuesta,
+                r.correcta as es_correcta
+            FROM duelos_respuestas dr
+            INNER JOIN respuesta r ON dr.id_respuesta = r.id_respuesta
+            WHERE dr.id_duelo = ? AND dr.id_usuario = ?
+        `, [salaId, idOponente]);
+        
+        console.log(`[RESULTADOS] 📝 Respuestas del oponente: ${respuestasOponente.length}`);
+        
+        // ✅ CREAR MAPAS DE RESPUESTAS
+        const mapaMisRespuestas = {};
+        misRespuestas.forEach(r => {
+            mapaMisRespuestas[r.id_pregunta] = r;
+        });
+        
+        const mapaRespuestasOponente = {};
+        respuestasOponente.forEach(r => {
+            mapaRespuestasOponente[r.id_pregunta] = r;
+        });
+        
+        // ✅ COMBINAR **TODAS** LAS PREGUNTAS (respondidas o no)
+        const respuestasCombinadas = todasPreguntas.map((pregunta, index) => {
+            const miResp = mapaMisRespuestas[pregunta.id_pregunta];
+            const respOp = mapaRespuestasOponente[pregunta.id_pregunta];
+            
+            return {
+                orden: index + 1,
+                pregunta: pregunta.pregunta,
+                
+                // Mi respuesta (null si no respondí)
+                mi_respuesta_texto: miResp ? miResp.texto_respuesta : null,
+                mi_correcta: miResp ? miResp.es_correcta : false,
+                mi_respondio: !!miResp,
+                
+                // Respuesta oponente (null si no respondió)
+                oponente_respuesta_texto: respOp ? respOp.texto_respuesta : null,
+                oponente_correcta: respOp ? respOp.es_correcta : false,
+                oponente_respondio: !!respOp
+            };
+        });
+        
+        console.log(`[RESULTADOS] ✅ Preguntas combinadas para mostrar: ${respuestasCombinadas.length}`);
+        
+        // ✅ CALCULAR PUNTAJES (solo preguntas respondidas correctamente)
+        const miPuntaje = respuestasCombinadas.filter(r => r.mi_respondio && r.mi_correcta).length;
+        const oponentePuntaje = respuestasCombinadas.filter(r => r.oponente_respondio && r.oponente_correcta).length;
+        
         const miPuntosCarrera = esDueloCarrera 
-            ? misRespuestas.filter(r => r.es_correcta).reduce((sum, r) => sum + (r.puntos_carrera || 0), 0)
+            ? todasPreguntas.reduce((sum, p) => {
+                const miResp = mapaMisRespuestas[p.id_pregunta];
+                return sum + (miResp && miResp.es_correcta ? (p.puntos_carrera || 0) : 0);
+              }, 0)
             : 0;
         
-        console.log(`[RESULTADOS] ✅ Mi puntaje: ${miPuntaje}/${misRespuestas.length}`);
+        const oponentePuntosCarrera = esDueloCarrera
+            ? todasPreguntas.reduce((sum, p) => {
+                const respOp = mapaRespuestasOponente[p.id_pregunta];
+                return sum + (respOp && respOp.es_correcta ? (p.puntos_carrera || 0) : 0);
+              }, 0)
+            : 0;
         
-        // Verificar si ambos terminaron
+        console.log(`[RESULTADOS] 🎯 Mi puntaje: ${miPuntaje}/${todasPreguntas.length}`);
+        console.log(`[RESULTADOS] 🎯 Oponente: ${oponentePuntaje}/${todasPreguntas.length}`);
+        
+        // ✅ VERIFICAR SI AMBOS TERMINARON
         const ambosTerminaron = duelo.respondido_retador && duelo.respondido_oponente;
         
-        let respuestasOponente = [];
-        let oponentePuntaje = null;
         let nombreOponente = esRetador ? duelo.defensor_username : duelo.retador_username;
         let resultado = null;
         let puntosGanados = 0;
         let puntosCarreraGanados = 0;
         
         if (ambosTerminaron) {
-            // Obtener respuestas del oponente
-            const [respOponente] = await pool.query(`
-                SELECT 
-                    dr.id_pregunta,
-                    p.puntos_carrera,
-                    r.respuesta as texto_respuesta,
-                    r.correcta as es_correcta
-                FROM duelos_respuestas dr
-                INNER JOIN pregunta p ON dr.id_pregunta = p.id_pregunta
-                INNER JOIN respuesta r ON dr.id_respuesta = r.id_respuesta
-                WHERE dr.id_duelo = ? AND dr.id_usuario = ?
-            `, [salaId, idOponente]);
-            
-            respuestasOponente = respOponente;
-            oponentePuntaje = respuestasOponente.filter(r => r.es_correcta).length;
-            
             // Finalizar duelo si no está finalizado
             if (duelo.estado !== 'finalizado') {
                 resultado = await finalizarDueloConCarrera(
@@ -908,7 +1612,7 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
                     miPuntaje,
                     oponentePuntaje,
                     miPuntosCarrera,
-                    respuestasOponente.filter(r => r.es_correcta).reduce((sum, r) => sum + (r.puntos_carrera || 0), 0)
+                    oponentePuntosCarrera
                 );
                 
                 if (esDueloCarrera) {
@@ -942,21 +1646,8 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
             }
         }
         
-        // Combinar respuestas
-        const respuestasCombinadas = misRespuestas.map((miResp, index) => {
-            const respOp = respuestasOponente.find(r => r.id_pregunta === miResp.id_pregunta);
-            return {
-                orden: index + 1,
-                pregunta: miResp.pregunta,
-                mi_respuesta_texto: miResp.texto_respuesta,
-                mi_correcta: miResp.es_correcta,
-                oponente_respuesta_texto: respOp?.texto_respuesta || null,
-                oponente_correcta: respOp?.es_correcta || null
-            };
-        });
-        
         const tipoDuelo = esDueloCarrera ? 'carrera' : 'general';
-        const totalPreguntas = misRespuestas.length;
+        const totalPreguntas = todasPreguntas.length;
         
         // Limpiar notificaciones
         try {
@@ -970,6 +1661,7 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
             console.warn('⚠️ No se pudieron limpiar las notificaciones');
         }
         
+        console.log(`[RESULTADOS] ✅ Renderizando con TODAS las ${respuestasCombinadas.length} preguntas`);
         console.log(`[RESULTADOS] ==========================================`);
         
         // Renderizar vista
@@ -984,7 +1676,7 @@ router.get('/duelo/resultados/:salaId', async (req, res) => {
             miPuntaje,
             oponentePuntaje,
             nombreOponente,
-            respuestas: respuestasCombinadas,
+            respuestas: respuestasCombinadas, // ✅ TODAS las 10 preguntas
             ambosTerminaron,
             esRetador,
             correctas: miPuntaje,
@@ -1590,7 +2282,7 @@ router.post('/admin/limpiar-duelos-antiguos', async (req, res) => {
         
     } catch (error) {
         await conn.rollback();
-        conn.release();
+        await conn.release();
         console.error('❌ Error limpiando duelos:', error);
         res.status(500).json({ error: 'Error al limpiar duelos' });
     }

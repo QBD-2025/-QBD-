@@ -202,13 +202,8 @@
             if (infoBox) infoBox.style.display = 'none';
         }
     }
-    
     // =============================================
-    // 🎨 RENDERIZAR RANKING - ✅ LÓGICA CORREGIDA
-    // =============================================
-    
-    // =============================================
-    // 🎨 RENDERIZAR RANKING - ✅ CON BOTÓN CORRECTO
+    // 🎨 RENDERIZAR RANKING
     // =============================================
 
     async function renderizarRanking(container, jugadores, tipoRanking, carreraId = null) {
@@ -249,8 +244,6 @@
             const dueloExistente = duelosActivos.find(d => 
                 (d.id_retador === jugador.id_usuario || d.id_defensor === jugador.id_usuario)
             );
-            
-            // Lógica de desafío
             let puedoDesafiar = false;
             let motivoNoDesafiar = '';
             
@@ -258,16 +251,27 @@
                 motivoNoDesafiar = '';
             } else if (dueloExistente) {
                 motivoNoDesafiar = '⏳ Duelo activo';
-            } else if (i >= miIndex) {
-                motivoNoDesafiar = 'Posición inferior';
-            } else {
-                puedoDesafiar = true;
+            } else if (tipoRanking === 'general') {
+                // ✅ EN RANKING GLOBAL: Verificar carrera común
+                if (!jugador.tiene_carrera_comun) {
+                    motivoNoDesafiar = 'Carrera Diferente';
+                } else if (i >= miIndex) {
+                    motivoNoDesafiar = 'Posición inferior';
+                } else {
+                    puedoDesafiar = true;
+                }
+            } else if (tipoRanking === 'carrera') {
+                // En ranking de carrera, solo verificar posición
+                if (i >= miIndex) {
+                    motivoNoDesafiar = 'Posición inferior';
+                } else {
+                    puedoDesafiar = true;
+                }
             }
             
             const item = document.createElement('div');
             item.className = esYo ? 'ranking-item current-user' : 'ranking-item';
             
-            // ✅ MOSTRAR CARRERAS EN RANKING GLOBAL
             const carrerasHTML = tipoRanking === 'general' && jugador.carreras ? 
                 `<span><i class="fas fa-graduation-cap"></i> ${jugador.carreras}</span>` : '';
             
@@ -309,10 +313,6 @@
                 btnDesafiar.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    
-                    console.log(`[CLICK] Desafiar a ${jugador.username} (${tipoRanking})`);
-                    console.log(`[CLICK] Carrera ID:`, carreraId);
-                    
                     abrirModalDificultad(jugador.id_usuario, jugador.username, tipoRanking, carreraId);
                 });
                 
@@ -592,9 +592,10 @@
             
             btnConfirmar.textContent = 'Enviando...';
             
+            // ✅ CORREGIDO: Usar el endpoint correcto según el tipo
             const endpoint = tipoDuelo === 'general' ?
                 `/desafiar/duelo-general/${oponenteId}` :
-                `/desafiar/duelo/${oponenteId}`;
+                `/desafiar/duelo-carrera/${oponenteId}`;
             
             const bodyData = {
                 id_dificultad: dificultad,

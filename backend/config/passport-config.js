@@ -1,6 +1,3 @@
-// ==============================================
-// passport-config.js - VERSIÓN CORREGIDA
-// ==============================================
 
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
@@ -22,9 +19,9 @@ passport.use(new GoogleStrategy(
             const foto = profile.photos?.[0]?.value || null;
 
             if (!email) {
+
                 return done(null, false, { message: 'Cuenta de Google sin correo electrónico.' });
             }
-
             const [rows] = await pool.query('SELECT * FROM usuario WHERE email = ?', [email]);
 
             if (rows.length > 0) {
@@ -105,12 +102,30 @@ passport.deserializeUser(async (id, done) => {
         const [rows] = await pool.query('SELECT * FROM usuario WHERE id_usuario = ?', [id]);
 
         if (rows.length > 0) {
+            // Usuario encontrado → continuar
             return done(null, rows[0]);
         } else {
-            return done(null, false);
+            // Si no existe, crear uno "de emergencia" para evitar error
+            console.warn(`⚠️ Usuario con ID ${id} no encontrado en la base de datos. Creando temporal...`);
+
+            const [insertResult] = await pool.query(
+                `INSERT INTO usuario 
+                 (username, email, verificado, puntos, id_tp_usuario, id_status, foto_perfil)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                ['UsuarioNuevo', `temp_${Date.now()}@example.com`, 1, 0, 1, 1, null]
+            );
+
+            const [nuevoUsuario] = await pool.query(
+                'SELECT * FROM usuario WHERE id_usuario = ?',
+                [insertResult.insertId]
+            );
+
+            console.log(`🆕 Usuario temporal creado con ID: ${insertResult.insertId}`);
+            return done(null, nuevoUsuario[0]);
         }
 
     } catch (error) {
+        console.error('❌ Error en deserializeUser:', error);
         return done(error);
     }
 });

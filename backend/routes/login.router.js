@@ -2,32 +2,12 @@
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const { enviarCorreoVerificacion } = require('../utils/mail.js');
-const crypto = require("crypto")
+const crypto = require("crypto");
+const { isAuthenticated, isAdmin, isEditor, isRevisor } = require('../middlewares/admin.middleware.js');
+
 
 // ----------------- Sesiones activas -----------------
 global.sesionesActivas = new Set();
-
-// ----------------- Middlewares -----------------
-const isAuthenticated = (req, res, next) => {
-    if (req.session.user) return next();
-    return res.redirect('/login');
-};
-
-const isAdmin = (req, res, next) => {
-    if (req.session.user?.id_tp_usuario === 3) return next();
-    return res.status(403).render('error', {
-        layout: 'main',
-        mensajeError: 'Acceso reservado para administradores',
-    });
-};
-
-const isEditor = (req, res, next) => {
-    if (req.session.user?.id_tp_usuario === 2 || req.session.user?.id_tp_usuario === 3) return next();
-    return res.status(403).render('error', {
-        layout: 'main',
-        mensajeError: 'Acceso reservado para editores',
-    });
-};
 
 // ----------------- Rutas -----------------
 
@@ -56,15 +36,18 @@ router.get('/sin-carrera', async (req, res) =>{
         const [carreras] = await req.pool.query(
             `SELECT id_carrera, descripcion
             FROM carrera`
-            );
-    res.render('eleccion-carrera', {carreras, layout:false});
+        );
+
+        res.render('eleccion-carrera', { carreras, layout:false });
+
     } catch (error) {
-        console.error(error)
-        res.status(500).send('Error al cargar carreras')
+        console.error(error);
+        res.status(500).send('Error al cargar carreras');
     }
-})
+});
 
 router.post('/login', async (req, res) => {
+
     const { email, password } = req.body;
 
     try {
@@ -105,11 +88,11 @@ router.post('/login', async (req, res) => {
             }
         }
 
+        // Usuario no verificado
         if (user.verificado === 0) {
 
-            // Crear nuevo token
             const token = crypto.randomBytes(16).toString('hex');
-            const tokenExpires = new Date(Date.now() + 1000 * 60 * 10); // 10 minutos
+            const tokenExpires = new Date(Date.now() + 1000 * 60 * 10);
 
             await req.pool.query(
                 'UPDATE usuario SET token = ?, token_expira = ? WHERE id_usuario = ?',
@@ -125,9 +108,11 @@ router.post('/login', async (req, res) => {
             return res.redirect('/login?error=No se pudo reenviar el codigo');
         }
 
+        // Verificar contraseña
         const match = await bcrypt.compare(password, user.password);
         if (!match) return res.redirect('/login?error=Contraseña incorrecta');
 
+        // Obtener carrera
         const [carreraResult] = await req.pool.query(
             `SELECT c.id_carrera 
             FROM carrera c
@@ -137,6 +122,7 @@ router.post('/login', async (req, res) => {
             [user.id_usuario]
         );
 
+        // Crear sesión sin carrera
         if (!carreraResult || carreraResult.length === 0){
             req.session.user = {
                 id_usuario: user.id_usuario,
@@ -149,14 +135,10 @@ router.post('/login', async (req, res) => {
                 id_carrera: null
             };
 
-            const [carreras] = await req.pool.query(
-                `SELECT id_carrera, descripcion
-                FROM carrera`
-            );
-
             return res.redirect('/sin-carrera');
         }
 
+        // Crear sesión normal
         req.session.user = {
             id_usuario: user.id_usuario,
             username: user.username,
@@ -168,10 +150,6 @@ router.post('/login', async (req, res) => {
             id_carrera: carreraResult.length > 0 ? carreraResult[0].id_carrera : null
         };
 
-        if (user.id_status !== 1) {
-            await req.pool.query('UPDATE usuario SET id_status = 1 WHERE id_usuario = ?', [user.id_usuario]);
-        }
-
         global.sesionesActivas.add(user.id_usuario);
 
         req.session.save(async (err) => {
@@ -180,11 +158,18 @@ router.post('/login', async (req, res) => {
                 return res.redirect('/login?error=serverError');
             }
 
+            // CORREGIDO: redirecciones según rol
             switch (user.id_tp_usuario) {
+
+                case 4:
+                    return res.redirect('/revisor');
+
                 case 3:
-                    return res.redirect('/admin');
+                    return res.redirect('/editor');
+
                 case 2:
-                    return res.redirect('/editor/panel');
+                    return res.redirect('/admin');
+
                 default: {
                     const [datos] = await req.pool.query('SELECT dato, imagen FROM dato_curioso ORDER BY RAND() LIMIT 1');
                     const datoCurioso = datos[0];
@@ -206,12 +191,10 @@ router.post('/login', async (req, res) => {
 router.post('/asignar-carrera', isAuthenticated, async (req,res) =>{
     const userId = req.session.user?.id_usuario;
     const {id_carrera} = req.body;
-    console.log('userId:', userId, 'id_carrera:', id_carrera);
 
     if (!userId || !id_carrera) {
         return res.status(400).send('Usuario o carrera no definidos');
     }
-
 
     try{
         await req.pool.query(
@@ -221,25 +204,31 @@ router.post('/asignar-carrera', isAuthenticated, async (req,res) =>{
         req.session.user.id_carrera=id_carrera;
 
         switch (req.session.user.id_tp_usuario) {
-            case 3:
-                return res.redirect('/admin');
+
+            case 4: 
+                return res.redirect('/revisor');
+
+            case 3: 
+                return res.redirect('/editor');
+
             case 2:
-                return res.redirect('/editor/panel');
+                return res.redirect('/admin');
+
             default: {
-                    const [datos] = await req.pool.query('SELECT dato, imagen FROM dato_curioso ORDER BY RAND() LIMIT 1');
-                    const datoCurioso = datos[0];
-                    return res.render('dato-sesion', {
-                        layout: false,
-                        dato: datoCurioso.dato,
-                        imagen: datoCurioso.imagen ? datoCurioso.imagen.toString('base64') : null,
-                    });
-                }
+                const [datos] = await req.pool.query('SELECT dato, imagen FROM dato_curioso ORDER BY RAND() LIMIT 1');
+                const datoCurioso = datos[0];
+                return res.render('dato-sesion', {
+                    layout: false,
+                    dato: datoCurioso.dato,
+                    imagen: datoCurioso.imagen ? datoCurioso.imagen.toString('base64') : null,
+                });
+            }
         }
     } catch (error) {
         console.error('Error al guardar carrera:', error);
         res.status(500).send('Error al asignar carrera');
     }
-})
+});
 
 // Presentación
 router.get('/presentacion', (req, res) => {
@@ -260,13 +249,21 @@ router.get('/admin', isAuthenticated, isAdmin, (req, res) => {
 
 // Panel editor
 router.get('/editor/panel', isAuthenticated, isEditor, (req, res) => {
-    res.render('editor/panel', {
+    res.render('editor', {
         layout: 'editor-layout',
         title: 'Panel de Editor',
         user: req.session.user,
     });
 });
 
+// Panel revisor
+router.get("/revisor/panel", isAuthenticated, isRevisor, (req, res) => {
+    res.render("revisor", {
+        user: req.session.user
+    });
+});
+
+// Logout
 router.get('/logout', async (req, res) => {
     try {
         if (req.session.user) {
@@ -278,9 +275,9 @@ router.get('/logout', async (req, res) => {
         req.session.destroy(err => {
             if (err) console.error('Error al destruir sesión:', err);
             res.clearCookie('connect.sid');
-            // Redirige siempre a la página pública
             return res.redirect('/');
         });
+
     } catch (error) {
         console.error('Error logout:', error);
         req.session.destroy(() => {
@@ -289,6 +286,5 @@ router.get('/logout', async (req, res) => {
         });
     }
 });
-
 
 module.exports = router;
