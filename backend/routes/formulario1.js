@@ -19,7 +19,7 @@ const mapeoCarreras = {
     12: 5,  // Admin. de Empresas
     13: 6,  // Derecho
     14: 7,  // Med. General
-    15: 8   // Psicología Clínicas
+    15: 8   // Psicología Clínica
 };
 
 // Función para cargar preguntas
