@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 08-02-2026 a las 06:46:34
+-- Tiempo de generación: 08-02-2026 a las 20:33:43
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -393,7 +393,39 @@ INSERT INTO `duelos_desconexiones` (`id`, `id_duelo`, `id_usuario`, `timestamp_d
 (419, '28803ed5-060a-44e0-8d8b-eb897a1617bf', 32, '2026-02-08 04:35:23', '{\"estado\":\"esperando_listos\"}', 'rapido', 60000, 1),
 (420, '28803ed5-060a-44e0-8d8b-eb897a1617bf', 51, '2026-02-08 04:58:32', '{\"estado\":\"esperando_listos\"}', 'rapido', 60000, 1),
 (431, '225e7b57-bf97-46f9-a59f-70c7c9a9706c', 51, '2026-02-08 05:17:45', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
-(432, '225e7b57-bf97-46f9-a59f-70c7c9a9706c', 32, '2026-02-08 05:15:37', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1);
+(432, '225e7b57-bf97-46f9-a59f-70c7c9a9706c', 32, '2026-02-08 05:15:37', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(436, 'fa244fa2-e557-4a09-b3af-a0f3b9cbd93a', 16, '2026-02-08 17:26:49', '{\"preguntaActual\":0,\"estado\":\"en_juego\"}', 'rapido', 0, 1),
+(437, 'fa244fa2-e557-4a09-b3af-a0f3b9cbd93a', 20, '2026-02-08 17:26:54', '{\"preguntaActual\":0,\"estado\":\"en_juego\"}', 'rapido', 0, 1),
+(438, '55754ae1-6a0b-43f5-98fb-d8173997957a', 16, '2026-02-08 17:54:08', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(443, '55754ae1-6a0b-43f5-98fb-d8173997957a', 20, '2026-02-08 17:53:31', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(456, '5dd01889-3b7c-4daf-aa30-94053edf2396', 20, '2026-02-08 17:54:59', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(457, 'aa29adc2-6c7c-48f1-85cf-44dcb72ded93', 20, '2026-02-08 18:03:10', '{\"estado\":\"draft_iniciado\"}', 'rapido', 0, 1),
+(459, 'aa29adc2-6c7c-48f1-85cf-44dcb72ded93', 16, '2026-02-08 18:03:13', '{\"estado\":\"draft_iniciado\"}', 'rapido', 0, 1),
+(461, '9c3d5cc6-31c6-4142-90a9-03333cd5875a', 16, '2026-02-08 18:04:05', '{\"estado\":\"draft_iniciado\"}', 'rapido', 0, 1),
+(462, '9c3d5cc6-31c6-4142-90a9-03333cd5875a', 20, '2026-02-08 18:04:06', '{\"estado\":\"draft_iniciado\"}', 'rapido', 0, 1),
+(463, '1ac7a039-ce34-4cc2-9b17-345568cd9fb6', 20, '2026-02-08 18:07:52', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(464, '1ac7a039-ce34-4cc2-9b17-345568cd9fb6', 16, '2026-02-08 18:07:52', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(465, '7bfdecdd-8c8e-41ce-a0f1-e791e7ac0e2f', 20, '2026-02-08 18:11:51', '{\"estado\":\"draft_iniciado\"}', 'rapido', 0, 1),
+(466, '7bfdecdd-8c8e-41ce-a0f1-e791e7ac0e2f', 16, '2026-02-08 18:11:51', '{\"estado\":\"draft_iniciado\"}', 'rapido', 0, 1),
+(467, '46893c4e-062e-4d97-8b06-cc810532883d', 20, '2026-02-08 18:13:29', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(468, '46893c4e-062e-4d97-8b06-cc810532883d', 16, '2026-02-08 18:13:30', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(469, 'e6a6e7ce-3b43-4276-8918-4b46a8ee3bf3', 16, '2026-02-08 18:17:19', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(470, 'e6a6e7ce-3b43-4276-8918-4b46a8ee3bf3', 20, '2026-02-08 18:17:19', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(471, '78691772-db79-4ca5-a8b1-f4d75023cc9b', 20, '2026-02-08 18:22:54', '{\"estado\":\"draft_iniciado\"}', 'rapido', 0, 1),
+(472, '78691772-db79-4ca5-a8b1-f4d75023cc9b', 16, '2026-02-08 18:23:12', '{\"estado\":\"draft_iniciado\"}', 'rapido', 0, 1),
+(477, '7247ab03-7d9f-403d-918c-8c5fd599b20d', 20, '2026-02-08 18:28:30', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(478, '7247ab03-7d9f-403d-918c-8c5fd599b20d', 16, '2026-02-08 18:28:44', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(482, 'c9deda3e-4815-474b-8994-54a792a23cbe', 20, '2026-02-08 18:33:46', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(483, 'c9deda3e-4815-474b-8994-54a792a23cbe', 16, '2026-02-08 18:33:20', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(487, '6184aa46-70f5-4332-ad7c-100d68f083f7', 20, '2026-02-08 18:38:57', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(488, '6184aa46-70f5-4332-ad7c-100d68f083f7', 16, '2026-02-08 18:40:00', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(499, 'e556786a-1ba0-4079-9f0c-6081e246783f', 20, '2026-02-08 18:57:57', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(500, '8614f91e-37e5-409b-8266-460993de6637', 16, '2026-02-08 19:01:40', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(501, 'ce25f8b3-6045-47ae-a7ba-b3beaaf2e917', 16, '2026-02-08 19:07:42', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(502, 'a3eae955-d5c2-430b-a841-e163513ba317', 20, '2026-02-08 19:18:53', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(503, 'a3eae955-d5c2-430b-a841-e163513ba317', 16, '2026-02-08 19:20:32', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(504, '9f2127c6-62ad-4c33-a108-6738692e2ccb', 53, '2026-02-08 19:26:23', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1),
+(505, '9f2127c6-62ad-4c33-a108-6738692e2ccb', 20, '2026-02-08 19:26:28', '{\"estado\":\"draft_iniciado\"}', 'rapido', 60000, 1);
 
 -- --------------------------------------------------------
 
@@ -451,6 +483,7 @@ INSERT INTO `duelos_rapidos` (`id_sala`, `id_retador`, `id_defensor`, `modo`, `i
 ('04d3c4a7-b664-4f7b-89c1-ada03f17daf7', 32, 51, 'carrera', 1, '2', 0, 40, 1, 3, 0, 0, 'en_juego', 8, 10, 0, 0, 0, 0, '[1192,1447,1439,1303,1379,1381,1270,1216,1375,1440]', '{}', '{}', 'matchmaking', '2026-02-07 23:33:12', '2026-02-07 23:34:58', 0),
 ('15e08f22-2634-4b51-90f7-556dd305baae', 32, 51, 'general', NULL, NULL, 0, 40, 5, 8, 0, 0, 'en_juego', 9, 10, 0, 0, 0, 0, '[633,635,146,338,631,150,340,602,158,351]', '{}', '{}', 'matchmaking', '2026-02-08 01:40:48', '2026-02-08 01:43:22', 0),
 ('1901bb4b-ec5d-443d-910a-f33f4792a8ee', 32, 51, 'carrera', 1, '2', 0, 40, 2, 3, 0, 0, 'en_juego', 10, 10, 0, 0, 0, 0, '[1429,1225,1262,1329,1181,1425,1489,1392,1258,1393]', '{\"1225\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":4978}},\"1262\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5125},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5126}}}', '{\"1225\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":4978}},\"1262\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5125},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5126}}}', 'matchmaking', '2026-02-07 20:47:22', '2026-02-07 20:51:03', 0),
+('1ac7a039-ce34-4cc2-9b17-345568cd9fb6', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 18:07:52', '2026-02-08 18:07:52', NULL),
 ('225e7b57-bf97-46f9-a59f-70c7c9a9706c', 32, 51, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 05:15:26', '2026-02-08 05:17:45', NULL),
 ('23411e8b-a371-493f-b50e-fea54f444ac6', 32, 51, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 01:03:33', '2026-02-08 01:12:05', NULL),
 ('28803ed5-060a-44e0-8d8b-eb897a1617bf', 32, 51, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 04:35:05', '2026-02-08 04:58:32', NULL),
@@ -459,25 +492,43 @@ INSERT INTO `duelos_rapidos` (`id_sala`, `id_retador`, `id_defensor`, `modo`, `i
 ('3b01854b-7954-45dc-8644-22d3d5179f61', 51, 52, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 01:13:51', '2026-02-08 01:16:12', NULL),
 ('3ebddc6b-01e3-4fda-abeb-6cf379132123', 32, 51, 'carrera', 1, '2', 0, 40, 2, 1, 0, 0, 'en_juego', 5, 10, 0, 0, 0, 1, '[1393,1457,1446,1478,1298,1264,1470,1253,1328,1269]', '{\"1264\":{\"51\":{\"esCorrecta\":true,\"idRespuesta\":5133}},\"1393\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5649},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5650}}}', '{\"1264\":{\"51\":{\"esCorrecta\":true,\"idRespuesta\":5133}},\"1393\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5649},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5650}}}', 'matchmaking', '2026-02-07 21:33:00', '2026-02-07 21:33:33', 8),
 ('40c0b34e-941f-4b1d-b4ea-ec2dc61b27cf', 32, 51, 'carrera', 1, '2', 0, 40, 3, 1, 0, 0, 'en_juego', 5, 10, 0, 0, 0, 0, '[1467,1172,1238,1502,1221,1332,1449,1398,1284,1391]', '{}', '{}', 'matchmaking', '2026-02-08 01:27:58', '2026-02-08 01:29:06', 2),
+('46893c4e-062e-4d97-8b06-cc810532883d', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 18:13:29', '2026-02-08 18:13:30', NULL),
 ('492b7ee0-9a85-4c60-b4a2-2d7950b1a02c', 32, 51, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-07 23:38:11', '2026-02-07 23:40:45', NULL),
 ('4b6f794b-a8b1-4f4b-b3b5-b901feac1602', 32, 51, 'carrera', 1, '2', 0, 40, 2, 3, 0, 0, 'en_juego', 9, 10, 0, 0, 0, 0, '[1264,1163,1296,1386,1427,1451,1243,1392,1496,1268]', '{\"1163\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4731},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4732}},\"1243\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5049},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5049}},\"1264\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5134},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5133}},\"1296\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5261},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5261}},\"1386\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5621},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5622}},\"1392\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5648},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5646}},\"1427\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5785},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5785}}}', '{\"1163\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4731},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4732}},\"1243\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5049},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5049}},\"1264\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5134},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5133}},\"1296\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5261},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5261}},\"1386\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5621},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5622}},\"1392\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5648},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5646}},\"1427\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5785},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5785}}}', 'matchmaking', '2026-02-07 19:46:44', '2026-02-07 19:47:41', 5),
 ('5549a2e6-5138-4315-bfcf-8a196190d796', 32, 51, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 01:31:30', '2026-02-08 01:38:57', NULL),
+('55754ae1-6a0b-43f5-98fb-d8173997957a', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 17:51:00', '2026-02-08 17:54:08', NULL),
 ('59581c22-a1e0-4369-92a5-a6b56fee3ed9', 32, 51, 'carrera', 1, '2', 0, 40, 2, 1, 0, 0, 'en_juego', 9, 10, 0, 0, 0, 0, '[1421,1165,1190,1401,1292,1185,1416,1469,1348,1290]', '{}', '{}', 'matchmaking', '2026-02-07 20:05:58', '2026-02-07 20:08:15', 0),
+('5dd01889-3b7c-4daf-aa30-94053edf2396', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 17:54:59', '2026-02-08 17:54:59', NULL),
 ('5f0f0ad2-17d6-4ea5-be00-80f9e3843181', 32, 51, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-07 23:35:55', '2026-02-07 23:37:15', NULL),
+('6184aa46-70f5-4332-ad7c-100d68f083f7', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 18:36:13', '2026-02-08 18:40:00', NULL),
 ('6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 04:27:11', '2026-02-08 04:28:29', NULL),
 ('7232221c-60a7-4630-ac2d-6ddcaa4ac125', 32, 51, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 02:59:19', '2026-02-08 03:00:00', NULL),
+('7247ab03-7d9f-403d-918c-8c5fd599b20d', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 18:27:20', '2026-02-08 18:28:44', NULL),
+('78691772-db79-4ca5-a8b1-f4d75023cc9b', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 18:21:18', '2026-02-08 18:23:12', NULL),
+('7a681157-b56a-4fa7-94f1-a6f2e9929497', 16, 20, 'general', NULL, NULL, 20, 40, 8, 7, 0, 0, 'en_juego', 9, 10, 0, 0, 0, 0, '[163,341,266,337,241,125,162,347,259,165]', '{}', '{}', 'matchmaking', '2026-02-08 17:08:32', '2026-02-08 17:11:01', 0),
+('7bfdecdd-8c8e-41ce-a0f1-e791e7ac0e2f', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 18:11:51', '2026-02-08 18:11:51', NULL),
 ('7f9b8708-c33b-4859-bd53-ff300cecd55c', 32, 51, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 03:23:15', '2026-02-08 03:26:33', NULL),
+('8614f91e-37e5-409b-8266-460993de6637', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 19:01:40', '2026-02-08 19:01:40', NULL),
 ('889b182e-5f02-4952-a2ee-b802fe7609f8', 32, 51, 'carrera', 1, '2', 0, 40, 3, 1, 0, 0, 'en_juego', 6, 10, 0, 0, 0, 0, '[1326,1332,1199,1225,1490,1200,1441,1341,1366,1479]', '{\"1199\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4874},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4875}},\"1326\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5381},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5381}},\"1332\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5405},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5407}}}', '{\"1199\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4874},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4875}},\"1326\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5381},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5381}},\"1332\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5405},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5407}}}', 'matchmaking', '2026-02-07 22:36:53', '2026-02-07 22:51:01', 0),
 ('8c420391-b362-4d06-8b93-f5a8539c1880', 32, 51, 'carrera', 1, 'normal', 0, 40, 3, 2, 0, 0, 'en_juego', 9, 10, 0, 0, 1, 0, '[1486,1287,1304,1410,1414,1258,1241,1191,1206,1387]', '{\"1191\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4843},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4844}},\"1206\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":4901},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4902}},\"1241\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5043},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5041}},\"1258\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5110},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5112}},\"1287\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5225},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5228}},\"1304\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5296},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5293}},\"1410\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5719},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5717}},\"1414\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5735},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5735}}}', '{\"1191\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4843},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4844}},\"1206\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":4901},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4902}},\"1241\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5043},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5041}},\"1258\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5110},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5112}},\"1287\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5225},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5228}},\"1304\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5296},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5293}},\"1410\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5719},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5717}},\"1414\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5735},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5735}}}', 'matchmaking', '2026-02-07 18:46:36', '2026-02-07 18:47:52', 9),
+('9c3d5cc6-31c6-4142-90a9-03333cd5875a', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 18:04:05', '2026-02-08 18:04:06', NULL),
+('9f2127c6-62ad-4c33-a108-6738692e2ccb', 20, 53, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 19:26:23', '2026-02-08 19:26:28', NULL),
 ('9f29e803-49a3-4ac6-88cb-c66bd836e830', 32, 51, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-07 19:56:52', '2026-02-07 20:07:22', NULL),
+('a3eae955-d5c2-430b-a841-e163513ba317', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 19:18:53', '2026-02-08 19:20:32', NULL),
 ('a6f71054-f0b8-4aad-9e21-65609f3d3e47', 32, 51, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 04:08:11', '2026-02-08 04:09:30', NULL),
+('aa29adc2-6c7c-48f1-85cf-44dcb72ded93', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 18:01:45', '2026-02-08 18:03:13', NULL),
 ('acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 03:48:57', '2026-02-08 03:50:29', NULL),
 ('ba308b7d-f020-4105-abf9-0ff32984e804', 32, 51, 'carrera', 1, 'normal', 0, 40, 1, 3, 0, 0, 'en_juego', 10, 10, 0, 0, 0, 0, '[1280,1316,1365,1485,1481,1331,1366,1207,1229,1465]', '{\"1207\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":4905},\"51\":{\"esCorrecta\":true,\"idRespuesta\":4905}},\"1229\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4994},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4994}},\"1280\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5197},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5200}},\"1316\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5342},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5341}},\"1331\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5402},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5402}},\"1365\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5540},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5539}},\"1366\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5542},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5542}}}', '{\"1207\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":4905},\"51\":{\"esCorrecta\":true,\"idRespuesta\":4905}},\"1229\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4994},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4994}},\"1280\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5197},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5200}},\"1316\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5342},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5341}},\"1331\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5402},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5402}},\"1365\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5540},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5539}},\"1366\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5542},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5542}}}', 'matchmaking', '2026-02-07 18:07:13', '2026-02-07 19:26:15', 0),
+('c9deda3e-4815-474b-8994-54a792a23cbe', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 18:32:02', '2026-02-08 18:33:46', NULL),
+('ce25f8b3-6045-47ae-a7ba-b3beaaf2e917', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 19:07:42', '2026-02-08 19:07:42', NULL),
 ('d6b0b9f4-3f79-40b5-b58d-fa6863ebe75f', 51, 52, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 01:09:40', '2026-02-08 01:11:57', NULL),
 ('d75eeb60-ead6-4b92-9afb-20ba2b57a99a', 51, 52, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 01:18:46', '2026-02-08 01:18:57', NULL),
 ('d95f3fca-3580-400a-b0c0-66efb7a3d27f', 51, 52, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 01:17:37', '2026-02-08 01:17:50', NULL),
 ('dca059b6-f52f-42d4-b86c-143b8880d013', 32, 51, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 04:32:00', '2026-02-08 04:32:53', NULL),
-('dfa6460a-57b9-43d9-a5cc-797df5f90436', 32, 51, 'carrera', 1, '2', 0, 40, 1, 2, 0, 0, 'en_juego', 9, 10, 0, 0, 0, 0, '[1174,1463,1273,1514,1478,1383,1385,1372,1239,1413]', '{\"1174\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":4773},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4776}},\"1239\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":5035}},\"1383\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5609},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5610}},\"1385\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5618},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5617}}}', '{\"1174\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":4773},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4776}},\"1239\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":5035}},\"1383\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5609},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5610}},\"1385\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5618},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5617}}}', 'matchmaking', '2026-02-08 05:15:55', '2026-02-08 05:17:13', 0);
+('dfa6460a-57b9-43d9-a5cc-797df5f90436', 32, 51, 'carrera', 1, '2', 0, 40, 1, 2, 0, 0, 'en_juego', 9, 10, 0, 0, 0, 0, '[1174,1463,1273,1514,1478,1383,1385,1372,1239,1413]', '{\"1174\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":4773},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4776}},\"1239\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":5035}},\"1383\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5609},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5610}},\"1385\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5618},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5617}}}', '{\"1174\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":4773},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4776}},\"1239\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":5035}},\"1383\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5609},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5610}},\"1385\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5618},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5617}}}', 'matchmaking', '2026-02-08 05:15:55', '2026-02-08 05:17:13', 0),
+('e556786a-1ba0-4079-9f0c-6081e246783f', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 18:57:57', '2026-02-08 18:57:57', NULL),
+('e6a6e7ce-3b43-4276-8918-4b46a8ee3bf3', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 18:17:19', '2026-02-08 18:17:19', NULL),
+('fa244fa2-e557-4a09-b3af-a0f3b9cbd93a', 16, 20, 'general', NULL, NULL, 20, 40, 18, 18, 0, 0, 'en_juego', 0, 10, 0, 0, 0, 0, '[131,833,835,122,174,834,169,145,783,790]', '{}', '{}', 'matchmaking', '2026-02-08 17:26:38', '2026-02-08 17:26:54', 0);
 
 -- --------------------------------------------------------
 
@@ -820,44 +871,94 @@ CREATE TABLE `historial_duelos` (
   `gambito_activado_retador` tinyint(1) DEFAULT 0,
   `gambito_activado_defensor` tinyint(1) DEFAULT 0,
   `gambito_exitoso_retador` tinyint(1) DEFAULT 0,
-  `gambito_exitoso_defensor` tinyint(1) DEFAULT 0
+  `gambito_exitoso_defensor` tinyint(1) DEFAULT 0,
+  `estado` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `historial_duelos`
 --
 
-INSERT INTO `historial_duelos` (`id_duelo`, `id_sala`, `id_retador`, `id_defensor`, `id_ganador`, `puntos_retador`, `puntos_defensor`, `fecha_duelo`, `dificultad`, `apuesta`, `motivo_finalizacion`, `motivo_abandono`, `penalizacion_aplicada`, `tipo_duelo`, `modo_duelo`, `id_carrera`, `id_dificultad`, `total_preguntas`, `correctas_retador`, `correctas_defensor`, `puntos_carrera_retador`, `puntos_carrera_defensor`, `porcentaje_retador`, `porcentaje_defensor`, `tiempo_promedio_retador`, `tiempo_promedio_defensor`, `racha_maxima_retador`, `racha_maxima_defensor`, `gambito_activado_retador`, `gambito_activado_defensor`, `gambito_exitoso_retador`, `gambito_exitoso_defensor`) VALUES
-(264, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 32, 0, 0, '2026-02-08 03:49:57', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(265, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 32, 0, 0, '2026-02-08 03:50:01', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(266, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 51, 0, 0, '2026-02-08 03:50:02', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(267, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 51, 0, 0, '2026-02-08 03:50:05', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(268, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 32, 0, 0, '2026-02-08 03:50:05', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(269, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 51, 0, 0, '2026-02-08 03:50:09', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(270, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 32, 0, 0, '2026-02-08 03:50:10', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(271, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 51, 0, 0, '2026-02-08 03:50:17', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(272, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 32, 0, 0, '2026-02-08 03:50:17', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(273, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 51, 0, 0, '2026-02-08 03:50:22', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(274, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 32, 0, 0, '2026-02-08 03:50:22', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(275, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 51, 0, 0, '2026-02-08 03:50:27', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(276, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 32, 0, 0, '2026-02-08 03:50:29', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(277, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 32, 0, 0, '2026-02-08 03:51:29', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(278, '6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 51, 0, 0, '2026-02-08 04:28:11', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(279, '6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 32, 0, 0, '2026-02-08 04:28:11', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(280, '6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 32, 0, 0, '2026-02-08 04:28:15', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(281, '6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 51, 0, 0, '2026-02-08 04:28:15', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(282, '6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 51, 0, 0, '2026-02-08 04:28:19', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(283, '6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 32, 0, 0, '2026-02-08 04:28:19', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(284, '6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 51, 0, 0, '2026-02-08 04:28:25', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(285, '6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 32, 0, 0, '2026-02-08 04:28:25', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(286, '6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 51, 0, 0, '2026-02-08 04:28:26', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(287, '6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 32, 0, 0, '2026-02-08 04:28:29', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(288, '225e7b57-bf97-46f9-a59f-70c7c9a9706c', 32, 51, 32, 0, 0, '2026-02-08 05:16:26', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(289, '225e7b57-bf97-46f9-a59f-70c7c9a9706c', 32, 51, 51, 0, 0, '2026-02-08 05:16:29', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(290, '225e7b57-bf97-46f9-a59f-70c7c9a9706c', 32, 51, 32, 0, 0, '2026-02-08 05:16:37', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(291, '225e7b57-bf97-46f9-a59f-70c7c9a9706c', 32, 51, 51, 0, 0, '2026-02-08 05:16:37', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0),
-(292, 'dfa6460a-57b9-43d9-a5cc-797df5f90436', 32, 51, 32, 23, 17, '2026-02-08 05:17:30', NULL, 0, NULL, NULL, 0, '', 'carrera', 1, 2, 10, 2, 1, 23, 17, 20.00, 10.00, 8.35, 6.97, 1, 1, 0, 0, 0, 0),
-(293, '225e7b57-bf97-46f9-a59f-70c7c9a9706c', 32, 51, 32, 0, 0, '2026-02-08 05:18:45', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0);
+INSERT INTO `historial_duelos` (`id_duelo`, `id_sala`, `id_retador`, `id_defensor`, `id_ganador`, `puntos_retador`, `puntos_defensor`, `fecha_duelo`, `dificultad`, `apuesta`, `motivo_finalizacion`, `motivo_abandono`, `penalizacion_aplicada`, `tipo_duelo`, `modo_duelo`, `id_carrera`, `id_dificultad`, `total_preguntas`, `correctas_retador`, `correctas_defensor`, `puntos_carrera_retador`, `puntos_carrera_defensor`, `porcentaje_retador`, `porcentaje_defensor`, `tiempo_promedio_retador`, `tiempo_promedio_defensor`, `racha_maxima_retador`, `racha_maxima_defensor`, `gambito_activado_retador`, `gambito_activado_defensor`, `gambito_exitoso_retador`, `gambito_exitoso_defensor`, `estado`) VALUES
+(264, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 32, 0, 0, '2026-02-08 03:49:57', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(265, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 32, 0, 0, '2026-02-08 03:50:01', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(266, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 51, 0, 0, '2026-02-08 03:50:02', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(267, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 51, 0, 0, '2026-02-08 03:50:05', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(268, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 32, 0, 0, '2026-02-08 03:50:05', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(269, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 51, 0, 0, '2026-02-08 03:50:09', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(270, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 32, 0, 0, '2026-02-08 03:50:10', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(271, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 51, 0, 0, '2026-02-08 03:50:17', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(272, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 32, 0, 0, '2026-02-08 03:50:17', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(273, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 51, 0, 0, '2026-02-08 03:50:22', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(274, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 32, 0, 0, '2026-02-08 03:50:22', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(275, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 51, 0, 0, '2026-02-08 03:50:27', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(276, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 32, 0, 0, '2026-02-08 03:50:29', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(277, 'acef63e8-0d34-4c97-8722-f1c511d7d008', 32, 51, 32, 0, 0, '2026-02-08 03:51:29', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(278, '6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 51, 0, 0, '2026-02-08 04:28:11', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(279, '6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 32, 0, 0, '2026-02-08 04:28:11', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(280, '6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 32, 0, 0, '2026-02-08 04:28:15', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(281, '6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 51, 0, 0, '2026-02-08 04:28:15', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(282, '6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 51, 0, 0, '2026-02-08 04:28:19', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(283, '6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 32, 0, 0, '2026-02-08 04:28:19', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(284, '6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 51, 0, 0, '2026-02-08 04:28:25', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(285, '6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 32, 0, 0, '2026-02-08 04:28:25', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(286, '6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 51, 0, 0, '2026-02-08 04:28:26', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(287, '6f3541fa-cf56-45af-81e7-e9afdc5c8093', 32, 51, 32, 0, 0, '2026-02-08 04:28:29', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(288, '225e7b57-bf97-46f9-a59f-70c7c9a9706c', 32, 51, 32, 0, 0, '2026-02-08 05:16:26', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(289, '225e7b57-bf97-46f9-a59f-70c7c9a9706c', 32, 51, 51, 0, 0, '2026-02-08 05:16:29', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(290, '225e7b57-bf97-46f9-a59f-70c7c9a9706c', 32, 51, 32, 0, 0, '2026-02-08 05:16:37', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(291, '225e7b57-bf97-46f9-a59f-70c7c9a9706c', 32, 51, 51, 0, 0, '2026-02-08 05:16:37', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(292, 'dfa6460a-57b9-43d9-a5cc-797df5f90436', 32, 51, 32, 23, 17, '2026-02-08 05:17:30', NULL, 0, NULL, NULL, 0, '', 'carrera', 1, 2, 10, 2, 1, 23, 17, 20.00, 10.00, 8.35, 6.97, 1, 1, 0, 0, 0, 0, NULL),
+(293, '225e7b57-bf97-46f9-a59f-70c7c9a9706c', 32, 51, 32, 0, 0, '2026-02-08 05:18:45', NULL, 20, 'abandono', 'timeout', 8, 'general', 'carrera', 1, 2, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(294, '7a681157-b56a-4fa7-94f1-a6f2e9929497', 16, 20, NULL, 0, 0, '2026-02-08 17:11:18', NULL, 20, NULL, NULL, 0, '', 'general', NULL, NULL, 10, 0, 0, 0, 0, 0.00, 0.00, 10.00, 10.00, 0, 0, 0, 0, 0, 0, NULL),
+(295, '55754ae1-6a0b-43f5-98fb-d8173997957a', 16, 20, 20, 0, 0, '2026-02-08 17:52:00', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(296, '55754ae1-6a0b-43f5-98fb-d8173997957a', 16, 20, 20, 0, 0, '2026-02-08 17:52:20', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(297, '55754ae1-6a0b-43f5-98fb-d8173997957a', 16, 20, 20, 0, 0, '2026-02-08 17:52:29', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(298, '55754ae1-6a0b-43f5-98fb-d8173997957a', 16, 20, 20, 0, 0, '2026-02-08 17:52:35', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(299, '55754ae1-6a0b-43f5-98fb-d8173997957a', 16, 20, 20, 0, 0, '2026-02-08 17:52:47', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(300, '55754ae1-6a0b-43f5-98fb-d8173997957a', 16, 20, 16, 0, 0, '2026-02-08 17:53:11', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(301, '55754ae1-6a0b-43f5-98fb-d8173997957a', 16, 20, 16, 0, 0, '2026-02-08 17:53:13', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(302, '55754ae1-6a0b-43f5-98fb-d8173997957a', 16, 20, 20, 0, 0, '2026-02-08 17:53:20', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(303, '55754ae1-6a0b-43f5-98fb-d8173997957a', 16, 20, 16, 0, 0, '2026-02-08 17:53:20', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(304, '55754ae1-6a0b-43f5-98fb-d8173997957a', 16, 20, 16, 0, 0, '2026-02-08 17:53:34', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(305, '55754ae1-6a0b-43f5-98fb-d8173997957a', 16, 20, 20, 0, 0, '2026-02-08 17:54:01', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(306, '55754ae1-6a0b-43f5-98fb-d8173997957a', 16, 20, 16, 0, 0, '2026-02-08 17:54:02', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(307, '55754ae1-6a0b-43f5-98fb-d8173997957a', 16, 20, 20, 0, 0, '2026-02-08 17:54:04', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(308, '55754ae1-6a0b-43f5-98fb-d8173997957a', 16, 20, 20, 0, 0, '2026-02-08 17:54:10', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(309, '55754ae1-6a0b-43f5-98fb-d8173997957a', 16, 20, 16, 0, 0, '2026-02-08 17:54:10', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(310, '5dd01889-3b7c-4daf-aa30-94053edf2396', 16, 20, 16, 0, 0, '2026-02-08 17:55:59', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(311, 'aa29adc2-6c7c-48f1-85cf-44dcb72ded93', 16, 20, 16, 0, 0, '2026-02-08 18:02:45', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(312, '1ac7a039-ce34-4cc2-9b17-345568cd9fb6', 16, 20, 16, 0, 0, '2026-02-08 18:08:52', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(313, '1ac7a039-ce34-4cc2-9b17-345568cd9fb6', 16, 20, 20, 0, 0, '2026-02-08 18:08:52', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(314, '46893c4e-062e-4d97-8b06-cc810532883d', 16, 20, 16, 0, 0, '2026-02-08 18:14:29', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(315, '46893c4e-062e-4d97-8b06-cc810532883d', 16, 20, 20, 0, 0, '2026-02-08 18:14:30', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(316, 'e6a6e7ce-3b43-4276-8918-4b46a8ee3bf3', 16, 20, 20, 0, 0, '2026-02-08 18:18:19', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(317, 'e6a6e7ce-3b43-4276-8918-4b46a8ee3bf3', 16, 20, 16, 0, 0, '2026-02-08 18:18:19', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(318, '78691772-db79-4ca5-a8b1-f4d75023cc9b', 16, 20, 16, 0, 0, '2026-02-08 18:22:18', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(319, '7247ab03-7d9f-403d-918c-8c5fd599b20d', 16, 20, 16, 0, 0, '2026-02-08 18:28:21', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(320, '7247ab03-7d9f-403d-918c-8c5fd599b20d', 16, 20, 20, 0, 0, '2026-02-08 18:29:21', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(321, '7247ab03-7d9f-403d-918c-8c5fd599b20d', 16, 20, 20, 0, 0, '2026-02-08 18:29:30', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(322, '7247ab03-7d9f-403d-918c-8c5fd599b20d', 16, 20, 16, 0, 0, '2026-02-08 18:29:30', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(323, 'c9deda3e-4815-474b-8994-54a792a23cbe', 16, 20, 16, 0, 0, '2026-02-08 18:33:02', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(324, 'c9deda3e-4815-474b-8994-54a792a23cbe', 16, 20, 20, 0, 0, '2026-02-08 18:34:02', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(325, 'c9deda3e-4815-474b-8994-54a792a23cbe', 16, 20, 16, 0, 0, '2026-02-08 18:34:20', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(326, '6184aa46-70f5-4332-ad7c-100d68f083f7', 16, 20, 16, 0, 0, '2026-02-08 18:37:13', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(327, '6184aa46-70f5-4332-ad7c-100d68f083f7', 16, 20, 20, 0, 0, '2026-02-08 18:38:13', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(328, '6184aa46-70f5-4332-ad7c-100d68f083f7', 16, 20, 16, 0, 0, '2026-02-08 18:38:27', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(329, '6184aa46-70f5-4332-ad7c-100d68f083f7', 16, 20, 20, 0, 0, '2026-02-08 18:38:27', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(330, '6184aa46-70f5-4332-ad7c-100d68f083f7', 16, 20, 20, 0, 0, '2026-02-08 18:38:48', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(331, '6184aa46-70f5-4332-ad7c-100d68f083f7', 16, 20, 20, 0, 0, '2026-02-08 18:39:29', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(332, '6184aa46-70f5-4332-ad7c-100d68f083f7', 16, 20, 16, 0, 0, '2026-02-08 18:39:31', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(333, '6184aa46-70f5-4332-ad7c-100d68f083f7', 16, 20, 16, 0, 0, '2026-02-08 18:39:44', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(334, '6184aa46-70f5-4332-ad7c-100d68f083f7', 16, 20, 16, 0, 0, '2026-02-08 18:39:57', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(335, '6184aa46-70f5-4332-ad7c-100d68f083f7', 16, 20, 20, 0, 0, '2026-02-08 18:40:14', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(336, 'e556786a-1ba0-4079-9f0c-6081e246783f', 16, 20, 16, 0, 0, '2026-02-08 18:58:57', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(337, '8614f91e-37e5-409b-8266-460993de6637', 16, 20, 20, 0, 0, '2026-02-08 19:02:40', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(338, 'ce25f8b3-6045-47ae-a7ba-b3beaaf2e917', 16, 20, 20, 0, 0, '2026-02-08 19:08:42', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(339, 'a3eae955-d5c2-430b-a841-e163513ba317', 16, 20, 16, 0, 0, '2026-02-08 19:19:53', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(340, 'a3eae955-d5c2-430b-a841-e163513ba317', 16, 20, 20, 0, 0, '2026-02-08 19:21:32', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(341, '9f2127c6-62ad-4c33-a108-6738692e2ccb', 20, 53, 20, 0, 0, '2026-02-08 19:27:23', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(342, '9f2127c6-62ad-4c33-a108-6738692e2ccb', 20, 53, 53, 0, 0, '2026-02-08 19:27:28', NULL, 20, 'abandono', 'timeout', 8, 'general', 'general', NULL, NULL, 0, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -9999,46 +10100,47 @@ CREATE TABLE `usuario` (
 --
 
 INSERT INTO `usuario` (`id_usuario`, `username`, `apodo`, `email`, `password`, `descripcion`, `verificado`, `token`, `actualizacion`, `token_expira`, `id_tp_usuario`, `id_status`, `foto_perfil`, `suspension_fin`, `token_reseteo`, `token_reseteo_expira`, `puntos`, `racha_victorias`, `NAN`) VALUES
-(4, 'Daniel Viramontes', 'a', 'danielviramontes762@gmail.com', '', '', 1, NULL, NULL, NULL, 3, 2, '/uploads/4_1763843269744_optimized.webp', NULL, NULL, NULL, 0, 0, 0),
-(6, 'Eduardo García', 'lalo', 'eduardogarcia080806@gmail.com', '', '', 1, NULL, NULL, NULL, 1, 2, '/uploads/6_1763843296584_optimized.webp', NULL, NULL, NULL, 0, 0, 0),
-(13, 'JUAN JOSE CHAVEZ SANCHEZ', NULL, '23301061550073@cetis155.edu.mx', '', NULL, 1, NULL, NULL, NULL, 1, 2, 'https://lh3.googleusercontent.com/a/ACg8ocJrVEJjRkCyYRgyUGwl_kUWX3OZygI5wenhihxjFdRLs8GqLw=s96-c', NULL, NULL, NULL, 0, 0, 0),
-(15, 'NEBUR4K', NULL, '23301061550096@cetis155.edu.mx', '$2b$10$QKe3VFb46C8Zmh.6oX9bY.Xn5VW5zBzIjGQlnTlu2JDfF2f8e.C.G', NULL, 1, NULL, NULL, NULL, 3, 2, NULL, NULL, NULL, NULL, 0, 0, 0),
-(16, 'Daniel Viramontes Alfaro', NULL, 'danielviramontes562@gmail.com', '', NULL, 1, NULL, NULL, NULL, 3, 2, 'https://lh3.googleusercontent.com/a/ACg8ocJ8TQboZ-rpGgxjsV2tMAGMQvZoQUP4THkqBRfAYGz2JAR8p9Eh-g=s96-c', NULL, NULL, NULL, 0, 0, 0),
-(18, 'Miguel Pedroza', NULL, 'pedrozamiguel0123@gmail.com', '', NULL, 1, NULL, NULL, NULL, 3, 1, 'https://lh3.googleusercontent.com/a/ACg8ocLV3y1SSaTrvqJvqrvhzwdt9Nxnojw4Fap9sp0h_ctzYzGZmxdv=s96-c', NULL, NULL, NULL, 0, 0, 0),
-(19, 'EDUARDO GARCIA BECERRA', NULL, '23301061550089@cetis155.edu.mx', '', NULL, 1, NULL, NULL, NULL, 3, 2, 'https://lh3.googleusercontent.com/a/ACg8ocLAIfHiFMPsJhljWIpsJ5mB4HdPlUpwOnvqBIcxJWs6ZWHGVA=s96-c', NULL, NULL, NULL, 0, 0, 0),
-(20, 'daniel vira', NULL, 'danielcrack345673@gmail.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocIRfWXrnjRXvTX8WSapETlFO_Dpg3bfQM_tJ0k7sIVaJyiGdg=s96-c', NULL, NULL, NULL, 0, 0, 0),
-(21, 'UsuarioNuevo', NULL, 'temp_1763997413606@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(22, 'UsuarioNuevo', NULL, 'temp_1763997414970@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(23, 'UsuarioNuevo', NULL, 'temp_1763997416730@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(24, 'UsuarioNuevo', NULL, 'temp_1763997416953@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(25, 'UsuarioNuevo', NULL, 'temp_1763997417051@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(26, 'UsuarioNuevo', NULL, 'temp_1763997424857@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(27, 'UsuarioNuevo', NULL, 'temp_1763997425679@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(28, 'UsuarioNuevo', NULL, 'temp_1763997430598@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(29, 'UsuarioNuevo', NULL, 'temp_1763997431785@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(30, 'UsuarioNuevo', NULL, 'temp_1763997438097@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(31, 'UsuarioNuevo', NULL, 'temp_1763997438414@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(32, 'Diego Leonardo Portilla Rangel', NULL, 'diegoleonardoportillarangel@gmail.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocIaPQcn0v68nX8MmJBXi6wlqTkWzH_rY8IxQUlWzWcoi0OmqA=s96-c', NULL, NULL, NULL, 1085, 0, 0),
-(33, 'UsuarioNuevo', NULL, 'temp_1763997454776@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(34, 'UsuarioNuevo', NULL, 'temp_1763997457244@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(35, 'UsuarioNuevo', NULL, 'temp_1763997457274@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(36, 'UsuarioNuevo', NULL, 'temp_1763997457988@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(37, 'UsuarioNuevo', NULL, 'temp_1763997462305@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(38, 'UsuarioNuevo', NULL, 'temp_1763997465577@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(39, 'UsuarioNuevo', NULL, 'temp_1763997492711@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(40, 'UsuarioNuevo', NULL, 'temp_1763997522752@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(41, 'UsuarioNuevo', NULL, 'temp_1763997522962@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(42, 'UsuarioNuevo', NULL, 'temp_1763997523109@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(43, 'UsuarioNuevo', NULL, 'temp_1763997523506@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(44, 'UsuarioNuevo', NULL, 'temp_1763997523632@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(45, 'UsuarioNuevo', NULL, 'temp_1763997523684@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(46, 'UsuarioNuevo', NULL, 'temp_1763997524245@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(47, 'UsuarioNuevo', NULL, 'temp_1763997524316@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(48, 'UsuarioNuevo', NULL, 'temp_1763997524330@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(49, 'UsuarioNuevo', NULL, 'temp_1763997527985@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(50, 'UsuarioNuevo', NULL, 'temp_1763997528571@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 0, 0, 0),
-(51, 'DIEGO LEONARDO PORTILLA RANGEL', NULL, '23301061550112@cetis155.edu.mx', '', NULL, 1, NULL, NULL, NULL, 1, 2, 'https://lh3.googleusercontent.com/a/ACg8ocKtBXwgDIhRiaDLOdXrXO4jJ2EY37zCDAfXjwEhrxzbOvkb8VU=s96-c', NULL, NULL, NULL, 1920, 0, 0),
-(52, 'SeniorSoldado Razosonicko', NULL, 'seniorsoldadorazosonicko@gmail.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocKVXZadFM9541Ln4-jyli_S8mXGoUHDqRZiDe848toObV2_HQ=s96-c', NULL, NULL, NULL, 660, 0, 0);
+(4, 'Daniel Viramontes', 'a', 'danielviramontes762@gmail.com', '', '', 1, NULL, NULL, NULL, 3, 2, '/uploads/4_1763843269744_optimized.webp', NULL, NULL, NULL, 1000, 0, 0),
+(6, 'Eduardo García', 'lalo', 'eduardogarcia080806@gmail.com', '', '', 1, NULL, NULL, NULL, 1, 2, '/uploads/6_1763843296584_optimized.webp', NULL, NULL, NULL, 1000, 0, 0),
+(13, 'JUAN JOSE CHAVEZ SANCHEZ', NULL, '23301061550073@cetis155.edu.mx', '', NULL, 1, NULL, NULL, NULL, 1, 2, 'https://lh3.googleusercontent.com/a/ACg8ocJrVEJjRkCyYRgyUGwl_kUWX3OZygI5wenhihxjFdRLs8GqLw=s96-c', NULL, NULL, NULL, 1000, 0, 0),
+(15, 'NEBUR4K', NULL, '23301061550096@cetis155.edu.mx', '$2b$10$QKe3VFb46C8Zmh.6oX9bY.Xn5VW5zBzIjGQlnTlu2JDfF2f8e.C.G', NULL, 1, NULL, NULL, NULL, 3, 2, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(16, 'Daniel Viramontes Alfaro', NULL, 'danielviramontes562@gmail.com', '', NULL, 1, NULL, NULL, NULL, 3, 2, 'https://lh3.googleusercontent.com/a/ACg8ocJ8TQboZ-rpGgxjsV2tMAGMQvZoQUP4THkqBRfAYGz2JAR8p9Eh-g=s96-c', NULL, NULL, NULL, 1030, 0, 0),
+(18, 'Miguel Pedroza', NULL, 'pedrozamiguel0123@gmail.com', '', NULL, 1, NULL, NULL, NULL, 3, 1, 'https://lh3.googleusercontent.com/a/ACg8ocLV3y1SSaTrvqJvqrvhzwdt9Nxnojw4Fap9sp0h_ctzYzGZmxdv=s96-c', NULL, NULL, NULL, 1000, 0, 0),
+(19, 'EDUARDO GARCIA BECERRA', NULL, '23301061550089@cetis155.edu.mx', '', NULL, 1, NULL, NULL, NULL, 3, 2, 'https://lh3.googleusercontent.com/a/ACg8ocLAIfHiFMPsJhljWIpsJ5mB4HdPlUpwOnvqBIcxJWs6ZWHGVA=s96-c', NULL, NULL, NULL, 1000, 0, 0),
+(20, 'daniel vira', NULL, 'danielcrack345673@gmail.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocIRfWXrnjRXvTX8WSapETlFO_Dpg3bfQM_tJ0k7sIVaJyiGdg=s96-c', NULL, NULL, NULL, 1030, 0, 0),
+(21, 'UsuarioNuevo', NULL, 'temp_1763997413606@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(22, 'UsuarioNuevo', NULL, 'temp_1763997414970@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(23, 'UsuarioNuevo', NULL, 'temp_1763997416730@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(24, 'UsuarioNuevo', NULL, 'temp_1763997416953@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(25, 'UsuarioNuevo', NULL, 'temp_1763997417051@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(26, 'UsuarioNuevo', NULL, 'temp_1763997424857@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(27, 'UsuarioNuevo', NULL, 'temp_1763997425679@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(28, 'UsuarioNuevo', NULL, 'temp_1763997430598@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(29, 'UsuarioNuevo', NULL, 'temp_1763997431785@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(30, 'UsuarioNuevo', NULL, 'temp_1763997438097@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(31, 'UsuarioNuevo', NULL, 'temp_1763997438414@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(32, 'Diego Leonardo Portilla Rangel', NULL, 'diegoleonardoportillarangel@gmail.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocIaPQcn0v68nX8MmJBXi6wlqTkWzH_rY8IxQUlWzWcoi0OmqA=s96-c', NULL, NULL, NULL, 1000, 0, 0),
+(33, 'UsuarioNuevo', NULL, 'temp_1763997454776@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(34, 'UsuarioNuevo', NULL, 'temp_1763997457244@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(35, 'UsuarioNuevo', NULL, 'temp_1763997457274@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(36, 'UsuarioNuevo', NULL, 'temp_1763997457988@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(37, 'UsuarioNuevo', NULL, 'temp_1763997462305@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(38, 'UsuarioNuevo', NULL, 'temp_1763997465577@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(39, 'UsuarioNuevo', NULL, 'temp_1763997492711@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(40, 'UsuarioNuevo', NULL, 'temp_1763997522752@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(41, 'UsuarioNuevo', NULL, 'temp_1763997522962@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(42, 'UsuarioNuevo', NULL, 'temp_1763997523109@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(43, 'UsuarioNuevo', NULL, 'temp_1763997523506@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(44, 'UsuarioNuevo', NULL, 'temp_1763997523632@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(45, 'UsuarioNuevo', NULL, 'temp_1763997523684@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(46, 'UsuarioNuevo', NULL, 'temp_1763997524245@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(47, 'UsuarioNuevo', NULL, 'temp_1763997524316@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(48, 'UsuarioNuevo', NULL, 'temp_1763997524330@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(49, 'UsuarioNuevo', NULL, 'temp_1763997527985@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(50, 'UsuarioNuevo', NULL, 'temp_1763997528571@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0),
+(51, 'DIEGO LEONARDO PORTILLA RANGEL', NULL, '23301061550112@cetis155.edu.mx', '', NULL, 1, NULL, NULL, NULL, 1, 2, 'https://lh3.googleusercontent.com/a/ACg8ocKtBXwgDIhRiaDLOdXrXO4jJ2EY37zCDAfXjwEhrxzbOvkb8VU=s96-c', NULL, NULL, NULL, 1000, 0, 0),
+(52, 'SeniorSoldado Razosonicko', NULL, 'seniorsoldadorazosonicko@gmail.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocKVXZadFM9541Ln4-jyli_S8mXGoUHDqRZiDe848toObV2_HQ=s96-c', NULL, NULL, NULL, 1000, 0, 0),
+(53, 'asdasd', NULL, 'dolac87803@cimario.com', '$2b$10$8CyNChd7pxHdFTyqb5YpNOyvpi9Lvs7YgAWonkgi.zEXPe/H16Te.', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 100, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -10068,7 +10170,8 @@ INSERT INTO `usuario_carrera` (`id_usuario`, `id_carrera`) VALUES
 (32, 11),
 (51, 1),
 (51, 11),
-(52, 1);
+(52, 1),
+(53, 1);
 
 -- --------------------------------------------------------
 
@@ -10246,7 +10349,8 @@ ALTER TABLE `historial_duelos`
   ADD KEY `idx_modo` (`modo_duelo`),
   ADD KEY `idx_carrera` (`id_carrera`),
   ADD KEY `idx_sala` (`id_sala`),
-  ADD KEY `fk_historial_dificultad` (`id_dificultad`);
+  ADD KEY `fk_historial_dificultad` (`id_dificultad`),
+  ADD KEY `fk_estado` (`estado`);
 
 --
 -- Indices de la tabla `materias`
@@ -10402,13 +10506,13 @@ ALTER TABLE `dificultad`
 -- AUTO_INCREMENT de la tabla `duelos_desconexiones`
 --
 ALTER TABLE `duelos_desconexiones`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=436;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=506;
 
 --
 -- AUTO_INCREMENT de la tabla `duelos_preguntas`
 --
 ALTER TABLE `duelos_preguntas`
-  MODIFY `id_duelo_pregunta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=831;
+  MODIFY `id_duelo_pregunta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=841;
 
 --
 -- AUTO_INCREMENT de la tabla `duelos_respuestas`
@@ -10438,7 +10542,7 @@ ALTER TABLE `examen`
 -- AUTO_INCREMENT de la tabla `historial_duelos`
 --
 ALTER TABLE `historial_duelos`
-  MODIFY `id_duelo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=294;
+  MODIFY `id_duelo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=343;
 
 --
 -- AUTO_INCREMENT de la tabla `materias`
@@ -10450,7 +10554,7 @@ ALTER TABLE `materias`
 -- AUTO_INCREMENT de la tabla `notificaciones`
 --
 ALTER TABLE `notificaciones`
-  MODIFY `id_notificacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=297;
+  MODIFY `id_notificacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=298;
 
 --
 -- AUTO_INCREMENT de la tabla `opcion_pregunta`
@@ -10504,7 +10608,7 @@ ALTER TABLE `tipo_usuario`
 -- AUTO_INCREMENT de la tabla `usuario`
 --
 ALTER TABLE `usuario`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
 
 --
 -- Restricciones para tablas volcadas
@@ -10563,6 +10667,7 @@ ALTER TABLE `historial`
 -- Filtros para la tabla `historial_duelos`
 --
 ALTER TABLE `historial_duelos`
+  ADD CONSTRAINT `fk_estado` FOREIGN KEY (`estado`) REFERENCES `duelos` (`estado`),
   ADD CONSTRAINT `fk_historial_dificultad` FOREIGN KEY (`id_dificultad`) REFERENCES `dificultad` (`id_dificultad`),
   ADD CONSTRAINT `historial_duelos_ibfk_1` FOREIGN KEY (`id_retador`) REFERENCES `usuario` (`id_usuario`),
   ADD CONSTRAINT `historial_duelos_ibfk_2` FOREIGN KEY (`id_defensor`) REFERENCES `usuario` (`id_usuario`),

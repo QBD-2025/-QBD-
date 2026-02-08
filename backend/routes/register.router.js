@@ -48,7 +48,7 @@ router.post('/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         const token = crypto.randomBytes(16).toString('hex');
         const tokenExpires = new Date(Date.now() + 1000 * 60 * 10); // 10 min
-        const points = 0;
+        const points = 100;
 
         // Insertar usuario
         const [result] = await req.pool.query(

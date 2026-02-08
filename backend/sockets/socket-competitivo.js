@@ -553,7 +553,6 @@ async function procesarAbandono(salaId, userId, motivo, io, detallesExtra = {}) 
     const socketAbandono = usuariosConectados.get(parseInt(userId));
     if (socketAbandono) {
         io.to(socketAbandono).emit('duelo:abandonoConfirmado', {
-            mensaje: mensajeAbandono,
             penalizacion,
             apuesta,
             motivo: motivo,
@@ -569,18 +568,34 @@ async function procesarAbandono(salaId, userId, motivo, io, detallesExtra = {}) 
     // ✅✅✅ Notificar al oponente (INMEDIATAMENTE)
     const socketOponente = oponente.socketId;
     if (socketOponente) {
-        io.to(socketOponente).emit('duelo:oponenteAbandono', {
-            mensaje: mensajeOponente,
-            ganancia: gananciaOponente,
-            motivo: motivo,
-            nombreOponente: jugador.username,
-            icono: '🏆',
-            mostrarPantalla: true,
-            modo: modoFinal,
-            tipoPuntos: tipoPuntos
-        });
-        
-        console.log(`   ✅ Notificación enviada al oponente (socket: ${socketOponente})`);
+        const esRendicion = detallesExtra && detallesExtra.esRendicion === true;
+        const esAbandonoVoluntario =
+            motivo === MOTIVOS_ABANDONO.RENDIRSE || motivo === MOTIVOS_ABANDONO.VOLUNTARIO || esRendicion;
+
+        if (esAbandonoVoluntario) {
+            io.to(socketOponente).emit('duelo:pausado', {
+                mensaje: '⏸️ Duelo pausado',
+                bloqueado: true,
+                motivo: motivo,
+                redirectAfterMs: 60000,
+                redirectUrl: '/matchmaking'
+            });
+            
+            console.log(`   ✅ Notificación de pausa enviada al oponente (socket: ${socketOponente})`);
+        } else {
+            io.to(socketOponente).emit('duelo:oponenteAbandono', {
+                mensaje: mensajeOponente,
+                ganancia: gananciaOponente,
+                motivo: motivo,
+                nombreOponente: jugador.username,
+                icono: '🏆',
+                mostrarPantalla: true,
+                modo: modoFinal,
+                tipoPuntos: tipoPuntos
+            });
+            
+            console.log(`   ✅ Notificación enviada al oponente (socket: ${socketOponente})`);
+        }
     }
     
     console.log('');
@@ -799,7 +814,7 @@ module.exports = (io, socket) => {
             if (oponenteId && dueloActivo.jugadores[oponenteId]?.socketId) {
                 io.to(dueloActivo.jugadores[oponenteId].socketId).emit('duelo:oponenteDesconectado', {
                     mensaje: `${dueloActivo.jugadores[userId].username} se desconectó`,
-                    tiempoEspera: 60,
+                    tiempoEspera: 60000,
                     username: dueloActivo.jugadores[userId].username
                 });
             }

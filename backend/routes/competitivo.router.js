@@ -283,11 +283,10 @@ router.get('/api/duelo/verificar/:idOponente', async (req, res) => {
         const idUsuario = req.session.user.id_usuario;
         
         const [duelosActivos] = await pool.query(`
-            SELECT id_duelo, estado, fecha_limite 
+            SELECT id_duelo, estado
             FROM duelos 
             WHERE ((id_retador = ? AND id_defensor = ?) OR (id_retador = ? AND id_defensor = ?))
             AND estado NOT IN ('finalizado', 'abandonado')
-            AND fecha_limite > NOW()
         `, [idUsuario, idOponente, idOponente, idUsuario]);
         
         if (duelosActivos.length > 0) {

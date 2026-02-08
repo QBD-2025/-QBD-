@@ -375,11 +375,11 @@ socket.on('duelo:oponenteDesconectado', (data) => {
     
     nombreOponente.textContent = data.username || 'Oponente';
     
-    // ✅ MOSTRAR INDICADOR
+    // Mostrar indicador
     indicador.classList.add('visible');
     
-    // ✅ COUNTDOWN DE 60 SEGUNDOS
-    let segundos = data.tiempoEspera ? data.tiempoEspera / 1000 : 60;
+    // ✅ Convertir milisegundos a segundos
+    let segundos = Math.floor((data.tiempoEspera || 60000) / 1000);
     tiempoRestante.textContent = segundos;
     
     const countdown = setInterval(() => {
@@ -391,7 +391,7 @@ socket.on('duelo:oponenteDesconectado', (data) => {
         }
     }, 1000);
     
-    // ✅ GUARDAR REFERENCIA PARA LIMPIARLO SI RECONECTA
+    // Guardar referencia para limpiarlo si reconecta
     window.countdownDesconexion = countdown;
 });
 
@@ -3019,11 +3019,7 @@ socket.on('duelo:redirigirASala', ({ salaId, mensaje }) => {
         }, 1500);
     }
 });
-socket.emit('duelo_com:buscar:carrera', {
-    user,
-    dificultad: 'normal',  // ✅ Se convertirá en backend
-    apuesta: apuestaSeleccionada
-});
+
 socket.on('duelo:invitacionExpirada', (data) => {
     const modal = document.getElementById('modal-invitacion-lobby');
     if (modal) modal.remove();
@@ -3820,34 +3816,6 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = '/matchmaking';
         });
     }
-});
-
-
-// ✅ OPONENTE DESCONECTADO (esperando reconexión)
-socket.on('duelo:oponenteDesconectado', (data) => {
-    console.log('[OPONENTE DESCONECTADO]:', data);
-    
-    const indicador = document.getElementById('indicadorDesconexion');
-    const nombreOponente = document.getElementById('nombreOponenteDesconectado');
-    const tiempoRestante = document.getElementById('tiempoRestanteReconexion');
-    
-    nombreOponente.textContent = oponente?.username || 'Oponente';
-    
-    // Mostrar indicador
-    indicador.classList.add('visible');
-    
-    // Countdown de 60 segundos
-    let segundos = data.tiempoEspera || 60;
-    tiempoRestante.textContent = segundos;
-    
-    const countdown = setInterval(() => {
-        segundos--;
-        tiempoRestante.textContent = segundos;
-        
-        if (segundos <= 0) {
-            clearInterval(countdown);
-        }
-    }, 1000);
 });
 
 // ✅ OPONENTE SE RECONECTÓ
