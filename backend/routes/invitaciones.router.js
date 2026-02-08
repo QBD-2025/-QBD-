@@ -22,13 +22,17 @@ const pool = require('../db/conexion');
  * @param {object} poolConnection - Pool de conexiones MySQL
  * @returns {Promise<{modo: string, idCarrera: number|null}>}
  */
+
+// ================================================================
+// 🔍 FUNCIÓN: DETECTAR MODO AUTOMÁTICAMENTE (sin cambios)
+// ================================================================
+
 async function detectarModoJugadores(idJugador1, idJugador2, poolConnection) {
     try {
         console.log(`[DETECTAR MODO]: 🔍 Verificando carreras compartidas`);
         console.log(`[DETECTAR MODO]:   Jugador 1: ${idJugador1}`);
         console.log(`[DETECTAR MODO]:   Jugador 2: ${idJugador2}`);
         
-        // Buscar carreras compartidas entre ambos jugadores
         const [carrerasCompartidas] = await poolConnection.query(`
             SELECT DISTINCT uc1.id_carrera, c.descripcion
             FROM usuario_carrera uc1
@@ -58,7 +62,6 @@ async function detectarModoJugadores(idJugador1, idJugador2, poolConnection) {
         
     } catch (error) {
         console.error('[DETECTAR MODO ERROR]:', error);
-        // En caso de error, usar modo general como fallback
         return {
             modo: 'general',
             idCarrera: null,
@@ -68,8 +71,9 @@ async function detectarModoJugadores(idJugador1, idJugador2, poolConnection) {
 }
 
 // ================================================================
-// ⚔️ CREAR DESAFÍO RÁPIDO BD (CON DETECCIÓN AUTOMÁTICA DE MODO)
+// ⚔️ CREAR DESAFÍO RÁPIDO BD - ✅✅✅ VERSIÓN CORREGIDA
 // ================================================================
+
 router.post('/desafio/duelo/:idOponente', async (req, res) => {
     console.log('═══════════════════════════════════════════════════════════');
     console.log('[DESAFÍO BD]: 🚀 INICIO');
@@ -79,12 +83,14 @@ router.post('/desafio/duelo/:idOponente', async (req, res) => {
     }
 
     const { idOponente } = req.params;
+    const { modoDeseado } = req.body; // ✅ NUEVO: Recibir modo deseado desde frontend
     const idRemitente = req.session.user.id_usuario;
     const usernameRemitente = req.session.user.username;
     const fotoRemitente = req.session.user.foto_perfil || '/uploads/default_avatar.png';
 
     console.log(`[DESAFÍO BD]: 👤 Remitente: ${idRemitente} (${usernameRemitente})`);
     console.log(`[DESAFÍO BD]: 🎯 Destinatario: ${idOponente}`);
+    console.log(`[DESAFÍO BD]: 🎮 Modo deseado: ${modoDeseado || 'no especificado'}`);
 
     if (parseInt(idOponente) === idRemitente) {
         return res.status(400).json({ 
@@ -113,19 +119,49 @@ router.post('/desafio/duelo/:idOponente', async (req, res) => {
         console.log(`[DESAFÍO BD]: ✅ Oponente: ${oponenteData[0].username}`);
 
         // ════════════════════════════════════════════════════════════
-        // 2️⃣ ✅ DETECTAR MODO AUTOMÁTICAMENTE
+        // 2️⃣ ✅✅✅ NUEVO: DETERMINAR MODO SEGÚN SOLICITUD DEL USUARIO
         // ════════════════════════════════════════════════════════════
         
-        const { modo, idCarrera, nombreCarrera } = await detectarModoJugadores(
-            idRemitente, 
-            idOponente, 
-            pool
-        );
-        
-        console.log(`[DESAFÍO BD]: ✅ Modo detectado: ${modo}`);
-        if (modo === 'carrera') {
-            console.log(`[DESAFÍO BD]: 📚 Carrera: ${nombreCarrera} (ID: ${idCarrera})`);
+        let modo = 'general';
+        let idCarrera = null;
+        let nombreCarrera = null;
+
+        // Si el usuario QUIERE modo carrera, verificar que compartan una
+        if (modoDeseado === 'carrera') {
+            console.log('[DESAFÍO BD]: 🔍 Usuario solicitó modo CARRERA, verificando...');
+            
+            const modoDetectado = await detectarModoJugadores(idRemitente, idOponente, pool);
+            
+            if (modoDetectado.modo === 'carrera') {
+                // ✅ Tienen carrera compartida, usar modo carrera
+                modo = 'carrera';
+                idCarrera = modoDetectado.idCarrera;
+                nombreCarrera = modoDetectado.nombreCarrera;
+                console.log(`[DESAFÍO BD]: ✅ Carrera compartida encontrada: ${nombreCarrera}`);
+            } else {
+                // ⚠️ No tienen carrera compartida, forzar modo general
+                console.warn('[DESAFÍO BD]: ⚠️ No hay carrera compartida, usando modo GENERAL');
+                return res.status(400).json({
+                    success: false,
+                    message: '❌ No compartes ninguna carrera con este usuario. Intenta un duelo general.'
+                });
+            }
+        } else {
+            // Usuario quiere modo general (o no especificó)
+            modo = 'general';
+            console.log('[DESAFÍO BD]: ✅ Usuario solicitó modo GENERAL');
         }
+        
+        console.log('[DESAFÍO BD]: ═══════════════════════════════════════');
+        console.log('[DESAFÍO BD]: ✅ MODO FINAL:', modo);
+        console.log('[DESAFÍO BD]:    - Tipo:', modo === 'carrera' ? '🎓 CARRERA' : '🌍 GENERAL');
+        if (modo === 'carrera') {
+            console.log('[DESAFÍO BD]:    - Carrera:', nombreCarrera);
+            console.log('[DESAFÍO BD]:    - ID Carrera:', idCarrera);
+        } else {
+            console.log('[DESAFÍO BD]:    - Duelo de cultura general');
+        }
+        console.log('[DESAFÍO BD]: ═══════════════════════════════════════');
 
         // ════════════════════════════════════════════════════════════
         // 3️⃣ Verificar cooldown (5 minutos)
@@ -170,7 +206,7 @@ router.post('/desafio/duelo/:idOponente', async (req, res) => {
         }
 
         // ════════════════════════════════════════════════════════════
-        // 5️⃣ ✅ CREAR SALA CON MODO DETECTADO
+        // 5️⃣ ✅✅✅ CREAR SALA CON MODO CORRECTO
         // ════════════════════════════════════════════════════════════
         
         console.log(`[DESAFÍO BD]: 🏗️ Creando sala en modo ${modo}...`);
@@ -178,7 +214,7 @@ router.post('/desafio/duelo/:idOponente', async (req, res) => {
         const salaId = global.crearSalaPendienteBD(
             idRemitente, 
             idOponente, 
-            modo,        // ✅ MODO DETECTADO
+            modo,        // ✅ MODO ELEGIDO POR EL USUARIO
             null,        // dificultad (null para BD)
             io
         );
@@ -193,7 +229,7 @@ router.post('/desafio/duelo/:idOponente', async (req, res) => {
 
         console.log(`[DESAFÍO BD]: ✅ Sala creada: ${salaId}`);
 
-        // ✅ Actualizar sala con modo y carrera
+        // ✅ Actualizar sala con datos completos
         const salasPendientes = global.salasPendientes || new Map();
         const salasEspera = global.salasEspera || new Map();
         
@@ -204,18 +240,18 @@ router.post('/desafio/duelo/:idOponente', async (req, res) => {
             sala.nombreCarrera = nombreCarrera;
             salasPendientes.set(salaId, sala);
             salasEspera.set(salaId, sala);
-            console.log('[DESAFÍO BD]: ✅ Sala actualizada con modo y carrera');
+            console.log(`[DESAFÍO BD]: ✅ Sala actualizada - Modo: ${modo}, Carrera: ${idCarrera || 'N/A'}`);
         }
 
         // ════════════════════════════════════════════════════════════
-        // 6️⃣ Crear notificación con modo
+        // 6️⃣ Crear notificación con modo CORRECTO
         // ════════════════════════════════════════════════════════════
         
         const extraDataObj = {
             salaId: salaId,
-            modo: modo,              // ✅ MODO DETECTADO
+            modo: modo,
             dificultad: null,
-            idCarrera: idCarrera,    // ✅ CARRERA DETECTADA
+            idCarrera: idCarrera,
             nombreCarrera: nombreCarrera,
             idRemitente: idRemitente,
             usernameRemitente: usernameRemitente,
@@ -286,10 +322,10 @@ router.post('/desafio/duelo/:idOponente', async (req, res) => {
         });
     }
 });
+// ================================================================
+// ✅ ACEPTAR NOTIFICACIÓN - MANTIENE MODO CORRECTO (sin cambios)
+// ================================================================
 
-// ================================================================
-// ✅ ACEPTAR NOTIFICACIÓN - MANTIENE MODO CORRECTO
-// ================================================================
 router.post('/aceptar/:idNotificacion', async (req, res) => {
     console.log('═══════════════════════════════════════════════════════════');
     console.log('[ACEPTAR]: 🚀 INICIO');
@@ -311,7 +347,6 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
         conn = await pool.getConnection();
         await conn.beginTransaction();
 
-        // 1️⃣ Obtener notificación
         const [notificaciones] = await conn.query(
             `SELECT * FROM notificaciones 
              WHERE id_notificacion = ? AND id_usuario_destinatario = ?`,
@@ -358,6 +393,8 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             console.log(`[ACEPTAR]: Modo detectado en notificación: ${modoOriginal}`);
             if (modoOriginal === 'carrera') {
                 console.log(`[ACEPTAR]: Carrera: ${nombreCarreraOriginal} (ID: ${idCarreraOriginal})`);
+            } else {
+                console.log(`[ACEPTAR]: Modo GENERAL confirmado`);
             }
             
             if (!salaId) {
@@ -375,7 +412,6 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             
             let sala = salasPendientes.get(salaId) || salasEspera.get(salaId);
             
-            // Búsqueda case-insensitive
             if (!sala) {
                 for (const [key, value] of [...salasPendientes.entries(), ...salasEspera.entries()]) {
                     if (key.toLowerCase() === salaId.toLowerCase()) {
@@ -402,17 +438,17 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
 
             console.log('[ACEPTAR]: ✅ Sala encontrada');
             console.log('[ACEPTAR]: Modo en sala:', sala.modo);
+            console.log('[ACEPTAR]: Modo en notificación:', modoOriginal);
             
-            // ✅ VERIFICAR QUE EL MODO COINCIDA
+            // ✅✅✅ FIX: ASEGURAR QUE EL MODO SEA CORRECTO
             if (sala.modo !== modoOriginal) {
-                console.warn(`[ACEPTAR]: ⚠️ Modo inconsistente - Sala: ${sala.modo}, Extra: ${modoOriginal}`);
-                console.warn('[ACEPTAR]: Usando modo de la notificación como referencia');
+                console.warn(`[ACEPTAR]: ⚠️ Modo inconsistente - Corrigiendo`);
+                console.warn(`[ACEPTAR]: Sala: ${sala.modo} → Notificación: ${modoOriginal}`);
                 sala.modo = modoOriginal;
                 sala.idCarrera = idCarreraOriginal;
                 sala.nombreCarrera = nombreCarreraOriginal;
             }
 
-            // Marcar como aceptada
             sala.estado = 'aceptada';
             sala.jugadoresAceptados = sala.jugadoresAceptados || new Set();
             sala.jugadoresAceptados.add(parseInt(sala.retador || sala.idRetador));
@@ -427,10 +463,8 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
                 console.log(`[ACEPTAR]: Carrera final: ${sala.nombreCarrera} (ID: ${sala.idCarrera})`);
             }
 
-            // Eliminar notificación
             await conn.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
 
-            // Notificar al retador
             const io = req.app.get('io') || global.io;
             const idRetador = parseInt(extraData.idRemitente);
             
@@ -472,7 +506,7 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
         }
         
         // ════════════════════════════════════════════════════════
-        // 📚 DUELO 48H (CON SISTEMA DE RANGOS)
+        // 📚 DUELO 48H (sin cambios)
         // ════════════════════════════════════════════════════════
         if (notificacion.tipo === 'desafio_duelo') {
             console.log('[ACEPTAR]: 📚 PROCESANDO DUELO DE 48 HORAS');
@@ -491,7 +525,6 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             
             console.log('[ACEPTAR]: 🔍 Buscando duelo existente:', idDuelo);
             
-            // ✅ VERIFICAR que el duelo EXISTA en BD
             const [duelosExistentes] = await conn.query(
                 `SELECT * FROM duelos WHERE id_duelo = ? AND estado = 'activo'`,
                 [idDuelo]
@@ -511,7 +544,6 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             const duelo = duelosExistentes[0];
             console.log('[ACEPTAR]: ✅ DUELO ENCONTRADO EN BD');
             
-            // ✅ VERIFICAR que el usuario actual sea el defensor
             if (parseInt(duelo.id_defensor) !== parseInt(userId)) {
                 console.error('[ACEPTAR]: ❌ Usuario no es el defensor');
                 await conn.rollback();
@@ -522,11 +554,9 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
                 });
             }
             
-            // ✅ Eliminar SOLO la notificación de desafío (NO el duelo)
             await conn.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
             console.log('[ACEPTAR]: ✅ Notificación de desafío eliminada');
             
-            // ✅ Crear notificaciones de ACEPTACIÓN para ambos jugadores
             const notifData = JSON.stringify({ 
                 salaId: duelo.id_duelo,
                 tipo_duelo: duelo.id_carrera ? 'carrera' : 'general',
@@ -566,7 +596,7 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
         }
 
         // ════════════════════════════════════════════════════════
-        // 🎮 INVITACIONES A MINIJUEGOS
+        // 🎮 INVITACIONES A MINIJUEGOS (sin cambios)
         // ════════════════════════════════════════════════════════
         if (notificacion.tipo === 'invitacion') {
             console.log('[ACEPTAR]: 🎮 PROCESANDO INVITACIÓN A MINIJUEGO');
@@ -594,9 +624,6 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
             });
         }
 
-        // ════════════════════════════════════════════════════════
-        // 🔹 OTROS TIPOS
-        // ════════════════════════════════════════════════════════
         await conn.query(`DELETE FROM notificaciones WHERE id_notificacion = ?`, [idNotificacion]);
         await conn.commit();
         conn.release();

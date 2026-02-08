@@ -1,11 +1,31 @@
-// Matchmaking Controller JS
-// ================================================================
+
 // CONFIGURACIÓN INICIAL Y VARIABLES GLOBALES
 // ================================================================
 const socket = io();
 const user = window.USER_DATA;
 const urlParams = new URLSearchParams(window.location.search);
 const desdeNotificacion = urlParams.get('origen') === 'notificacion';
+
+// ================================================================
+// 🔄 HANDLER: Detectar que se requiere reconexión
+// ================================================================
+
+socket.on('duelo:requiereReconexion', async ({ salaId, mensaje }) => {
+    console.log('[CLIENTE]: 🔄 Reconexión requerida');
+    console.log(`   - SalaId: ${salaId}`);
+    
+    statusText.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${mensaje}`;
+    
+    // Esperar 1 segundo y ejecutar reconexión
+    await new Promise(r => setTimeout(r, 1000));
+    
+    console.log('[CLIENTE]: 📡 Emitiendo duelo:intentarReconexion...');
+    
+    socket.emit('duelo:intentarReconexion', {
+        salaId: salaId,
+        userId: user.id_usuario
+    });
+});
 
 let salaId = null;
 let salaActual = null;
@@ -17,6 +37,14 @@ let gambitoActivado = false;
 let miPowerUp = null;
 let escudoActivo = false;
 let modoActualSala = null; // Variable global para trackear el modo de la sala actual
+let dueloPausado = false;
+let timerPausado = null;
+let intentandoSalir = false;
+let dueloActivo = false;
+let modoActualDuelo = null; // 'general' o 'carrera'
+let motivoSalida = null;        // ✅ NUEVO: Rastrear motivo exacto de salida
+let botonesHabilitados = true;
+let idCarreraActual = null;
 
 // ✅ ESTADO DE NEGOCIACIÓN
 let estadoNegociacion = {
@@ -118,21 +146,15 @@ if (user?.id_usuario) {
     }, 500);
 }
 
-// ================================================================
-// LISTENERS DE SALA
-// ================================================================
-socket.on('sala:conectado', (data) => {
-    console.log('[SALA]: ✅ Conectado:', data.mensaje);
-    statusText.innerHTML = `<i class="fas fa-check-circle"></i> ${data.mensaje}`;
-    salaActual = data.salaId;
-});
+
 socket.on('sala:modoDetectado', ({ modo, idCarrera }) => {
     console.log('[SALA]: Modo detectado por servidor:', modo);
     console.log('[SALA]: ID Carrera:', idCarrera || 'N/A');
     
-    modoActualSala = modo;
+    // ✅ GUARDAR MODO ACTUAL GLOBALMENTE
+    modoActualDuelo = modo;
+    idCarreraActual = idCarrera || null;
     
-    // ✅ ACTUALIZAR UI SEGÚN MODO
     const modoTexto = modo === 'carrera' ? '🎓 Duelo de Carrera' : '🌍 Duelo General';
     const modoColor = modo === 'carrera' ? '#3b82f6' : '#10b981';
     
@@ -142,7 +164,7 @@ socket.on('sala:modoDetectado', ({ modo, idCarrera }) => {
     indicadorModo.style.cssText = `
         position: fixed;
         top: 20px;
-        right: 20px;
+        left: 20px;
         background: ${modoColor};
         color: white;
         padding: 12px 24px;
@@ -151,15 +173,39 @@ socket.on('sala:modoDetectado', ({ modo, idCarrera }) => {
         font-size: 14px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         z-index: 1000;
-        animation: slideInRight 0.3s ease;
+        animation: slideInLeft 0.3s ease;
     `;
     indicadorModo.textContent = modoTexto;
     
     if (!document.getElementById('indicadorModo')) {
         document.body.appendChild(indicadorModo);
     }
+    
+    console.log(`[MODO]: ✅ Modo actual guardado: ${modo}`);
 });
 
+// ================================================================
+// LISTENERS DE SALA
+// ================================================================
+socket.on('sala:conectado', (data) => {
+    console.log('[SALA]: ✅ Conectado:', data.mensaje);
+    statusText.innerHTML = `<i class="fas fa-check-circle"></i> ${data.mensaje}`;
+    salaActual = data.salaId;
+});
+
+window.addEventListener('beforeunload', (e) => {
+    if (dueloActivo && !intentandoSalir) {
+        // ✅ Informar al servidor INMEDIATAMENTE
+        socket.emit('duelo:abandonoRapido', {
+            salaId: salaActual || salaId,
+            userId: user.id_usuario
+        });
+        
+        // Mostrar advertencia
+        e.preventDefault();
+        e.returnValue = '';
+    }
+});
 socket.on('sala:error', (data) => {
     console.error('[SALA ERROR]:', data.mensaje);
     statusText.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${data.mensaje}`;
@@ -169,7 +215,288 @@ socket.on('sala:error', (data) => {
         window.location.href = '/matchmaking';
     }, 3000);
 });
+socket.on('duelo:pausado', ({ mensaje, bloqueado }) => {
+    console.log('[DUELO PAUSADO]:', mensaje);
+    
+    dueloPausado = true;
+    
+    // ✅ DETENER CRONÓMETRO VISUAL
+    if (cronometroInterval) {
+        clearInterval(cronometroInterval);
+        cronometroInterval = null;
+    }
+    
+    // ✅ DESHABILITAR BOTONES DE OPCIONES
+    deshabilitarBotones(true);
+    
+    // ✅ MOSTRAR OVERLAY DE PAUSA
+    mostrarOverlayPausa(mensaje);
+    
+    console.log('[DUELO]: ⏸️ Duelo pausado - Esperando reconexión');
+});
 
+// ================================================================
+// ✅ LISTENER: DUELO REANUDADO (Reconexión exitosa)
+// ================================================================
+
+socket.on('duelo:reanudado', ({ mensaje, bloqueado, tiempoRestante }) => {
+    console.log('[DUELO REANUDADO]:', mensaje);
+    
+    dueloPausado = false;
+    
+    // ✅ OCULTAR OVERLAY
+    ocultarOverlayPausa();
+    
+    // ✅ HABILITAR BOTONES
+    deshabilitarBotones(false);
+    
+    // ✅ REANUDAR CRONÓMETRO SI HAY TIEMPO RESTANTE
+    if (tiempoRestante && tiempoRestante > 0) {
+        reanudarCronometro(tiempoRestante);
+    }
+    
+    mostrarNotificacion('▶️ Duelo reanudado', 'success');
+    
+    console.log('[DUELO]: ▶️ Duelo reanudado');
+});
+
+// ================================================================
+// ✅ LISTENER: ESTADO ACTUAL (Después de reconectar)
+// ================================================================
+
+// ================================================================
+// ✅ AGREGAR: Handler para estado actual con pregunta
+// Línea ~900 aproximadamente
+// ================================================================
+
+socket.on('duelo:estadoActual', (data) => {
+    console.log('[ESTADO ACTUAL]:', data);
+    
+    const {
+        estado,
+        preguntaActual,
+        totalPreguntas,
+        puntuaciones,
+        rachas,
+        oponente,
+        apuesta,
+        modo,
+        bloqueado,
+        mensaje,
+        fueRestaurado
+    } = data;
+    
+    // ✅ ACTUALIZAR UI
+    document.getElementById('puntuacionTuya').textContent = puntuaciones[user.id_usuario] || 0;
+    document.getElementById('puntuacionOponente').textContent = puntuaciones[oponente.username] || 0;
+    
+    tuRachaEl.textContent = `🔥 x${rachas[user.id_usuario] || 0}`;
+    oponenteRachaEl.textContent = `🔥 x${rachas[oponente.username] || 0}`;
+    
+    apuestaActualEl.textContent = apuesta > 0 ? `🎰 Bote: ${apuesta * 2} pts` : '🎮 Sin apuesta';
+    
+    // ✅✅✅ SI HAY PREGUNTA ACTIVA, RENDERIZARLA
+    if (data.preguntaActual && data.preguntaActual.pregunta) {
+        const { pregunta, opciones, numeroPregunta, tiempoRestante } = data.preguntaActual;
+        
+        console.log('[ESTADO ACTUAL]: Renderizando pregunta restaurada');
+        
+        textoPregunta.textContent = pregunta.pregunta;
+        document.getElementById('numeroPregunta').textContent = `Pregunta ${numeroPregunta} / ${totalPreguntas}`;
+        opcionesContainer.innerHTML = '';
+        
+        opciones.forEach(opcion => {
+            const btn = document.createElement('button');
+            btn.className = 'opcion-btn';
+            btn.textContent = opcion.respuesta;
+            
+            btn.onclick = () => {
+                if (dueloPausado || !botonesHabilitados) return;
+                
+                const tiempoRespuesta = (Date.now() - Date.now()) / 1000; // Aproximado
+                
+                opcionesContainer.querySelectorAll('button').forEach(b => b.disabled = true);
+                btn.classList.add('seleccionada-jugador');
+                
+                socket.emit('duelo:responder', {
+                    salaId: salaActual || salaId,
+                    userId: user.id_usuario,
+                    idPregunta: pregunta.id_pregunta,
+                    idRespuesta: opcion.id_respuesta,
+                    tiempoRespuesta: tiempoRespuesta
+                });
+            };
+            
+            opcionesContainer.appendChild(btn);
+        });
+        
+        // ✅ Iniciar cronómetro con tiempo restante
+        if (cronometroInterval) clearInterval(cronometroInterval);
+        
+        let tiempo = tiempoRestante || 10;
+        cronometroEl.textContent = tiempo;
+        
+        cronometroInterval = setInterval(() => {
+            if (dueloPausado) return;
+            
+            tiempo--;
+            cronometroEl.textContent = tiempo;
+            
+            if (tiempo <= 0) {
+                clearInterval(cronometroInterval);
+            }
+        }, 1000);
+    }
+    
+    // ✅ SI ESTÁ BLOQUEADO, MOSTRAR OVERLAY
+    if (bloqueado) {
+        mostrarOverlayPausa('⏸️ Duelo pausado - Esperando al otro jugador...');
+        deshabilitarBotones(true);
+    } else {
+        ocultarOverlayPausa();
+        deshabilitarBotones(false);
+    }
+    
+    mostrarNotificacion(mensaje, 'success');
+    
+    console.log('[ESTADO ACTUAL]: ✅ UI actualizada completamente');
+});
+
+// ================================================================
+// ✅ LISTENER: OPONENTE SE DESCONECTÓ
+// ================================================================
+
+socket.on('duelo:oponenteDesconectado', (data) => {
+    console.log('[OPONENTE DESCONECTADO]:', data);
+    
+    const indicador = document.getElementById('indicadorDesconexion');
+    const nombreOponente = document.getElementById('nombreOponenteDesconectado');
+    const tiempoRestante = document.getElementById('tiempoRestanteReconexion');
+    
+    nombreOponente.textContent = data.username || 'Oponente';
+    
+    // ✅ MOSTRAR INDICADOR
+    indicador.classList.add('visible');
+    
+    // ✅ COUNTDOWN DE 60 SEGUNDOS
+    let segundos = data.tiempoEspera ? data.tiempoEspera / 1000 : 60;
+    tiempoRestante.textContent = segundos;
+    
+    const countdown = setInterval(() => {
+        segundos--;
+        tiempoRestante.textContent = segundos;
+        
+        if (segundos <= 0) {
+            clearInterval(countdown);
+        }
+    }, 1000);
+    
+    // ✅ GUARDAR REFERENCIA PARA LIMPIARLO SI RECONECTA
+    window.countdownDesconexion = countdown;
+});
+
+// ================================================================
+// ✅ LISTENER: OPONENTE SE RECONECTÓ
+// ================================================================
+
+socket.on('duelo:oponenteReconectado', (data) => {
+    console.log('[OPONENTE RECONECTADO]:', data);
+    
+    // ✅ OCULTAR INDICADOR
+    const indicador = document.getElementById('indicadorDesconexion');
+    indicador.classList.remove('visible');
+    
+    // ✅ LIMPIAR COUNTDOWN
+    if (window.countdownDesconexion) {
+        clearInterval(window.countdownDesconexion);
+        window.countdownDesconexion = null;
+    }
+    
+    // ✅ MOSTRAR NOTIFICACIÓN
+    const notif = document.getElementById('notificacionReconexion');
+    const mensajeReconexion = document.getElementById('mensajeReconexion');
+    
+    mensajeReconexion.textContent = data.mensaje || 'Continuando duelo...';
+    notif.classList.add('visible');
+    
+    // ✅ OCULTAR DESPUÉS DE 3 SEGUNDOS
+    setTimeout(() => {
+        notif.classList.remove('visible');
+    }, 3000);
+});
+
+// ================================================================
+// 🆕 FUNCIONES AUXILIARES
+// ================================================================
+
+function mostrarOverlayPausa(mensaje) {
+    let overlay = document.getElementById('overlayPausa');
+    
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'overlayPausa';
+        overlay.className = 'overlay-pausa';
+        overlay.innerHTML = `
+            <div class="overlay-pausa-content">
+                <div class="spinner-pausa"></div>
+                <h2>⏸️ Duelo Pausado</h2>
+                <p id="mensajePausa">${mensaje}</p>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    } else {
+        document.getElementById('mensajePausa').textContent = mensaje;
+    }
+    
+    overlay.classList.add('visible');
+}
+
+function ocultarOverlayPausa() {
+    const overlay = document.getElementById('overlayPausa');
+    if (overlay) {
+        overlay.classList.remove('visible');
+    }
+}
+
+function deshabilitarBotones(deshabilitar) {
+    botonesHabilitados = !deshabilitar;
+    
+    // ✅ DESHABILITAR/HABILITAR BOTONES DE OPCIONES
+    const botones = opcionesContainer.querySelectorAll('button');
+    botones.forEach(btn => {
+        btn.disabled = deshabilitar;
+        if (deshabilitar) {
+            btn.style.opacity = '0.5';
+            btn.style.cursor = 'not-allowed';
+        } else {
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+        }
+    });
+    
+    // ✅ DESHABILITAR POWER-UPS
+    if (btnUsarPowerUp) {
+        btnUsarPowerUp.disabled = deshabilitar;
+    }
+}
+
+function reanudarCronometro(tiempoRestante) {
+    if (cronometroInterval) {
+        clearInterval(cronometroInterval);
+    }
+    
+    let tiempo = tiempoRestante;
+    cronometroEl.textContent = tiempo;
+    
+    cronometroInterval = setInterval(() => {
+        tiempo--;
+        cronometroEl.textContent = tiempo;
+        
+        if (tiempo <= 0) {
+            clearInterval(cronometroInterval);
+        }
+    }, 1000);
+}
 // ================================================================
 // DUELO: Información inicial
 // ================================================================
@@ -182,10 +509,19 @@ socket.on('duelo:informacionInicial', ({ apuesta, bote, recompensaBase, dificult
 // ================================================================
 // DUELO: Listo para iniciar
 // ================================================================
+// ================================================================
+// 🎧 LISTENER: DUELO LISTO (Activar protección)
+// ================================================================
+
 socket.on('duelo:dueloListo', ({ salaId }) => {
     console.log('[DUELO]: ✅ Duelo listo!');
     statusText.innerHTML = '<i class="fas fa-swords"></i> ¡Duelo listo! Entrando a la arena...';
     btnCancelarBusqueda.style.display = 'none';
+    
+    // ✅ ACTIVAR ESTADO DE DUELO DESPUÉS DE 2 SEGUNDOS
+    setTimeout(() => {
+        actualizarEstadoDuelo(true, { salaId });
+    }, 2000);
     
     setTimeout(() => {
         matchmakingView.style.opacity = '0';
@@ -779,6 +1115,12 @@ socket.on('duelo:miniDraftFinalizado', ({ selecciones, gambitos, apuesta, mensaj
 socket.on('duelo:nuevaPregunta', ({ pregunta, opciones, numeroPregunta, totalPreguntas, evento, duracion, efectoVisual, tiempoEfecto }) => {
     console.log(`[PREGUNTA]: ${numeroPregunta}/${totalPreguntas}`);
     
+    // ✅ VERIFICAR SI ESTÁ PAUSADO
+    if (dueloPausado) {
+        console.log('[PREGUNTA]: ⚠️ Duelo pausado, no renderizar pregunta aún');
+        return;
+    }
+    
     preguntaActualId = pregunta.id_pregunta;
     textoPregunta.textContent = pregunta.pregunta;
     document.getElementById('numeroPregunta').textContent = `Pregunta ${numeroPregunta} / ${totalPreguntas}`;
@@ -804,12 +1146,18 @@ socket.on('duelo:nuevaPregunta', ({ pregunta, opciones, numeroPregunta, totalPre
 
     // Cronómetro
     if (cronometroInterval) clearInterval(cronometroInterval);
+    
     let tiempoRestante = duracion || 10;
     cronometroEl.textContent = tiempoRestante;
     
     const inicioTiempo = Date.now();
     
     cronometroInterval = setInterval(() => {
+        // ✅ NO ACTUALIZAR SI ESTÁ PAUSADO
+        if (dueloPausado) {
+            return;
+        }
+        
         tiempoRestante--;
         cronometroEl.textContent = tiempoRestante;
         if (tiempoRestante <= 0) clearInterval(cronometroInterval);
@@ -822,6 +1170,17 @@ socket.on('duelo:nuevaPregunta', ({ pregunta, opciones, numeroPregunta, totalPre
         btn.textContent = opcion.respuesta;
         
         btn.onclick = () => {
+            // ✅ VERIFICAR SI ESTÁ PAUSADO
+            if (dueloPausado) {
+                mostrarNotificacion('⏸️ Duelo pausado. Espera a que se reanude.', 'warning');
+                return;
+            }
+            
+            // ✅ VERIFICAR SI BOTONES ESTÁN HABILITADOS
+            if (!botonesHabilitados) {
+                return;
+            }
+            
             const tiempoRespuesta = (Date.now() - inicioTiempo) / 1000;
             
             opcionesContainer.querySelectorAll('button').forEach(b => b.disabled = true);
@@ -839,6 +1198,153 @@ socket.on('duelo:nuevaPregunta', ({ pregunta, opciones, numeroPregunta, totalPre
         opcionesContainer.appendChild(btn);
     });
 });
+// ================================================================
+// ✅ HANDLER: Reconexión exitosa
+// ================================================================
+
+socket.on('duelo:reconexionExitosa', (estadoActual) => {
+    console.log('[RECONEXIÓN EXITOSA]:', estadoActual);
+    
+    // Ocultar matchmaking, mostrar duelo
+    matchmakingView.style.display = 'none';
+    dueloView.style.display = 'flex';
+    dueloView.style.opacity = '1';
+    
+    // Actualizar UI con estado restaurado
+    document.getElementById('puntuacionTuya').textContent = estadoActual.puntuaciones[user.id_usuario] || 0;
+    
+    const oponenteId = Object.keys(estadoActual.puntuaciones).find(id => id !== user.id_usuario.toString());
+    document.getElementById('puntuacionOponente').textContent = estadoActual.puntuaciones[oponenteId] || 0;
+    
+    tuRachaEl.textContent = `🔥 x${estadoActual.rachas[user.id_usuario] || 0}`;
+    oponenteRachaEl.textContent = `🔥 x${estadoActual.rachas[oponenteId] || 0}`;
+    
+    apuestaActualEl.textContent = estadoActual.apuesta > 0 ? `🎰 Bote: ${estadoActual.apuesta * 2} pts` : '🎮 Sin apuesta';
+    
+    // Mostrar oponente
+    document.getElementById('oponenteUsername').textContent = estadoActual.oponente.username;
+    document.getElementById('oponenteAvatar').src = estadoActual.oponente.foto_perfil || '/uploads/default_avatar.png';
+    
+    // Si hay pregunta activa, mostrarla
+    if (estadoActual.preguntaActual) {
+        arenaContainer.style.display = 'flex';
+        draftContainer.style.display = 'none';
+        
+        textoPregunta.textContent = estadoActual.preguntaActual.pregunta.pregunta;
+        document.getElementById('numeroPregunta').textContent = `Pregunta ${estadoActual.preguntaActual.numeroPregunta} / ${estadoActual.totalPreguntas}`;
+        
+        opcionesContainer.innerHTML = '';
+        
+        estadoActual.preguntaActual.opciones.forEach(opcion => {
+            const btn = document.createElement('button');
+            btn.className = 'opcion-btn';
+            btn.textContent = opcion.respuesta;
+            
+            // Si ya respondió, deshabilitar
+            if (estadoActual.preguntaActual.yaRespondida) {
+                btn.disabled = true;
+                btn.classList.add('deshabilitada');
+            } else {
+                btn.onclick = () => {
+                    if (dueloPausado || !botonesHabilitados) return;
+                    
+                    opcionesContainer.querySelectorAll('button').forEach(b => b.disabled = true);
+                    btn.classList.add('seleccionada-jugador');
+                    
+                    socket.emit('duelo:responder', {
+                        salaId: salaActual || salaId,
+                        userId: user.id_usuario,
+                        idPregunta: estadoActual.preguntaActual.pregunta.id_pregunta,
+                        idRespuesta: opcion.id_respuesta,
+                        tiempoRespuesta: 0
+                    });
+                };
+            }
+            
+            opcionesContainer.appendChild(btn);
+        });
+        
+        // Iniciar cronómetro con tiempo restante
+        if (cronometroInterval) clearInterval(cronometroInterval);
+        
+        let tiempo = estadoActual.preguntaActual.tiempoRestante || 10;
+        cronometroEl.textContent = tiempo;
+        
+        cronometroInterval = setInterval(() => {
+            if (dueloPausado) return;
+            
+            tiempo--;
+            cronometroEl.textContent = tiempo;
+            
+            if (tiempo <= 0) clearInterval(cronometroInterval);
+        }, 1000);
+    }
+    
+    if (estadoActual.bloqueado) {
+        mostrarOverlayPausa('⏸️ Esperando al otro jugador...');
+    }
+    
+    mostrarNotificacion(estadoActual.mensaje, 'success');
+});
+const styleOverlayPausa = document.createElement('style');
+styleOverlayPausa.textContent = `
+    .overlay-pausa {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(10px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .overlay-pausa.visible {
+        display: flex;
+        opacity: 1;
+    }
+    
+    .overlay-pausa-content {
+        background: linear-gradient(135deg, #1e293b, #334155);
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        max-width: 400px;
+    }
+    
+    .overlay-pausa-content h2 {
+        color: white;
+        font-size: 28px;
+        margin: 0 0 15px 0;
+    }
+    
+    .overlay-pausa-content p {
+        color: #94a3b8;
+        font-size: 16px;
+        margin: 0;
+    }
+    
+    .spinner-pausa {
+        width: 60px;
+        height: 60px;
+        border: 5px solid rgba(59, 130, 246, 0.2);
+        border-top-color: #3b82f6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px auto;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(styleOverlayPausa);
 
 // ================================================================
 // DUELO: Actualizar estado (puntos, rachas, power-ups)
@@ -1091,33 +1597,923 @@ function mostrarResultadoDetallado(data) {
     modal.classList.add('visible');
 }
 // ================================================================
-// DUELO: Finalizado
+// 📊 SISTEMA DE VISUALIZACIÓN DE PUNTOS - FRONTEND
+// Agregar a matchmaking.controller.js
 // ================================================================
-socket.on('duelo:finalizado', (resultado) => {
-    console.log('[DUELO]: ✅ Resultado recibido');
-    console.log('[DUELO RESULTADO COMPLETO]:', JSON.stringify(resultado, null, 2));
-    console.log('[DEBUG TIPOS]:', {
-        ganadorId: resultado.ganadorId,
-        ganadorIdType: typeof resultado.ganadorId,
-        miUserId: user.id_usuario,
-        miUserIdType: typeof user.id_usuario,
-        miUserIdParsed: parseInt(user.id_usuario),
-        comparacionDirecta: resultado.ganadorId === user.id_usuario,
-        comparacionParsed: resultado.ganadorId === parseInt(user.id_usuario),
-        jugadores: resultado.jugadores?.map(j => ({
-            userId: j.userId,
-            userIdType: typeof j.userId,
-            cambioTotal: j.cambioTotal,
-            puntosFinal: j.puntosFinal
-        }))
+
+// ================================================================
+// 📊 FRONTEND - VISUALIZACIÓN DE RESULTADOS CORREGIDA
+// Diferenciación clara entre Puntos Globales y Puntos de Carrera
+// Agregar a matchmaking.controller.js (reemplazar función existente)
+// ================================================================
+
+/**
+ * ✅ Renderiza el resultado del duelo con separación correcta de puntos
+ * @param {Object} resultado - Datos del servidor con modo, jugadores, etc.
+ */
+// ================================================================
+// 🏆 FUNCIÓN MEJORADA: RENDERIZAR RESULTADO CON DIFERENCIACIÓN CORRECTA
+// Reemplazar función renderizarResultadoConPuntosSeparados() existente
+// ================================================================
+
+// ================================================================
+// 🎯 FUNCIÓN CORREGIDA: renderizarResultadoConPuntosSeparados
+// Reemplazar en matchmaking.controller.js (línea ~1050)
+// ================================================================
+
+/**
+ * ✅ RENDERIZA RESULTADO FINAL DEL DUELO
+ * - Diferencia puntos globales vs puntos de carrera
+ * - Muestra desglose completo
+ * - Maneja empates y victorias
+ */
+function renderizarResultadoConPuntosSeparados(resultado) {
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('[RESULTADO UI]: 📊 Renderizando resultado');
+    console.log(`[RESULTADO UI]: Modo: ${resultado.modo}`);
+    console.log(`[RESULTADO UI]: ID Carrera: ${resultado.idCarrera || 'N/A'}`);
+    console.log(`[RESULTADO UI]: Apuesta: ${resultado.apuesta}`);
+    console.log(`[RESULTADO UI]: Jugadores: ${resultado.jugadores.length}`);
+    console.log('═══════════════════════════════════════════════════════════');
+    
+    const container = document.getElementById('jugadoresContainer');
+    if (!container) {
+        console.error('[RESULTADO UI]: ❌ Container jugadoresContainer no encontrado');
+        return;
+    }
+    
+    container.innerHTML = '';
+    
+    // ✅ VALIDACIÓN: Verificar que tenemos datos
+    if (!resultado.jugadores || resultado.jugadores.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #ef4444;">
+                <h3>❌ Error</h3>
+                <p>No se pudieron cargar los resultados del duelo</p>
+            </div>
+        `;
+        console.error('[RESULTADO UI]: ❌ No hay jugadores en resultado');
+        return;
+    }
+    
+    const esCarrera = resultado.modo === 'carrera';
+    const icono = esCarrera ? '🎓' : '🌍';
+    const etiquetaModo = esCarrera ? 'CARRERA' : 'GENERAL';
+    
+    // ✅ Obtener mi ID de usuario
+    const miUserId = parseInt(window.USER_DATA?.id_usuario);
+    
+    // ✅ RENDERIZAR CADA JUGADOR
+    resultado.jugadores.forEach((jugador, index) => {
+        console.log(`[RESULTADO UI]: 👤 Procesando jugador ${jugador.username}`);
+        console.log(`  - userId: ${jugador.userId}`);
+        console.log(`  - puntosGlobales: ${jugador.puntosGlobales || 0}`);
+        console.log(`  - puntosCarrera: ${jugador.puntosCarrera || 0}`);
+        console.log(`  - cambioGlobal: ${jugador.cambioGlobal || 0}`);
+        console.log(`  - cambioCarrera: ${jugador.cambioCarrera || 0}`);
+        
+        const esYo = parseInt(jugador.userId) === miUserId;
+        const esGanador = !resultado.esEmpate && parseInt(jugador.userId) === parseInt(resultado.ganadorId);
+        const esEmpate = resultado.esEmpate;
+        
+        // ════════════════════════════════════════════════════════════
+        // 📊 CONSTRUIR SECCIÓN DE PUNTOS PRINCIPALES
+        // ════════════════════════════════════════════════════════════
+        
+        let puntosPartidaHTML = '';
+        let cambioGlobalesHTML = '';
+        let cambioCarreraHTML = '';
+        
+        // 1️⃣ PUNTOS OBTENIDOS EN LA PARTIDA (según modo)
+        if (esCarrera) {
+            // MODO CARRERA: Mostrar puntos de carrera ganados
+            puntosPartidaHTML = `
+                <div class="puntos-obtenidos carrera">
+                    <span class="icono">🎓</span>
+                    <span class="cantidad">${jugador.puntosCarrera || 0}</span>
+                    <span class="label">Pts Carrera (Preguntas)</span>
+                </div>
+            `;
+        } else {
+            // MODO GENERAL: Mostrar puntos globales ganados
+            puntosPartidaHTML = `
+                <div class="puntos-obtenidos general">
+                    <span class="icono">🌍</span>
+                    <span class="cantidad">${jugador.puntosGlobales || 0}</span>
+                    <span class="label">Pts Globales (Preguntas)</span>
+                </div>
+            `;
+        }
+        
+        // 2️⃣ CAMBIO NETO EN PUNTOS GLOBALES (SIEMPRE se muestra)
+        const cambioGlobal = jugador.cambioGlobal || 0;
+        const esPositivoGlobal = cambioGlobal >= 0;
+        const signoGlobal = esPositivoGlobal ? '+' : '';
+        const claseGlobal = esPositivoGlobal ? 'positivo' : 'negativo';
+        
+        cambioGlobalesHTML = `
+            <div class="cambio-puntos global ${claseGlobal}">
+                <span class="icono">💎</span>
+                <span class="cantidad">${signoGlobal}${cambioGlobal}</span>
+                <span class="label">Cambio Neto Global</span>
+                <span class="sublabel">(Apuesta + Bonus + Recompensas)</span>
+            </div>
+        `;
+        
+        // 3️⃣ CAMBIO EN PUNTOS DE CARRERA (SOLO si es modo carrera)
+        if (esCarrera && jugador.cambioCarrera !== undefined && jugador.cambioCarrera !== 0) {
+            const cambioCarrera = jugador.cambioCarrera;
+            const esPositivoCarrera = cambioCarrera >= 0;
+            const signoCarrera = esPositivoCarrera ? '+' : '';
+            const claseCarrera = esPositivoCarrera ? 'positivo' : 'negativo';
+            
+            cambioCarreraHTML = `
+                <div class="cambio-puntos carrera ${claseCarrera}">
+                    <span class="icono">🎓</span>
+                    <span class="cantidad">${signoCarrera}${cambioCarrera}</span>
+                    <span class="label">Cambio Neto Carrera</span>
+                    <span class="sublabel">(Total Acumulado)</span>
+                </div>
+            `;
+        }
+        
+        // ════════════════════════════════════════════════════════════
+        // 📝 DESGLOSE DETALLADO CON ETIQUETAS DE TIPO
+        // ════════════════════════════════════════════════════════════
+        
+        let desgloseHTML = '';
+        
+        if (jugador.desglose && Array.isArray(jugador.desglose) && jugador.desglose.length > 0) {
+            console.log(`[RESULTADO UI]: Procesando ${jugador.desglose.length} items de desglose`);
+            
+            desgloseHTML = jugador.desglose.map(item => {
+                const valorStr = item.esPositivo ? `+${item.valor}` : `${item.valor}`;
+                const claseItem = item.esPositivo ? 'positivo' : 'negativo';
+                
+                // ✅ Badge de tipo de punto
+                let badgeTipo = '';
+                
+                if (item.tipo === 'carrera') {
+                    badgeTipo = '<span class="badge-tipo carrera">🎓 Carrera</span>';
+                } else if (item.tipo === 'global') {
+                    badgeTipo = '<span class="badge-tipo global">💎 Global</span>';
+                }
+                
+                return `
+                    <div class="desglose-item ${claseItem}">
+                        <span class="concepto">${item.concepto}</span>
+                        ${badgeTipo}
+                        <span class="valor">${valorStr}</span>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            console.warn(`[RESULTADO UI]: ⚠️ Sin desglose para jugador ${jugador.username}`);
+            desgloseHTML = '<p class="no-desglose">Sin desglose disponible</p>';
+        }
+        
+        // ════════════════════════════════════════════════════════════
+        // 🏆 CARD COMPLETA DEL JUGADOR
+        // ════════════════════════════════════════════════════════════
+        
+        const cardHTML = `
+            <div class="jugador-card ${esGanador ? 'ganador' : ''} ${esEmpate ? 'empate' : ''} ${esYo ? 'mi-card' : ''}">
+                <!-- Header -->
+                <div class="jugador-header">
+                    <img src="${jugador.foto_perfil || '/uploads/default_avatar.png'}" 
+                         alt="${jugador.username}" 
+                         class="jugador-avatar"
+                         onerror="this.src='/uploads/default_avatar.png'">
+                    <div class="jugador-info">
+                        <h3>${esYo ? '👤 ' : ''}${jugador.username}</h3>
+                        ${esGanador ? '<span class="badge-ganador">👑 GANADOR</span>' : ''}
+                        ${esEmpate ? '<span class="badge-empate">🤝 EMPATE</span>' : ''}
+                    </div>
+                </div>
+                
+                <!-- Modo del Duelo -->
+                <div class="modo-duelo">
+                    <span class="icono-modo">${icono}</span>
+                    <span class="texto-modo">MODO ${etiquetaModo}</span>
+                </div>
+                
+                <!-- Puntos Principales -->
+                <div class="puntos-principales">
+                    ${puntosPartidaHTML}
+                    ${cambioGlobalesHTML}
+                    ${cambioCarreraHTML}
+                </div>
+                
+                <!-- Estadísticas de Rendimiento -->
+                <div class="stats-rendimiento">
+                    <div class="stat-item">
+                        <span class="stat-label">Correctas</span>
+                        <span class="stat-valor">${jugador.respuestasCorrectas || 0}/${(jugador.respuestasCorrectas || 0) + (jugador.respuestasIncorrectas || 0)}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Precisión</span>
+                        <span class="stat-valor">${jugador.porcentaje || 0}%</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Racha Máxima</span>
+                        <span class="stat-valor">🔥 ${jugador.rachaMaxima || 0}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Tiempo Promedio</span>
+                        <span class="stat-valor">⏱️ ${jugador.tiempoPromedio || 0}s</span>
+                    </div>
+                    ${jugador.gambitoActivado ? `
+                        <div class="stat-item gambito ${jugador.cumplioGambito ? 'exitoso' : 'fallido'}">
+                            <span class="stat-label">Gambito</span>
+                            <span class="stat-valor">${jugador.cumplioGambito ? '✅ Exitoso' : '❌ Fallido'}</span>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <!-- Puntos Finales -->
+                <div class="puntos-finales">
+                    <div class="puntos-totales">
+                        <span class="label">💎 Total Global Final</span>
+                        <span class="valor">${jugador.puntosFinal || jugador.puntosIniciales || 0} pts</span>
+                    </div>
+                </div>
+                
+                <!-- Toggle Desglose -->
+                <button class="btn-toggle-desglose" onclick="toggleDesglose(${index})">
+                    📊 Ver Desglose Detallado
+                    <span class="icono-toggle">▼</span>
+                </button>
+                
+                <!-- Desglose (Inicialmente Oculto) -->
+                <div class="desglose-container" id="desglose-${index}" style="display: none;">
+                    <h4>Desglose Detallado</h4>
+                    <div class="desglose-items">
+                        ${desgloseHTML}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        container.innerHTML += cardHTML;
     });
     
-    if (cronometroInterval) clearInterval(cronometroInterval);
+    console.log('[RESULTADO UI]: ✅ Renderizado completado');
+    console.log('═══════════════════════════════════════════════════════════');
+}
+
+/**
+ * ✅ Toggle para mostrar/ocultar desglose
+ */
+function toggleDesglose(index) {
+    const desglose = document.getElementById(`desglose-${index}`);
+    const btn = event.target.closest('.btn-toggle-desglose');
+    const icono = btn.querySelector('.icono-toggle');
     
-    setTimeout(() => {
-        mostrarResultadoDetallado(resultado);
-    }, 1000);
+    if (!desglose) {
+        console.error(`[TOGGLE DESGLOSE]: Elemento desglose-${index} no encontrado`);
+        return;
+    }
+    
+    if (desglose.style.display === 'none') {
+        desglose.style.display = 'block';
+        icono.textContent = '▲';
+        btn.classList.add('abierto');
+    } else {
+        desglose.style.display = 'none';
+        icono.textContent = '▼';
+        btn.classList.remove('abierto');
+    }
+}
+
+// ================================================================
+// 🎧 LISTENER MEJORADO: Recibir resultado del servidor
+// ================================================================
+
+socket.on('duelo:finalizado', (resultado) => {
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('[SOCKET]: 📊 RESULTADO RECIBIDO DEL SERVIDOR');
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('[SOCKET]: Modo:', resultado.modo);
+    console.log('[SOCKET]: Ganador ID:', resultado.ganadorId);
+    console.log('[SOCKET]: Es empate:', resultado.esEmpate);
+    console.log('[SOCKET]: Apuesta:', resultado.apuesta);
+    console.log('[SOCKET]: ID Carrera:', resultado.idCarrera || 'N/A');
+    console.log('[SOCKET]: Jugadores recibidos:', resultado.jugadores?.length || 0);
+    
+    // ✅ VALIDACIÓN CRÍTICA: Verificar que tenemos datos
+    if (!resultado.jugadores || resultado.jugadores.length === 0) {
+        console.error('[SOCKET]: ❌ ERROR - No hay jugadores en resultado');
+        console.error('[SOCKET]: Resultado completo:', JSON.stringify(resultado, null, 2));
+        
+        // Mostrar error al usuario
+        const modal = document.getElementById('modalResultadoDetallado');
+        if (modal) {
+            modal.innerHTML = `
+                <div style="text-align: center; padding: 40px; background: white; border-radius: 15px;">
+                    <h2 style="color: #ef4444;">❌ Error al cargar resultados</h2>
+                    <p>No se recibieron datos válidos del servidor</p>
+                    <button onclick="location.href='/matchmaking'" style="margin-top: 20px; padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        Volver al Portal
+                    </button>
+                </div>
+            `;
+            modal.style.display = 'flex';
+            modal.classList.add('visible');
+        }
+        return;
+    }
+    
+    // Cada jugador debe tener estos campos (validar)
+    resultado.jugadores.forEach((j, idx) => {
+        console.log(`[SOCKET]: Jugador ${idx + 1}:`);
+        console.log(`  - userId: ${j.userId}`);
+        console.log(`  - username: ${j.username}`);
+        console.log(`  - puntosGlobales: ${j.puntosGlobales}`);
+        console.log(`  - puntosCarrera: ${j.puntosCarrera}`);
+        console.log(`  - cambioGlobal: ${j.cambioGlobal}`);
+        console.log(`  - cambioCarrera: ${j.cambioCarrera}`);
+        console.log(`  - desglose items: ${j.desglose?.length || 0}`);
+    });
+    
+    // Ocultar arena
+    const arenaContainer = document.getElementById('arenaContainer');
+    const draftContainer = document.getElementById('draftContainer');
+    
+    if (arenaContainer) arenaContainer.style.display = 'none';
+    if (draftContainer) draftContainer.style.display = 'none';
+    
+    // Mostrar modal de resultado
+    const modal = document.getElementById('modalResultadoDetallado');
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('visible');
+    }
+    
+    // ✅ Renderizar con sistema corregido
+    try {
+        renderizarResultadoConPuntosSeparados(resultado);
+        console.log('[SOCKET]: ✅ Renderizado exitoso');
+    } catch (error) {
+        console.error('[SOCKET]: ❌ Error en renderizado:', error);
+        console.error('[SOCKET]: Stack:', error.stack);
+    }
+    
+    // Lanzar confetti si ganamos
+    const userId = parseInt(window.USER_DATA?.id_usuario);
+    if (resultado.ganadorId === userId && !resultado.esEmpate) {
+        console.log('[SOCKET]: 🎉 Usuario ganó - Lanzando confetti');
+        if (typeof lanzarConfetti === 'function') {
+            lanzarConfetti();
+        }
+    }
+    
+    console.log('[SOCKET]: ✅ Proceso completado');
+    console.log('═══════════════════════════════════════════════════════════');
 });
+
+/**
+ * ✅ Toggle para mostrar/ocultar desglose
+ */
+function toggleDesglose(index) {
+    const desglose = document.getElementById(`desglose-${index}`);
+    const btn = event.target.closest('.btn-toggle-desglose');
+    const icono = btn.querySelector('.icono-toggle');
+    
+    if (desglose.style.display === 'none') {
+        desglose.style.display = 'block';
+        icono.textContent = '▲';
+        btn.classList.add('abierto');
+    } else {
+        desglose.style.display = 'none';
+        icono.textContent = '▼';
+        btn.classList.remove('abierto');
+    }
+}
+
+// ================================================================
+// 🎧 LISTENER MEJORADO: Recibir resultado del servidor
+// ================================================================
+
+socket.on('duelo:finalizado', (resultado) => {
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('[SOCKET]: 📊 RESULTADO RECIBIDO');
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('[SOCKET]: Modo:', resultado.modo);
+    console.log('[SOCKET]: Ganador ID:', resultado.ganadorId);
+    console.log('[SOCKET]: Es empate:', resultado.esEmpate);
+    console.log('[SOCKET]: Apuesta:', resultado.apuesta);
+    console.log('[SOCKET]: ID Carrera:', resultado.idCarrera || 'N/A');
+    console.log('[SOCKET]: Jugadores:', resultado.jugadores.length);
+    actualizarEstadoDuelo(false);
+    // Ocultar arena
+    document.getElementById('arenaContainer').style.display = 'none';
+    document.getElementById('draftContainer').style.display = 'none';
+    
+    // Mostrar modal de resultado
+    const modal = document.getElementById('modalResultadoDetallado');
+    modal.style.display = 'flex';
+    modal.classList.add('visible');
+    
+    // ✅ Renderizar con sistema corregido
+    renderizarResultadoConPuntosSeparados(resultado);
+    
+    // Lanzar confetti si ganamos
+    const userId = parseInt(window.USER_DATA?.id_usuario);
+    if (resultado.ganadorId === userId && !resultado.esEmpate) {
+        console.log('[SOCKET]: 🎉 Lanzando confetti (usuario ganó)');
+        lanzarConfetti();
+    }
+    
+    console.log('[SOCKET]: ✅ Interfaz actualizada');
+    console.log('═══════════════════════════════════════════════════════════');
+});
+
+// ================================================================
+// 🎨 ESTILOS CSS MEJORADOS CON SUBLABELS
+// ================================================================
+
+const estilosResultadosMejorados = `
+<style>
+/* Sublabels en cards de puntos */
+.puntos-obtenidos .sublabel,
+.cambio-puntos .sublabel {
+    font-size: 9px;
+    opacity: 0.7;
+    font-style: italic;
+    margin-top: 2px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Modo duelo más visible */
+.modo-duelo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border-left: 4px solid;
+    border-color: var(--color-acento);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modo-duelo .icono-modo {
+    font-size: 28px;
+}
+
+.modo-duelo .texto-modo {
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 1.5px;
+    color: var(--color-acento);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Cards de puntos más claras */
+.puntos-obtenidos,
+.cambio-puntos {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    min-height: 120px;
+    justify-content: center;
+}
+
+.puntos-obtenidos:hover,
+.cambio-puntos:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Variantes de color más intensas */
+.puntos-obtenidos.carrera {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.08));
+    border-color: rgba(139, 92, 246, 0.4);
+}
+
+.puntos-obtenidos.general {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.08));
+    border-color: rgba(59, 130, 246, 0.4);
+}
+
+.cambio-puntos.positivo {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.08));
+    border-color: rgba(34, 197, 94, 0.4);
+}
+
+.cambio-puntos.negativo {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.08));
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+.puntos-obtenidos .icono,
+.cambio-puntos .icono {
+    font-size: 36px;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.puntos-obtenidos .cantidad,
+.cambio-puntos .cantidad {
+    font-size: 32px;
+    font-weight: 900;
+    margin-bottom: 8px;
+    color: white;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.puntos-obtenidos .label,
+.cambio-puntos .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    opacity: 0.9;
+    font-weight: 700;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.3;
+}
+
+/* Badges de tipo mejorados */
+.badge-tipo {
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 800;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-tipo.carrera {
+    background: rgba(139, 92, 246, 0.25);
+    color: #c084fc;
+    border: 1.5px solid rgba(139, 92, 246, 0.4);
+}
+
+.badge-tipo.global {
+    background: rgba(59, 130, 246, 0.25);
+    color: #60a5fa;
+    border: 1.5px solid rgba(59, 130, 246, 0.4);
+}
+
+/* Desglose items mejorado */
+.desglose-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    background: rgba(255, 255, 255, 0.03);
+    border-left: 4px solid transparent;
+    gap: 12px;
+    transition: all 0.2s ease;
+}
+
+.desglose-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateX(4px);
+}
+
+.desglose-item.positivo {
+    border-left-color: #22c55e;
+    background: rgba(34, 197, 94, 0.06);
+}
+
+.desglose-item.negativo {
+    border-left-color: #ef4444;
+    background: rgba(239, 68, 68, 0.06);
+}
+
+.desglose-item .concepto {
+    flex: 1;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.desglose-item .valor {
+    font-weight: 800;
+    font-size: 15px;
+    min-width: 80px;
+    text-align: right;
+}
+
+.desglose-item.positivo .valor {
+    color: #22c55e;
+    text-shadow: 0 0 8px rgba(34, 197, 94, 0.3);
+}
+
+.desglose-item.negativo .valor {
+    color: #ef4444;
+    text-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+}
+</style>
+`;
+
+// ✅ Inyectar estilos mejorados
+document.head.insertAdjacentHTML('beforeend', estilosResultadosMejorados);
+
+console.log('[RESULTADOS]: ✅ Sistema de visualización mejorado inicializado');
+const estilosPuntosCSS = `
+<style>
+/* ============================================================ */
+/* SISTEMA DE PUNTOS - ESTILOS MEJORADOS */
+/* ============================================================ */
+
+.modo-duelo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--color-acento);
+}
+
+.modo-duelo .icono-modo {
+    font-size: 24px;
+}
+
+.modo-duelo .texto-modo {
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: var(--color-acento);
+}
+
+.puntos-principales {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.puntos-obtenidos,
+.cambio-puntos {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.puntos-obtenidos.carrera {
+    background: linear-gradient(135deg, rgba(100, 50, 200, 0.15), rgba(100, 50, 200, 0.05));
+    border-color: rgba(100, 50, 200, 0.3);
+}
+
+.puntos-obtenidos.general {
+    background: linear-gradient(135deg, rgba(50, 150, 255, 0.15), rgba(50, 150, 255, 0.05));
+    border-color: rgba(50, 150, 255, 0.3);
+}
+
+.cambio-puntos.positivo {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.05));
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.cambio-puntos.negativo {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.puntos-obtenidos .icono,
+.cambio-puntos .icono {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.puntos-obtenidos .cantidad,
+.cambio-puntos .cantidad {
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.puntos-obtenidos .label,
+.cambio-puntos .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.8;
+    font-weight: 600;
+}
+
+/* Desglose Detallado */
+.btn-toggle-desglose {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.btn-toggle-desglose:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-toggle-desglose .icono-toggle {
+    font-size: 10px;
+    transition: transform 0.3s ease;
+}
+
+.desglose-container {
+    margin-top: 15px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.desglose-container h4 {
+    font-size: 14px;
+    margin-bottom: 12px;
+    color: var(--color-acento);
+    font-weight: 700;
+}
+
+.desglose-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.desglose-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    background: rgba(255, 255, 255, 0.02);
+    border-left: 3px solid transparent;
+    gap: 10px;
+}
+
+.desglose-item.positivo {
+    border-left-color: #22c55e;
+    background: rgba(34, 197, 94, 0.05);
+}
+
+.desglose-item.negativo {
+    border-left-color: #ef4444;
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.desglose-item .concepto {
+    flex: 1;
+    font-weight: 500;
+}
+
+.desglose-item .tipo-punto {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.desglose-item .tipo-punto.carrera {
+    background: rgba(100, 50, 200, 0.2);
+    color: #c084fc;
+    border: 1px solid rgba(100, 50, 200, 0.3);
+}
+
+.desglose-item .tipo-punto.global {
+    background: rgba(50, 150, 255, 0.2);
+    color: #60a5fa;
+    border: 1px solid rgba(50, 150, 255, 0.3);
+}
+
+.desglose-item .valor {
+    font-weight: 700;
+    font-size: 14px;
+    min-width: 60px;
+    text-align: right;
+}
+
+.desglose-item.positivo .valor {
+    color: #22c55e;
+}
+
+.desglose-item.negativo .valor {
+    color: #ef4444;
+}
+
+/* Stats de Rendimiento */
+.stats-rendimiento {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+}
+
+.stat-item.gambito {
+    grid-column: span 2;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(168, 85, 247, 0.05));
+    border: 1px solid rgba(168, 85, 247, 0.2);
+}
+
+.stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.7;
+    font-weight: 600;
+}
+
+.stat-valor {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* Puntos Finales */
+.puntos-finales {
+    padding: 15px;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(168, 85, 247, 0.05));
+    border-radius: 12px;
+    border: 2px solid rgba(168, 85, 247, 0.3);
+    margin-top: 15px;
+}
+
+.puntos-totales {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.puntos-totales .label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+.puntos-totales .valor {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--color-acento);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .puntos-principales {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-rendimiento {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+`;
+
+// ✅ Inyectar estilos en el documento
+document.head.insertAdjacentHTML('beforeend', estilosPuntosCSS);
 
 
 
@@ -1453,22 +2849,26 @@ if (fromMatchmaking && matchmakingSalaId) {
 // ================================================================
 // INVITACIONES DE LOBBY Y BD
 // ================================================================
-function buscarJugadorEnLobby(idOponente, username) {
+function buscarJugadorEnLobby(idOponente, username, modoDeseado = 'general') {
     if (idOponente === user.id_usuario) {
         mostrarNotificacion('No puedes desafiarte a ti mismo', 'error');
         return;
     }
     
     console.log(`[LOBBY]: Invitando a ${username}`);
+    console.log(`[LOBBY]: Modo deseado: ${modoDeseado}`);
     
-    statusText.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Invitando a <strong>${username}</strong>...`;
+    const modoTexto = modoDeseado === 'carrera' ? 'de carrera' : 'general';
+    
+    statusText.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Invitando a <strong>${username}</strong> (${modoTexto})...`;
     btnBuscarCarrera.style.display = 'none';
     btnBuscarGeneral.style.display = 'none';
     btnCancelarBusqueda.style.display = 'inline-block';
 
     socket.emit('duelo:invitarLobby', { 
         idOponente: idOponente,
-        usernameOponente: username
+        usernameOponente: username,
+        modoDeseado: modoDeseado // ✅ NUEVO: Enviar modo explícito
     });
 }
 
@@ -1619,7 +3019,11 @@ socket.on('duelo:redirigirASala', ({ salaId, mensaje }) => {
         }, 1500);
     }
 });
-
+socket.emit('duelo_com:buscar:carrera', {
+    user,
+    dificultad: 'normal',  // ✅ Se convertirá en backend
+    apuesta: apuestaSeleccionada
+});
 socket.on('duelo:invitacionExpirada', (data) => {
     const modal = document.getElementById('modal-invitacion-lobby');
     if (modal) modal.remove();
@@ -1749,40 +3153,45 @@ socket.on('duelo:desafioRechazado', ({ mensaje }) => {
 // ================================================================
 // RANKINGS
 // ================================================================
-function renderizarRanking(container, jugadores) {
+
+function renderizarRanking(container, jugadores, modo = 'general') {
     container.innerHTML = '';
     
-    // ✅ VALIDACIÓN 1: Verificar que hay jugadores
-    if (!jugadores || jugadores.length === 0) {
-        container.innerHTML = '<p>No hay jugadores en este ranking.</p>';
+    if (!jugadores || !Array.isArray(jugadores) || jugadores.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #94a3b8;">No hay jugadores en este ranking.</p>';
         return;
     }
 
-    // ✅ VALIDACIÓN 2: Verificar que user existe
     if (!user || !user.id_usuario) {
         console.error('❌ ERROR: user.id_usuario no disponible en renderizarRanking');
         container.innerHTML = '<p style="color: red;">Error: No se pudo cargar tu información de usuario.</p>';
         return;
     }
 
-    console.log(`[RANKING]: Renderizando ${jugadores.length} jugadores`);
-    console.log(`[RANKING]: Usuario actual: ${user.id_usuario} (${user.username})`);
+    const miUserId = parseInt(user.id_usuario);
+    
+    console.log(`[RANKING]: ═══════════════════════════════════════`);
+    console.log(`[RANKING]: Renderizando ${jugadores.length} jugadores en modo ${modo}`);
+    console.log(`[RANKING]: Usuario actual: ${miUserId} (${user.username})`);
+    console.log(`[RANKING]: ═══════════════════════════════════════`);
 
     jugadores.forEach((jugador, index) => {
-        // ✅ VALIDACIÓN 3: Verificar que el jugador tiene id_usuario
         if (!jugador || !jugador.id_usuario) {
             console.warn(`[RANKING]: Jugador en índice ${index} sin id_usuario:`, jugador);
-            return; // Saltar este jugador
+            return;
         }
 
-        // Filtrar jugador actual
-        if (jugador.id_usuario === user.id_usuario) {
-            console.log(`[RANKING]: Filtrando jugador actual (${user.id_usuario})`);
+        const jugadorId = parseInt(jugador.id_usuario);
+        
+        if (jugadorId === miUserId) {
+            console.log(`[RANKING]: ⏩ Filtrando jugador actual (${miUserId})`);
             return;
         }
 
         const item = document.createElement('div');
         item.className = 'player-item';
+        
+        // ✅ CRÍTICO: Pasar modo correcto a los botones
         item.innerHTML = `
             <div style="display: flex; align-items: center; gap: 10px;">
                 <img src="${jugador.foto_perfil || '/uploads/default_avatar.png'}" 
@@ -1796,11 +3205,11 @@ function renderizarRanking(container, jugadores) {
             </div>
             <div class="player-actions">
                 <button class="btn-buscar" 
-                        onclick="buscarJugadorEnLobby(${jugador.id_usuario}, '${(jugador.username || '').replace(/'/g, "\\'")}')">
+                        onclick="buscarJugadorEnLobby(${jugadorId}, '${(jugador.username || '').replace(/'/g, "\\'")}', '${modo}')">
                     Invitar Lobby 👤
                 </button>
                 <button class="btn-notificar" 
-                        onclick="enviarDesafioBD(${jugador.id_usuario}, '${(jugador.username || '').replace(/'/g, "\\'")}', this)">
+                        onclick="enviarDesafioBD(${jugadorId}, '${(jugador.username || '').replace(/'/g, "\\'")}', this, '${modo}')">
                     Invitar Notif 📧
                 </button>
             </div>
@@ -1809,7 +3218,7 @@ function renderizarRanking(container, jugadores) {
         container.appendChild(item);
     });
 
-    console.log(`[RANKING]: ✅ Renderizado completado`);
+    console.log(`[RANKING]: ✅ Renderizado completado (${jugadores.length - 1} cards mostrados)`);
 }
 
 async function cargarRankingGlobal() {
@@ -1823,7 +3232,7 @@ async function cargarRankingGlobal() {
     try {
         container.innerHTML = '<p style="text-align: center;">⏳ Cargando ranking...</p>';
         
-        console.log('[RANKING GLOBAL]: Iniciando carga...');
+        console.log('[RANKING GLOBAL]: 🔍 Iniciando carga...');
         
         const response = await fetch('/api/ranking/global/com');
         
@@ -1833,7 +3242,7 @@ async function cargarRankingGlobal() {
         
         const jugadores = await response.json();
         
-        console.log('[RANKING GLOBAL]: Datos recibidos:', {
+        console.log('[RANKING GLOBAL]: ✅ Datos recibidos:', {
             totalJugadores: jugadores.length,
             primerosJugadores: jugadores.slice(0, 3).map(j => ({
                 id_usuario: j.id_usuario,
@@ -1842,7 +3251,8 @@ async function cargarRankingGlobal() {
             }))
         });
         
-        renderizarRanking(container, jugadores);
+        // ✅ PASAR 'general' COMO MODO
+        renderizarRanking(container, jugadores, 'general');
         
     } catch (error) {
         console.error('[RANKING GLOBAL ERROR]:', error);
@@ -1850,7 +3260,7 @@ async function cargarRankingGlobal() {
             <p style="color: red; text-align: center;">
                 ❌ Error al cargar ranking: ${error.message}
                 <br>
-                <button onclick="cargarRankingGlobal()" style="margin-top: 10px;">
+                <button onclick="cargarRankingGlobal()" style="margin-top: 10px; cursor: pointer; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px;">
                     🔄 Reintentar
                 </button>
             </p>
@@ -1858,19 +3268,40 @@ async function cargarRankingGlobal() {
     }
 }
 
-
 async function cargarRankingCarrera(idCarrera) {
+    const container = document.getElementById('rankingCarreraContainer');
+    
     if (!idCarrera) {
-        document.getElementById('rankingCarreraContainer').innerHTML = '<p>Selecciona una carrera.</p>';
+        container.innerHTML = '<p>Selecciona una carrera.</p>';
         return;
     }
     
     try {
+        container.innerHTML = '<p style="text-align: center;">⏳ Cargando ranking...</p>';
+        
         const response = await fetch(`/com/api/ranking/carrera/${idCarrera}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
         const jugadores = await response.json();
-        renderizarRanking(document.getElementById('rankingCarreraContainer'), jugadores);
+        
+        // ✅ PASAR 'carrera' COMO MODO
+        renderizarRanking(container, jugadores, 'carrera');
+        
     } catch (error) {
         console.error('Error cargando ranking de carrera:', error);
+        container.innerHTML = `
+            <p style="color: red; text-align: center;">
+                ❌ Error al cargar ranking
+                <br>
+                <button onclick="cargarRankingCarrera(document.getElementById('selectorCarrera').value)" 
+                        style="margin-top: 10px; cursor: pointer; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px;">
+                    🔄 Reintentar
+                </button>
+            </p>
+        `;
     }
 }
 
@@ -1924,61 +3355,107 @@ socket.on('duelo:error:sinCarrera', (data) => {
 // VARIABLES GLOBALES PARA CONTROL DE ABANDONOS
 // ================================================================
 
-let intentandoSalir = false;
-let dueloActivo = false;
+
 let tiempoUltimaInteraccion = Date.now();
 
 // ================================================================
 // 🔥 FUNCIÓN: Detectar si hay duelo activo
 // ================================================================
 
-function actualizarEstadoDuelo(activo) {
+
+
+function actualizarEstadoDuelo(activo, sala = null) {
     dueloActivo = activo;
     
+    const btnAbandono = document.getElementById('btnAbandonarDuelo');
+    
     if (activo) {
-        // Mostrar botón de rendirse
-        document.getElementById('btnAbandonarDuelo').style.display = 'block';
+        // ✅ DUELO ACTIVO - MOSTRAR BOTÓN
+        salaActual = sala?.salaId || salaId;
         
-        // Actualizar tiempo de última interacción
-        tiempoUltimaInteraccion = Date.now();
+        if (btnAbandono) {
+            btnAbandono.style.display = 'flex';
+            btnAbandono.classList.add('visible');
+            console.log('[ESTADO DUELO]: ✅ Botón ABANDONAR visible');
+        }
         
-        console.log('[DUELO]: Estado actualizado - ACTIVO');
+        console.log(`[ESTADO DUELO]: ✅ DUELO ACTIVO en sala ${salaActual}`);
+        
     } else {
-        // Ocultar botón de rendirse
-        document.getElementById('btnAbandonarDuelo').style.display = 'none';
+        // ❌ DUELO INACTIVO - OCULTAR BOTÓN
+        if (btnAbandono) {
+            btnAbandono.style.display = 'none';
+            btnAbandono.classList.remove('visible');
+            console.log('[ESTADO DUELO]: ❌ Botón ABANDONAR oculto');
+        }
         
-        console.log('[DUELO]: Estado actualizado - INACTIVO');
+        salaActual = null;
+        modoActualDuelo = null;
+        idCarreraActual = null;
+        
+        console.log('[ESTADO DUELO]: ❌ Duelo INACTIVO');
     }
 }
-
 // ================================================================
 // 🛡️ PREVENCIÓN DE SALIDA ACCIDENTAL (beforeunload)
 // ================================================================
 
-window.addEventListener('beforeunload', (event) => {
-    // Solo prevenir si hay un duelo activo
-    if (dueloActivo && !intentandoSalir) {
-        event.preventDefault();
-        event.returnValue = '¿Estás seguro de que quieres salir? Perderás el duelo y tus puntos apostados.';
-        return event.returnValue;
+
+window.addEventListener('load', () => {
+    if (window.location.pathname.includes('/competitivo/sala/')) {
+        // Agregar entrada al historial para poder detectar "atrás"
+        window.history.pushState(null, '', window.location.href);
+        console.log('[INIT]: ✅ Prevención de "atrás" activada');
     }
 });
+
 
 // ================================================================
 // 🚪 INTERCEPTAR NAVEGACIÓN DEL BROWSER (popstate)
 // ================================================================
 
+
+
 window.addEventListener('popstate', (event) => {
     if (dueloActivo && !intentandoSalir) {
-        event.preventDefault();
+        console.log('[POPSTATE]: ⚠️ Usuario presionó ATRÁS');
         
-        // Restaurar el estado en el historial
+        // Prevenir navegación
+        event.preventDefault();
         window.history.pushState(null, '', window.location.href);
         
-        // Mostrar modal de confirmación
+        // Marcar motivo
+        motivoSalida = 'navegacion';
+        
+        // Mostrar modal
         mostrarModalConfirmarSalida('navegacion');
     }
 });
+
+window.addEventListener('beforeunload', (e) => {
+    if (dueloActivo && !intentandoSalir) {
+        console.log('[BEFOREUNLOAD]: ⚠️ Usuario intenta cerrar navegador');
+        
+        // ✅ MARCAR MOTIVO
+        motivoSalida = 'navegacion';
+        
+        // ✅ INFORMAR AL SERVIDOR INMEDIATAMENTE
+        socket.emit('duelo:abandonoRapido', {
+            salaId: salaActual || salaId,
+            userId: user.id_usuario,
+            motivo: 'navegacion'
+        });
+        
+        // Mostrar advertencia estándar del navegador
+        e.preventDefault();
+        e.returnValue = '¿Seguro que quieres salir? Perderás el duelo.';
+        return e.returnValue;
+    }
+});
+// Agregar estado inicial al historial
+if (window.location.pathname.includes('/competitivo/sala/')) {
+    window.history.pushState(null, '', window.location.href);
+}
 
 // Agregar estado inicial al historial para poder detectar "atrás"
 if (window.location.pathname.includes('/competitivo/sala/')) {
@@ -1996,7 +3473,39 @@ document.getElementById('btnAbandonarDuelo').addEventListener('click', () => {
 });
 
 // ================================================================
-// 📱 FUNCIÓN: Mostrar Modal de Confirmación
+// 🚪 BOTÓN DE ABANDONAR DUELO - CLICK EVENT
+// =
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btnAbandono = document.getElementById('btnAbandonarDuelo');
+    
+    if (btnAbandono) {
+        btnAbandono.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (!dueloActivo) {
+                console.warn('[ABANDONO BTN]: No hay duelo activo');
+                return;
+            }
+            
+            console.log('[ABANDONO BTN]: 🚪 Usuario presionó ABANDONAR');
+            
+            // ✅ MARCAR COMO ABANDONO VOLUNTARIO
+            motivoSalida = 'voluntario';
+            
+            // Mostrar modal
+            mostrarModalConfirmarSalida('voluntario');
+        });
+        
+        console.log('[INIT]: ✅ Listener de botón abandonar registrado');
+    } else {
+        console.error('[INIT]: ❌ Botón #btnAbandonarDuelo NO encontrado en DOM');
+    }
+});
+
+// ================================================================
+// 📱 MOSTRAR MODAL DE CONFIRMACIÓN
 // ================================================================
 
 function mostrarModalConfirmarSalida(motivo) {
@@ -2005,43 +3514,50 @@ function mostrarModalConfirmarSalida(motivo) {
     const penalizacionInfo = document.getElementById('penalizacionInfo');
     const cantidadPenalizacion = document.getElementById('cantidadPenalizacion');
     
-    // Obtener apuesta actual del duelo
+    if (!modal) {
+        console.error('[MODAL SALIDA]: ❌ Modal no encontrado');
+        return;
+    }
+    
+    // ✅ Obtener apuesta y modo actual
     const apuestaTexto = document.getElementById('apuestaActual')?.textContent || '0';
     const apuesta = parseInt(apuestaTexto.match(/\d+/)?.[0] || 0);
+    
+    // ✅ Detectar modo actual
+    const esCarrera = modoActualDuelo === 'carrera';
+    const tipoPuntos = esCarrera ? 'de carrera' : 'globales';
     
     let mensaje = '';
     let penalizacion = 0;
     
-    // Calcular penalización según motivo
-    if (motivo === 'voluntario') {
-        if (apuesta > 0) {
-            penalizacion = Math.floor(apuesta * 0.30); // 30%
-            mensaje = `⚠️ Si te rindes:\n\n` +
-                     `• Perderás ${penalizacion} puntos (30% de apuesta)\n` +
-                     `• Tu oponente ganará ${penalizacion} puntos\n` +
-                     `• Se registrará como derrota\n\n` +
-                     `💡 Consejo: Si continúas jugando, aún puedes ganar.`;
-        } else {
-            mensaje = `⚠️ Si te rindes:\n\n` +
-                     `• Se registrará como derrota\n` +
-                     `• Tu oponente ganará automáticamente\n` +
-                     `• Perderás tu racha actual\n\n` +
-                     `¿Estás seguro?`;
-        }
+    console.log('[MODAL SALIDA]:', {
+        motivo,
+        apuesta,
+        modo: modoActualDuelo,
+        esCarrera,
+        idCarrera: idCarreraActual
+    });
+    
+    // ✅ Calcular penalización según motivo
+    if (motivo === 'voluntario' || motivo === 'rendirse') {
+        // 30% para rendirse voluntariamente
+        penalizacion = Math.floor(apuesta * 0.30);
+        
+        mensaje = `⚠️ Si te rindes voluntariamente:\n\n` +
+                 `• Perderás ${penalizacion} puntos ${tipoPuntos} (30% de apuesta)\n` +
+                 `• Tu oponente ganará ${penalizacion} puntos ${tipoPuntos}\n` +
+                 `• Se registrará como derrota\n\n` +
+                 `💡 Consejo: Si continúas jugando, aún puedes ganar.`;
+        
     } else if (motivo === 'navegacion') {
-        if (apuesta > 0) {
-            penalizacion = Math.floor(apuesta * 0.40);
-            mensaje = `⚠️ Estás intentando salir del duelo:\n\n` +
-                     `• Si sales ahora perderás ${penalizacion} puntos (40%)\n` +
-                     `• El duelo contará como derrota\n` +
-                     `• Tu oponente ganará automáticamente\n\n` +
-                     `💡 ¿Quieres rendirte o continuar jugando?`;
-        } else {
-            mensaje = `⚠️ Estás saliendo del duelo:\n\n` +
-                     `• El duelo contará como derrota\n` +
-                     `• Tu oponente ganará automáticamente\n\n` +
-                     `¿Deseas continuar o rendirte?`;
-        }
+        // 50% por cerrar navegador
+        penalizacion = Math.floor(apuesta * 0.50);
+        
+        mensaje = `⚠️ Estás intentando salir del duelo:\n\n` +
+                 `• Si sales ahora perderás ${penalizacion} puntos ${tipoPuntos} (50%)\n` +
+                 `• El duelo contará como derrota\n` +
+                 `• Tu oponente ganará automáticamente\n\n` +
+                 `💡 ¿Quieres rendirte o continuar jugando?`;
     }
     
     mensajeSalida.textContent = mensaje;
@@ -2056,57 +3572,130 @@ function mostrarModalConfirmarSalida(motivo) {
     
     // Mostrar modal
     modal.classList.add('visible');
+    
+    console.log(`[MODAL SALIDA]: Modal mostrado - Penalización: ${penalizacion} pts ${tipoPuntos}`);
 }
 
 // ================================================================
-// ❌ BOTÓN: Cancelar Salida
+// ❌ BOTÓN: CANCELAR SALIDA
 // ================================================================
 
-document.getElementById('btnCancelarSalida').addEventListener('click', () => {
-    const modal = document.getElementById('modalConfirmarSalida');
-    modal.classList.remove('visible');
+document.addEventListener('DOMContentLoaded', () => {
+    const btnCancelar = document.getElementById('btnCancelarSalida');
     
-    console.log('[ABANDONO]: Usuario canceló la salida');
+    if (btnCancelar) {
+        btnCancelar.addEventListener('click', () => {
+            const modal = document.getElementById('modalConfirmarSalida');
+            if (modal) {
+                modal.classList.remove('visible');
+            }
+            
+            // ✅ Resetear motivo
+            motivoSalida = null;
+            
+            console.log('[MODAL SALIDA]: Usuario CANCELÓ la salida');
+        });
+    }
 });
 
 // ================================================================
-// ✅ BOTÓN: Confirmar Rendición
+// ✅ BOTÓN: CONFIRMAR RENDICIÓN
 // ================================================================
 
-document.getElementById('btnConfirmarSalida').addEventListener('click', () => {
-    const modal = document.getElementById('modalConfirmarSalida');
-    modal.classList.remove('visible');
+document.addEventListener('DOMContentLoaded', () => {
+    const btnConfirmar = document.getElementById('btnConfirmarSalida');
     
-    intentandoSalir = true;
-    
-    console.log('[ABANDONO]: Usuario confirmó rendición');
-    
-    // Emitir evento al servidor
-    socket.emit('duelo:confirmarRendicion', {
-        salaId: salaActual || salaId,
-        userId: user.id_usuario
-    });
-    const timeoutRedirect = setTimeout(() => {
-        console.warn('[ABANDONO]: Timeout esperando respuesta del servidor, redirigiendo...');
-        window.location.href = '/matchmaking';
-    }, 5000);
-    
-    // Guardar timeout para cancelarlo si recibimos respuesta
-    window.abandonoTimeout = timeoutRedirect;
+    if (btnConfirmar) {
+        btnConfirmar.addEventListener('click', () => {
+            const modal = document.getElementById('modalConfirmarSalida');
+            if (modal) {
+                modal.classList.remove('visible');
+            }
+            
+            // ✅ MARCAR COMO INTENTO DE SALIDA CONFIRMADO
+            intentandoSalir = true;
+            
+            console.log('═══════════════════════════════════════════════════════════');
+            console.log('[CONFIRMAR SALIDA]: ✅ Usuario CONFIRMÓ rendición');
+            console.log(`   - Sala: ${salaActual || salaId}`);
+            console.log(`   - Usuario: ${user.id_usuario}`);
+            console.log(`   - Motivo: ${motivoSalida || 'rendirse'}`);
+            console.log(`   - Modo: ${modoActualDuelo}`);
+            console.log('═══════════════════════════════════════════════════════════');
+            
+            // ✅ EMITIR EVENTO CORRECTO AL SERVIDOR
+            socket.emit('duelo:confirmarRendicion', {
+                salaId: salaActual || salaId,
+                userId: user.id_usuario,
+                motivo: motivoSalida || 'rendirse',
+                modo: modoActualDuelo,
+                idCarrera: idCarreraActual
+            });
+            
+            // ✅ Mostrar indicador de procesamiento
+            const procesando = document.createElement('div');
+            procesando.id = 'procesandoRendicion';
+            procesando.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0,0,0,0.95);
+                color: white;
+                padding: 40px 60px;
+                border-radius: 20px;
+                z-index: 10001;
+                text-align: center;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            `;
+            procesando.innerHTML = `
+                <div style="
+                    width: 60px;
+                    height: 60px;
+                    border: 5px solid rgba(255,255,255,0.2);
+                    border-top-color: #3b82f6;
+                    border-radius: 50%;
+                    animation: spin 1s linear infinite;
+                    margin: 0 auto 20px auto;
+                "></div>
+                <h3 style="margin: 0; font-size: 18px;">Procesando rendición...</h3>
+                <style>
+                    @keyframes spin {
+                        to { transform: rotate(360deg); }
+                    }
+                </style>
+            `;
+            document.body.appendChild(procesando);
+            
+            // ✅ Timeout de seguridad (5 segundos)
+            const timeoutRedirect = setTimeout(() => {
+                console.warn('[CONFIRMAR SALIDA]: ⏰ Timeout - Redirigiendo manualmente');
+                window.location.href = '/matchmaking';
+            }, 5000);
+            
+            window.abandonoTimeout = timeoutRedirect;
+        });
+    }
 });
-
 // ================================================================
 // 📡 LISTENERS DE SERVIDOR
 // ================================================================
 
-// ✅ ABANDONO CONFIRMADO (TÚ ABANDONASTE)
 socket.on('duelo:abandonoConfirmado', (data) => {
+    console.log('═══════════════════════════════════════════════════════════');
     console.log('[ABANDONO CONFIRMADO]:', data);
+    console.log('═══════════════════════════════════════════════════════════');
     
     // ✅ Cancelar timeout de seguridad
     if (window.abandonoTimeout) {
         clearTimeout(window.abandonoTimeout);
         window.abandonoTimeout = null;
+    }
+    
+    // ✅ Quitar indicador de procesamiento
+    const procesando = document.getElementById('procesandoRendicion');
+    if (procesando) {
+        procesando.remove();
     }
     
     const pantalla = document.getElementById('pantallaAbandono');
@@ -2115,6 +3704,17 @@ socket.on('duelo:abandonoConfirmado', (data) => {
     const iconoAbandono = document.getElementById('iconoAbandono');
     const penalizacionAbandono = document.getElementById('penalizacionAbandono');
     const apuestaAbandono = document.getElementById('apuestaAbandono');
+    
+    if (!pantalla) {
+        console.error('[ABANDONO CONFIRMADO]: ❌ Pantalla no encontrada');
+        
+        // ✅ Fallback: Redirigir después de 2 segundos
+        alert(`Has abandonado. Penalización: -${data.penalizacion} pts`);
+        setTimeout(() => {
+            window.location.href = '/matchmaking';
+        }, 2000);
+        return;
+    }
     
     // Actualizar contenido
     iconoAbandono.textContent = data.icono || '😔';
@@ -2128,43 +3728,100 @@ socket.on('duelo:abandonoConfirmado', (data) => {
     pantalla.classList.add('visible');
     
     // Ocultar duelo
-    dueloView.style.display = 'none';
+    const dueloView = document.getElementById('dueloView');
+    if (dueloView) {
+        dueloView.style.display = 'none';
+    }
     
-    // Desactivar estado de duelo
-    dueloActivo = false;
+    // ✅ Desactivar estado de duelo
+    actualizarEstadoDuelo(false);
     
     // ✅ REDIRECCIÓN AUTOMÁTICA después de 3 segundos
     setTimeout(() => {
-        console.log('[ABANDONO]: Redirigiendo al portal...');
+        console.log('[ABANDONO CONFIRMADO]: 🚪 Redirigiendo al portal...');
         window.location.href = '/matchmaking';
     }, 3000);
 });
 
 
-// ✅ OPONENTE ABANDONÓ (TÚ GANASTE)
 socket.on('duelo:oponenteAbandono', (data) => {
+    console.log('═══════════════════════════════════════════════════════════');
     console.log('[OPONENTE ABANDONÓ]:', data);
+    console.log('═══════════════════════════════════════════════════════════');
     
     const pantalla = document.getElementById('pantallaVictoriaAbandono');
     const mensajeVictoria = document.getElementById('mensajeVictoriaAbandono');
     const gananciaVictoria = document.getElementById('gananciaVictoria');
     
+    if (!pantalla) {
+        console.error('[OPONENTE ABANDONÓ]: ❌ Pantalla no encontrada');
+        
+        // ✅ Mostrar notificación y redirigir
+        alert(`¡Victoria! Tu oponente abandonó. Ganaste ${data.ganancia || 0} pts`);
+        setTimeout(() => {
+            window.location.href = '/matchmaking';
+        }, 2000);
+        return;
+    }
+    
     // Actualizar contenido
     mensajeVictoria.textContent = data.mensaje;
     gananciaVictoria.textContent = `+${data.ganancia || 0} pts`;
     
-    // Lanzar confetti
+    // ✅ Lanzar confetti
     lanzarConfettiVictoria();
     
     // Mostrar pantalla
     pantalla.classList.add('visible');
     
     // Ocultar duelo
-    dueloView.style.display = 'none';
+    const dueloView = document.getElementById('dueloView');
+    if (dueloView) {
+        dueloView.style.display = 'none';
+    }
     
-    // Desactivar estado de duelo
-    dueloActivo = false;
+    // ✅ Desactivar estado de duelo
+    actualizarEstadoDuelo(false);
+    
+    // ✅ REDIRECCIÓN AUTOMÁTICA después de 5 segundos
+    setTimeout(() => {
+        window.location.href = '/matchmaking';
+    }, 5000);
 });
+
+
+// ================================================================
+// 🔄 BOTONES DE VOLVER AL PORTAL
+// ================================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btnVolverAbandono = document.getElementById('btnVolverPortalAbandono');
+    const btnVolverVictoria = document.getElementById('btnVolverPortalVictoria');
+    const btnVolverError = document.getElementById('btnVolverPortalError');
+    
+    if (btnVolverAbandono) {
+        btnVolverAbandono.addEventListener('click', () => {
+            console.log('[VOLVER PORTAL]: Abandono');
+            if (window.abandonoTimeout) clearTimeout(window.abandonoTimeout);
+            window.location.href = '/matchmaking';
+        });
+    }
+    
+    if (btnVolverVictoria) {
+        btnVolverVictoria.addEventListener('click', () => {
+            console.log('[VOLVER PORTAL]: Victoria');
+            window.location.href = '/matchmaking';
+        });
+    }
+    
+    if (btnVolverError) {
+        btnVolverError.addEventListener('click', () => {
+            console.log('[VOLVER PORTAL]: Error');
+            window.location.href = '/matchmaking';
+        });
+    }
+});
+
 
 // ✅ OPONENTE DESCONECTADO (esperando reconexión)
 socket.on('duelo:oponenteDesconectado', (data) => {
@@ -2286,6 +3943,7 @@ socket.on('duelo:errorRegistrado', (data) => {
 // 🎨 FUNCIÓN: Lanzar confetti en victoria por abandono
 // ================================================================
 
+
 function lanzarConfettiVictoria() {
     const canvas = document.getElementById('confettiVictoria');
     if (!canvas) return;
@@ -2365,18 +4023,7 @@ socket.on('duelo:dueloListo', (data) => {
 const originalDueloFinalizado = socket._callbacks['$duelo:finalizado'];
 socket.off('duelo:finalizado');
 
-socket.on('duelo:finalizado', (data) => {
-    console.log('[DUELO FINALIZADO]: Desactivando protección de abandono...');
-    
-    // Desactivar protección
-    actualizarEstadoDuelo(false);
-    intentandoSalir = false;
-    
-    // Ejecutar handler original si existe
-    if (originalDueloFinalizado && originalDueloFinalizado.length > 0) {
-        originalDueloFinalizado[0](data);
-    }
-});
+
 
 // ================================================================
 // 🎯 MONITOREO DE ACTIVIDAD (para detectar AFK)
@@ -2562,15 +4209,16 @@ window.addEventListener('beforeunload', () => {
     }
 });
 
+// ✅✅✅ Detectar cierre de navegador
 window.addEventListener('beforeunload', (e) => {
     if (dueloActivo && !intentandoSalir) {
-        // Informar al servidor INMEDIATAMENTE que está abandonando
+        // ✅ Informar al servidor INMEDIATAMENTE
         socket.emit('duelo:abandonoRapido', {
             salaId: salaActual || salaId,
             userId: user.id_usuario
         });
         
-        // Mostrar mensaje de advertencia
+        // Mostrar advertencia
         e.preventDefault();
         e.returnValue = '';
     }

@@ -814,7 +814,6 @@ if (window.usuarioActual) {
         });
     });
 }
-initNotificacionController(); 
 socket.on('notificacion_recibida', () => {
             console.log('🔔 notificacion_recibida');
             cargarNotificaciones(); 

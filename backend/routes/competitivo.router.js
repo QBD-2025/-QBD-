@@ -1531,12 +1531,12 @@ router.get('/api/duelo/mis-duelos-activos', async (req, res) => {
                 d.id_retador,
                 d.id_defensor,
                 d.estado,
-                d.fecha_limite,
-                d.dificultad,
+                d.fecha_duelo,
+                d.id_dificultad,
                 d.apuesta,
                 u1.username as retador_username,
                 u2.username as defensor_username
-            FROM duelos d
+            FROM historial_duelos d
             LEFT JOIN usuario u1 ON d.id_retador = u1.id_usuario
             LEFT JOIN usuario u2 ON d.id_defensor = u2.id_usuario
             WHERE (d.id_retador = ? OR d.id_defensor = ?)

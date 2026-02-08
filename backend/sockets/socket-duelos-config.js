@@ -1,3 +1,4 @@
+//sockets/socket-duelos-config.js
 // =============================================
 // 🔌 CONFIGURACIÓN DE SOCKET.IO PARA DUELOS
 // =============================================
@@ -55,113 +56,275 @@ module.exports = function(io) {
         // 🚪 ABANDONO VOLUNTARIO
         // =============================================
         
-        socket.on('duelo:confirmarRendicion', async (data) => {
-            const { salaId, userId } = data;
+        socket.on('duelo:confirmarRendicion', async ({ salaId, userId }) => {
+            console.log('═══════════════════════════════════════════════════════════');
+            console.log('[RENDICIÓN]: 🏳️ Usuario confirma rendición');
+            console.log(`   - SalaId: ${salaId}`);
+            console.log(`   - UserId: ${userId}`);
+            console.log('═══════════════════════════════════════════════════════════');
+            
+            const duelo = activeDuels.get(salaId);
+            
+            if (!duelo) {
+                console.error('[RENDICIÓN]: ❌ Duelo no encontrado');
+                return socket.emit('duelo:errorCritico', {
+                    mensaje: 'El duelo no está disponible',
+                    codigo: 'ERR_DUELO_NO_ENCONTRADO'
+                });
+            }
+            
+            const jugador = duelo.jugadores[userId];
+            const oponenteId = Object.keys(duelo.jugadores).find(id => id !== userId.toString());
+            
+            if (!jugador || !oponenteId || !duelo.jugadores[oponenteId]) {
+                console.error('[RENDICIÓN]: ❌ Jugadores no válidos');
+                return socket.emit('duelo:errorCritico', {
+                    mensaje: 'Error al procesar rendición',
+                    codigo: 'ERR_JUGADORES_NO_ENCONTRADOS'
+                });
+            }
             
             try {
-                console.log(`[SOCKET] Procesando rendición de usuario ${userId} en sala ${salaId}`);
+                console.log('[RENDICIÓN]: 🔄 Procesando rendición...');
                 
-                await procesarAbandono48h(salaId, userId, MOTIVOS_ABANDONO.RENDIRSE, io);
+                // ✅ PROCESAR INMEDIATAMENTE (NO esperar timeout)
+                await procesarAbandono(
+                    salaId, 
+                    userId, 
+                    MOTIVOS_ABANDONO.RENDIRSE, // 30% penalización
+                    io,
+                    { esRendicion: true }
+                );
                 
-                // Limpiar conexión
-                usuariosConectados.delete(userId);
+                console.log('[RENDICIÓN]: ✅ Rendición procesada');
+                console.log('═══════════════════════════════════════════════════════════');
                 
             } catch (error) {
-                console.error('[SOCKET] Error procesando rendición:', error);
-                socket.emit('duelo:error', {
-                    mensaje: 'Error al procesar rendición',
-                    error: error.message
+                console.error('[RENDICIÓN ERROR]:', error);
+                socket.emit('duelo:errorCritico', {
+                    mensaje: 'Error al procesar rendición.',
+                    codigo: 'ERR_RENDICION_PROCESAMIENTO'
                 });
             }
         });
-        
+            
         // =============================================
         // ⚡ ABANDONO RÁPIDO (Cerrar navegador)
         // =============================================
         
-        socket.on('duelo:abandonoRapido', async (data) => {
-            const { salaId, userId } = data;
+        socket.on('duelo:abandonoRapido', async ({ salaId, userId }) => {
+            console.log('═══════════════════════════════════════════════════════════');
+            console.log('[ABANDONO RÁPIDO]: 🚪 Navegador cerrado');
+            console.log(`   - SalaId: ${salaId}`);
+            console.log(`   - UserId: ${userId}`);
+            console.log('═══════════════════════════════════════════════════════════');
             
             try {
-                console.log(`[SOCKET] Procesando abandono rápido de usuario ${userId}`);
+                // ✅✅✅ PROCESAR INMEDIATAMENTE
+                await procesarAbandono(
+                    salaId, 
+                    userId, 
+                    MOTIVOS_ABANDONO.NAVEGACION, // 50% penalización
+                    io
+                );
                 
-                await procesarAbandono48h(salaId, userId, MOTIVOS_ABANDONO.NAVEGACION, io);
-                
-                // Limpiar conexión
-                usuariosConectados.delete(userId);
+                console.log('[ABANDONO RÁPIDO]: ✅ Procesado');
+                console.log('═══════════════════════════════════════════════════════════');
                 
             } catch (error) {
-                console.error('[SOCKET] Error procesando abandono rápido:', error);
+                console.error('[ABANDONO RÁPIDO ERROR]:', error);
             }
         });
-        
-        // =============================================
-        // 🔌 DESCONEXIÓN (Pérdida de conexión)
-        // =============================================
-        
+    
         socket.on('disconnect', async () => {
-            console.log(`[SOCKET] Usuario desconectado: ${socket.id}`);
+            const userId = socket.userId;
             
-            // Buscar usuario por socket ID
-            let usuarioDesconectado = null;
-            for (const [userId, info] of usuariosConectados.entries()) {
-                if (info.socketId === socket.id) {
-                    usuarioDesconectado = { userId, ...info };
+            if (!userId) {
+                console.log('[DISCONNECT]: Socket sin userId');
+                return;
+            }
+            
+            console.log('═══════════════════════════════════════════════════════════');
+            console.log('[DISCONNECT]: 📡 Usuario desconectado');
+            console.log(`   - UserId: ${userId}`);
+            console.log(`   - SocketId: ${socket.id}`);
+            console.log('═══════════════════════════════════════════════════════════');
+            
+            // ✅ BUSCAR SI ESTÁ EN ALGÚN DUELO ACTIVO
+            let salaActiva = null;
+            let dueloActivo = null;
+            
+            for (const [salaId, duelo] of activeDuels.entries()) {
+                if (duelo.jugadores[userId]) {
+                    salaActiva = salaId;
+                    dueloActivo = duelo;
                     break;
                 }
             }
             
-            if (!usuarioDesconectado) {
-                console.log('[SOCKET] Usuario no encontrado en registro');
-                return;
-            }
-            
-            const { userId, salaId } = usuarioDesconectado;
-            
-            // Registrar desconexión con timer de 30 minutos
-            usuariosDesconectados.set(userId, {
-                salaId,
-                timestamp: Date.now(),
-                timeout: setTimeout(async () => {
-                    console.log(`[SOCKET] ⏰ Timeout de reconexión para usuario ${userId}`);
+            if (salaActiva && dueloActivo) {
+                console.log('[DISCONNECT]: 🎮 Usuario en duelo activo');
+                console.log(`   - Sala: ${salaActiva}`);
+                
+                const oponenteId = Object.keys(dueloActivo.jugadores).find(id => id !== userId.toString());
+                const oponente = dueloActivo.jugadores[oponenteId];
+                
+                if (oponenteId && oponente) {
+                    console.log(`[DISCONNECT]: 👤 Oponente: ${oponente.username}`);
                     
-                    try {
-                        // Aplicar penalización por timeout
-                        await procesarAbandono48h(salaId, userId, MOTIVOS_ABANDONO.TIMEOUT, io);
+                    // ✅✅✅ PAUSAR DUELO (detener timer, bloquear botones)
+                    pausarDuelo(salaActiva, dueloActivo, io);
+                    
+                    // ✅ NOTIFICAR AL OPONENTE
+                    if (oponente.socketId) {
+                        io.to(oponente.socketId).emit('duelo:oponenteDesconectado', {
+                            mensaje: `${dueloActivo.jugadores[userId].username} se desconectó`,
+                            tiempoEspera: 60,
+                            username: dueloActivo.jugadores[userId].username
+                        });
                         
-                        // Limpiar registros
-                        usuariosDesconectados.delete(userId);
-                        usuariosConectados.delete(userId);
-                        
-                    } catch (error) {
-                        console.error('[SOCKET] Error en timeout de reconexión:', error);
+                        console.log('[DISCONNECT]: ✅ Oponente notificado');
                     }
-                }, 30 * 60 * 1000) // 30 minutos
-            });
-            
-            // Notificar al oponente sobre la desconexión
-            io.to(salaId).emit('duelo:oponenteDesconectado', {
-                userId,
-                mensaje: 'Tu oponente se desconectó. Esperando reconexión (30 minutos)...',
-                tiempoEspera: 30 * 60 // en segundos
-            });
-            
-            // Registrar en base de datos
-            try {
-                await registrarDesconexion48h(userId, salaId, {});
-                console.log(`[SOCKET] Desconexión registrada en BD para usuario ${userId}`);
-            } catch (error) {
-                console.error('[SOCKET] Error registrando desconexión:', error);
+                    
+                    // ✅ REGISTRAR DESCONEXIÓN (60s para reconectar)
+                    registrarDesconexion(userId, salaActiva, dueloActivo);
+                    console.log('[DISCONNECT]: ⏰ Timer de reconexión iniciado (60s)');
+                    
+                    // ✅✅✅ TIMER: Si no reconecta en 60s → TIMEOUT
+                    dueloActivo.timeoutReconexion = setTimeout(async () => {
+                        const infoDesconexion = usuariosDesconectados.get(parseInt(userId));
+                        
+                        if (infoDesconexion) {
+                            console.log('═══════════════════════════════════════════════════════════');
+                            console.log('[TIMEOUT RECONEXIÓN]: ⏰ Usuario NO reconectó a tiempo');
+                            console.log(`   - UserId: ${userId}`);
+                            console.log(`   - Sala: ${salaActiva}`);
+                            console.log('═══════════════════════════════════════════════════════════');
+                            
+                            try {
+                                // ✅ PROCESAR COMO TIMEOUT (40% penalización)
+                                await procesarAbandono(
+                                    salaActiva, 
+                                    userId, 
+                                    MOTIVOS_ABANDONO.TIMEOUT, // 40% penalización
+                                    io
+                                );
+                                
+                                console.log('[TIMEOUT]: ✅ Abandono por timeout procesado');
+                                
+                            } catch (error) {
+                                console.error('[TIMEOUT ERROR]:', error);
+                            }
+                        }
+                    }, 60000); // 60 segundos
+                    
+                }
+            } else {
+                console.log('[DISCONNECT]: ℹ️ Usuario NO en duelo activo');
+                
+                // Limpiar normalmente
+                usuariosConectados.delete(parseInt(userId));
+                usuariosEnPortalCompetitivo.delete(parseInt(userId));
+                
+                // Remover de pools
+                poolCarreraFacil = poolCarreraFacil.filter(p => p.userId !== userId);
+                poolCarreraNormal = poolCarreraNormal.filter(p => p.userId !== userId);
+                poolCarreraDificil = poolCarreraDificil.filter(p => p.userId !== userId);
+                poolGeneral = poolGeneral.filter(p => p.userId !== userId);
             }
             
-            // Remover de usuarios conectados
-            usuariosConectados.delete(userId);
+            console.log('═══════════════════════════════════════════════════════════');
         });
         
+        // ================================================================
+        // ✅✅✅ HANDLER: RECONEXIÓN
+        // ================================================================
+        
+
         // =============================================
-        // 💬 EVENTOS ADICIONALES
+        // 🔌 DESCONEXIÓN (Pérdida de conexión)
         // =============================================
         
+         socket.on('duelo:reconectar', async ({ salaId, userId }) => {
+            console.log('═══════════════════════════════════════════════════════════');
+            console.log('[RECONEXIÓN]: 🔄 Intento de reconexión');
+            console.log(`   - SalaId: ${salaId}`);
+            console.log(`   - UserId: ${userId}`);
+            console.log('═══════════════════════════════════════════════════════════');
+            
+            const duelo = activeDuels.get(salaId);
+            
+            if (!duelo) {
+                console.error('[RECONEXIÓN]: ❌ Duelo no encontrado');
+                return socket.emit('duelo:noDisponible', {
+                    mensaje: 'El duelo ya no está disponible'
+                });
+            }
+            
+            if (!duelo.jugadores[userId]) {
+                console.error('[RECONEXIÓN]: ❌ Usuario no autorizado');
+                return socket.emit('duelo:noAutorizado', {
+                    mensaje: 'No tienes acceso a este duelo'
+                });
+            }
+            
+            console.log('[RECONEXIÓN]: ✅ Usuario autorizado');
+            
+            // ✅ ACTUALIZAR SOCKET
+            duelo.jugadores[userId].socketId = socket.id;
+            usuariosConectados.set(parseInt(userId), socket.id);
+            
+            // ✅✅✅ CANCELAR TIMEOUT DE ABANDONO
+            if (duelo.timeoutReconexion) {
+                console.log('[RECONEXIÓN]: 🧹 Cancelando timeout de abandono');
+                clearTimeout(duelo.timeoutReconexion);
+                duelo.timeoutReconexion = null;
+            }
+            
+            // ✅ LIMPIAR DESCONEXIÓN
+            limpiarDesconexion(userId);
+            
+            // ✅✅✅ REANUDAR DUELO (reactivar timer, desbloquear botones)
+            const exito = reanudarDuelo(salaId, duelo, io);
+            
+            if (exito) {
+                console.log('[RECONEXIÓN]: ✅ Duelo reanudado');
+            } else {
+                console.log('[RECONEXIÓN]: ⚠️ Esperando segundo jugador');
+            }
+            
+            // ✅ ENVIAR ESTADO ACTUAL
+            const oponenteId = Object.keys(duelo.jugadores).find(id => id !== userId.toString());
+            
+            socket.emit('duelo:estadoActual', {
+                estado: duelo.estado,
+                preguntaActual: duelo.preguntaActual,
+                totalPreguntas: duelo.examen?.length || 0,
+                puntuaciones: duelo.puntuaciones,
+                rachas: {
+                    [userId]: duelo.jugadores[userId].racha,
+                    [oponenteId]: duelo.jugadores[oponenteId].racha
+                },
+                oponente: {
+                    username: duelo.jugadores[oponenteId].username,
+                    foto_perfil: duelo.jugadores[oponenteId].foto_perfil
+                },
+                apuesta: duelo.apuesta,
+                bloqueado: duelosBloqueados.has(salaId),
+                mensaje: '✅ Reconectado exitosamente'
+            });
+            
+            // ✅ NOTIFICAR AL OPONENTE
+            if (duelo.jugadores[oponenteId]?.socketId) {
+                io.to(duelo.jugadores[oponenteId].socketId).emit('duelo:oponenteReconectado', {
+                    mensaje: `${duelo.jugadores[userId].username} se reconectó`,
+                    username: duelo.jugadores[userId].username
+                });
+            }
+            
+            console.log('[RECONEXIÓN]: ✅ Proceso completado');
+            console.log('═══════════════════════════════════════════════════════════');
+        });
         // Notificar actividad (para detectar AFK)
         socket.on('duelo:actividad', (data) => {
             const { userId } = data;

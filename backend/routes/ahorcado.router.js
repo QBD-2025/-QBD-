@@ -121,7 +121,7 @@ router.post('/enfrentar/:idJugador', async (req, res) => {
                 idRetador,
                 `${retador} te ha desafiado a ${juego}`,
                 JSON.stringify({ 
-                    salaId: nuevaSalaId, 
+                    salaId: nuevaSalaId + '?modo=enfrentamiento', 
                     juego, 
                     modo: 'enfrentamiento'
                 })

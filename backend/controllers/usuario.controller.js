@@ -279,7 +279,7 @@ async function verHistorialUnificado(req, res) {
         hd.tipo_duelo,
         hd.id_ganador,
         hd.total_preguntas,
-        hd.Id_dificultad,
+        hd.dificultad,
         hd.apuesta,
         CASE 
           WHEN hd.id_retador = ? THEN hd.correctas_retador 
@@ -343,5 +343,257 @@ module.exports = {
   verHistorial,
   verHistorialUnificado,
   verDetalleExamen,
+  verPerfilPublico,  // ✅ Agregar
+  obtenerStatsAPI,
   upload // exportamos también multer si quieres usarlo desde las rutas
+};
+
+// backend/controllers/usuario.controller.js - AGREGAR ESTAS FUNCIONES
+
+// ==================== VER PERFIL PÚBLICO ====================
+// backend/controllers/usuario.controller.js
+// REEMPLAZAR LA FUNCIÓN verPerfilPublico CON ESTA VERSIÓN CORREGIDA
+
+// ==================== VER PERFIL PÚBLICO ====================
+async function verPerfilPublico(req, res) {
+    try {
+        const idUsuarioVer = parseInt(req.params.id_usuario);
+        const idUsuarioActual = req.session.user.id_usuario;
+
+        console.log(`[PERFIL PÚBLICO]: Usuario ${idUsuarioActual} viendo perfil de ${idUsuarioVer}`);
+
+        // ✅ Validar que el ID sea válido
+        if (isNaN(idUsuarioVer) || idUsuarioVer <= 0) {
+            console.error('[PERFIL PÚBLICO]: ID inválido');
+            return res.status(400).render('menu_principal', {
+                layout: 'main',
+                title: 'Error',
+                user: req.session.user,
+                error: 'Usuario no válido'
+            });
+        }
+
+        // ✅ Obtener información básica del usuario
+        const [usuarios] = await db.query(`
+            SELECT 
+                u.id_usuario,
+                u.username,
+                u.email,
+                u.apodo,
+                u.descripcion,
+                u.foto_perfil,
+                u.fecha_registro,
+                u.ultimo_acceso,
+                tp.descripcion as role,
+                c.descripcion as carrera_descripcion
+            FROM usuario u
+            LEFT JOIN tp_usuario tp ON u.id_tp_usuario = tp.id_tp_usuario
+            LEFT JOIN usuario_carrera uc ON u.id_usuario = uc.id_usuario
+            LEFT JOIN carrera c ON uc.id_carrera = c.id_carrera
+            WHERE u.id_usuario = ?
+            LIMIT 1
+        `, [idUsuarioVer]);
+
+        // ✅ Si no existe el usuario
+        if (!usuarios || usuarios.length === 0) {
+            console.warn('[PERFIL PÚBLICO]: Usuario no encontrado');
+            return res.status(404).render('menu_principal', {
+                layout: 'main',
+                title: 'Usuario No Encontrado',
+                user: req.session.user,
+                error: 'El usuario que buscas no existe'
+            });
+        }
+
+        const usuario = usuarios[0];
+
+        // ✅ Normalizar foto de perfil
+        let avatarUrl = usuario.foto_perfil || '/uploads/default_avatar.png';
+        if (avatarUrl && !avatarUrl.startsWith('/') && !avatarUrl.startsWith('http')) {
+            avatarUrl = `/uploads/${avatarUrl}`;
+        }
+        usuario.foto_perfil = avatarUrl;
+
+        // ✅ Obtener estadísticas generales
+        const [statsGenerales] = await db.query(`
+            SELECT 
+                COALESCE(SUM(puntos), 0) as puntos_totales,
+                COUNT(DISTINCT id_examen) as examenes_realizados
+            FROM usuario_examen
+            WHERE id_usuario = ?
+        `, [idUsuarioVer]);
+
+        // ✅ Obtener estadísticas de duelos
+        const [statsDuelos] = await db.query(`
+            SELECT 
+                COUNT(*) as duelos_totales,
+                SUM(CASE WHEN id_ganador = ? THEN 1 ELSE 0 END) as victorias,
+                SUM(CASE WHEN id_ganador IS NULL THEN 1 ELSE 0 END) as empates,
+                SUM(CASE WHEN id_ganador != ? AND id_ganador IS NOT NULL THEN 1 ELSE 0 END) as derrotas
+            FROM historial_duelos
+            WHERE (id_retador = ? OR id_defensor = ?)
+        `, [idUsuarioVer, idUsuarioVer, idUsuarioVer, idUsuarioVer]);
+
+        // ✅ Calcular racha de victorias
+        const [rachaData] = await db.query(`
+            SELECT 
+                id_duelo,
+                id_ganador,
+                fecha_duelo
+            FROM historial_duelos
+            WHERE (id_retador = ? OR id_defensor = ?)
+            ORDER BY fecha_duelo DESC
+            LIMIT 20
+        `, [idUsuarioVer, idUsuarioVer]);
+
+        let rachaVictorias = 0;
+        for (let duelo of rachaData) {
+            if (duelo.id_ganador === idUsuarioVer) {
+                rachaVictorias++;
+            } else if (duelo.id_ganador !== null) {
+                break;
+            }
+        }
+
+        // ✅ Obtener puntos por carrera
+        const [puntosCarrera] = await db.query(`
+            SELECT 
+                c.descripcion as carrera,
+                uc.puntos as puntos_carrera
+            FROM usuario_carrera uc
+            JOIN carrera c ON uc.id_carrera = c.id_carrera
+            WHERE uc.id_usuario = ?
+        `, [idUsuarioVer]);
+
+        // ✅ Obtener últimos duelos
+        const [ultimosDuelos] = await db.query(`
+            SELECT 
+                hd.id_duelo,
+                hd.fecha_duelo,
+                hd.tipo_duelo,
+                hd.id_ganador,
+                hd.correctas_retador,
+                hd.correctas_defensor,
+                hd.total_preguntas,
+                u1.username as retador_nombre,
+                u2.username as defensor_nombre
+            FROM historial_duelos hd
+            JOIN usuario u1 ON hd.id_retador = u1.id_usuario
+            JOIN usuario u2 ON hd.id_defensor = u2.id_usuario
+            WHERE (hd.id_retador = ? OR hd.id_defensor = ?)
+            ORDER BY hd.fecha_duelo DESC
+            LIMIT 5
+        `, [idUsuarioVer, idUsuarioVer]);
+
+        // ✅ Obtener ranking global
+        const [rankingGlobal] = await db.query(`
+            SELECT 
+                (SELECT COUNT(*) + 1 
+                 FROM (
+                     SELECT id_usuario, SUM(puntos) as total_puntos
+                     FROM usuario_examen
+                     GROUP BY id_usuario
+                 ) as subq
+                 WHERE subq.total_puntos > ?) as posicion_global
+        `, [statsGenerales[0].puntos_totales || 0]);
+
+        // ✅ Construir objeto de estadísticas
+        const stats = {
+            puntos_totales: statsGenerales[0].puntos_totales || 0,
+            examenes_realizados: statsGenerales[0].examenes_realizados || 0,
+            duelos_totales: statsDuelos[0].duelos_totales || 0,
+            victorias: statsDuelos[0].victorias || 0,
+            empates: statsDuelos[0].empates || 0,
+            derrotas: statsDuelos[0].derrotas || 0,
+            racha_victorias: rachaVictorias,
+            porcentaje_victoria: statsDuelos[0].duelos_totales > 0 
+                ? Math.round((statsDuelos[0].victorias / statsDuelos[0].duelos_totales) * 100)
+                : 0,
+            posicion_global: rankingGlobal[0].posicion_global || '?',
+            carreras: puntosCarrera,
+            ultimos_duelos: ultimosDuelos
+        };
+
+        // ✅ Determinar si es el propio perfil
+        const esPropioPerfil = idUsuarioVer === idUsuarioActual;
+
+        console.log(`[PERFIL PÚBLICO]: ✅ Stats cargadas para usuario ${idUsuarioVer}`);
+
+        // ✅ Renderizar vista
+        res.render('perfil-publico', {
+            layout: 'main',
+            title: `Perfil de ${usuario.username}`,
+            usuario,
+            stats,
+            esPropioPerfil,
+            user: req.session.user
+        });
+
+    } catch (error) {
+        console.error('[PERFIL PÚBLICO ERROR]:', error);
+        
+        // ✅ Manejar error sin vista 'error'
+        res.status(500).render('menu_principal', {
+            layout: 'main',
+            title: 'Error',
+            user: req.session.user,
+            error: 'Error al cargar el perfil. Intenta de nuevo.'
+        });
+    }
+}
+
+// ✅ NO OLVIDES EXPORTAR
+
+// backend/controllers/usuario.controller.js - AGREGAR ESTA FUNCIÓN
+
+// ==================== API: OBTENER STATS EN TIEMPO REAL ====================
+async function obtenerStatsAPI(req, res) {
+    try {
+        const idUsuario = parseInt(req.params.id_usuario);
+        
+        if (!idUsuario || isNaN(idUsuario)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'ID de usuario inválido' 
+            });
+        }
+        
+        // Stats generales
+        const [statsGenerales] = await req.pool.query(`
+            SELECT 
+                COALESCE(SUM(puntos), 0) as puntos_totales,
+                COUNT(DISTINCT id_examen) as examenes_realizados
+            FROM usuario_examen
+            WHERE id_usuario = ?
+        `, [idUsuario]);
+        
+        // Stats de duelos
+        const [statsDuelos] = await req.pool.query(`
+            SELECT 
+                COUNT(*) as duelos_totales,
+                SUM(CASE WHEN id_ganador = ? THEN 1 ELSE 0 END) as victorias,
+                SUM(CASE WHEN id_ganador IS NULL THEN 1 ELSE 0 END) as empates,
+                SUM(CASE WHEN id_ganador != ? AND id_ganador IS NOT NULL THEN 1 ELSE 0 END) as derrotas
+            FROM duelo
+            WHERE (id_retador = ? OR id_defensor = ?)
+            AND estado = 'finalizado'
+        `, [idUsuario, idUsuario, idUsuario, idUsuario]);
+        
+        res.json({
+            success: true,
+            puntos_totales: statsGenerales[0].puntos_totales || 0,
+            examenes_realizados: statsGenerales[0].examenes_realizados || 0,
+            duelos_totales: statsDuelos[0].duelos_totales || 0,
+            victorias: statsDuelos[0].victorias || 0,
+            empates: statsDuelos[0].empates || 0,
+            derrotas: statsDuelos[0].derrotas || 0
+        });
+        
+    } catch (error) {
+        console.error('[API STATS ERROR]:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error al obtener estadísticas' 
+        });
+    }
 };

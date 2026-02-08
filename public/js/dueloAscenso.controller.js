@@ -211,6 +211,9 @@
     // 🎨 RENDERIZAR RANKING - ✅ CON BOTÓN CORRECTO
     // =============================================
 
+    // public/js/dueloAscenso.controller.js
+// ACTUALIZAR LA FUNCIÓN renderizarRanking
+
     async function renderizarRanking(container, jugadores, tipoRanking, carreraId = null) {
         container.innerHTML = '';
         
@@ -235,7 +238,6 @@
             if (response.ok) {
                 const data = await response.json();
                 duelosActivos = data.duelos_activos || [];
-                console.log('[RANKING] Duelos activos:', duelosActivos.length);
             }
         } catch (error) {
             console.warn('[RANKING] Error cargando duelos:', error);
@@ -273,13 +275,22 @@
             
             item.innerHTML = `
                 <div class="rank-number">#${i + 1}</div>
-                <img src="${jugador.foto_perfil || '/uploads/default_avatar.png'}" 
-                    alt="Avatar" 
-                    class="player-avatar"
-                    onerror="this.src='/uploads/default_avatar.png'">
+                
+                <!-- ✅ AVATAR CLICKEABLE PARA VER PERFIL -->
+                <a href="/usuario/perfil/${jugador.id_usuario}" class="player-avatar-link">
+                    <img src="${jugador.foto_perfil || '/uploads/default_avatar.png'}" 
+                        alt="Avatar" 
+                        class="player-avatar"
+                        onerror="this.src='/uploads/default_avatar.png'"
+                        title="Ver perfil de ${jugador.username}">
+                </a>
+                
                 <div class="player-info">
                     <div class="player-name">
-                        ${jugador.username}
+                        <!-- ✅ NOMBRE CLICKEABLE PARA VER PERFIL -->
+                        <a href="/usuario/perfil/${jugador.id_usuario}" class="player-name-link">
+                            ${jugador.username}
+                        </a>
                         ${esYo ? '<span class="badge-yo">Tú</span>' : ''}
                     </div>
                     <div class="player-stats">
@@ -309,9 +320,6 @@
                 btnDesafiar.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    
-                    console.log(`[CLICK] Desafiar a ${jugador.username} (${tipoRanking})`);
-                    console.log(`[CLICK] Carrera ID:`, carreraId);
                     
                     abrirModalDificultad(jugador.id_usuario, jugador.username, tipoRanking, carreraId);
                 });

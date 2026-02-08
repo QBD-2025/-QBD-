@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil de {{usuario.username}} - QueBuenDato</title>
+  <link rel="stylesheet" href="/css/perfil-publico.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="perfil-publico-page">
+  
+  <!-- Contenedor Principal -->
+  <div class="perfil-container">
+    
+    <!-- Encabezado del Perfil -->
+    <div class="perfil-header">
+      <button class="btn-volver" onclick="window.history.back()">
+        <i class="fas fa-arrow-left"></i> Volver
+      </button>
+      
+      <div class="header-content">
+        <div class="avatar-grande">
+          <img src="{{usuario.foto_perfil}}" alt="{{usuario.username}}" onerror="this.src='/uploads/default_avatar.png'">
+          {{#if esPropioPerfil}}
+            <div class="badge-propio">Tu Perfil</div>
+          {{/if}}
+        </div>
+        
+        <div class="info-principal">
+          <h1 class="username">{{usuario.apodo}}</h1>
+          <p class="nombre-real">@{{usuario.username}}</p>
+          
+          {{#if usuario.carrera_descripcion}}
+            <div class="carrera-badge">
+              <i class="fas fa-graduation-cap"></i> {{usuario.carrera_descripcion}}
+            </div>
+          {{/if}}
+          
+          {{#if usuario.descripcion}}
+            <p class="descripcion">{{usuario.descripcion}}</p>
+          {{/if}}
+          
+          <div class="fecha-registro">
+            <i class="fas fa-calendar-alt"></i> 
+            Miembro desde {{formatDate usuario.fecha_registro}}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Grid de Estadísticas Principales -->
+    <div class="stats-grid-principal">
+      <div class="stat-card destacado">
+        <div class="stat-icon">🏆</div>
+        <div class="stat-valor">{{formatNumber stats.puntos_totales}}</div>
+        <div class="stat-label">Puntos Totales</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-valor">{{stats.examenes_realizados}}</div>
+        <div class="stat-label">Exámenes</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">⚔️</div>
+        <div class="stat-valor">{{stats.duelos_totales}}</div>
+        <div class="stat-label">Duelos</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">🥇</div>
+        <div class="stat-valor">#{{stats.posicion_global}}</div>
+        <div class="stat-label">Ranking Global</div>
+      </div>
+    </div>
+    
+    <!-- Sección de Duelos -->
+    <div class="seccion-contenido">
+      <h2 class="titulo-seccion">
+        <i class="fas fa-swords"></i> Estadísticas de Duelos
+      </h2>
+      
+      <div class="duelos-stats">
+        <div class="stats-barras">
+          <div class="barra-stat victoria">
+            <div class="barra-label">
+              <span>Victorias</span>
+              <strong>{{stats.victorias}}</strong>
+            </div>
+            <div class="barra-contenedor">
+              <div class="barra-fill" style="width: {{#if (greaterThan stats.duelos_totales 0)}}{{multiply (divide stats.victorias stats.duelos_totales) 100}}{{else}}0{{/if}}%"></div>
+            </div>
+          </div>
+          
+          <div class="barra-stat empate">
+            <div class="barra-label">
+              <span>Empates</span>
+              <strong>{{stats.empates}}</strong>
+            </div>
+            <div class="barra-contenedor">
+              <div class="barra-fill" style="width: {{#if (greaterThan stats.duelos_totales 0)}}{{multiply (divide stats.empates stats.duelos_totales) 100}}{{else}}0{{/if}}%"></div>
+            </div>
+          </div>
+          
+          <div class="barra-stat derrota">
+            <div class="barra-label">
+              <span>Derrotas</span>
+              <strong>{{stats.derrotas}}</strong>
+            </div>
+            <div class="barra-contenedor">
+              <div class="barra-fill" style="width: {{#if (greaterThan stats.duelos_totales 0)}}{{multiply (divide stats.derrotas stats.duelos_totales) 100}}{{else}}0{{/if}}%"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="stats-adicionales">
+          <div class="stat-mini">
+            <div class="icono">📈</div>
+            <div class="valor">{{stats.porcentaje_victoria}}%</div>
+            <div class="label">Ratio Victoria</div>
+          </div>
+          
+          <div class="stat-mini destacado">
+            <div class="icono">🔥</div>
+            <div class="valor">{{stats.racha_victorias}}</div>
+            <div class="label">Racha Actual</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Puntos por Carrera -->
+    {{#if stats.carreras}}
+      {{#if (greaterThan stats.carreras.length 0)}}
+        <div class="seccion-contenido">
+          <h2 class="titulo-seccion">
+            <i class="fas fa-graduation-cap"></i> Puntos por Carrera
+          </h2>
+          
+          <div class="carreras-grid">
+            {{#each stats.carreras}}
+              <div class="carrera-card">
+                <div class="carrera-nombre">{{this.carrera}}</div>
+                <div class="carrera-puntos">{{formatNumber this.puntos_carrera}} pts</div>
+              </div>
+            {{/each}}
+          </div>
+        </div>
+      {{/if}}
+    {{/if}}
+    
+    <!-- Últimos Duelos -->
+    {{#if stats.ultimos_duelos}}
+      {{#if (greaterThan stats.ultimos_duelos.length 0)}}
+        <div class="seccion-contenido">
+          <h2 class="titulo-seccion">
+            <i class="fas fa-history"></i> Últimos Duelos
+          </h2>
+          
+          <div class="duelos-lista">
+            {{#each stats.ultimos_duelos}}
+              <div class="duelo-item {{#if (equals ../usuario.id_usuario this.id_ganador)}}victoria{{else}}{{#if this.id_ganador}}derrota{{else}}empate{{/if}}{{/if}}">
+                <div class="duelo-fecha">
+                  {{formatDate this.fecha_fin}}
+                </div>
+                
+                <div class="duelo-info">
+                  <div class="duelo-jugadores">
+                    <span class="{{#if (equals this.retador_nombre ../usuario.username)}}jugador-yo{{/if}}">
+                      {{this.retador_nombre}}
+                    </span>
+                    <span class="vs">VS</span>
+                    <span class="{{#if (equals this.defensor_nombre ../usuario.username)}}jugador-yo{{/if}}">
+                      {{this.defensor_nombre}}
+                    </span>
+                  </div>
+                  
+                  <div class="duelo-resultado">
+                    <span class="puntaje">{{this.puntaje_retador}} - {{this.puntaje_defensor}}</span>
+                    {{#if this.dificultad}}
+                      <span class="dificultad">{{this.dificultad}}</span>
+                    {{/if}}
+                  </div>
+                </div>
+                
+                <div class="duelo-estado">
+                  {{#if (equals ../usuario.id_usuario this.id_ganador)}}
+                    <i class="fas fa-trophy"></i> Victoria
+                  {{else}}
+                    {{#if this.id_ganador}}
+                      <i class="fas fa-times"></i> Derrota
+                    {{else}}
+                      <i class="fas fa-handshake"></i> Empate
+                    {{/if}}
+                  {{/if}}
+                </div>
+              </div>
+            {{/each}}
+          </div>
+        </div>
+      {{/if}}
+    {{/if}}
+    
+    <!-- Sección de Insignias (Preparada para futuro) -->
+    <div class="seccion-contenido insignias-preview">
+      <h2 class="titulo-seccion">
+        <i class="fas fa-medal"></i> Insignias y Logros
+      </h2>
+      
+      <div class="insignias-placeholder">
+        <div class="icono-placeholder">🏅</div>
+        <p>Sistema de insignias próximamente</p>
+        <small>Aquí aparecerán todos los logros desbloqueados</small>
+      </div>
+    </div>
+    
+  </div>
+  
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/public/js/perfil-publico.controller.js" defer></script>
+  
+</body>
+</html>
