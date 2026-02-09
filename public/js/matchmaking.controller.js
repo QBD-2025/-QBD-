@@ -57,6 +57,53 @@ let estadoNegociacion = {
     quieroApostar: false
 };
 
+// ✅ WATCHER: Sincronizar salaActual con salaId automáticamente
+Object.defineProperty(window, 'salaIdWatcher', {
+    set: function(val) {
+        console.log(`[SYNC SALA]: salaId actualizado: ${val}`);
+        salaId = val;
+        salaActual = val;
+        sessionStorage.setItem('currentSalaId', val);
+    },
+    get: function() {
+        return salaId || salaActual || sessionStorage.getItem('currentSalaId');
+    }
+});
+
+// ✅ FUNCIÓN: Establecer sala de forma centralizada
+function establecerSala(nuevaSalaId) {
+    if (!nuevaSalaId) {
+        console.error('[ESTABLECER SALA]: ❌ ID de sala vacío');
+        return false;
+    }
+    
+    console.log(`[ESTABLECER SALA]: ✅ Estableciendo sala: ${nuevaSalaId}`);
+    
+    salaId = nuevaSalaId;
+    salaActual = nuevaSalaId;
+    sessionStorage.setItem('currentSalaId', nuevaSalaId);
+    
+    console.log(`[ESTABLECER SALA]: Verificación:`);
+    console.log(`   - salaId: ${salaId}`);
+    console.log(`   - salaActual: ${salaActual}`);
+    console.log(`   - sessionStorage: ${sessionStorage.getItem('currentSalaId')}`);
+    
+    return true;
+}
+
+// ✅ FUNCIÓN: Obtener sala actual (con fallback)
+function obtenerSalaActual() {
+    const sala = salaActual || salaId || sessionStorage.getItem('currentSalaId');
+    
+    if (!sala) {
+        console.error('[OBTENER SALA]: ❌ No hay sala disponible');
+    }
+    
+    return sala;
+}
+
+console.log('[SYNC]: ✅ Sistema de sincronización de sala inicializado');
+
 // Elementos del DOM
 const matchmakingView = document.getElementById('matchmakingView');
 const dueloView = document.getElementById('dueloView');
@@ -110,7 +157,7 @@ btnQuieroApostar.addEventListener('click', async () => {
                 
                 // 🔔 NOTIFICAR AL OPONENTE QUE QUIERES APOSTAR
                 socket.emit('duelo:notificarQuieroApostar', {
-                    salaId: salaActual || salaId,
+                    salaId: obtenerSalaActual(), 
                     userId: user.id_usuario,
                     username: user.username,
                     foto_perfil: user.foto_perfil
@@ -124,7 +171,7 @@ btnQuieroApostar.addEventListener('click', async () => {
                 
                 // Notificar que cancelaste
                 socket.emit('duelo:cancelarQuieroApostar', {
-                    salaId: salaActual || salaId,
+                    salaId: obtenerSalaActual(), 
                     userId: user.id_usuario
                 });
             }
@@ -190,14 +237,18 @@ socket.on('sala:modoDetectado', ({ modo, idCarrera }) => {
 socket.on('sala:conectado', (data) => {
     console.log('[SALA]: ✅ Conectado:', data.mensaje);
     statusText.innerHTML = `<i class="fas fa-check-circle"></i> ${data.mensaje}`;
-    salaActual = data.salaId;
+    
+    // ✅✅✅ CRÍTICO: Establecer sala
+    establecerSala(data.salaId);
+    
+    console.log(`[SALA:CONECTADO]: Sala establecida: ${obtenerSalaActual()}`);
 });
 
 window.addEventListener('beforeunload', (e) => {
     if (dueloActivo && !intentandoSalir) {
         // ✅ Informar al servidor INMEDIATAMENTE
         socket.emit('duelo:abandonoRapido', {
-            salaId: salaActual || salaId,
+            salaId: obtenerSalaActual(), 
             userId: user.id_usuario
         });
         
@@ -305,6 +356,9 @@ socket.on('duelo:estadoActual', (data) => {
         document.getElementById('numeroPregunta').textContent = `Pregunta ${numeroPregunta} / ${totalPreguntas}`;
         opcionesContainer.innerHTML = '';
         
+        // ✅ GUARDAR TIEMPO DE INICIO (ahora con tiempo restante)
+        const inicioTiempo = Date.now();
+        
         opciones.forEach(opcion => {
             const btn = document.createElement('button');
             btn.className = 'opcion-btn';
@@ -313,13 +367,14 @@ socket.on('duelo:estadoActual', (data) => {
             btn.onclick = () => {
                 if (dueloPausado || !botonesHabilitados) return;
                 
-                const tiempoRespuesta = (Date.now() - Date.now()) / 1000; // Aproximado
+                // ✅✅✅ CALCULAR TIEMPO CORRECTAMENTE
+                const tiempoRespuesta = (Date.now() - inicioTiempo) / 1000;
                 
                 opcionesContainer.querySelectorAll('button').forEach(b => b.disabled = true);
                 btn.classList.add('seleccionada-jugador');
                 
                 socket.emit('duelo:responder', {
-                    salaId: salaActual || salaId,
+                    salaId: obtenerSalaActual(), 
                     userId: user.id_usuario,
                     idPregunta: pregunta.id_pregunta,
                     idRespuesta: opcion.id_respuesta,
@@ -513,30 +568,46 @@ socket.on('duelo:informacionInicial', ({ apuesta, bote, recompensaBase, dificult
 // 🎧 LISTENER: DUELO LISTO (Activar protección)
 // ================================================================
 
-socket.on('duelo:dueloListo', ({ salaId }) => {
-    console.log('[DUELO]: ✅ Duelo listo!');
+socket.on('duelo:dueloListo', ({ salaId: nuevaSalaId }) => {
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('[DUELO LISTO]: ✅ Evento recibido');
+    console.log(`   - SalaId recibido: ${nuevaSalaId}`);
+    
+    // ✅✅✅ ESTABLECER SALA
+    establecerSala(nuevaSalaId);
+    console.log(`   - Sala actual después: ${obtenerSalaActual()}`);
+    console.log('═══════════════════════════════════════════════════════════');
+    
     statusText.innerHTML = '<i class="fas fa-swords"></i> ¡Duelo listo! Entrando a la arena...';
     btnCancelarBusqueda.style.display = 'none';
     
-    // ✅ ACTIVAR ESTADO DE DUELO DESPUÉS DE 2 SEGUNDOS
+    // ✅ ACTIVAR ESTADO DE DUELO
     setTimeout(() => {
-        actualizarEstadoDuelo(true, { salaId });
+        actualizarEstadoDuelo(true, { salaId: nuevaSalaId });
     }, 2000);
     
+    // ✅ TRANSICIÓN DE VISTAS
     setTimeout(() => {
+        console.log('[DUELO LISTO]: 🔄 Iniciando transición...');
         matchmakingView.style.opacity = '0';
         
         setTimeout(() => {
             matchmakingView.style.display = 'none';
             dueloView.style.display = 'flex';
             
+            console.log('[DUELO LISTO]: 📤 EMITIENDO duelo:clienteListo');
+            
+            // ✅✅✅ CRÍTICO: EMITIR QUE EL CLIENTE ESTÁ LISTO
             socket.emit('duelo:clienteListo', { 
-                salaId, 
+                salaId: nuevaSalaId, 
                 userId: user.id_usuario 
             });
             
+            console.log('[DUELO LISTO]: ✅ Evento emitido correctamente');
+            
             setTimeout(() => {
                 dueloView.style.opacity = '1';
+                console.log('[DUELO LISTO]: ✅ Vista de duelo visible');
             }, 100);
         }, 500);
     }, 1500);
@@ -552,51 +623,58 @@ socket.on('duelo:oponenteInfo', ({ oponenteId, oponente: oponenteData }) => {
     oponente = { ...oponenteData, id_usuario: oponenteId };
 });
 
+
+
 // ================================================================
 // DRAFT: Selección de categorías
 // ================================================================
-socket.on('duelo:iniciarMiniDraft', ({ categorias, permitirGambito }) => {
-    console.log('[DRAFT]: Recibidas', categorias.length, 'categorías');
-    console.log('[DRAFT]: Modo actual de sala:', modoActualSala || 'sin definir');
+socket.on('duelo:iniciarMiniDraft', (data) => {
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('[DRAFT RECIBIDO]: ✅ Categorías recibidas');
+    console.log(`   - Cantidad: ${data.categorias?.length || 0}`);
+    console.log('═══════════════════════════════════════════════════════════');
     
-    // ✅ VERIFICACIÓN: Las categorías deben coincidir con el modo
-    if (categorias && categorias.length > 0) {
-        const primeraCat = categorias[0];
-        console.log('[DRAFT]: Primera categoría:', primeraCat);
-        
-        // Si es modo carrera, debe tener id_tematica
-        // Si es modo general, debe tener id_materia
-        if (modoActualSala === 'carrera' && !primeraCat.id_tematica && primeraCat.id) {
-            console.log('[DRAFT]: ✅ Categorías de CARRERA (tematicas)');
-        } else if (modoActualSala === 'general' && !primeraCat.id_carrera) {
-            console.log('[DRAFT]: ✅ Categorías GENERALES (materias)');
-        }
+    // ✅ VALIDAR DATOS
+    if (!data.categorias || data.categorias.length === 0) {
+        console.error('[DRAFT]: ❌ No se recibieron categorías');
+        mostrarNotificacion('Error: No hay categorías disponibles', 'error');
+        return;
     }
     
+    // ✅ MOSTRAR INTERFAZ DE DRAFT
     document.getElementById('draftTitle').textContent = "ELIGE TU CAMPO DE BATALLA";
     document.getElementById('draftInstruction').textContent = "Selecciona una categoría y decide si quieres apostar.";
+    
+    const materiasGrid = document.getElementById('materiasGrid');
     materiasGrid.innerHTML = '';
-
-    if (permitirGambito) {
+    
+    // ✅ MOSTRAR BOTÓN DE GAMBITO SI ESTÁ PERMITIDO
+    if (data.permitirGambito) {
         document.getElementById('gambitoContainer').style.display = 'block';
     }
-
-    categorias.forEach(categoria => {
+    
+    // ✅ RENDERIZAR CATEGORÍAS
+    data.categorias.forEach(categoria => {
         const card = document.createElement('div');
         card.className = 'materia-card';
         card.dataset.id = categoria.id;
         card.textContent = categoria.descripcion;
         
         card.onclick = () => {
+            // Deshabilitar todas las cards
             document.querySelectorAll('.materia-card').forEach(c => {
                 c.onclick = null;
                 if (c !== card) c.classList.add('deshabilitada');
             });
+            
             card.classList.add('seleccionada');
             document.getElementById('draftInstruction').textContent = "Esperando oponente...";
             
+            console.log('[SELECCIÓN]: Usuario seleccionó categoría', categoria.id);
+            
+            // ✅ EMITIR SELECCIÓN
             socket.emit('duelo:seleccionarCategoria', { 
-                salaId: salaActual || salaId, 
+                salaId: obtenerSalaActual(), 
                 userId: user.id_usuario, 
                 idCategoria: categoria.id,
                 gambitoActivado: gambitoActivado,
@@ -606,7 +684,10 @@ socket.on('duelo:iniciarMiniDraft', ({ categorias, permitirGambito }) => {
         
         materiasGrid.appendChild(card);
     });
+    
+    console.log('[DRAFT]: ✅ Categorías renderizadas');
 });
+
 // Botón de Gambito
 btnGambito.addEventListener('click', () => {
     gambitoActivado = !gambitoActivado;
@@ -729,7 +810,7 @@ document.getElementById('btnEnviarPropuesta').addEventListener('click', () => {
             console.log('[NEGOCIACIÓN]: Enviando propuesta de', cantidad, 'puntos');
             
             socket.emit('duelo:propuestaApuesta', {
-                salaId: salaActual || salaId,
+                salaId: obtenerSalaActual(), 
                 userId: user.id_usuario,
                 cantidad: cantidad,
                 ronda: estadoNegociacion.rondaActual
@@ -761,7 +842,7 @@ document.getElementById('btnEnviarPropuesta').addEventListener('click', () => {
             console.log('[NEGOCIACIÓN]: Aceptando apuesta de', estadoNegociacion.propuestaActual, 'puntos');
             
             socket.emit('duelo:respuestaApuesta', {
-                salaId: salaActual || salaId,
+                salaId: obtenerSalaActual(), 
                 userId: user.id_usuario,
                 acepta: true
             });
@@ -787,7 +868,7 @@ document.getElementById('btnEnviarPropuesta').addEventListener('click', () => {
             }
             
             socket.emit('duelo:respuestaApuesta', {
-                salaId: salaActual || salaId,
+                salaId: obtenerSalaActual(), 
                 userId: user.id_usuario,
                 acepta: false
             });
@@ -1087,6 +1168,17 @@ document.getElementById('btnEnviarPropuesta').addEventListener('click', () => {
         console.log('[APUESTAS]: ✅ Sistema de apuestas completamente inicializado');
 
 
+socket.on('duelo:ocultarDraft', ({ mensaje }) => {
+    console.log('[DRAFT]: 🎯 Ocultando vista de categorías');
+    console.log(`   - Mensaje: ${mensaje}`);
+    
+    // Ocultar draft inmediatamente
+    draftContainer.style.display = 'none';
+    
+    // Mostrar mensaje de transición
+    statusText.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${mensaje}`;
+    
+});
 
 // ================================================================
 // DRAFT FINALIZADO
@@ -1098,7 +1190,10 @@ socket.on('duelo:miniDraftFinalizado', ({ selecciones, gambitos, apuesta, mensaj
         mostrarNotificacion(mensaje, 'info');
     }
     
+    // ✅ YA está oculto por duelo:ocultarDraft, pero por seguridad:
     draftContainer.style.display = 'none';
+    
+    // ✅ MOSTRAR ARENA
     arenaContainer.style.display = 'flex';
     
     // Actualizar info de apuesta
@@ -1150,7 +1245,7 @@ socket.on('duelo:nuevaPregunta', ({ pregunta, opciones, numeroPregunta, totalPre
     let tiempoRestante = duracion || 10;
     cronometroEl.textContent = tiempoRestante;
     
-    const inicioTiempo = Date.now();
+    const inicioTiempo = Date.now(); // ✅ GUARDAR TIEMPO DE INICIO
     
     cronometroInterval = setInterval(() => {
         // ✅ NO ACTUALIZAR SI ESTÁ PAUSADO
@@ -1181,13 +1276,21 @@ socket.on('duelo:nuevaPregunta', ({ pregunta, opciones, numeroPregunta, totalPre
                 return;
             }
             
+            // ✅✅✅ CALCULAR TIEMPO CORRECTAMENTE
             const tiempoRespuesta = (Date.now() - inicioTiempo) / 1000;
+            
+            console.log('═══════════════════════════════════════════════════════════');
+            console.log('[RESPUESTA]: 📤 Enviando respuesta');
+            console.log(`   - Pregunta ID: ${pregunta.id_pregunta}`);
+            console.log(`   - Respuesta ID: ${opcion.id_respuesta}`);
+            console.log(`   - Tiempo: ${tiempoRespuesta.toFixed(2)}s`);
+            console.log('═══════════════════════════════════════════════════════════');
             
             opcionesContainer.querySelectorAll('button').forEach(b => b.disabled = true);
             btn.classList.add('seleccionada-jugador');
             
             socket.emit('duelo:responder', {
-                salaId: salaActual || salaId,
+                salaId: obtenerSalaActual(), 
                 userId: user.id_usuario,
                 idPregunta: pregunta.id_pregunta,
                 idRespuesta: opcion.id_respuesta,
@@ -1198,6 +1301,7 @@ socket.on('duelo:nuevaPregunta', ({ pregunta, opciones, numeroPregunta, totalPre
         opcionesContainer.appendChild(btn);
     });
 });
+
 // ================================================================
 // ✅ HANDLER: Reconexión exitosa
 // ================================================================
@@ -1252,7 +1356,7 @@ socket.on('duelo:reconexionExitosa', (estadoActual) => {
                     btn.classList.add('seleccionada-jugador');
                     
                     socket.emit('duelo:responder', {
-                        salaId: salaActual || salaId,
+                        salaId: obtenerSalaActual(), 
                         userId: user.id_usuario,
                         idPregunta: estadoActual.preguntaActual.pregunta.id_pregunta,
                         idRespuesta: opcion.id_respuesta,
@@ -1401,7 +1505,7 @@ socket.on('duelo:powerUpObtenido', ({ powerUp, mensaje }) => {
 btnUsarPowerUp.addEventListener('click', () => {
     if (miPowerUp) {
         socket.emit('duelo:activarPowerUp', {
-            salaId: salaActual || salaId,
+            salaId: obtenerSalaActual(), 
             userId: user.id_usuario,
             idPowerUp: miPowerUp
         });
@@ -1436,17 +1540,63 @@ socket.on('duelo:powerUpBloqueado', ({ mensaje }) => {
 // ================================================================
 // DUELO: Resultado de respuesta
 // ================================================================
-socket.on('duelo:resultadoRespuesta', ({ esCorrecta, retroalimentacion, puntosGanados, racha, tiempoRespuesta }) => {
+socket.on('duelo:resultadoRespuesta', ({ 
+    esCorrecta, 
+    retroalimentacion, 
+    puntosGanados, 
+    racha, 
+    tiempoRespuesta,
+    puntuacionTotal 
+}) => {
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('[RESULTADO]: 📊 Resultado recibido del servidor');
+    console.log(`   - Correcto: ${esCorrecta ? '✅' : '❌'}`);
+    console.log(`   - Puntos ganados: ${puntosGanados >= 0 ? '+' : ''}${puntosGanados}`);
+    console.log(`   - Puntuación total: ${puntuacionTotal}`);
+    console.log(`   - Racha: ${racha}`);
+    console.log('═══════════════════════════════════════════════════════════');
+    
+    // ✅ 1. ACTUALIZAR MARCADOR INMEDIATAMENTE
+    const marcadorTuyo = document.getElementById('puntuacionTuya');
+    if (marcadorTuyo && puntuacionTotal !== undefined) {
+        // Animación de cambio de puntuación
+        marcadorTuyo.style.transition = 'transform 0.3s ease, color 0.3s ease';
+        marcadorTuyo.style.transform = 'scale(1.3)';
+        marcadorTuyo.style.color = puntosGanados >= 0 ? '#22c55e' : '#ef4444';
+        
+        marcadorTuyo.textContent = puntuacionTotal;
+        
+        setTimeout(() => {
+            marcadorTuyo.style.transform = 'scale(1)';
+            marcadorTuyo.style.color = '';
+        }, 300);
+    }
+    
+    // ✅ 2. ACTUALIZAR RACHA
+    if (tuRachaEl && racha !== undefined) {
+        tuRachaEl.textContent = `🔥 x${racha}`;
+        
+        if (racha >= 3) {
+            tuRachaEl.style.animation = 'pulse 0.5s ease-in-out';
+            setTimeout(() => {
+                tuRachaEl.style.animation = '';
+            }, 500);
+        }
+    }
+    
+    // ✅ 3. MOSTRAR FEEDBACK VISUAL
     const feedback = document.createElement('div');
     feedback.className = `feedback ${esCorrecta ? 'correcto' : 'incorrecto'}`;
     feedback.innerHTML = `
         <p>${esCorrecta ? '✓ ¡Correcto!' : '✗ Incorrecto'}</p>
         <small>${retroalimentacion}</small>
-        ${puntosGanados ? `<strong>+${puntosGanados} pts (${tiempoRespuesta}s)</strong>` : ''}
+        ${puntosGanados !== 0 ? `<strong>${puntosGanados >= 0 ? '+' : ''}${puntosGanados} pts (${tiempoRespuesta}s)</strong>` : ''}
     `;
     textoPregunta.parentNode.appendChild(feedback);
     
     setTimeout(() => feedback.remove(), 3000);
+    
+    console.log('[RESULTADO]: ✅ UI actualizada correctamente');
 });
 
 socket.on('duelo:gambitoExitoso', ({ mensaje, bonus }) => {
@@ -1889,86 +2039,122 @@ function toggleDesglose(index) {
 // 🎧 LISTENER MEJORADO: Recibir resultado del servidor
 // ================================================================
 
+
 socket.on('duelo:finalizado', (resultado) => {
     console.log('═══════════════════════════════════════════════════════════');
-    console.log('[SOCKET]: 📊 RESULTADO RECIBIDO DEL SERVIDOR');
+    console.log('[RESULTADO]: 🏁 DUELO FINALIZADO');
+    console.log('[RESULTADO]: Datos recibidos:', resultado);
     console.log('═══════════════════════════════════════════════════════════');
-    console.log('[SOCKET]: Modo:', resultado.modo);
-    console.log('[SOCKET]: Ganador ID:', resultado.ganadorId);
-    console.log('[SOCKET]: Es empate:', resultado.esEmpate);
-    console.log('[SOCKET]: Apuesta:', resultado.apuesta);
-    console.log('[SOCKET]: ID Carrera:', resultado.idCarrera || 'N/A');
-    console.log('[SOCKET]: Jugadores recibidos:', resultado.jugadores?.length || 0);
     
-    // ✅ VALIDACIÓN CRÍTICA: Verificar que tenemos datos
-    if (!resultado.jugadores || resultado.jugadores.length === 0) {
-        console.error('[SOCKET]: ❌ ERROR - No hay jugadores en resultado');
-        console.error('[SOCKET]: Resultado completo:', JSON.stringify(resultado, null, 2));
+    // ✅ PASO 1: VALIDAR DATOS
+    if (!resultado || !resultado.jugadores || resultado.jugadores.length === 0) {
+        console.error('[RESULTADO]: ❌ Datos inválidos');
+        alert('Error: No se recibieron datos válidos del servidor');
+        return;
+    }
+    
+    console.log('[RESULTADO]: ✅ Datos válidos - Procesando...');
+    
+    // ✅ PASO 2: DESACTIVAR DUELO
+    actualizarEstadoDuelo(false);
+    dueloActivo = false;
+    
+    // ✅ PASO 3: OCULTAR TODO LO DEL DUELO
+    const elementosAOcultar = [
+        'dueloView',
+        'arenaContainer', 
+        'draftContainer',
+        'matchmakingView'
+    ];
+    
+    elementosAOcultar.forEach(id => {
+        const elem = document.getElementById(id);
+        if (elem) {
+            elem.style.display = 'none';
+            elem.style.opacity = '0';
+            elem.style.visibility = 'hidden';
+        }
+    });
+    
+    console.log('[RESULTADO]: ✅ Vistas de duelo ocultadas');
+    
+    // ✅ PASO 4: OBTENER Y FORZAR MODAL
+    const modal = document.getElementById('modalResultadoDetallado');
+    
+    if (!modal) {
+        console.error('[RESULTADO]: ❌ Modal NO encontrado');
+        alert('Error crítico: Modal no encontrado. ID: modalResultadoDetallado');
+        return;
+    }
+    
+    console.log('[RESULTADO]: ✅ Modal encontrado:', modal);
+    
+    // ✅ PASO 5: FORZAR ESTILOS INLINE (CRÍTICO)
+    modal.style.cssText = `
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(0, 0, 0, 0.95) !important;
+        z-index: 99999 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        overflow-y: auto !important;
+    `;
+    
+    modal.classList.add('visible');
+    
+    console.log('[RESULTADO]: ✅ Estilos aplicados al modal');
+    
+    // ✅ PASO 6: RENDERIZAR CONTENIDO
+    try {
+        console.log('[RESULTADO]: 📊 Renderizando resultados...');
+        renderizarResultadoConPuntosSeparados(resultado);
+        console.log('[RESULTADO]: ✅ Resultados renderizados');
+    } catch (error) {
+        console.error('[RESULTADO]: ❌ Error al renderizar:', error);
         
-        // Mostrar error al usuario
-        const modal = document.getElementById('modalResultadoDetallado');
-        if (modal) {
-            modal.innerHTML = `
-                <div style="text-align: center; padding: 40px; background: white; border-radius: 15px;">
-                    <h2 style="color: #ef4444;">❌ Error al cargar resultados</h2>
-                    <p>No se recibieron datos válidos del servidor</p>
-                    <button onclick="location.href='/matchmaking'" style="margin-top: 20px; padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer;">
+        // Fallback: mostrar error visual
+        const container = document.getElementById('jugadoresContainer');
+        if (container) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: white;">
+                    <h2>❌ Error al mostrar resultados</h2>
+                    <p>Error: ${error.message}</p>
+                    <button onclick="location.href='/matchmaking'" 
+                            style="margin-top: 20px; padding: 12px 24px; background: #3b82f6; 
+                            color: white; border: none; border-radius: 8px; cursor: pointer;">
                         Volver al Portal
                     </button>
                 </div>
             `;
-            modal.style.display = 'flex';
-            modal.classList.add('visible');
         }
-        return;
     }
     
-    // Cada jugador debe tener estos campos (validar)
-    resultado.jugadores.forEach((j, idx) => {
-        console.log(`[SOCKET]: Jugador ${idx + 1}:`);
-        console.log(`  - userId: ${j.userId}`);
-        console.log(`  - username: ${j.username}`);
-        console.log(`  - puntosGlobales: ${j.puntosGlobales}`);
-        console.log(`  - puntosCarrera: ${j.puntosCarrera}`);
-        console.log(`  - cambioGlobal: ${j.cambioGlobal}`);
-        console.log(`  - cambioCarrera: ${j.cambioCarrera}`);
-        console.log(`  - desglose items: ${j.desglose?.length || 0}`);
-    });
-    
-    // Ocultar arena
-    const arenaContainer = document.getElementById('arenaContainer');
-    const draftContainer = document.getElementById('draftContainer');
-    
-    if (arenaContainer) arenaContainer.style.display = 'none';
-    if (draftContainer) draftContainer.style.display = 'none';
-    
-    // Mostrar modal de resultado
-    const modal = document.getElementById('modalResultadoDetallado');
-    if (modal) {
-        modal.style.display = 'flex';
-        modal.classList.add('visible');
-    }
-    
-    // ✅ Renderizar con sistema corregido
-    try {
-        renderizarResultadoConPuntosSeparados(resultado);
-        console.log('[SOCKET]: ✅ Renderizado exitoso');
-    } catch (error) {
-        console.error('[SOCKET]: ❌ Error en renderizado:', error);
-        console.error('[SOCKET]: Stack:', error.stack);
-    }
-    
-    // Lanzar confetti si ganamos
+    // ✅ PASO 7: CONFETTI SI GANASTE
     const userId = parseInt(window.USER_DATA?.id_usuario);
     if (resultado.ganadorId === userId && !resultado.esEmpate) {
-        console.log('[SOCKET]: 🎉 Usuario ganó - Lanzando confetti');
-        if (typeof lanzarConfetti === 'function') {
-            lanzarConfetti();
-        }
+        console.log('[RESULTADO]: 🎉 ¡Ganaste! - Lanzando confetti');
+        setTimeout(() => {
+            if (typeof lanzarConfetti === 'function') {
+                lanzarConfetti();
+            }
+        }, 800);
     }
     
-    console.log('[SOCKET]: ✅ Proceso completado');
-    console.log('═══════════════════════════════════════════════════════════');
+    // ✅ PASO 8: LOG FINAL
+    console.log('[RESULTADO]: ═══════════════════════════════════════════');
+    console.log('[RESULTADO]: ✅ MODAL DEBERÍA ESTAR VISIBLE AHORA');
+    console.log('[RESULTADO]: Verificar estilos del modal:');
+    console.log('  - display:', modal.style.display);
+    console.log('  - opacity:', modal.style.opacity);
+    console.log('  - z-index:', modal.style.zIndex);
+    console.log('  - visibility:', modal.style.visibility);
+    console.log('[RESULTADO]: ═══════════════════════════════════════════');
 });
 
 /**
@@ -1989,44 +2175,6 @@ function toggleDesglose(index) {
         btn.classList.remove('abierto');
     }
 }
-
-// ================================================================
-// 🎧 LISTENER MEJORADO: Recibir resultado del servidor
-// ================================================================
-
-socket.on('duelo:finalizado', (resultado) => {
-    console.log('═══════════════════════════════════════════════════════════');
-    console.log('[SOCKET]: 📊 RESULTADO RECIBIDO');
-    console.log('═══════════════════════════════════════════════════════════');
-    console.log('[SOCKET]: Modo:', resultado.modo);
-    console.log('[SOCKET]: Ganador ID:', resultado.ganadorId);
-    console.log('[SOCKET]: Es empate:', resultado.esEmpate);
-    console.log('[SOCKET]: Apuesta:', resultado.apuesta);
-    console.log('[SOCKET]: ID Carrera:', resultado.idCarrera || 'N/A');
-    console.log('[SOCKET]: Jugadores:', resultado.jugadores.length);
-    actualizarEstadoDuelo(false);
-    // Ocultar arena
-    document.getElementById('arenaContainer').style.display = 'none';
-    document.getElementById('draftContainer').style.display = 'none';
-    
-    // Mostrar modal de resultado
-    const modal = document.getElementById('modalResultadoDetallado');
-    modal.style.display = 'flex';
-    modal.classList.add('visible');
-    
-    // ✅ Renderizar con sistema corregido
-    renderizarResultadoConPuntosSeparados(resultado);
-    
-    // Lanzar confetti si ganamos
-    const userId = parseInt(window.USER_DATA?.id_usuario);
-    if (resultado.ganadorId === userId && !resultado.esEmpate) {
-        console.log('[SOCKET]: 🎉 Lanzando confetti (usuario ganó)');
-        lanzarConfetti();
-    }
-    
-    console.log('[SOCKET]: ✅ Interfaz actualizada');
-    console.log('═══════════════════════════════════════════════════════════');
-});
 
 // ================================================================
 // 🎨 ESTILOS CSS MEJORADOS CON SUBLABELS
@@ -2649,6 +2797,16 @@ btnCancelarBusqueda.addEventListener('click', () => {
     }
 });
 
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('modalResultadoDetallado');
+    
+    if (!modal) {
+        console.error('❌ CRÍTICO: Modal de resultados NO encontrado en el HTML');
+    } else {
+        console.log('✅ Modal de resultados encontrado:', modal);
+    }
+});
+
 modalDificultad.querySelectorAll('.dificultad-opciones button').forEach(btn => {
     if (btn.dataset.dificultad) {
         btn.onclick = () => iniciarBusqueda('carrera', btn.dataset.dificultad);
@@ -2695,7 +2853,7 @@ socket.on('matchmaking:salaCreada', ({ salaId, urlSala, mensaje, apuesta, bote, 
     statusText.innerHTML = `<i class="fas fa-check-circle"></i> ${mensaje}`;
     btnCancelarBusqueda.style.display = 'none';
     
-    salaActual = salaId;
+    establecerSala(salaId)
     
     const delayTotal = (delay || 0) + 1000;
     
@@ -2713,7 +2871,7 @@ const fromMatchmaking = sessionStorage.getItem('fromMatchmaking') === 'true';
 const matchmakingSalaId = sessionStorage.getItem('matchmakingSalaId');
 
 if (fromMatchmaking && matchmakingSalaId) {
-    salaActual = matchmakingSalaId;
+    establecerSala(matchmakingSalaId)
     console.log('[SALA]: Sala de MATCHMAKING:', salaActual);
     
     sessionStorage.removeItem('fromMatchmaking');
@@ -3437,7 +3595,7 @@ window.addEventListener('beforeunload', (e) => {
         
         // ✅ INFORMAR AL SERVIDOR INMEDIATAMENTE
         socket.emit('duelo:abandonoRapido', {
-            salaId: salaActual || salaId,
+            salaId: obtenerSalaActual(), 
             userId: user.id_usuario,
             motivo: 'navegacion'
         });
@@ -3621,7 +3779,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // ✅ EMITIR EVENTO CORRECTO AL SERVIDOR
             socket.emit('duelo:confirmarRendicion', {
-                salaId: salaActual || salaId,
+                salaId: obtenerSalaActual(), 
                 userId: user.id_usuario,
                 motivo: motivoSalida || 'rendirse',
                 modo: modoActualDuelo,
@@ -3889,7 +4047,7 @@ document.getElementById('btnReportarError').addEventListener('click', () => {
     const codigoError = document.getElementById('codigoError').textContent;
     
     socket.emit('duelo:reportarError', {
-        salaId: salaActual || salaId,
+        salaId: obtenerSalaActual(), 
         userId: user.id_usuario,
         error: codigoError,
         contexto: {
@@ -4173,7 +4331,7 @@ window.addEventListener('beforeunload', () => {
         socket.emit('competitivo:salirPortal', user.id_usuario);
     }
     if (salaActual) {
-        socket.emit('sala:salir', { salaId: salaActual });
+        socket.emit('sala:salir', { salaId: obtenerSalaActual() });
     }
 });
 
@@ -4182,7 +4340,7 @@ window.addEventListener('beforeunload', (e) => {
     if (dueloActivo && !intentandoSalir) {
         // ✅ Informar al servidor INMEDIATAMENTE
         socket.emit('duelo:abandonoRapido', {
-            salaId: salaActual || salaId,
+            salaId: obtenerSalaActual(), 
             userId: user.id_usuario
         });
         
@@ -4333,3 +4491,72 @@ function animarPorcentaje(duracionTotal) {
 }
 
 console.log('[DUELO]: ✅ Sistema completamente inicializado');
+
+console.log('═══════════════════════════════════════════════════════════');
+console.log('[DEBUG]: 🔍 Sistema de debugging activado');
+console.log('═══════════════════════════════════════════════════════════');
+
+// ✅ Interceptar TODOS los eventos de socket SALIENTES
+const originalEmit = socket.emit;
+socket.emit = function(...args) {
+    const evento = args[0];
+    const datos = args[1];
+    
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('[SOCKET OUT]: 📤 Evento emitido');
+    console.log(`   - Evento: ${evento}`);
+    console.log(`   - Datos:`, datos);
+    console.log('═══════════════════════════════════════════════════════════');
+    
+    return originalEmit.apply(socket, args);
+};
+
+// ✅ Interceptar evento específico de respuesta
+const responderHandler = (data) => {
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('[RESPUESTA CLICK]: 🖱️ Usuario hizo clic en opción');
+    console.log(`   - Pregunta ID: ${data.idPregunta}`);
+    console.log(`   - Respuesta ID: ${data.idRespuesta}`);
+    console.log(`   - Tiempo: ${data.tiempoRespuesta}s`);
+    console.log(`   - Usuario: ${data.userId}`);
+    console.log(`   - Sala: ${data.salaId}`);
+    console.log('═══════════════════════════════════════════════════════════');
+};
+
+// ✅ Listener para RESULTADO de respuesta
+socket.on('duelo:resultadoRespuesta', (data) => {
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('[RESULTADO RECIBIDO]: 📨 Servidor envió resultado');
+    console.log(`   - Es correcta: ${data.esCorrecta ? '✅' : '❌'}`);
+    console.log(`   - Puntos ganados: ${data.puntosGanados}`);
+    console.log(`   - Racha: ${data.racha}`);
+    console.log(`   - Tiempo: ${data.tiempoRespuesta}s`);
+    console.log(`   - Retroalimentación: ${data.retroalimentacion}`);
+    console.log('═══════════════════════════════════════════════════════════');
+});
+
+// ✅ Verificar estado del duelo actual
+setInterval(() => {
+    if (dueloActivo) {
+        console.log('═══════════════════════════════════════════════════════════');
+        console.log('[DEBUG ESTADO]: 📊 Estado actual del duelo');
+        console.log(`   - Duelo activo: ${dueloActivo}`);
+        console.log(`   - Sala: ${salaActual || salaId || 'N/A'}`);
+        console.log(`   - Pausado: ${dueloPausado}`);
+        console.log(`   - Botones habilitados: ${botonesHabilitados}`);
+        console.log(`   - Pregunta actual ID: ${preguntaActualId || 'N/A'}`);
+        console.log('═══════════════════════════════════════════════════════════');
+    }
+}, 10000); // Cada 10 segundos
+
+// ✅ Verificar conexión de socket
+setInterval(() => {
+    console.log('[DEBUG SOCKET]:', {
+        conectado: socket.connected,
+        userId: socket.userId,
+        hasJoinedSala: socket.hasJoinedSala,
+        salaActual: salaActual || salaId
+    });
+}, 15000); // Cada 15 segundos
+
+console.log('[DEBUG]: ✅ Sistema inicializado - Revisa la consola para ver logs');

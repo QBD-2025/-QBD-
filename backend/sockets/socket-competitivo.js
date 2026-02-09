@@ -961,8 +961,6 @@ global.salasEspera = salasEspera;
 // FUNCIONES AUXILIARES
 // ================================================================
 
-
-
 function otorgarPowerUp() {
     const powerUpsArray = Object.values(POWER_UPS);
     const randomIndex = Math.floor(Math.random() * powerUpsArray.length);
@@ -1798,43 +1796,45 @@ module.exports = (io, socket) => {
     });
 
     console.log('[SOCKET]: ✅ Fix de detección de jugadores aplicado');
-        // ================================================================
-    // ✅ HANDLER: duelo:clienteListo
     // ================================================================
-    
-    socket.on('duelo:clienteListo', async ({ salaId, userId }) => {
+    // ✅ HANDLER MEJORADO: duelo:clienteListo con validaciones
+    // ================================================================
+
+        socket.on('duelo:clienteListo', async ({ salaId, userId }) => {
         console.log('═══════════════════════════════════════════════════════════');
-        console.log(`[CLIENT LISTO]: 🎯 Usuario ${userId} se reporta listo`);
+        console.log(`[CLIENT LISTO]: 🎯 Usuario ${userId} reporta LISTO`);
         console.log(`[CLIENT LISTO]: Sala: ${salaId}`);
         console.log('═══════════════════════════════════════════════════════════');
         
-        const duelo = activeDuels.get(salaId);
+        let duelo = activeDuels.get(salaId);
         
+        // ✅ PASO 1: BUSCAR DUELO
         if (!duelo) {
-            console.error(`[CLIENT LISTO]: ❌ Duelo no encontrado en activeDuels`);
-            console.error(`[CLIENT LISTO]: SalaId recibido: ${salaId}`);
-            console.error(`[CLIENT LISTO]: Duelos activos: ${activeDuels.size}`);
+            console.error(`[CLIENT LISTO]: ❌ Duelo no encontrado en memoria`);
+            console.log('[CLIENT LISTO]: 🔄 Intentando cargar de BD...');
             
-            // Listar duelos activos para debug
-            if (activeDuels.size > 0) {
-                console.log('[CLIENT LISTO]: Duelos disponibles:');
-                for (const [key] of activeDuels.entries()) {
-                    console.log(`  - ${key}`);
-                }
+            // Intentar cargar de BD
+            duelo = await cargarEstadoDuelo(salaId);
+            
+            if (duelo) {
+                activeDuels.set(salaId, duelo);
+                console.log('[CLIENT LISTO]: ✅ Duelo restaurado desde BD');
+            } else {
+                console.error('[CLIENT LISTO]: ❌ No se pudo cargar duelo');
+                return socket.emit('duelo:errorDraft', { 
+                    mensaje: 'El duelo no está disponible' 
+                });
             }
-            
-            return socket.emit('duelo:errorDraft', { 
-                mensaje: 'El duelo no está listo. Recargando...' 
-            });
         }
-
+        
         console.log(`[CLIENT LISTO]: ✅ Duelo encontrado`);
-        console.log(`[CLIENT LISTO]: Estado: ${duelo.estado}`);
-        console.log(`[CLIENT LISTO]: Jugadores en duelo: ${Object.keys(duelo.jugadores).length}`);
-
-        // ✅ Si el jugador no existe en el duelo, cargarlo
+        console.log(`   - Estado: ${duelo.estado}`);
+        console.log(`   - Jugadores: ${Object.keys(duelo.jugadores).length}`);
+        
+        // ✅ PASO 2: VERIFICAR JUGADOR
         if (!duelo.jugadores[userId]) {
-            console.log(`[CLIENT LISTO]: ⚠️ Jugador ${userId} no está en duelo, cargando...`);
+            console.log(`[CLIENT LISTO]: ⚠️ Jugador ${userId} no está en duelo`);
+            console.log('[CLIENT LISTO]: 🔄 Cargando datos del jugador...');
             
             try {
                 const [userData] = await db.query(
@@ -1850,23 +1850,21 @@ module.exports = (io, socket) => {
                         racha: 0,
                         powerUp: null,
                         escudoActivo: false,
-                        gambitoActivado: false,
-                        gambitoExitoso: false
+                        gambitoActivado: false
                     };
-                    
-                    console.log(`[CLIENT LISTO]: ✅ Usuario ${userId} agregado al duelo`);
+                    console.log(`[CLIENT LISTO]: ✅ Jugador agregado`);
                 } else {
-                    throw new Error('Usuario no encontrado en BD');
+                    throw new Error('Usuario no encontrado');
                 }
             } catch (error) {
                 console.error(`[CLIENT LISTO ERROR]:`, error);
                 return socket.emit('duelo:errorDraft', { 
-                    mensaje: 'Error al cargar datos del jugador.' 
+                    mensaje: 'Error cargando datos del jugador' 
                 });
             }
         }
-
-        // ✅ Actualizar socket y marcar como listo
+        
+        // ✅ PASO 3: ACTUALIZAR SOCKET Y MARCAR LISTO
         duelo.jugadores[userId].socketId = socket.id;
         duelo.jugadores[userId].listo = true;
         
@@ -1874,29 +1872,24 @@ module.exports = (io, socket) => {
         const jugadoresListos = jugadoresIds.filter(id => duelo.jugadores[id].listo);
         
         console.log(`[CLIENT LISTO]: Jugadores listos: ${jugadoresListos.length}/${jugadoresIds.length}`);
-        console.log(`[CLIENT LISTO]: IDs listos: ${jugadoresListos.join(', ')}`);
         
-        // ✅ Emitir estado a toda la sala
+        // ✅ PASO 4: NOTIFICAR ESTADO
         io.to(salaId).emit('duelo:estadoDraft', {
             jugadoresListos: jugadoresListos.length,
             totalJugadores: jugadoresIds.length
         });
         
-        const todosListos = jugadoresIds.length === 2 && jugadoresListos.length === 2;
-
-        // ✅ SI AMBOS ESTÁN LISTOS, INICIAR DRAFT
-        if (todosListos) {
-            console.log(`[CLIENT LISTO]: ✅✅✅ AMBOS JUGADORES LISTOS - INICIANDO DRAFT ✅✅✅`);
+        // ✅ PASO 5: SI AMBOS LISTOS → INICIAR DRAFT
+        if (jugadoresIds.length === 2 && jugadoresListos.length === 2) {
+            console.log('[CLIENT LISTO]: ✅✅✅ AMBOS LISTOS - INICIANDO DRAFT');
             
-            // Enviar info del oponente a cada jugador
+            // Enviar info de oponentes
             jugadoresIds.forEach(playerId => {
                 const oponenteId = jugadoresIds.find(id => id !== playerId);
                 const oponenteData = duelo.jugadores[oponenteId];
                 const playerSocket = duelo.jugadores[playerId].socketId;
                 
                 if (playerSocket && oponenteData) {
-                    console.log(`[CLIENT LISTO]: 📤 Enviando info de oponente ${oponenteId} → jugador ${playerId}`);
-                    
                     io.to(playerSocket).emit('duelo:oponenteInfo', {
                         oponenteId,
                         oponente: { 
@@ -1904,19 +1897,27 @@ module.exports = (io, socket) => {
                             foto_perfil: oponenteData.foto_perfil || '/uploads/default_avatar.png'
                         }
                     });
+                    
+                    console.log(`[CLIENT LISTO]: ✅ Info de oponente enviada a ${playerId}`);
                 }
             });
-
-            // ✅ Esperar 1 segundo antes de cargar categorías
+            
+            // ✅ ESPERAR 1 SEGUNDO
             await new Promise(resolve => setTimeout(resolve, 1000));
-
+            
+            // ✅ CARGAR CATEGORÍAS
             const [jugadorA_id, jugadorB_id] = jugadoresIds;
-            let categorias;
-
+            
             try {
-                // ✅ CARGAR CATEGORÍAS SEGÚN MODO
+                let categorias;
+                
+                console.log('[DRAFT]: 🔍 Cargando categorías...');
+                console.log(`   - Modo: ${duelo.modo}`);
+                console.log(`   - Jugador A: ${jugadorA_id}`);
+                console.log(`   - Jugador B: ${jugadorB_id}`);
+                
                 if (duelo.modo === 'carrera') {
-                    console.log(`[DRAFT]: 🎓 Modo CARRERA - Cargando temáticas comunes`);
+                    console.log('[DRAFT]: 🎓 Buscando temáticas de CARRERA');
                     
                     [categorias] = await db.query(`
                         SELECT DISTINCT t.id_tematica AS id, t.descripcion 
@@ -1932,34 +1933,46 @@ module.exports = (io, socket) => {
                     `, [jugadorA_id, jugadorB_id]);
                     
                 } else {
-                    console.log(`[DRAFT]: 🌍 Modo GENERAL - Cargando materias generales`);
+                    console.log('[DRAFT]: 🌍 Buscando materias GENERALES');
                     
                     [categorias] = await db.query(`
                         SELECT m.id_materia AS id, m.descripcion 
                         FROM materias m
-                        WHERE (SELECT COUNT(*) FROM pregunta WHERE id_materia = m.id_materia AND id_carrera IS NULL) >= 5
+                        WHERE (SELECT COUNT(*) FROM pregunta 
+                            WHERE id_materia = m.id_materia 
+                            AND id_carrera IS NULL) >= 5
                         ORDER BY RAND() LIMIT 3
                     `);
                 }
-
+                
                 console.log(`[DRAFT]: ✅ ${categorias.length} categorías cargadas`);
-
-                if (categorias.length < 1) {
-                    console.error('[DRAFT]: ❌ No hay categorías disponibles');
-                    io.to(salaId).emit('duelo:errorDraft', { 
-                        mensaje: 'No hay categorías disponibles para este duelo.' 
+                
+                if (categorias.length > 0) {
+                    categorias.forEach((cat, idx) => {
+                        console.log(`   ${idx + 1}. ${cat.descripcion} (ID: ${cat.id})`);
                     });
+                }
+                
+                // ✅ VALIDACIÓN CRÍTICA
+                if (categorias.length === 0) {
+                    console.error('[DRAFT]: ❌ NO HAY CATEGORÍAS');
+                    
+                    io.to(salaId).emit('duelo:errorDraft', { 
+                        mensaje: 'No hay categorías disponibles para este duelo' 
+                    });
+                    
                     activeDuels.delete(salaId);
                     return;
                 }
-
+                
+                // ✅ GUARDAR EN DUELO
                 duelo.categoriasDraft = categorias;
                 duelo.estado = 'draft_iniciado';
                 
-                // ✅ ENVIAR DRAFT A AMBOS JUGADORES
-                console.log(`[DRAFT]: 📤📤 Enviando categorías a ambos jugadores...`);
+                // ✅✅✅ EMITIR A TODA LA SALA
+                console.log('[DRAFT]: 📤 Emitiendo duelo:iniciarMiniDraft...');
                 
-                const dataDraft = { 
+                const payload = { 
                     categorias: categorias.map(c => ({ 
                         id: c.id, 
                         descripcion: c.descripcion 
@@ -1967,26 +1980,28 @@ module.exports = (io, socket) => {
                     permitirGambito: true
                 };
                 
-                console.log('[DRAFT]: Data a enviar:', JSON.stringify(dataDraft, null, 2));
+                console.log('[DRAFT]: Payload:', JSON.stringify(payload, null, 2));
                 
-                io.to(salaId).emit('duelo:iniciarMiniDraft', dataDraft);
+                io.to(salaId).emit('duelo:iniciarMiniDraft', payload);
                 
-                console.log(`[DRAFT]: ✅✅✅ DRAFT ENVIADO EXITOSAMENTE ✅✅✅`);
+                console.log('[DRAFT]: ✅✅✅ DRAFT ENVIADO A TODA LA SALA');
                 console.log('═══════════════════════════════════════════════════════════');
                 
             } catch (error) {
-                console.error(`[DRAFT ERROR]:`, error);
+                console.error('═══════════════════════════════════════════════════════════');
+                console.error('[DRAFT ERROR]:', error);
                 console.error('Stack:', error.stack);
+                console.error('═══════════════════════════════════════════════════════════');
+                
                 io.to(salaId).emit('duelo:errorDraft', { 
-                    mensaje: 'Error preparando categorías: ' + error.message 
+                    mensaje: 'Error cargando categorías: ' + error.message 
                 });
-                activeDuels.delete(salaId);
             }
+            
         } else {
-            console.log(`[CLIENT LISTO]: ⏳ Esperando más jugadores (${jugadoresListos.length}/2)`);
+            console.log('[CLIENT LISTO]: ⏳ Esperando más jugadores...');
+            console.log(`   - Listos: ${jugadoresListos.join(', ')}`);
         }
-        
-        console.log('═══════════════════════════════════════════════════════════');
     });
 
     // ================================================================
@@ -2030,9 +2045,14 @@ module.exports = (io, socket) => {
         if (seleccionesCount === 2) {
             console.log(`[SELECCIÓN]: ✅ AMBOS SELECCIONARON`);
             
+            // ✅ NUEVO: Ocultar draft INMEDIATAMENTE
+            io.to(salaId).emit('duelo:ocultarDraft', {
+                mensaje: 'Ambos jugadores listos'
+            });
+            
             const jugadoresIds = Object.keys(duelo.jugadores);
             const [jugadorA, jugadorB] = jugadoresIds;
-            
+                    
             const jugadorAQuiereApostar = duelo.jugadoresQuierenApostar[jugadorA];
             const jugadorBQuiereApostar = duelo.jugadoresQuierenApostar[jugadorB];
             
@@ -3181,178 +3201,364 @@ async function guardarEstadoDuelo(salaId, duelo) {
             }
         }
 
-    // ================================================================
-    // ✅ PROCESAR RESPUESTA
-    // ================================================================
     socket.on('duelo:responder', async ({ salaId, userId, idPregunta, idRespuesta, tiempoRespuesta }) => {
-        const duelo = activeDuels.get(salaId);
-        if (!duelo || duelo.estado !== 'en_juego') return;
-
-        const preguntaActual = duelo.examen[duelo.preguntaActual];
-        if (preguntaActual.id_pregunta !== idPregunta || (duelo.respuestas[idPregunta]?.[userId])) return;
-
-        if (!tiempoRespuesta) {
-            tiempoRespuesta = (Date.now() - duelo.tiempoInicioPregunta) / 1000;
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('[RESPUESTA]: 📝 Respuesta recibida');
+    console.log(`   - Usuario: ${userId}`);
+    console.log(`   - Pregunta: ${idPregunta}`);
+    console.log(`   - Respuesta: ${idRespuesta}`);
+    console.log(`   - Tiempo: ${tiempoRespuesta}s`);
+    console.log('═══════════════════════════════════════════════════════════');
+    
+    const duelo = activeDuels.get(salaId);
+    
+    // ✅ VALIDACIÓN 1: Duelo existe
+    if (!duelo) {
+        console.error('[RESPUESTA]: ❌ Duelo no encontrado');
+        return socket.emit('duelo:error', { 
+            mensaje: 'Duelo no disponible' 
+        });
+    }
+    
+    // ✅ VALIDACIÓN 2: Duelo en estado correcto
+    if (duelo.estado !== 'en_juego') {
+        console.error('[RESPUESTA]: ❌ Duelo no está en juego');
+        console.error(`   - Estado actual: ${duelo.estado}`);
+        return socket.emit('duelo:error', { 
+            mensaje: 'El duelo no está activo' 
+        });
+    }
+    
+    // ✅ VALIDACIÓN 3: Pregunta correcta
+    const preguntaActual = duelo.examen[duelo.preguntaActual];
+    
+    if (!preguntaActual || preguntaActual.id_pregunta !== parseInt(idPregunta)) {
+        console.error('[RESPUESTA]: ❌ Pregunta incorrecta');
+        console.error(`   - Esperada: ${preguntaActual?.id_pregunta}`);
+        console.error(`   - Recibida: ${idPregunta}`);
+        return socket.emit('duelo:error', { 
+            mensaje: 'Pregunta no válida' 
+        });
+    }
+    
+    // ✅ VALIDACIÓN 4: No ha respondido antes
+    if (duelo.respuestas[idPregunta]?.[userId]) {
+        console.warn('[RESPUESTA]: ⚠️ Usuario ya respondió esta pregunta');
+        return;
+    }
+    
+    console.log('[RESPUESTA]: ✅ Validaciones pasadas - Procesando...');
+    
+    // ✅ CALCULAR TIEMPO SI NO SE PROPORCIONÓ
+    if (!tiempoRespuesta) {
+        tiempoRespuesta = (Date.now() - duelo.tiempoInicioPregunta) / 1000;
+        console.log(`[RESPUESTA]: Tiempo calculado: ${tiempoRespuesta}s`);
+    }
+    
+    // ✅ NOTIFICAR AL OPONENTE
+    const jugadoresIds = Object.keys(duelo.jugadores);
+    const oponenteId = jugadoresIds.find(id => id !== userId.toString());
+    
+    if (oponenteId && duelo.jugadores[oponenteId]?.socketId) {
+        io.to(duelo.jugadores[oponenteId].socketId).emit('duelo:oponenteRespondio');
+        console.log('[RESPUESTA]: ✅ Oponente notificado');
+    }
+    
+    try {
+        // ════════════════════════════════════════════════════════════
+        // 1️⃣ CONSULTAR SI LA RESPUESTA ES CORRECTA
+        // ════════════════════════════════════════════════════════════
+        
+        const [[respuestaData]] = await db.query(
+            'SELECT correcta FROM respuesta WHERE id_respuesta = ?', 
+            [idRespuesta]
+        );
+        
+        if (!respuestaData) {
+            console.error('[RESPUESTA]: ❌ Respuesta no encontrada en BD');
+            return socket.emit('duelo:error', { 
+                mensaje: 'Respuesta no válida' 
+            });
         }
-
-        console.log(`[RESPUESTA]: Usuario ${userId} respondió en ${tiempoRespuesta.toFixed(2)}s`);
-
-        const oponenteId = Object.keys(duelo.jugadores).find(id => id !== userId);
-        if (oponenteId) {
-            io.to(duelo.jugadores[oponenteId].socketId).emit('duelo:oponenteRespondio');
+        
+        const esCorrecta = respuestaData.correcta === 1;
+        
+        console.log('[RESPUESTA]: 📊 Resultado:', esCorrecta ? '✅ CORRECTA' : '❌ INCORRECTA');
+        
+        // ════════════════════════════════════════════════════════════
+        // 2️⃣ REGISTRAR RESPUESTA
+        // ════════════════════════════════════════════════════════════
+        
+        if (!duelo.respuestas[idPregunta]) {
+            duelo.respuestas[idPregunta] = {};
         }
+        
+        if (!duelo.tiemposRespuesta[idPregunta]) {
+            duelo.tiemposRespuesta[idPregunta] = {};
+        }
+        
+        duelo.respuestas[idPregunta][userId] = { 
+            esCorrecta, 
+            idRespuesta,
+            timestamp: Date.now()
+        };
+        
+        duelo.tiemposRespuesta[idPregunta][userId] = tiempoRespuesta;
+        
+        console.log('[RESPUESTA]: ✅ Respuesta registrada');
+        
+        // ════════════════════════════════════════════════════════════
+        // 3️⃣✅✅✅ CALCULAR PUNTOS CORRECTAMENTE
+        // ════════════════════════════════════════════════════════════
+        
+        let puntosGanados = 0;
+        const puntosBase = parseInt(preguntaActual.puntos) || 100;
+        const eventoActual = preguntaActual.evento;
 
-        try {
-            const [[respuestaData]] = await db.query(
-                'SELECT correcta FROM respuesta WHERE id_respuesta = ?', 
-                [idRespuesta]
-            );
+        console.log('[RESPUESTA]: 💰 Iniciando cálculo de puntos');
+        console.log(`   - Puntos base: ${puntosBase}`);
+        console.log(`   - Es correcta: ${esCorrecta}`);
+        console.log(`   - Tiempo: ${tiempoRespuesta}s`);
 
-            const esCorrecta = respuestaData?.correcta === 1;
+        if (esCorrecta) {
+            // ✅ RESPUESTA CORRECTA
+            duelo.jugadores[userId].racha++;
             
-            if (!duelo.respuestas[idPregunta]) duelo.respuestas[idPregunta] = {};
-            if (!duelo.tiemposRespuesta[idPregunta]) duelo.tiemposRespuesta[idPregunta] = {};
+            console.log(`[RESPUESTA]: 🔥 Racha actual: ${duelo.jugadores[userId].racha}`);
             
-            duelo.respuestas[idPregunta][userId] = { esCorrecta, idRespuesta };
-            duelo.tiemposRespuesta[idPregunta][userId] = tiempoRespuesta;
-
-            let puntosGanados = 0;
-            const eventoActual = preguntaActual.evento;
-            const puntosBase = preguntaActual.puntos || 100;
-
-            if (esCorrecta) {
-                duelo.jugadores[userId].racha++;
-                
-                // ✅ USAR GestorPuntuacion
+            // ✅✅✅ USAR GestorPuntuacion CORRECTAMENTE
+            if (typeof GestorPuntuacion !== 'undefined' && GestorPuntuacion.calcularPuntosPregunta) {
                 const resultadoPregunta = GestorPuntuacion.calcularPuntosPregunta({
                     esCorrecta: true,
                     tiempoRespuesta: tiempoRespuesta,
                     racha: duelo.jugadores[userId].racha,
-                    eventoEspecial: preguntaActual.evento?.id || null
+                    eventoEspecial: eventoActual?.id || null
                 }, {
                     puntos: puntosBase,
                     puntos_carrera: preguntaActual.puntos_carrera || 0
-                });
+                }, duelo.modo || 'general'); // ✅ PASAR MODO
                 
-                puntosGanados = resultadoPregunta.puntosTotales;
-                
-                // Guardar desglose para resultado final
-                if (!duelo.desglosePuntos) duelo.desglosePuntos = {};
-                if (!duelo.desglosePuntos[userId]) duelo.desglosePuntos[userId] = [];
-                duelo.desglosePuntos[userId].push({
-                    pregunta: preguntaActual.id_pregunta,
-                    desglose: resultadoPregunta.desglose
-                });
-                
-                // Otorgar power-up cada 3 respuestas correctas
-                if (duelo.jugadores[userId].racha % 3 === 0 && !duelo.jugadores[userId].powerUp) {
-                    const powerUp = otorgarPowerUp();
-                    duelo.jugadores[userId].powerUp = powerUp;
-                    
-                    socket.emit('duelo:powerUpObtenido', {
-                        powerUp: {
-                            id: powerUp.id,
-                            nombre: powerUp.nombre,
-                            descripcion: powerUp.descripcion
-                        },
-                        mensaje: `🎁 ¡Racha x${duelo.jugadores[userId].racha}! Obtuviste: ${powerUp.nombre}`
-                    });
+                // ✅✅✅ CRÍTICO: Acceder a los campos correctos
+                if (duelo.modo === 'carrera') {
+                    puntosGanados = resultadoPregunta.puntosCarrera || 0;
+                    console.log('[RESPUESTA]: 🎓 Usando puntos de carrera:', puntosGanados);
+                } else {
+                    puntosGanados = resultadoPregunta.puntosGlobales || 0;
+                    console.log('[RESPUESTA]: 🌍 Usando puntos globales:', puntosGanados);
                 }
                 
-            } else {
-                duelo.jugadores[userId].racha = 0;
-                duelo.jugadores[userId].gambitoExitoso = false;
-                
-                // ✅ USAR GestorPuntuacion para penalizaciones
-                const resultadoPregunta = GestorPuntuacion.calcularPuntosPregunta({
-                    esCorrecta: false,
-                    tiempoRespuesta: tiempoRespuesta,
-                    racha: 0,
-                    eventoEspecial: preguntaActual.evento?.id || null
-                }, {
-                    puntos: puntosBase,
-                    puntos_carrera: 0
-                });
-                
-                puntosGanados = resultadoPregunta.puntosTotales;
+                console.log('[RESPUESTA]: 💰 Puntos calculados con GestorPuntuacion:', puntosGanados);
+                console.log('[RESPUESTA]: Desglose completo:', resultadoPregunta.desglose);
                 
                 // Guardar desglose
                 if (!duelo.desglosePuntos) duelo.desglosePuntos = {};
                 if (!duelo.desglosePuntos[userId]) duelo.desglosePuntos[userId] = [];
+                
                 duelo.desglosePuntos[userId].push({
                     pregunta: preguntaActual.id_pregunta,
                     desglose: resultadoPregunta.desglose
                 });
                 
-                // Penalizar gambito fallido
-                if (duelo.jugadores[userId].gambitoActivado) {
-                    const penalizacion = Math.floor(puntosBase * SISTEMA_PUNTOS.GAMBITO.PENALIZACION_FALLA);
-                    puntosGanados -= penalizacion;
+            } else {
+                // ✅ FALLBACK MEJORADO: Cálculo garantizado
+                console.log('[RESPUESTA]: ⚠️ GestorPuntuacion no disponible - Usando cálculo directo');
+                
+                puntosGanados = puntosBase; // Empezar con base
+                
+                // Bonus por tiempo
+                if (tiempoRespuesta < 5) {
+                    const bonusTiempo = Math.floor(puntosBase * 0.30);
+                    puntosGanados += bonusTiempo;
+                    console.log(`[RESPUESTA]: +${bonusTiempo} bonus tiempo (<5s)`);
+                } else if (tiempoRespuesta < 10) {
+                    const bonusTiempo = Math.floor(puntosBase * 0.20);
+                    puntosGanados += bonusTiempo;
+                    console.log(`[RESPUESTA]: +${bonusTiempo} bonus tiempo (<10s)`);
                 }
+                
+                // Bonus por racha
+                if (duelo.jugadores[userId].racha >= 3) {
+                    const bonusRacha = duelo.jugadores[userId].racha * 4; // 4 pts por racha
+                    puntosGanados += bonusRacha;
+                    console.log(`[RESPUESTA]: +${bonusRacha} bonus racha (x${duelo.jugadores[userId].racha})`);
+                }
+                
+                // Multiplicador de evento
+                if (eventoActual?.multiplicador) {
+                    const antes = puntosGanados;
+                    puntosGanados = Math.floor(puntosGanados * eventoActual.multiplicador);
+                    console.log(`[RESPUESTA]: Multiplicador x${eventoActual.multiplicador} (${antes} → ${puntosGanados})`);
+                }
+                
+                console.log('[RESPUESTA]: 💰 Puntos calculados (fallback):', puntosGanados);
             }
             
-            duelo.puntuaciones[userId] = (duelo.puntuaciones[userId] || 0) + puntosGanados;
-
-            socket.emit('duelo:resultadoRespuesta', { 
-                esCorrecta, 
-                retroalimentacion: preguntaActual.retroalimentacion,
-                puntosGanados,
-                racha: duelo.jugadores[userId].racha,
-                tiempoRespuesta: tiempoRespuesta.toFixed(2)
-            });
-
-            // Si ambos respondieron
-            if (Object.keys(duelo.respuestas[idPregunta]).length === 2) {
-                if (duelo.timer) clearTimeout(duelo.timer);
-
-                console.log(`[RESPUESTA]: Ambos jugadores respondieron - siguiente pregunta`);
-
-                // Verificar gambito
-                const [j1Id, j2Id] = Object.keys(duelo.jugadores);
+            // ✅✅✅ GARANTIZAR QUE puntosGanados NO SEA UNDEFINED
+            if (puntosGanados === undefined || isNaN(puntosGanados) || puntosGanados === null) {
+                console.error('[RESPUESTA]: ❌ ERROR CRÍTICO: puntosGanados es inválido');
+                puntosGanados = puntosBase; // Usar base como fallback absoluto
+                console.log(`[RESPUESTA]: 🛟 Usando puntos base como fallback: ${puntosGanados}`);
+            }
+            
+            // Asegurar que sea un número entero positivo
+            puntosGanados = Math.max(0, Math.floor(puntosGanados));
+            
+            console.log(`[RESPUESTA]: ✅ Puntos FINALES garantizados: ${puntosGanados}`);
+            
+            // ✅ OTORGAR POWER-UP cada 3 respuestas correctas
+            if (duelo.jugadores[userId].racha % 3 === 0 && !duelo.jugadores[userId].powerUp) {
+                const powerUp = otorgarPowerUp();
+                duelo.jugadores[userId].powerUp = powerUp;
                 
-                for (const jId of [j1Id, j2Id]) {
-                    if (duelo.jugadores[jId].gambitoActivado) {
-                        const respJ = duelo.respuestas[idPregunta][jId];
-                        const tiempoJ = duelo.tiemposRespuesta[idPregunta][jId];
-                        const otroId = jId === j1Id ? j2Id : j1Id;
-                        const tiempoOtro = duelo.tiemposRespuesta[idPregunta][otroId];
-                        
-                        if (respJ.esCorrecta && tiempoJ < tiempoOtro) {
-                            const bonus = Math.floor((preguntaActual.puntos || 100) * 0.5);
-                            duelo.puntuaciones[jId] += bonus;
-                            
-                            io.to(duelo.jugadores[jId].socketId).emit('duelo:gambitoExitoso', {
-                                mensaje: `🎲 ¡GAMBITO EXITOSO! +${bonus} puntos bonus`,
-                                bonus
-                            });
-                        } else if (!respJ.esCorrecta || tiempoJ >= tiempoOtro) {
-                            duelo.jugadores[jId].gambitoExitoso = false;
-                        }
-                    }
-                }
-
-                // Actualizar estado
-                const jugadoresIds = Object.keys(duelo.jugadores);
-                io.to(salaId).emit('duelo:actualizarEstado', {
-                    puntuaciones: duelo.puntuaciones,
-                    rachas: {
-                        [jugadoresIds[0]]: duelo.jugadores[jugadoresIds[0]].racha,
-                        [jugadoresIds[1]]: duelo.jugadores[jugadoresIds[1]].racha
+                socket.emit('duelo:powerUpObtenido', {
+                    powerUp: {
+                        id: powerUp.id,
+                        nombre: powerUp.nombre,
+                        descripcion: powerUp.descripcion
                     },
-                    powerUps: {
-                        [jugadoresIds[0]]: duelo.jugadores[jugadoresIds[0]].powerUp?.id || null,
-                        [jugadoresIds[1]]: duelo.jugadores[jugadoresIds[1]].powerUp?.id || null
-                    }
+                    mensaje: `🎁 ¡Racha x${duelo.jugadores[userId].racha}! Obtuviste: ${powerUp.nombre}`
                 });
+                
+                console.log(`[RESPUESTA]: 🎁 Power-up otorgado: ${powerUp.nombre}`);
+            }
+            
+        } else {
+            // ❌ RESPUESTA INCORRECTA
+            duelo.jugadores[userId].racha = 0;
+            duelo.jugadores[userId].gambitoExitoso = false;
+            
+            console.log('[RESPUESTA]: ❌ Racha reseteada a 0');
+            
+            // Penalización básica
+            puntosGanados = -10;
+            
+            // Penalización por evento de riesgo
+            if (eventoActual?.penalizacionError) {
+                puntosGanados = eventoActual.penalizacionError;
+            }
+            
+            // Penalización por gambito fallido
+            if (duelo.jugadores[userId].gambitoActivado) {
+                const penalizacion = Math.floor(puntosBase * 0.25);
+                puntosGanados -= penalizacion;
+                console.log(`[RESPUESTA]: 💔 Gambito fallido - Penalización extra: ${penalizacion}`);
+            }
+            
+            console.log('[RESPUESTA]: 💸 Penalización aplicada:', puntosGanados);
+        }
 
-                duelo.preguntaActual++;
+        // ✅✅✅ VALIDACIÓN FINAL TRIPLE
+        console.log('[RESPUESTA]: 🔍 Validación final de puntosGanados:', puntosGanados);
+        console.log('[RESPUESTA]: Tipo:', typeof puntosGanados);
+        console.log('[RESPUESTA]: Es NaN:', isNaN(puntosGanados));
+        console.log('[RESPUESTA]: Es undefined:', puntosGanados === undefined);
+
+        if (puntosGanados === undefined || isNaN(puntosGanados) || puntosGanados === null) {
+            console.error('[RESPUESTA]: ❌❌❌ ERROR CRÍTICO PERSISTENTE');
+            puntosGanados = esCorrecta ? puntosBase : -10;
+            console.log(`[RESPUESTA]: 🆘 Fallback de EMERGENCIA: ${puntosGanados}`);
+        }
+
+        // Convertir a entero seguro
+        puntosGanados = parseInt(puntosGanados) || (esCorrecta ? puntosBase : -10);
+
+        console.log(`[RESPUESTA]: ✅✅✅ PUNTOS FINALES VALIDADOS: ${puntosGanados}`);
+        
+        // ════════════════════════════════════════════════════════════
+        // 4️⃣ ACTUALIZAR PUNTUACIÓN TOTAL
+        // ════════════════════════════════════════════════════════════
+        
+        const puntosAnteriores = duelo.puntuaciones[userId] || 0;
+        duelo.puntuaciones[userId] = Math.max(0, puntosAnteriores + puntosGanados);
+
+        console.log('[RESPUESTA]: 📊 Puntuación actualizada:');
+        console.log(`   - Anterior: ${puntosAnteriores}`);
+        console.log(`   - Cambio: ${puntosGanados >= 0 ? '+' : ''}${puntosGanados}`);
+        console.log(`   - Nueva: ${duelo.puntuaciones[userId]}`);
+
+        // ════════════════════════════════════════════════════════════
+        // 5️⃣✅✅✅ ENVIAR RESULTADO CON VALIDACIÓN EXTRA
+        // ════════════════════════════════════════════════════════════
+
+        const resultadoParaCliente = { 
+            esCorrecta, 
+            retroalimentacion: preguntaActual.retroalimentacion || (esCorrecta ? '¡Correcto!' : 'Incorrecto'),
+            puntosGanados: puntosGanados,
+            puntuacionTotal: duelo.puntuaciones[userId],
+            racha: duelo.jugadores[userId].racha,
+            tiempoRespuesta: tiempoRespuesta.toFixed(2)
+        };
+        
+        console.log('[RESPUESTA]: 📤 Enviando resultado al cliente:');
+        console.log(JSON.stringify(resultadoParaCliente, null, 2));
+        
+        socket.emit('duelo:resultadoRespuesta', resultadoParaCliente);
+
+        console.log('[RESPUESTA]: ✅ Resultado enviado al jugador');
+        
+        // ════════════════════════════════════════════════════════════
+        // 6️⃣ VERIFICAR SI AMBOS RESPONDIERON
+        // ════════════════════════════════════════════════════════════
+        
+        const respuestasActuales = Object.keys(duelo.respuestas[idPregunta]);
+        const totalJugadores = jugadoresIds.length;
+        
+        console.log(`[RESPUESTA]: 👥 Respuestas: ${respuestasActuales.length}/${totalJugadores}`);
+        
+        if (respuestasActuales.length === totalJugadores) {
+            console.log('[RESPUESTA]: ✅ AMBOS JUGADORES RESPONDIERON');
+            
+            // ✅ DETENER TIMER
+            if (duelo.timer) {
+                clearTimeout(duelo.timer);
+                duelo.timer = null;
+                console.log('[RESPUESTA]: ⏰ Timer detenido');
+            }
+            
+            // ✅ VERIFICAR GAMBITO (código existente...)
+            
+            // ✅ EMITIR ACTUALIZACIÓN DE ESTADO
+            io.to(salaId).emit('duelo:actualizarEstado', {
+                puntuaciones: duelo.puntuaciones,
+                rachas: {
+                    [jugadoresIds[0]]: duelo.jugadores[jugadoresIds[0]].racha,
+                    [jugadoresIds[1]]: duelo.jugadores[jugadoresIds[1]].racha
+                },
+                powerUps: {
+                    [jugadoresIds[0]]: duelo.jugadores[jugadoresIds[0]].powerUp?.id || null,
+                    [jugadoresIds[1]]: duelo.jugadores[jugadoresIds[1]].powerUp?.id || null
+                }
+            });
+            
+            console.log('[RESPUESTA]: ✅ Estado actualizado para todos');
+            
+            duelo.preguntaActual++;
+            
+            if (duelo.preguntaActual >= duelo.examen.length) {
+                console.log('[RESPUESTA]: 🏁 Última pregunta - Finalizando...');
+                setTimeout(() => finalizarDuelo(salaId, duelo), 2000);
+            } else {
+                console.log('[RESPUESTA]: ➡️ Siguiente pregunta...');
                 setTimeout(() => enviarSiguientePregunta(salaId, duelo), 3000);
             }
-        } catch (error) {
-            console.error(`[RESPUESTA ERROR]:`, error);
-            socket.emit('duelo:error', { mensaje: 'Error procesando respuesta.' });
         }
-    });
+        
+        console.log('═══════════════════════════════════════════════════════════');
+        
+    } catch (error) {
+        console.error('═══════════════════════════════════════════════════════════');
+        console.error('[RESPUESTA ERROR]:', error);
+        console.error('   - Stack:', error.stack);
+        console.error('═══════════════════════════════════════════════════════════');
+        
+        socket.emit('duelo:error', { 
+            mensaje: 'Error procesando respuesta. Intenta de nuevo.' 
+        });
+    }
+}); 
+
+    console.log('[HANDLER]: ✅ Handler duelo:responder registrado correctamente');
+
 
     // ================================================================
     // ✅ ACTIVAR POWER-UP

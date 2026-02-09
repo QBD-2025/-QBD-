@@ -1540,7 +1540,6 @@ router.get('/api/duelo/mis-duelos-activos', async (req, res) => {
             LEFT JOIN usuario u2 ON d.id_defensor = u2.id_usuario
             WHERE (d.id_retador = ? OR d.id_defensor = ?)
             AND d.estado NOT IN ('finalizado', 'abandonado')
-            AND d.fecha_limite > NOW()
         `, [idUsuario, idUsuario]);
         
         res.json({ duelos_activos: duelos });

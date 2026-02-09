@@ -539,3 +539,75 @@
             padding: 10px 15px;
         }
     }
+
+/* ✅ ANIMACIONES PARA FEEDBACK Y MARCADOR */
+
+.feedback {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 30px 50px;
+    border-radius: 15px;
+    text-align: center;
+    z-index: 1000;
+    animation: feedbackAppear 0.3s ease;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.feedback.correcto {
+    border: 3px solid #22c55e;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.05));
+}
+
+.feedback.incorrecto {
+    border: 3px solid #ef4444;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05));
+}
+
+.feedback p {
+    font-size: 28px;
+    font-weight: bold;
+    margin: 0 0 10px 0;
+}
+
+.feedback small {
+    font-size: 14px;
+    opacity: 0.8;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.feedback strong {
+    font-size: 20px;
+    display: block;
+    margin-top: 10px;
+}
+
+@keyframes feedbackAppear {
+    from {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+/* ✅ Estilos para marcador animado */
+#puntuacionTuya, #puntuacionOponente {
+    transition: all 0.3s ease;
+    display: inline-block;
+}
