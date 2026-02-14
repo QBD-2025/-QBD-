@@ -569,7 +569,7 @@ app.use('/', profileR);
 app.use('/', rankingR);
 app.use('/', rankingCarreraR);
 app.use('/', usuarioR);
-app.use('/api/promocion', promocionR); // ✅ NUEVO: Router de promociones
+app.use('/api/promocion', promocionR);
 
 // 6️⃣ SEXTO: Rutas de administración y editor
 app.use('/editor', editorR);
