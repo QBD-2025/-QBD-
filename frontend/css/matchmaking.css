@@ -2811,3 +2811,23 @@ button:disabled {
         padding: 8px 12px;
     }
 }
+/* ✅ FORZAR VISIBILIDAD DEL MODAL DE RESULTADOS */
+#modalResultadoDetallado.visible {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 99999 !important;
+}
+
+/* ✅ ASEGURAR QUE EL CONTENEDOR INTERNO TAMBIÉN SEA VISIBLE */
+#modalResultadoDetallado.visible .resultado-container {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* ✅ DEBUGGING: Color de fondo para verificar */
+#modalResultadoDetallado {
+    /* Quitar esto después de probar: */
+    /* background: red !important; */
+}

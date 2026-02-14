@@ -1,4 +1,4 @@
-// ===========================
+// queries/usuario.queries.js
 // QUERIES RELACIONADAS CON USUARIO
 // ===========================
 

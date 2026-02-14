@@ -431,6 +431,201 @@
         <i class="fas fa-door-open"></i> Abandonar
     </button>
 
+    <style>
+    /* ================================================================ */
+    /* ESTILOS PARA MODALES Y PANTALLAS DE ERROR */
+    /* ================================================================ */
+    /* ================================================================ */
+    /* 🚪 BOTÓN DE ABANDONAR DUELO - ESTILOS COMPLETOS */
+    /* ================================================================ */
+
+    .btn-abandonar-duelo {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        display: none; /* Oculto por defecto */
+        z-index: 9999;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        transition: all 0.3s ease;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .btn-abandonar-duelo:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+    }
+
+    .btn-abandonar-duelo:active {
+        transform: translateY(0);
+    }
+
+    .btn-abandonar-duelo.visible {
+        display: flex !important;
+    }
+
+    /* ================================================================ */
+    /* 📱 MODAL DE CONFIRMACIÓN DE SALIDA - MEJORADO */
+    /* ================================================================ */
+
+    .modal-abandono-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(10px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .modal-abandono-overlay.visible {
+        display: flex;
+        opacity: 1;
+    }
+
+    .modal-abandono-content {
+        background: linear-gradient(135deg, #1e293b, #334155);
+        padding: 40px;
+        border-radius: 20px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            transform: scale(0.9) translateY(-20px);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .modal-abandono-header {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .icono-advertencia-grande {
+        font-size: 64px;
+        margin-bottom: 15px;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    .modal-abandono-header h2 {
+        color: white;
+        font-size: 28px;
+        margin: 0;
+    }
+
+    .modal-abandono-body {
+        margin-bottom: 30px;
+    }
+
+    .mensaje-salida {
+        color: #e2e8f0;
+        font-size: 16px;
+        line-height: 1.6;
+        text-align: center;
+        margin-bottom: 20px;
+        white-space: pre-line;
+    }
+
+    .penalizacion-info {
+        background: rgba(239, 68, 68, 0.2);
+        border: 2px solid #ef4444;
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+
+    .penalizacion-box {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .penalizacion-icono {
+        font-size: 40px;
+    }
+
+    .penalizacion-texto {
+        flex: 1;
+        color: white;
+    }
+
+    .cantidad-penalizacion {
+        display: block;
+        font-size: 32px;
+        font-weight: 900;
+        color: #ef4444;
+        margin-top: 5px;
+    }
+
+    .modal-abandono-footer {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .btn-cancelar-salida,
+    .btn-confirmar-salida {
+        padding: 14px 30px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 140px;
+    }
+
+    .btn-cancelar-salida {
+        background: #64748b;
+        color: white;
+    }
+
+    .btn-cancelar-salida:hover {
+        background: #475569;
+        transform: translateY(-2px);
+    }
+
+    .btn-confirmar-salida {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+    }
+
+    .btn-confirmar-salida:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        transform: translateY(-2px);
+    }
+    /* Modal de confirmación de abandono */
+    
+    </style>
+
     <script src="/socket.io/socket.io.js"></script>
     <script>
         window.USER_DATA ={{{json user}}};

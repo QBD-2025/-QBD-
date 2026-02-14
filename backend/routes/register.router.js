@@ -50,10 +50,10 @@ router.post('/register', async (req, res) => {
         const tokenExpires = new Date(Date.now() + 1000 * 60 * 10); // 10 min
         const points = 100;
 
-        // Insertar usuario
+        // Insertar usuario (ahora con primer_ingreso = 1 por defecto)
         const [result] = await req.pool.query(
-            'INSERT INTO usuario (username, email, password, verificado, token, token_expira, puntos, id_tp_usuario, id_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [username, email, hashedPassword, 0, token, tokenExpires, points, 1, 1]
+            'INSERT INTO usuario (username, email, password, verificado, token, token_expira, puntos, id_tp_usuario, id_status, primer_ingreso) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [username, email, hashedPassword, 0, token, tokenExpires, points, 1, 1, 1]
         );
 
         const id_usuario = result.insertId; // ID real del usuario
@@ -72,7 +72,14 @@ router.post('/register', async (req, res) => {
                 [id_usuario, carreraSeleccionada]
             );
             
-            console.log('Carrera insertada correctamente');
+            // ✨ OTORGAR PUNTOS INICIALES (50 generales + 50 de carrera)
+            console.log('🎁 Otorgando puntos de bienvenida...');
+            await req.pool.query(
+                'CALL sp_inicializar_puntos_nuevo_usuario(?, ?)',
+                [id_usuario, carreraSeleccionada]
+            );
+            
+            console.log('✅ Carrera insertada y puntos otorgados correctamente');
             
             // Limpiar sesión
             delete req.session.carreraSeleccionada;

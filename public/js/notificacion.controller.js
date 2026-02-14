@@ -814,24 +814,3 @@ if (window.usuarioActual) {
         });
     });
 }
-socket.on('notificacion_recibida', () => {
-            console.log('🔔 notificacion_recibida');
-            cargarNotificaciones(); 
-            if (data.tipo === 'desafio_duelo_rapido') {
-                console.log('[NOTIFICACIÓN BD]: Modo:', data.extra_data?.modo || 'sin especificar');
-                console.log('[NOTIFICACIÓN BD]: ID Carrera:', data.extra_data?.idCarrera || 'N/A');
-                
-                // ✅ GUARDAR MODO DE LA NOTIFICACIÓN
-                if (data.extra_data?.modo) {
-                    modoActualSala = data.extra_data.modo;
-                }
-                
-                // Mostrar notificación con modo
-                const modoTexto = data.extra_data?.modo === 'carrera' ? '🎓 de carrera' : '🌍 general';
-                
-                mostrarNotificacion(
-                    `⚔️ ${data.extra_data?.usernameRemitente || 'Alguien'} te desafió a un duelo ${modoTexto}!`, 
-                    'info'
-                );
-    }
-        });

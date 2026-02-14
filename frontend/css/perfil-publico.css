@@ -603,3 +603,463 @@ body.perfil-publico-page {
 .stat-card.destacado {
   animation: pulse 3s ease-in-out infinite;
 }
+/* =============================================
+   🏆 ESTILOS ADICIONALES - LOGROS E INSIGNIAS
+   Agregar al final de perfil-publico.css
+   ============================================= */
+
+/* ═══════════════════════════════════════════
+   🏅 INSIGNIAS SHOWCASE
+   ═══════════════════════════════════════════ */
+
+.insignias-showcase {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.05), rgba(245, 158, 11, 0.05));
+  border-color: rgba(251, 191, 36, 0.2);
+}
+
+.insignias-grid-perfil {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.insignia-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+}
+
+.insignia-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+}
+
+.insignia-borde {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 16px;
+  border: 3px solid;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.insignia-card:hover .insignia-borde {
+  opacity: 1;
+}
+
+.insignia-card img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 15px;
+  filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3));
+}
+
+.insignia-nombre {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 5px;
+}
+
+.insignia-rareza {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  margin-top: 5px;
+}
+
+/* Rarezas específicas */
+.insignia-card.comun {
+  border-color: #94a3b8;
+}
+
+.insignia-card.comun .insignia-rareza {
+  background: rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+}
+
+.insignia-card.rara {
+  border-color: #3b82f6;
+}
+
+.insignia-card.rara .insignia-rareza {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+.insignia-card.epica {
+  border-color: #8b5cf6;
+}
+
+.insignia-card.epica .insignia-rareza {
+  background: rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+}
+
+.insignia-card.legendaria {
+  border-color: #fbbf24;
+  animation: pulseGold 3s ease-in-out infinite;
+}
+
+.insignia-card.legendaria .insignia-rareza {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.insignia-card.especial {
+  border-color: #ef4444;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(220, 38, 38, 0.05));
+}
+
+.insignia-card.especial .insignia-rareza {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+/* ═══════════════════════════════════════════
+   🏆 LOGROS SHOWCASE
+   ═══════════════════════════════════════════ */
+
+.logros-showcase {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+.logros-grid-perfil {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.logro-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.logro-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: linear-gradient(180deg, #6366f1, #8b5cf6);
+}
+
+.logro-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(5px);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.logro-icono {
+  font-size: 48px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.3));
+}
+
+.logro-info {
+  flex: 1;
+}
+
+.logro-nombre {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 5px;
+}
+
+.logro-descripcion {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.logro-bonus {
+  display: inline-block;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2));
+  color: #fbbf24;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.logro-fecha {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: right;
+  min-width: 120px;
+}
+
+/* ═══════════════════════════════════════════
+   🔘 BOTÓN VER TODOS
+   ═══════════════════════════════════════════ */
+
+.ver-todos-logros {
+  margin-top: 25px;
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-ver-todos {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: none;
+  padding: 14px 30px;
+  border-radius: 10px;
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-ver-todos:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+}
+
+.btn-ver-todos i {
+  font-size: 18px;
+}
+
+/* ═══════════════════════════════════════════
+   📱 RESPONSIVE
+   ═══════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .insignias-grid-perfil {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+  
+  .insignia-card img {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .logro-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .logro-fecha {
+    text-align: center;
+    min-width: auto;
+  }
+  
+  .logro-icono {
+    font-size: 36px;
+  }
+}
+
+@media (max-width: 480px) {
+  .insignias-grid-perfil {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .insignia-card {
+    padding: 15px 10px;
+  }
+  
+  .insignia-card img {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .insignia-nombre {
+    font-size: 12px;
+  }
+  
+  .insignia-rareza {
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   ✨ ANIMACIONES ADICIONALES
+   ═══════════════════════════════════════════ */
+
+@keyframes pulseGold {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(251, 191, 36, 0.6), 0 0 40px rgba(251, 191, 36, 0.3);
+  }
+}
+
+.insignia-card.legendaria img {
+  animation: floatGold 3s ease-in-out infinite;
+}
+
+@keyframes floatGold {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Efecto de brillo en hover para logros */
+.logro-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.1), 
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.logro-card:hover::after {
+  left: 100%;
+}
+
+/* ═══════════════════════════════════════════
+   🎯 ESTADOS ESPECIALES
+   ═══════════════════════════════════════════ */
+
+/* Insignia recién desbloqueada */
+.insignia-card.nueva {
+  animation: nuevoDesbloqueo 1s ease;
+}
+
+@keyframes nuevoDesbloqueo {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Logro recién conseguido */
+.logro-card.nuevo {
+  animation: slideInLeft 0.5s ease;
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   🎨 MEJORAS VISUALES
+   ═══════════════════════════════════════════ */
+
+/* Sombra suave para toda la sección */
+.insignias-showcase,
+.logros-showcase {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* Tooltip para insignias */
+.insignia-card[title]::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  margin-bottom: 8px;
+  z-index: 10;
+}
+
+.insignia-card:hover::after {
+  opacity: 1;
+}
+
+/* Indicador de progreso para logros no completados */
+.logro-card.incompleto {
+  opacity: 0.6;
+  filter: grayscale(50%);
+}
+
+.logro-card.incompleto:hover {
+  opacity: 0.8;
+  filter: grayscale(30%);
+}
+
+/* Badge de "Nuevo" */
+.badge-nuevo {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ef4444;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}

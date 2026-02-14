@@ -257,7 +257,188 @@ app.use((req, res, next) => {
 
 // 2️⃣ INTERCEPTOR DE REDIRECTS
 const originalRedirect = express.response.redirect;
+// =============================================
+// 🎨 HELPERS DE HANDLEBARS - VERSIÓN COMPLETA
+// Para agregar a configApp.js en la sección de Handlebars
+// =============================================
 
+const helpers = {
+    // ════════════════════════════════════════════════════════════
+    // ✅ HELPERS BÁSICOS
+    // ════════════════════════════════════════════════════════════
+    eq: (a, b) => a === b,
+    or: (a, b) => a || b,
+    ne: (a, b) => a !== b,
+    gt: (a, b) => a > b,
+    gte: (a, b) => a >= b,
+    lt: (a, b) => a < b,
+    lte: (a, b) => a <= b,
+    inc: v => parseInt(v) + 1,
+    dec: v => parseInt(v) - 1,
+    sum: (a, b) => a + b,
+    subtract: (a, b) => a - b,
+    add: (a, b) => a + b,
+    json: ctx => JSON.stringify(ctx),
+    
+    // ════════════════════════════════════════════════════════════
+    // ✅ COMPARACIONES ADICIONALES (PARA PERFIL PÚBLICO)
+    // ════════════════════════════════════════════════════════════
+    equals: (a, b) => a === b,
+    greaterThan: (a, b) => {
+        const numA = Number(a);
+        const numB = Number(b);
+        return !isNaN(numA) && !isNaN(numB) && numA > numB;
+    },
+    lessThan: (a, b) => {
+        const numA = Number(a);
+        const numB = Number(b);
+        return !isNaN(numA) && !isNaN(numB) && numA < numB;
+    },
+    greaterThanOrEqual: (a, b) => {
+        const numA = Number(a);
+        const numB = Number(b);
+        return !isNaN(numA) && !isNaN(numB) && numA >= numB;
+    },
+    lessThanOrEqual: (a, b) => {
+        const numA = Number(a);
+        const numB = Number(b);
+        return !isNaN(numA) && !isNaN(numB) && numA <= numB;
+    },
+    
+    // ════════════════════════════════════════════════════════════
+    // ✅ OPERACIONES LÓGICAS
+    // ════════════════════════════════════════════════════════════
+    and: (a, b) => a && b,
+    not: (a) => !a,
+    
+    // ════════════════════════════════════════════════════════════
+    // ✅ OPERACIONES MATEMÁTICAS
+    // ════════════════════════════════════════════════════════════
+    multiply: (a, b) => {
+        const numA = Number(a);
+        const numB = Number(b);
+        if (isNaN(numA) || isNaN(numB)) return 0;
+        return numA * numB;
+    },
+    divide: (a, b) => {
+        const numA = Number(a);
+        const numB = Number(b);
+        if (isNaN(numA) || isNaN(numB) || numB === 0) return 0;
+        return numA / numB;
+    },
+    
+    // ════════════════════════════════════════════════════════════
+    // ✅ FORMATEO DE NÚMEROS (CRÍTICO PARA PERFIL PÚBLICO)
+    // ════════════════════════════════════════════════════════════
+    formatNumber: (num) => {
+        if (num === undefined || num === null) return '0';
+        const numero = Number(num);
+        if (isNaN(numero)) return '0';
+        return numero.toLocaleString('es-MX');
+    },
+    
+    // ════════════════════════════════════════════════════════════
+    // ✅ FORMATEO DE FECHAS (CRÍTICO PARA PERFIL PÚBLICO)
+    // ════════════════════════════════════════════════════════════
+    formatDate: (date) => {
+        if (!date) return 'N/A';
+        try {
+            const fecha = new Date(date);
+            if (isNaN(fecha.getTime())) return 'N/A';
+            
+            return fecha.toLocaleString('es-MX', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (error) {
+            console.error('[HELPER formatDate ERROR]:', error);
+            return 'N/A';
+        }
+    },
+    
+    // ════════════════════════════════════════════════════════════
+    // ✅ HELPERS DE ARRAYS Y COLECCIONES
+    // ════════════════════════════════════════════════════════════
+    range(start, end) {
+        const arr = [];
+        for (let i = start; i <= end; i++) {
+            arr.push(i);
+        }
+        return arr;
+    },
+    
+    incIndex: function(value) {
+        const num = parseInt(value);
+        return isNaN(num) ? 1 : num + 1;
+    },
+    
+    contains: (str, substr) => {
+        if (typeof str !== 'string' || typeof substr !== 'string') return false;
+        return str.includes(substr);
+    },
+    
+    // ════════════════════════════════════════════════════════════
+    // ✅ CONDICIONALES AVANZADAS
+    // ════════════════════════════════════════════════════════════
+    ifEquals: function(a, b, options) {
+        return a == b ? options.fn(this) : options.inverse(this);
+    },
+    
+    ifCond: function(v1, op, v2, options) {
+        switch (op) {
+            case '==': return (v1 == v2) ? options.fn(this) : options.inverse(this);
+            case '===': return (v1 === v2) ? options.fn(this) : options.inverse(this);
+            case '!=': return (v1 != v2) ? options.fn(this) : options.inverse(this);
+            case '<': return (v1 < v2) ? options.fn(this) : options.inverse(this);
+            case '<=': return (v1 <= v2) ? options.fn(this) : options.inverse(this);
+            case '>': return (v1 > v2) ? options.fn(this) : options.inverse(this);
+            case '>=': return (v1 >= v2) ? options.fn(this) : options.inverse(this);
+            default: return options.inverse(this);
+        }
+    },
+    
+    // ════════════════════════════════════════════════════════════
+    // ✅ HELPER DE DEBUG
+    // ════════════════════════════════════════════════════════════
+    debug: (value) => {
+        console.log('[HANDLEBARS DEBUG]:', value);
+        return JSON.stringify(value, null, 2);
+    },
+    
+    // ════════════════════════════════════════════════════════════
+    // ✅ HELPER PARA MANEJO DE LONGITUD DE ARRAYS
+    // ════════════════════════════════════════════════════════════
+    length: (array) => {
+        if (!array) return 0;
+        if (Array.isArray(array)) return array.length;
+        if (typeof array === 'object') return Object.keys(array).length;
+        return 0;
+    }
+};
+
+// ════════════════════════════════════════════════════════════
+// 📤 EXPORTAR PARA USO EN configApp.js
+// ════════════════════════════════════════════════════════════
+module.exports = helpers;
+
+/*
+╔═══════════════════════════════════════════════════════════════╗
+║  USO EN configApp.js:                                         ║
+║                                                               ║
+║  const handlebarsHelpers = require('./handlebars-helpers');  ║
+║                                                               ║
+║  app.engine('.hbs', exphbs.engine({                          ║
+║      defaultLayout: 'main',                                  ║
+║      layoutsDir: path.join(__dirname, '../views/layouts'),   ║
+║      partialsDir: path.join(__dirname, '../views/partials'), ║
+║      extname: '.hbs',                                        ║
+║      helpers: handlebarsHelpers  // ✅ USAR AQUÍ             ║
+║  }));                                                         ║
+╚═══════════════════════════════════════════════════════════════╝
+*/
 express.response.redirect = function(statusOrUrl, url) {
     const targetUrl = typeof statusOrUrl === 'string' ? statusOrUrl : url;
     const status = typeof statusOrUrl === 'number' ? statusOrUrl : 302;

@@ -203,18 +203,9 @@
         }
     }
     
-    // =============================================
-    // 🎨 RENDERIZAR RANKING - ✅ LÓGICA CORREGIDA
-    // =============================================
-    
-    // =============================================
-    // 🎨 RENDERIZAR RANKING - ✅ CON BOTÓN CORRECTO
-    // =============================================
-
     // public/js/dueloAscenso.controller.js
 // ACTUALIZAR LA FUNCIÓN renderizarRanking
-
-    async function renderizarRanking(container, jugadores, tipoRanking, carreraId = null) {
+     async function renderizarRanking(container, jugadores, tipoRanking, carreraId = null) {
         container.innerHTML = '';
         
         if (!jugadores || jugadores.length === 0) {
@@ -222,7 +213,6 @@
             return;
         }
         
-        // Ordenar por puntos según tipo
         jugadores.sort((a, b) => {
             const puntosA = tipoRanking === 'general' ? a.puntos : (a.puntos_carrera || 0);
             const puntosB = tipoRanking === 'general' ? b.puntos : (b.puntos_carrera || 0);
@@ -231,7 +221,6 @@
         
         const miIndex = jugadores.findIndex(j => j.id_usuario === user.id_usuario);
         
-        // Obtener duelos activos
         let duelosActivos = [];
         try {
             const response = await fetch('/api/duelo/mis-duelos-activos');
@@ -247,12 +236,10 @@
             const esYo = jugador.id_usuario === user.id_usuario;
             const puntosDisplay = tipoRanking === 'general' ? jugador.puntos : (jugador.puntos_carrera || 0);
             
-            // Verificar duelo existente
             const dueloExistente = duelosActivos.find(d => 
                 (d.id_retador === jugador.id_usuario || d.id_defensor === jugador.id_usuario)
             );
             
-            // Lógica de desafío
             let puedoDesafiar = false;
             let motivoNoDesafiar = '';
             
@@ -269,28 +256,26 @@
             const item = document.createElement('div');
             item.className = esYo ? 'ranking-item current-user' : 'ranking-item';
             
-            // ✅ MOSTRAR CARRERAS EN RANKING GLOBAL
             const carrerasHTML = tipoRanking === 'general' && jugador.carreras ? 
                 `<span><i class="fas fa-graduation-cap"></i> ${jugador.carreras}</span>` : '';
             
             item.innerHTML = `
                 <div class="rank-number">#${i + 1}</div>
                 
-                <!-- ✅ AVATAR CLICKEABLE PARA VER PERFIL -->
-                <a href="/usuario/perfil/${jugador.id_usuario}" class="player-avatar-link">
+                <!-- ✅ AVATAR CLICKEABLE PARA MINI-PERFIL -->
+                <div class="player-avatar-link" onclick="abrirMiniPerfil(${jugador.id_usuario})" title="Ver perfil">
                     <img src="${jugador.foto_perfil || '/uploads/default_avatar.png'}" 
                         alt="Avatar" 
                         class="player-avatar"
-                        onerror="this.src='/uploads/default_avatar.png'"
-                        title="Ver perfil de ${jugador.username}">
-                </a>
+                        onerror="this.src='/uploads/default_avatar.png'">
+                </div>
                 
                 <div class="player-info">
                     <div class="player-name">
-                        <!-- ✅ NOMBRE CLICKEABLE PARA VER PERFIL -->
-                        <a href="/usuario/perfil/${jugador.id_usuario}" class="player-name-link">
+                        <!-- ✅ NOMBRE CLICKEABLE PARA MINI-PERFIL -->
+                        <span class="player-name-link" onclick="abrirMiniPerfil(${jugador.id_usuario})">
                             ${jugador.username}
-                        </a>
+                        </span>
                         ${esYo ? '<span class="badge-yo">Tú</span>' : ''}
                     </div>
                     <div class="player-stats">
@@ -306,7 +291,6 @@
             
             container.appendChild(item);
             
-            // Agregar botón de desafiar SI SE PUEDE
             if (puedoDesafiar) {
                 const btnDesafiar = document.createElement('button');
                 btnDesafiar.className = 'btn-desafiar';

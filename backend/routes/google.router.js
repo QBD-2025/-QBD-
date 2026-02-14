@@ -72,7 +72,8 @@ router.get('/auth/google/callback',
                             descripcion: user.descripcion || '',
                             id_tp_usuario: user.id_tp_usuario,
                             foto_perfil: user.foto_perfil || '/uploads/default_avatar.png',
-                            id_carrera: null
+                            id_carrera: null,
+                            primer_ingreso: user.primer_ingreso || 0 // ✨ Agregar flag
                         };
                         global.sesionesActivas.add(user.id_usuario);
                         return res.redirect('/sin-carrera');
@@ -87,7 +88,8 @@ router.get('/auth/google/callback',
                         descripcion: user.descripcion || '',
                         id_tp_usuario: user.id_tp_usuario,
                         foto_perfil: user.foto_perfil || '/uploads/default_avatar.png',
-                        id_carrera: carreraResult[0].id_carrera
+                        id_carrera: carreraResult[0].id_carrera,
+                        primer_ingreso: user.primer_ingreso || 0 // ✨ Agregar flag
                     };
 
                     global.sesionesActivas.add(user.id_usuario);

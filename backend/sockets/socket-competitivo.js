@@ -3638,35 +3638,29 @@ async function guardarEstadoDuelo(salaId, duelo) {
     // ================================================================
 
     async function finalizarDuelo(salaId, duelo) {
-        console.log(`[FINALIZAR ${salaId}]: 🏁 Delegando a GestorPuntuacion...`);
-        
         try {
+            console.log('[FINALIZAR]: 🚀 Iniciando...');
+            
             const resultado = await GestorPuntuacion.finalizarDuelo(salaId, duelo);
             
-            // Emitir resultado a clientes
+            // ✅ VALIDAR QUE RESULTADO EXISTE
+            if (!resultado || !resultado.jugadores) {
+                throw new Error('Resultado inválido desde GestorPuntuacion');
+            }
+            
+            console.log('[FINALIZAR]: ✅ Resultado válido, emitiendo...');
+            console.log(JSON.stringify(resultado, null, 2));
+            
             io.to(salaId).emit('duelo:finalizado', resultado);
             
-            console.log(`[FINALIZAR]: ✅ Resultado emitido`);
-            
-            // Limpiar duelo después de 30s
-            setTimeout(() => {
-                activeDuels.delete(salaId);
-                console.log(`[FINALIZAR]: Duelo ${salaId} eliminado de memoria`);
-            }, 30000);
-            
         } catch (error) {
-            console.error(`[FINALIZAR ERROR]:`, error);
+            console.error('[FINALIZAR ERROR]:', error);
             
-            if (error.message.includes('ERROR_APUESTA_INVALIDA')) {
-                io.to(salaId).emit('duelo:apuestaRechazadaPorPuntos', {
-                    mensaje: 'Algún jugador ya no tiene puntos suficientes',
-                    detalles: error.message
-                });
-            } else {
-                io.to(salaId).emit('duelo:error', { 
-                    mensaje: 'Error procesando resultado del duelo' 
-                });
-            }
+            // ✅ EMITIR ERROR AL CLIENTE
+            io.to(salaId).emit('duelo:errorCritico', {
+                mensaje: 'Error al procesar resultado',
+                codigo: 'ERR_FINALIZAR'
+            });
         }
     }
     // ================================================================

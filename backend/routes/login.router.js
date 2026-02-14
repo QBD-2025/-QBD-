@@ -1,4 +1,4 @@
- const express = require('express');
+const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const { enviarCorreoRecuperacion } = require('../utils/mail.js');
@@ -31,12 +31,43 @@ const isEditor = (req, res, next) => {
 // ----------------- Rutas -----------------
 
 // Menú principal
-router.get('/menu_principal', isAuthenticated, (req, res) => {
-    res.render('menu_principal', {
-        layout: 'main',
-        title: 'Perfil',
-        user: req.session.user,
-    });
+router.get('/menu_principal', isAuthenticated, async (req, res) => {
+    try {
+        // ✨ VERIFICAR SI ES PRIMER INGRESO
+        const [userData] = await req.pool.query(
+            'SELECT primer_ingreso, puntos FROM usuario WHERE id_usuario = ?',
+            [req.session.user.id_usuario]
+        );
+
+        const esPrimerIngreso = userData[0]?.primer_ingreso === 1;
+        const puntosActuales = userData[0]?.puntos || 0;
+
+        // Si es primer ingreso, marcar como visto
+        if (esPrimerIngreso) {
+            await req.pool.query(
+                'UPDATE usuario SET primer_ingreso = 0 WHERE id_usuario = ?',
+                [req.session.user.id_usuario]
+            );
+        }
+
+        res.render('menu_principal', {
+            layout: 'main',
+            title: 'Perfil',
+            user: req.session.user,
+            mostrarBienvenida: esPrimerIngreso, // ✨ Pasar flag a la vista
+            puntosActuales: puntosActuales
+        });
+
+    } catch (error) {
+        console.error('Error al cargar menú principal:', error);
+        res.render('menu_principal', {
+            layout: 'main',
+            title: 'Perfil',
+            user: req.session.user,
+            mostrarBienvenida: false,
+            puntosActuales: 0
+        });
+    }
 });
 
 // Login - vista
@@ -63,14 +94,13 @@ router.get('/sin-carrera', async (req, res) =>{
 })
 
 // Procesar login
-// Procesar login
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
         const [rows] = await req.pool.query(
             `SELECT id_usuario, username, email, password, verificado, 
-            id_tp_usuario, id_status, suspension_fin, foto_perfil, apodo, descripcion
+            id_tp_usuario, id_status, suspension_fin, foto_perfil, apodo, descripcion, primer_ingreso
             from usuario WHERE email = ?`,
             [email]
         );
@@ -111,7 +141,7 @@ router.post('/login', async (req, res) => {
         }
 
         // Validar contraseña
-        const match = await (password, user.password);
+        const match = await bcrypt.compare(password, user.password);
         if (!match) return res.redirect('/login?error=Contraseña incorrecta');
 
         // ⭐ OBTENER LA CARRERA DEL USUARIO
@@ -132,9 +162,10 @@ router.post('/login', async (req, res) => {
                 email: user.email,
                 apodo: user.apodo || user.username,
                 descripcion: user.descripcion || '',
-                foto_perfil: user.foto_perfil || '/uploads/default_avatar.png', // ✅
+                foto_perfil: user.foto_perfil || '/uploads/default_avatar.png',
                 id_tp_usuario: user.id_tp_usuario,
-                id_carrera: null
+                id_carrera: null,
+                primer_ingreso: user.primer_ingreso || 0 // ✨ Agregar flag
             };
 
             const [carreras] = await req.pool.query(
@@ -152,16 +183,18 @@ router.post('/login', async (req, res) => {
             email: user.email,
             apodo: user.apodo || user.username,
             descripcion: user.descripcion || '',
-            foto_perfil: user.foto_perfil || '/uploads/default_avatar.png', // ✅
+            foto_perfil: user.foto_perfil || '/uploads/default_avatar.png',
             id_tp_usuario: user.id_tp_usuario,
-            id_carrera: carreraResult.length > 0 ? carreraResult[0].id_carrera : null
+            id_carrera: carreraResult.length > 0 ? carreraResult[0].id_carrera : null,
+            primer_ingreso: user.primer_ingreso || 0 // ✨ Agregar flag
         };
 
         console.log('✅ Usuario logueado:', {
             id: req.session.user.id_usuario,
             username: req.session.user.username,
             foto_perfil: req.session.user.foto_perfil,
-            carrera: req.session.user.id_carrera
+            carrera: req.session.user.id_carrera,
+            primer_ingreso: req.session.user.primer_ingreso
         });
 
         // Marcar usuario activo
@@ -202,6 +235,7 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// ✨ RUTA MEJORADA: Asignar carrera + otorgar puntos
 router.post('/asignar-carrera', isAuthenticated, async (req, res) => {
     const userId = req.session.user?.id_usuario;
     const { id_carrera } = req.body;
@@ -212,13 +246,23 @@ router.post('/asignar-carrera', isAuthenticated, async (req, res) => {
     }
 
     try {
+        // Insertar carrera
         await req.pool.query(
             'INSERT INTO usuario_carrera (id_usuario, id_carrera) VALUES (?, ?)',
             [userId, id_carrera]
         );  
         
+        // ✨ OTORGAR PUNTOS INICIALES (50 generales + 50 de carrera)
+        console.log('🎁 Otorgando puntos de bienvenida...');
+        await req.pool.query(
+            'CALL sp_inicializar_puntos_nuevo_usuario(?, ?)',
+            [userId, id_carrera]
+        );
+        
         // ✅ Actualizar sesión con carrera
         req.session.user.id_carrera = id_carrera;
+
+        console.log('✅ Carrera asignada y puntos otorgados');
 
         switch (req.session.user.id_tp_usuario) {
             case 3:
@@ -240,44 +284,6 @@ router.post('/asignar-carrera', isAuthenticated, async (req, res) => {
         res.status(500).send('Error al asignar carrera');
     }
 });
-
-router.post('/asignar-carrera', isAuthenticated, async (req,res) =>{
-    const userId = req.session.user?.id_usuario;
-    const {id_carrera} = req.body;
-    console.log('userId:', userId, 'id_carrera:', id_carrera);
-
-    if (!userId || !id_carrera) {
-        return res.status(400).send('Usuario o carrera no definidos');
-    }
-
-
-    try{
-        await req.pool.query(
-            'INSERT INTO usuario_carrera (id_usuario, id_carrera) VALUES (?, ?)',
-            [userId, id_carrera]
-        );  
-        req.session.user.id_carrera=id_carrera;
-
-        switch (req.session.user.id_tp_usuario) {
-            case 3:
-                return res.redirect('/admin');
-            case 2:
-                return res.redirect('/editor/panel');
-            default: {
-                    const [datos] = await req.pool.query('SELECT dato, imagen FROM dato_curioso ORDER BY RAND() LIMIT 1');
-                    const datoCurioso = datos[0];
-                    return res.render('dato-sesion', {
-                        layout: false,
-                        dato: datoCurioso.dato,
-                        imagen: datoCurioso.imagen ? datoCurioso.imagen.toString('base64') : null,
-                    });
-                }
-        }
-    } catch (error) {
-        console.error('Error al guardar carrera:', error);
-        res.status(500).send('Error al asignar carrera');
-    }
-})
 
 // Presentación
 router.get('/presentacion', (req, res) => {

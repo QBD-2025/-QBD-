@@ -1,4 +1,7 @@
+// =============================================
+// 👤 CONTROLADOR DE USUARIO - VERSIÓN CORREGIDA
 // backend/controllers/usuario.controller.js
+// =============================================
 
 const db = require('../db/conexion');
 const queries = require('../queries/usuario.queries');
@@ -9,45 +12,38 @@ const fs = require('fs').promises;
 
 // ==================== CONFIGURACIÓN DE MULTER ====================
 
-// Carpeta donde se guardarán los avatares subidos
 const uploadDir = path.join(__dirname, '../../frontend/media/uploads');
 
-// Configuración de almacenamiento de multer
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
     try {
-      await fs.mkdir(uploadDir, { recursive: true }); // Crear carpeta si no existe
+      await fs.mkdir(uploadDir, { recursive: true });
       cb(null, uploadDir);
     } catch (error) {
       cb(error);
     }
   },
   filename: (req, file, cb) => {
-    // Nombre único con id_usuario y timestamp
     const uniqueName = `${req.session.user.id_usuario}_${Date.now()}${path.extname(file.originalname)}`;
     cb(null, uniqueName);
   }
 });
 
-// Filtro de tipos de archivos permitidos
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
   if (allowedTypes.includes(file.mimetype)) cb(null, true);
   else cb(new Error('Solo se permiten imágenes JPG, PNG o WEBP'), false);
 };
 
-// Límite de tamaño y configuración completa de multer
 const upload = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } });
 
-// ==================== FUNCIONES ====================
+// ==================== FUNCIONES AUXILIARES ====================
 
-// Eliminar avatar antiguo del usuario
 async function eliminarAvatarAntiguo(userId) {
   try {
     const [userData] = await db.query(queries.getUsuarioById, [userId]);
     if (userData.length > 0 && userData[0].foto_perfil) {
       const oldAvatar = userData[0].foto_perfil;
-      // Evitar borrar avatares externos o el por defecto
       if (!oldAvatar.startsWith('http') && !oldAvatar.includes('default_avatar')) {
         const oldPath = path.join(__dirname, '/uploads', oldAvatar);
         await fs.unlink(oldPath).catch(() => console.log('Avatar anterior no encontrado'));
@@ -58,7 +54,13 @@ async function eliminarAvatarAntiguo(userId) {
   }
 }
 
-// Ver perfil del usuario
+function normalizarAvatar(avatarUrl) {
+  if (!avatarUrl) return '/uploads/default_avatar.png';
+  if (avatarUrl.startsWith('/') || avatarUrl.startsWith('http')) return avatarUrl;
+  return `/uploads/${avatarUrl}`;
+}
+
+// ==================== VER PERFIL PROPIO ====================
 async function verPerfil(req, res) {
   try {
     const [userData] = await db.query(queries.getUsuarioById, [req.session.user.id_usuario]);
@@ -66,17 +68,11 @@ async function verPerfil(req, res) {
 
     const roles = { 1: 'USUARIO', 2: 'EDITOR', 3: 'ADMIN' };
 
-    let avatarUrl=userData[0].foto_perfil || '/uploads/default_avatar.png'
-
-    if (avatarUrl && !avatarUrl.startsWith('/') && !avatarUrl.startsWith('http')) {
-      avatarUrl='/uploads/${avatarUrl}';
-    }
-
     const userProfile = {
       ...userData[0],
       role: roles[userData[0].id_tp_usuario] || 'USUARIO',
-      avatarUrl: userData[0].foto_perfil || '/uploads/default_avatar.png',
-      foto_perfil:avatarUrl
+      avatarUrl: normalizarAvatar(userData[0].foto_perfil),
+      foto_perfil: normalizarAvatar(userData[0].foto_perfil)
     };
 
     res.render('usuario', { layout: 'main', title: 'Perfil de Usuario', user: userProfile });
@@ -86,7 +82,7 @@ async function verPerfil(req, res) {
   }
 }
 
-// Vista para editar usuario
+// ==================== VISTA EDITAR USUARIO ====================
 async function vistaEditarUsuario(req, res) {
   try {
     const [userData] = await db.query(queries.getUsuarioById, [req.session.user.id_usuario]);
@@ -94,20 +90,14 @@ async function vistaEditarUsuario(req, res) {
 
     const roles = { 1: 'USUARIO', 2: 'EDITOR', 3: 'ADMIN' };
 
-    let avatarUrl=userData[0].foto_perfil || '/uploads/default_avatar.png'
-
-    if (avatarUrl && !avatarUrl.startsWith('/') && !avatarUrl.startsWith('http')) {
-      avatarUrl = `/uploads/${avatarUrl}`;
-    }
-
     res.render('editarUsuario', {
       layout: 'main',
       title: 'Editar Usuario',
       user: {
         ...userData[0],
         role: roles[userData[0].id_tp_usuario] || 'USUARIO',
-        avatarUrl: userData[0].foto_perfil || '/uploads/default_avatar.png',
-        foto_perfil: avatarUrl
+        avatarUrl: normalizarAvatar(userData[0].foto_perfil),
+        foto_perfil: normalizarAvatar(userData[0].foto_perfil)
       }
     });
   } catch (error) {
@@ -116,7 +106,7 @@ async function vistaEditarUsuario(req, res) {
   }
 }
 
-// Editar usuario
+// ==================== EDITAR USUARIO ====================
 async function editarUsuario(req, res) {
   const { email, username, apodo, descripcion } = req.body;
   const userId = req.session.user.id_usuario;
@@ -124,7 +114,6 @@ async function editarUsuario(req, res) {
   try {
     let avatarPath = null;
 
-    // Procesar imagen si se subió
     if (req.file) {
       const optimizedFilename = `${userId}_${Date.now()}_optimized.webp`;
       const optimizedPath = path.join(uploadDir, optimizedFilename);
@@ -134,12 +123,11 @@ async function editarUsuario(req, res) {
         .webp({ quality: 85 })
         .toFile(optimizedPath);
 
-      await fs.unlink(req.file.path); // borrar imagen original
+      await fs.unlink(req.file.path);
       avatarPath = `/uploads/${optimizedFilename}`;
-      await eliminarAvatarAntiguo(userId); // borrar avatar previo
+      await eliminarAvatarAntiguo(userId);
     }
 
-    // Actualizar base de datos
     if (avatarPath) {
       await db.query(queries.updateUsuarioConAvatar, [email, username, apodo, descripcion, avatarPath, userId]);
       req.session.user.foto_perfil = avatarPath;
@@ -147,7 +135,6 @@ async function editarUsuario(req, res) {
       await db.query(queries.updateUsuario, [email, username, apodo, descripcion, userId]);
     }
 
-    // Actualizar sesión
     req.session.user.email = email;
     req.session.user.username = username;
     req.session.user.apodo = apodo;
@@ -160,106 +147,12 @@ async function editarUsuario(req, res) {
   }
 }
 
-// Ver historial de exámenes del usuario
-async function verHistorial(req, res) {
-  try {
-    const id_usuario = req.session.user.id_usuario;
-    const [historialData] = await db.query(queries.getHistorialExamenes, [id_usuario]);
-
-    const historial = historialData.map(h => ({
-      id_examen: h.id_examen,
-      materia: h.materia || 'EXAMEN DE ADMISIÓN',
-      puntos: h.obtenido,
-      total: h.maximo,
-      porcentaje: h.porcentaje,
-      fecha: new Date(h.fecha).toLocaleString('es-MX', { dateStyle: 'long', timeStyle: 'short' })
-    }));
-
-    res.render('historialUsuario', { layout: false, title: 'Historial de Exámenes', historial });
-  } catch (error) {
-    console.error('Error al cargar el historial:', error);
-    res.status(500).send('Error al cargar el historial de exámenes');
-  }
-}
-
-async function verDetalleExamen(req, res) {
-  try {
-    const { id_examen } = req.params;
-    const id_usuario = req.session.user.id_usuario;
-
-    // 1️⃣ OBTENER DATOS GENERALES DEL EXAMEN
-    const [detalles] = await db.query(queries.getDetalleExamen, [id_usuario, id_examen]);
-    if (detalles.length === 0) {
-      return res.status(404).send('Examen no encontrado o no pertenece a este usuario.');
-    }
-
-    const examenDetalle = {
-      ...detalles[0],
-      materia: detalles[0].materia || 'EXAMEN DE ADMISIÓN',
-      fecha: new Date(detalles[0].fecha).toLocaleString('es-MX', { dateStyle: 'long', timeStyle: 'short' })
-    };
-
-    // 2️⃣ OBTENER LAS PREGUNTAS Y RESPUESTAS DEL HISTORIAL
-    const [historial] = await db.query(`
-      SELECT h.id_pregunta, h.id_respuesta AS id_respuesta_usuario, h.puntos
-      FROM historial h
-      WHERE h.id_examen = ? AND h.id_usuario = ?
-      ORDER BY h.id_pregunta
-    `, [id_examen, id_usuario]);
-
-    console.log('📊 Historial encontrado:', historial.length, 'registros');
-
-    // 3️⃣ CONSTRUIR ARRAY DE PREGUNTAS CON DETALLES
-    const preguntas = [];
-    
-    for (const h of historial) {
-      // Obtener texto de la pregunta
-      const [preguntaRow] = await db.query(
-        'SELECT pregunta, retroalimentacion FROM pregunta WHERE id_pregunta = ?',
-        [h.id_pregunta]
-      );
-
-      if (preguntaRow.length === 0) continue;
-
-      // Obtener todas las respuestas de esta pregunta
-      const [respuestas] = await db.query(`
-        SELECT id_respuesta, respuesta, correcta
-        FROM respuesta
-        WHERE id_pregunta = ?
-      `, [h.id_pregunta]);
-
-      const correcta = respuestas.find(r => r.correcta === 1);
-      const seleccionada = respuestas.find(r => r.id_respuesta === h.id_respuesta_usuario);
-
-      preguntas.push({
-        pregunta: preguntaRow[0].pregunta,
-        retroalimentacion: preguntaRow[0].retroalimentacion,
-        textoSeleccionado: seleccionada?.respuesta || "No respondió",
-        esCorrecta: h.puntos === 1,
-        textoCorrecto: correcta?.respuesta || "Sin respuesta correcta"
-      });
-    }
-
-    console.log('✅ Preguntas procesadas:', preguntas.length);
-
-    // 4️⃣ RENDERIZAR CON AMBOS DATOS
-    res.render('historialDetalle', { 
-      layout: 'main', 
-      title: 'Detalle del Examen', 
-      examen: examenDetalle,
-      preguntas: preguntas  // ✅ Array separado
-    });
-
-  } catch (error) {
-    console.error('Error al cargar el detalle del examen:', error);
-    res.status(500).send('Error al cargar el examen');
-  }
-}
+// ==================== HISTORIAL UNIFICADO ====================
 async function verHistorialUnificado(req, res) {
   try {
     const id_usuario = req.session.user.id_usuario;
     
-    // 1️⃣ Obtener historial de EXÁMENES
+    // Exámenes
     const [historialExamenes] = await db.query(queries.getHistorialExamenes, [id_usuario]);
     
     const examenes = historialExamenes.map(h => ({
@@ -271,7 +164,7 @@ async function verHistorialUnificado(req, res) {
       fecha: new Date(h.fecha).toLocaleString('es-MX', { dateStyle: 'long', timeStyle: 'short' })
     }));
     
-    // 2️⃣ Obtener historial de DUELOS
+    // Duelos
     const [historialDuelos] = await db.query(`
       SELECT 
         hd.id_duelo,
@@ -319,7 +212,6 @@ async function verHistorialUnificado(req, res) {
       fecha: new Date(d.fecha_duelo).toLocaleString('es-MX', { dateStyle: 'long', timeStyle: 'short' })
     }));
     
-    // 3️⃣ Renderizar vista unificada
     res.render('historialUsuario', {
       layout: 'main',
       title: 'Historial y Estadísticas',
@@ -335,45 +227,89 @@ async function verHistorialUnificado(req, res) {
     res.status(500).send('Error al cargar el historial');
   }
 }
-// ==================== EXPORTACIÓN ====================
-module.exports = {
-  verPerfil,
-  vistaEditarUsuario,
-  editarUsuario,
-  verHistorial,
-  verHistorialUnificado,
-  verDetalleExamen,
-  verPerfilPublico,  // ✅ Agregar
-  obtenerStatsAPI,
-  upload // exportamos también multer si quieres usarlo desde las rutas
-};
 
-// backend/controllers/usuario.controller.js - AGREGAR ESTAS FUNCIONES
+// ==================== DETALLE DE EXAMEN ====================
+async function verDetalleExamen(req, res) {
+  try {
+    const { id_examen } = req.params;
+    const id_usuario = req.session.user.id_usuario;
 
-// ==================== VER PERFIL PÚBLICO ====================
-// backend/controllers/usuario.controller.js
-// REEMPLAZAR LA FUNCIÓN verPerfilPublico CON ESTA VERSIÓN CORREGIDA
+    const [detalles] = await db.query(queries.getDetalleExamen, [id_usuario, id_examen]);
+    if (detalles.length === 0) {
+      return res.status(404).send('Examen no encontrado o no pertenece a este usuario.');
+    }
 
-// ==================== VER PERFIL PÚBLICO ====================
+    const examenDetalle = {
+      ...detalles[0],
+      materia: detalles[0].materia || 'EXAMEN DE ADMISIÓN',
+      fecha: new Date(detalles[0].fecha).toLocaleString('es-MX', { dateStyle: 'long', timeStyle: 'short' })
+    };
+
+    const [historial] = await db.query(`
+      SELECT h.id_pregunta, h.id_respuesta AS id_respuesta_usuario, h.puntos
+      FROM historial h
+      WHERE h.id_examen = ? AND h.id_usuario = ?
+      ORDER BY h.id_pregunta
+    `, [id_examen, id_usuario]);
+
+    const preguntas = [];
+    
+    for (const h of historial) {
+      const [preguntaRow] = await db.query(
+        'SELECT pregunta, retroalimentacion FROM pregunta WHERE id_pregunta = ?',
+        [h.id_pregunta]
+      );
+
+      if (preguntaRow.length === 0) continue;
+
+      const [respuestas] = await db.query(`
+        SELECT id_respuesta, respuesta, correcta
+        FROM respuesta
+        WHERE id_pregunta = ?
+      `, [h.id_pregunta]);
+
+      const correcta = respuestas.find(r => r.correcta === 1);
+      const seleccionada = respuestas.find(r => r.id_respuesta === h.id_respuesta_usuario);
+
+      preguntas.push({
+        pregunta: preguntaRow[0].pregunta,
+        retroalimentacion: preguntaRow[0].retroalimentacion,
+        textoSeleccionado: seleccionada?.respuesta || "No respondió",
+        esCorrecta: h.puntos === 1,
+        textoCorrecto: correcta?.respuesta || "Sin respuesta correcta"
+      });
+    }
+
+    res.render('historialDetalle', { 
+      layout: 'main', 
+      title: 'Detalle del Examen', 
+      examen: examenDetalle,
+      preguntas: preguntas
+    });
+
+  } catch (error) {
+    console.error('Error al cargar el detalle del examen:', error);
+    res.status(500).send('Error al cargar el examen');
+  }
+}
+
+// ==================== ✅ VER PERFIL PÚBLICO - VERSIÓN CORREGIDA ====================
+
 async function verPerfilPublico(req, res) {
     try {
-        const idUsuarioVer = parseInt(req.params.id_usuario);
+        const idUsuarioVer    = parseInt(req.params.id_usuario);
         const idUsuarioActual = req.session.user.id_usuario;
 
-        console.log(`[PERFIL PÚBLICO]: Usuario ${idUsuarioActual} viendo perfil de ${idUsuarioVer}`);
+        console.log(`[PERFIL PÚBLICO]: Usuario ${idUsuarioActual} → perfil de ${idUsuarioVer}`);
 
-        // ✅ Validar que el ID sea válido
         if (isNaN(idUsuarioVer) || idUsuarioVer <= 0) {
-            console.error('[PERFIL PÚBLICO]: ID inválido');
             return res.status(400).render('menu_principal', {
-                layout: 'main',
-                title: 'Error',
-                user: req.session.user,
-                error: 'Usuario no válido'
+                layout: 'main', title: 'Error',
+                user: req.session.user, error: 'Usuario no válido'
             });
         }
 
-        // ✅ Obtener información básica del usuario
+        // ─── 1. Datos básicos del usuario ─────────────────────────
         const [usuarios] = await db.query(`
             SELECT 
                 u.id_usuario,
@@ -384,62 +320,50 @@ async function verPerfilPublico(req, res) {
                 u.foto_perfil,
                 u.fecha_registro,
                 u.ultimo_acceso,
-                tp.descripcion as role,
-                c.descripcion as carrera_descripcion
+                c.descripcion AS carrera_descripcion
             FROM usuario u
-            LEFT JOIN tp_usuario tp ON u.id_tp_usuario = tp.id_tp_usuario
-            LEFT JOIN usuario_carrera uc ON u.id_usuario = uc.id_usuario
-            LEFT JOIN carrera c ON uc.id_carrera = c.id_carrera
+            LEFT JOIN usuario_carrera uc ON u.id_usuario  = uc.id_usuario
+            LEFT JOIN carrera c          ON uc.id_carrera = c.id_carrera
             WHERE u.id_usuario = ?
             LIMIT 1
         `, [idUsuarioVer]);
 
-        // ✅ Si no existe el usuario
         if (!usuarios || usuarios.length === 0) {
-            console.warn('[PERFIL PÚBLICO]: Usuario no encontrado');
             return res.status(404).render('menu_principal', {
-                layout: 'main',
-                title: 'Usuario No Encontrado',
-                user: req.session.user,
-                error: 'El usuario que buscas no existe'
+                layout: 'main', title: 'No Encontrado',
+                user: req.session.user, error: 'El usuario no existe'
             });
         }
 
         const usuario = usuarios[0];
+        usuario.foto_perfil = normalizarAvatar(usuario.foto_perfil);
 
-        // ✅ Normalizar foto de perfil
-        let avatarUrl = usuario.foto_perfil || '/uploads/default_avatar.png';
-        if (avatarUrl && !avatarUrl.startsWith('/') && !avatarUrl.startsWith('http')) {
-            avatarUrl = `/uploads/${avatarUrl}`;
-        }
-        usuario.foto_perfil = avatarUrl;
-
-        // ✅ Obtener estadísticas generales
-        const [statsGenerales] = await db.query(`
+        // ─── 2. Stats de exámenes ──────────────────────────────────
+        // FIX [1]: usuario_examen usa 'obtenido', no 'puntos'
+        //          Sin JOIN para evitar ambigüedad en id_usuario
+        const [statsEx] = await db.query(`
             SELECT 
-                COALESCE(SUM(puntos), 0) as puntos_totales,
-                COUNT(DISTINCT id_examen) as examenes_realizados
-            FROM usuario_examen
-            WHERE id_usuario = ?
+                COALESCE(SUM(ue.obtenido), 0)    AS puntos_totales,
+                COUNT(DISTINCT ue.id_examen)      AS examenes_realizados
+            FROM usuario_examen ue
+            WHERE ue.id_usuario = ?
         `, [idUsuarioVer]);
 
-        // ✅ Obtener estadísticas de duelos
+        // ─── 3. Stats de duelos ────────────────────────────────────
         const [statsDuelos] = await db.query(`
             SELECT 
-                COUNT(*) as duelos_totales,
-                SUM(CASE WHEN id_ganador = ? THEN 1 ELSE 0 END) as victorias,
-                SUM(CASE WHEN id_ganador IS NULL THEN 1 ELSE 0 END) as empates,
-                SUM(CASE WHEN id_ganador != ? AND id_ganador IS NOT NULL THEN 1 ELSE 0 END) as derrotas
+                COUNT(*) AS duelos_totales,
+                SUM(CASE WHEN id_ganador = ?           THEN 1 ELSE 0 END) AS victorias,
+                SUM(CASE WHEN id_ganador IS NULL        THEN 1 ELSE 0 END) AS empates,
+                SUM(CASE WHEN id_ganador != ? AND id_ganador IS NOT NULL
+                                                        THEN 1 ELSE 0 END) AS derrotas
             FROM historial_duelos
             WHERE (id_retador = ? OR id_defensor = ?)
         `, [idUsuarioVer, idUsuarioVer, idUsuarioVer, idUsuarioVer]);
 
-        // ✅ Calcular racha de victorias
+        // ─── 4. Racha actual ───────────────────────────────────────
         const [rachaData] = await db.query(`
-            SELECT 
-                id_duelo,
-                id_ganador,
-                fecha_duelo
+            SELECT id_ganador
             FROM historial_duelos
             WHERE (id_retador = ? OR id_defensor = ?)
             ORDER BY fecha_duelo DESC
@@ -447,106 +371,149 @@ async function verPerfilPublico(req, res) {
         `, [idUsuarioVer, idUsuarioVer]);
 
         let rachaVictorias = 0;
-        for (let duelo of rachaData) {
-            if (duelo.id_ganador === idUsuarioVer) {
-                rachaVictorias++;
-            } else if (duelo.id_ganador !== null) {
-                break;
-            }
+        for (const d of rachaData) {
+            if (d.id_ganador === idUsuarioVer) rachaVictorias++;
+            else if (d.id_ganador !== null)    break;
         }
 
-        // ✅ Obtener puntos por carrera
+        // ─── 5. Puntos por carrera ─────────────────────────────────
         const [puntosCarrera] = await db.query(`
-            SELECT 
-                c.descripcion as carrera,
-                uc.puntos as puntos_carrera
-            FROM usuario_carrera uc
+            SELECT c.descripcion AS carrera, uc.puntos AS puntos_carrera
+            FROM usuario_puntos_carrera uc
             JOIN carrera c ON uc.id_carrera = c.id_carrera
             WHERE uc.id_usuario = ?
         `, [idUsuarioVer]);
 
-        // ✅ Obtener últimos duelos
+        // ─── 6. Últimos duelos ─────────────────────────────────────
         const [ultimosDuelos] = await db.query(`
             SELECT 
                 hd.id_duelo,
-                hd.fecha_duelo,
-                hd.tipo_duelo,
+                hd.fecha_duelo        AS fecha_fin,
                 hd.id_ganador,
-                hd.correctas_retador,
-                hd.correctas_defensor,
+                hd.correctas_retador  AS puntaje_retador,
+                hd.correctas_defensor AS puntaje_defensor,
                 hd.total_preguntas,
-                u1.username as retador_nombre,
-                u2.username as defensor_nombre
+                hd.dificultad,
+                u1.username AS retador_nombre,
+                u2.username AS defensor_nombre
             FROM historial_duelos hd
-            JOIN usuario u1 ON hd.id_retador = u1.id_usuario
+            JOIN usuario u1 ON hd.id_retador  = u1.id_usuario
             JOIN usuario u2 ON hd.id_defensor = u2.id_usuario
             WHERE (hd.id_retador = ? OR hd.id_defensor = ?)
             ORDER BY hd.fecha_duelo DESC
             LIMIT 5
         `, [idUsuarioVer, idUsuarioVer]);
 
-        // ✅ Obtener ranking global
-        const [rankingGlobal] = await db.query(`
-            SELECT 
-                (SELECT COUNT(*) + 1 
-                 FROM (
-                     SELECT id_usuario, SUM(puntos) as total_puntos
-                     FROM usuario_examen
-                     GROUP BY id_usuario
-                 ) as subq
-                 WHERE subq.total_puntos > ?) as posicion_global
-        `, [statsGenerales[0].puntos_totales || 0]);
+        // ─── 7. Ranking global ─────────────────────────────────────
+        // FIX [2]: ranking basado en SUM(obtenido) de usuario_examen
+        let posicionGlobal = '?';
+        try {
+            const puntosParaRanking = statsEx[0]?.puntos_totales || 0;
+            const [rankingRow] = await db.query(`
+                SELECT (
+                    SELECT COUNT(*) + 1
+                    FROM (
+                        SELECT ue2.id_usuario, COALESCE(SUM(ue2.obtenido), 0) AS total_pts
+                        FROM usuario_examen ue2
+                        GROUP BY ue2.id_usuario
+                    ) AS sub
+                    WHERE sub.total_pts > ?
+                ) AS posicion_global
+            `, [puntosParaRanking]);
+            posicionGlobal = rankingRow[0]?.posicion_global || '?';
+        } catch (err) {
+            console.warn('[PERFIL PÚBLICO]: ⚠️ Ranking no disponible:', err.message);
+        }
 
-        // ✅ Construir objeto de estadísticas
+        // ─── 8. Insignias equipadas ────────────────────────────────
+        let insigniasEquipadas = [];
+        try {
+            const [ins] = await db.query(`
+                SELECT 
+                    i.id_insignia,
+                    i.nombre,
+                    i.descripcion,
+                    i.imagen,
+                    i.rareza,
+                    i.color_borde,
+                    ui.posicion_perfil
+                FROM usuario_insignias ui
+                INNER JOIN insignias i ON ui.id_insignia = i.id_insignia
+                WHERE ui.id_usuario = ? AND ui.equipada = 1 AND ui.desbloqueada = 1
+                ORDER BY ui.posicion_perfil
+                LIMIT 6
+            `, [idUsuarioVer]);
+            insigniasEquipadas = ins;
+        } catch (err) {
+            console.warn('[PERFIL PÚBLICO]: ⚠️ Tabla insignias no disponible:', err.message);
+        }
+
+        // ─── 9. Logros recientes ───────────────────────────────────
+        let logrosRecientes = [];
+        try {
+            const [log] = await db.query(`
+                SELECT 
+                    l.id_logro,
+                    l.nombre,
+                    l.descripcion,
+                    l.icono,
+                    l.puntos_bonus,
+                    ul.fecha_desbloqueo
+                FROM usuario_logros ul
+                INNER JOIN logros l ON ul.id_logro = l.id_logro
+                WHERE ul.id_usuario = ? AND ul.desbloqueado = 1
+                ORDER BY ul.fecha_desbloqueo DESC
+                LIMIT 3
+            `, [idUsuarioVer]);
+            logrosRecientes = log;
+        } catch (err) {
+            console.warn('[PERFIL PÚBLICO]: ⚠️ Tabla logros no disponible:', err.message);
+        }
+
+        // ─── 10. Construir stats ───────────────────────────────────
+        const totalDuelos = statsDuelos[0]?.duelos_totales || 0;
+        const victorias   = statsDuelos[0]?.victorias      || 0;
+
         const stats = {
-            puntos_totales: statsGenerales[0].puntos_totales || 0,
-            examenes_realizados: statsGenerales[0].examenes_realizados || 0,
-            duelos_totales: statsDuelos[0].duelos_totales || 0,
-            victorias: statsDuelos[0].victorias || 0,
-            empates: statsDuelos[0].empates || 0,
-            derrotas: statsDuelos[0].derrotas || 0,
-            racha_victorias: rachaVictorias,
-            porcentaje_victoria: statsDuelos[0].duelos_totales > 0 
-                ? Math.round((statsDuelos[0].victorias / statsDuelos[0].duelos_totales) * 100)
+            puntos_totales:      statsEx[0]?.puntos_totales      || 0,
+            examenes_realizados: statsEx[0]?.examenes_realizados  || 0,
+            duelos_totales:      totalDuelos,
+            victorias,
+            empates:             statsDuelos[0]?.empates  || 0,
+            derrotas:            statsDuelos[0]?.derrotas || 0,
+            racha_victorias:     rachaVictorias,
+            porcentaje_victoria: totalDuelos > 0
+                ? Math.round((victorias / totalDuelos) * 100)
                 : 0,
-            posicion_global: rankingGlobal[0].posicion_global || '?',
-            carreras: puntosCarrera,
-            ultimos_duelos: ultimosDuelos
+            posicion_global:     posicionGlobal,
+            carreras:            puntosCarrera,
+            ultimos_duelos:      ultimosDuelos,
+            insignias_equipadas: insigniasEquipadas,
+            logros_recientes:    logrosRecientes
         };
 
-        // ✅ Determinar si es el propio perfil
-        const esPropioPerfil = idUsuarioVer === idUsuarioActual;
+        console.log(`[PERFIL PÚBLICO]: ✅ OK — puntos: ${stats.puntos_totales}, insignias: ${insigniasEquipadas.length}, logros: ${logrosRecientes.length}`);
 
-        console.log(`[PERFIL PÚBLICO]: ✅ Stats cargadas para usuario ${idUsuarioVer}`);
-
-        // ✅ Renderizar vista
         res.render('perfil-publico', {
-            layout: 'main',
-            title: `Perfil de ${usuario.username}`,
+            layout:        'main',
+            title:         `Perfil de ${usuario.username}`,
             usuario,
             stats,
-            esPropioPerfil,
-            user: req.session.user
+            esPropioPerfil: idUsuarioVer === idUsuarioActual,
+            user:           req.session.user
         });
 
     } catch (error) {
-        console.error('[PERFIL PÚBLICO ERROR]:', error);
-        
-        // ✅ Manejar error sin vista 'error'
+        console.error('[PERFIL PÚBLICO ERROR]:', error.message);
+        console.error('[PERFIL PÚBLICO STACK]:', error.stack);
         res.status(500).render('menu_principal', {
-            layout: 'main',
-            title: 'Error',
-            user: req.session.user,
-            error: 'Error al cargar el perfil. Intenta de nuevo.'
+            layout: 'main', title: 'Error',
+            user:   req.session.user,
+            error:  'Error al cargar el perfil. Intenta de nuevo.'
         });
     }
 }
-
-// ✅ NO OLVIDES EXPORTAR
-
-// backend/controllers/usuario.controller.js - AGREGAR ESTA FUNCIÓN
-
-// ==================== API: OBTENER STATS EN TIEMPO REAL ====================
+// ==================== API: STATS EN TIEMPO REAL ====================
 async function obtenerStatsAPI(req, res) {
     try {
         const idUsuario = parseInt(req.params.id_usuario);
@@ -558,8 +525,7 @@ async function obtenerStatsAPI(req, res) {
             });
         }
         
-        // Stats generales
-        const [statsGenerales] = await req.pool.query(`
+        const [statsGenerales] = await db.query(`
             SELECT 
                 COALESCE(SUM(puntos), 0) as puntos_totales,
                 COUNT(DISTINCT id_examen) as examenes_realizados
@@ -567,16 +533,14 @@ async function obtenerStatsAPI(req, res) {
             WHERE id_usuario = ?
         `, [idUsuario]);
         
-        // Stats de duelos
-        const [statsDuelos] = await req.pool.query(`
+        const [statsDuelos] = await db.query(`
             SELECT 
                 COUNT(*) as duelos_totales,
                 SUM(CASE WHEN id_ganador = ? THEN 1 ELSE 0 END) as victorias,
                 SUM(CASE WHEN id_ganador IS NULL THEN 1 ELSE 0 END) as empates,
                 SUM(CASE WHEN id_ganador != ? AND id_ganador IS NOT NULL THEN 1 ELSE 0 END) as derrotas
-            FROM duelo
+            FROM historial_duelos
             WHERE (id_retador = ? OR id_defensor = ?)
-            AND estado = 'finalizado'
         `, [idUsuario, idUsuario, idUsuario, idUsuario]);
         
         res.json({
@@ -596,4 +560,134 @@ async function obtenerStatsAPI(req, res) {
             message: 'Error al obtener estadísticas' 
         });
     }
+}
+
+// ==================== API: MINI PERFIL ====================
+
+
+// ─────────────────────────────────────────────────────────────
+async function obtenerMiniPerfil(req, res) {
+    try {
+        const idUsuario = parseInt(req.params.id_usuario);
+
+        if (!idUsuario || isNaN(idUsuario)) {
+            return res.status(400).json({
+                success: false,
+                message: 'ID de usuario inválido'
+            });
+        }
+
+        console.log(`[MINI PERFIL API]: Consultando usuario ${idUsuario}`);
+
+        // Datos básicos del usuario
+        const [usuario] = await db.query(`
+            SELECT 
+                u.id_usuario,
+                u.username,
+                u.apodo,
+                u.email,
+                u.foto_perfil,
+                u.descripcion,
+                c.descripcion as carrera_descripcion
+            FROM usuario u
+            LEFT JOIN usuario_carrera uc ON u.id_usuario = uc.id_usuario
+            LEFT JOIN carrera c ON uc.id_carrera = c.id_carrera
+            WHERE u.id_usuario = ?
+            LIMIT 1
+        `, [idUsuario]);
+
+        if (!usuario || usuario.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado'
+            });
+        }
+
+        usuario[0].foto_perfil = normalizarAvatar(usuario[0].foto_perfil);
+
+        // Stats del usuario (puntos desde usuario_examen, racha desde usuario)
+        const [statsRow] = await db.query(`
+            SELECT 
+                u.racha_victorias,
+                COALESCE(SUM(u.puntos), 0) as puntos_totales,
+                COUNT(DISTINCT ue.id_examen)   as examenes_realizados
+            FROM usuario u
+            LEFT JOIN usuario_examen ue ON u.id_usuario = ue.id_usuario
+            WHERE u.id_usuario = ?
+            GROUP BY u.id_usuario
+        `, [idUsuario]);
+
+        const stats = statsRow[0] || { puntos_totales: 0, examenes_realizados: 0, racha_victorias: 0 };
+
+        // Victorias totales
+        const [victoriasRow] = await db.query(`
+            SELECT COUNT(*) as victorias
+            FROM historial_duelos
+            WHERE id_ganador = ?
+        `, [idUsuario]);
+
+        // ✅ FIX: ranking correcto usando usuario_examen
+        const [rankingRow] = await db.query(`
+            SELECT
+                (SELECT COUNT(*) + 1
+                 FROM (
+                     SELECT id_usuario, COALESCE(SUM(obtenido), 0) as total_puntos
+                     FROM usuario_examen
+                     GROUP BY id_usuario
+                 ) AS subq
+                 WHERE subq.total_puntos > ?) AS posicion_global
+        `, [stats.puntos_totales]);
+
+        // Insignias equipadas
+        const [insignias] = await db.query(`
+            SELECT 
+                i.id_insignia,
+                i.nombre,
+                i.descripcion,
+                i.imagen,
+                i.rareza,
+                i.color_borde,
+                ui.posicion_perfil
+            FROM usuario_insignias ui
+            INNER JOIN insignias i ON ui.id_insignia = i.id_insignia
+            WHERE ui.id_usuario = ? AND ui.equipada = 1 AND ui.desbloqueada = 1
+            ORDER BY ui.posicion_perfil
+            LIMIT 6
+        `, [idUsuario]);
+
+        const response = {
+            success: true,
+            usuario: usuario[0],
+            stats: {
+                puntos_totales:     stats.puntos_totales     || 0,
+                examenes_realizados: stats.examenes_realizados || 0,
+                victorias:          victoriasRow[0]?.victorias || 0,
+                racha_victorias:    stats.racha_victorias    || 0
+            },
+            insignias_equipadas: insignias,
+            posicion_global:     rankingRow[0]?.posicion_global || '?'
+        };
+
+        console.log(`[MINI PERFIL API]: ✅ Datos enviados para usuario ${idUsuario}`);
+        res.json(response);
+
+    } catch (error) {
+        console.error('[MINI PERFIL API ERROR]:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener perfil: ' + error.message
+        });
+    }
+}
+// ==================== EXPORTACIÓN ====================
+module.exports = {
+  verPerfil,
+  vistaEditarUsuario,
+  editarUsuario,
+  verHistorialUnificado,
+  verDetalleExamen,
+  verPerfilPublico,      // ✅ EXPORTADA
+  obtenerStatsAPI,       // ✅ EXPORTADA
+  obtenerMiniPerfil,     // ✅ EXPORTADA
+  upload
 };

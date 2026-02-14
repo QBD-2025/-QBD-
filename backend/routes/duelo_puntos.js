@@ -642,24 +642,29 @@ class GestorPuntuacion {
                         username: duelo.jugadores[jId].username,
                         foto_perfil: duelo.jugadores[jId].foto_perfil || '/uploads/default_avatar.png',
                         
+                        // ✅ CAMPOS DE PUNTOS
                         puntosGlobales: resultado.puntosGlobales,
                         puntosCarrera: resultado.puntosCarrera,
                         
+                        // ✅✅✅ AGREGAR ESTOS CAMPOS FALTANTES:
                         cambioGlobal: detalles.cambioGlobal,
                         cambioCarrera: detalles.cambioCarrera,
                         
-                        puntosIniciales: detalles.puntosIniciales,
-                        puntosFinal: detalles.puntosFinal,
+                        puntosIniciales: detalles.puntosIniciales,  // ← AGREGADO
+                        puntosFinal: detalles.puntosFinal,          // ← AGREGADO
                         
+                        // ✅ ESTADÍSTICAS
                         respuestasCorrectas: resultado.respuestasCorrectas,
                         respuestasIncorrectas: resultado.respuestasIncorrectas,
                         porcentaje: resultado.porcentaje,
                         rachaMaxima: resultado.rachaMaxima,
                         tiempoPromedio: resultado.tiempoPromedio,
                         
+                        // ✅ GAMBITO
                         gambitoActivado: duelo.jugadores[jId].gambitoActivado || false,
                         cumplioGambito: resultado.cumplioGambito,
                         
+                        // ✅ DESGLOSE
                         desglose: detalles.desglose
                     };
                 })

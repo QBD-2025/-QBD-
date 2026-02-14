@@ -1,0 +1,246 @@
+{{!-- =============================================
+     🏆 PÁGINA DE LOGROS E INSIGNIAS DEL USUARIO
+     views/logros-usuario.hbs
+     
+     Nueva vista requerida por la ruta /usuario/logros
+     que se abre desde el botón en perfil-publico.hbs
+     ============================================= --}}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Logros e Insignias - QueBuenDato</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-dark:    #0f172a;
+      --bg-card:    #1e293b;
+      --bg-card2:   #273549;
+      --accent:     #6366f1;
+      --accent2:    #818cf8;
+      --gold:       #fbbf24;
+      --green:      #10b981;
+      --text:       #f1f5f9;
+      --text-muted: #94a3b8;
+      --border:     rgba(255,255,255,0.08);
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg-dark); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+    .page-container { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; display: flex; flex-direction: column; gap: 24px; }
+    .btn-volver { display: inline-flex; align-items: center; gap: 8px; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted); padding: 8px 18px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: color .2s; text-decoration: none; }
+    .btn-volver:hover { color: var(--text); border-color: var(--accent); }
+
+    /* Header de la página */
+    .page-header { background: linear-gradient(135deg, #1e293b, #162032); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; }
+    .page-header h1 { font-size: 26px; font-weight: 800; display: flex; align-items: center; gap: 12px; }
+    .page-header h1 i { color: var(--gold); }
+
+    /* Barra de progreso general */
+    .progreso-general { margin-top: 20px; }
+    .progreso-label { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+    .progreso-bar { background: rgba(255,255,255,.06); border-radius: 20px; height: 10px; overflow: hidden; }
+    .progreso-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 20px; transition: width 1s ease; }
+
+    /* Stats rápidos */
+    .stats-rapidos { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; }
+    .stat-chip { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+    .stat-chip .valor { font-size: 24px; font-weight: 800; color: var(--text); }
+    .stat-chip.dorado .valor { color: var(--gold); }
+    .stat-chip .label { font-size: 11px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; }
+
+    /* Sección */
+    .seccion { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+    .titulo-seccion { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .titulo-seccion i { color: var(--accent); }
+
+    /* Filtros */
+    .filtros { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .filtro-btn { background: var(--bg-card2); border: 1px solid var(--border); color: var(--text-muted); padding: 7px 16px; border-radius: 20px; font-size: 13px; cursor: pointer; transition: all .2s; }
+    .filtro-btn.active, .filtro-btn:hover { border-color: var(--accent); color: var(--accent2); background: rgba(99,102,241,.12); }
+
+    /* Grid de insignias */
+    .insignias-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 16px; }
+    .insignia-item {
+      background: var(--bg-card2);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 12px;
+      text-align: center;
+      position: relative;
+      transition: transform .2s;
+    }
+    .insignia-item:hover { transform: translateY(-4px); }
+    .insignia-item.bloqueada { opacity: .35; filter: grayscale(1); }
+    .insignia-item img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 8px; }
+    .insignia-item .nombre { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.3; }
+    .insignia-item .rareza { font-size: 10px; color: var(--text-muted); text-transform: capitalize; margin-top: 4px; }
+    .insignia-item.comun      { border-color: #94a3b8; }
+    .insignia-item.rara       { border-color: #3b82f6; }
+    .insignia-item.epica      { border-color: #a855f7; }
+    .insignia-item.legendaria { border-color: var(--gold); box-shadow: 0 0 14px rgba(251,191,36,.3); }
+    .insignia-item.especial   { border-color: var(--green); }
+
+    .equipada-badge {
+      position: absolute;
+      top: 6px; right: 6px;
+      background: var(--green);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 20px;
+    }
+
+    /* Lista de logros */
+    .logros-lista { display: flex; flex-direction: column; gap: 10px; }
+    .logro-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--bg-card2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      transition: border-color .2s;
+    }
+    .logro-item.desbloqueado { border-left: 4px solid var(--green); }
+    .logro-item.bloqueado    { opacity: .5; }
+    .logro-item:hover { border-color: var(--accent); }
+    .logro-icono { font-size: 28px; flex-shrink: 0; }
+    .logro-info  { flex: 1; }
+    .logro-nombre { font-weight: 700; font-size: 15px; }
+    .logro-desc  { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+    .logro-meta  { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+    .logro-bonus { display: inline-flex; align-items: center; gap: 4px; background: rgba(16,185,129,.15); border: 1px solid rgba(16,185,129,.3); color: var(--green); font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+    .logro-categoria { font-size: 11px; background: rgba(99,102,241,.12); border: 1px solid rgba(99,102,241,.3); color: var(--accent2); padding: 2px 8px; border-radius: 20px; text-transform: capitalize; }
+    .logro-fecha { font-size: 12px; color: var(--text-muted); flex-shrink: 0; white-space: nowrap; }
+    .logro-check { font-size: 20px; flex-shrink: 0; }
+
+    .sin-items { text-align: center; padding: 40px; color: var(--text-muted); }
+    .sin-items i { display: block; font-size: 40px; margin-bottom: 14px; opacity: .3; }
+  </style>
+</head>
+<body>
+<div class="page-container">
+
+  <div>
+    <a class="btn-volver" href="/usuario">
+      <i class="fas fa-arrow-left"></i> Volver a mi perfil
+    </a>
+  </div>
+
+  {{!-- Header --}}
+  <div class="page-header">
+    <h1><i class="fas fa-trophy"></i> Mis Logros e Insignias</h1>
+    <div class="progreso-general">
+      <div class="progreso-label">
+        <span>Progreso total de logros</span>
+        <span>{{stats.logros_desbloqueados}} / {{stats.total_logros}} ({{stats.porcentaje}}%)</span>
+      </div>
+      <div class="progreso-bar">
+        <div class="progreso-fill" id="barraProgreso" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+
+  {{!-- Stats rápidos --}}
+  <div class="stats-rapidos">
+    <div class="stat-chip dorado">
+      <div class="valor">{{stats.logros_desbloqueados}}</div>
+      <div class="label">Logros</div>
+    </div>
+    <div class="stat-chip">
+      <div class="valor">{{stats.total_logros}}</div>
+      <div class="label">Total disponibles</div>
+    </div>
+    <div class="stat-chip">
+      <div class="valor">{{stats.insignias_desbloqueadas}}</div>
+      <div class="label">Insignias obtenidas</div>
+    </div>
+    <div class="stat-chip">
+      <div class="valor">{{stats.total_insignias}}</div>
+      <div class="label">Insignias totales</div>
+    </div>
+  </div>
+
+  {{!-- ═══ INSIGNIAS ═══ --}}
+  <div class="seccion">
+    <h2 class="titulo-seccion"><i class="fas fa-medal"></i> Mis Insignias</h2>
+
+    {{#if insignias}}
+      <div class="insignias-grid">
+        {{#each insignias}}
+          <div class="insignia-item {{this.rareza}} {{#unless this.desbloqueada}}bloqueada{{/unless}}"
+               title="{{this.nombre}}: {{this.descripcion}}">
+            {{#if this.equipada}}
+              <div class="equipada-badge">Equipada</div>
+            {{/if}}
+            <img src="{{this.imagen}}"
+                 alt="{{this.nombre}}"
+                 onerror="this.src='/media/insignias/default.png'">
+            <div class="nombre">{{this.nombre}}</div>
+            <div class="rareza">{{this.rareza}}</div>
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div class="sin-items">
+        <i class="fas fa-medal"></i>
+        <p>No hay insignias disponibles</p>
+      </div>
+    {{/if}}
+  </div>
+
+  {{!-- ═══ LOGROS ═══ --}}
+  <div class="seccion">
+    <h2 class="titulo-seccion"><i class="fas fa-trophy"></i> Todos los Logros</h2>
+
+    {{#if logros}}
+      <div class="logros-lista">
+        {{#each logros}}
+          <div class="logro-item {{#if this.desbloqueado}}desbloqueado{{else}}bloqueado{{/if}}">
+            <div class="logro-icono">{{this.icono}}</div>
+            <div class="logro-info">
+              <div class="logro-nombre">{{this.nombre}}</div>
+              <div class="logro-desc">{{this.descripcion}}</div>
+              <div class="logro-meta">
+                <span class="logro-categoria">{{this.categoria}}</span>
+                {{#if this.puntos_bonus}}
+                  <span class="logro-bonus">
+                    <i class="fas fa-star"></i> +{{this.puntos_bonus}} pts
+                  </span>
+                {{/if}}
+              </div>
+            </div>
+            {{#if this.desbloqueado}}
+              <div class="logro-fecha">{{formatDate this.fecha_desbloqueo}}</div>
+              <div class="logro-check">✅</div>
+            {{else}}
+              <div class="logro-check" style="opacity:.3">🔒</div>
+            {{/if}}
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div class="sin-items">
+        <i class="fas fa-trophy"></i>
+        <p>Aún no hay logros. ¡Sigue jugando!</p>
+      </div>
+    {{/if}}
+  </div>
+
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const pct = {{stats.porcentaje}};
+    setTimeout(() => {
+      const barra = document.getElementById('barraProgreso');
+      if (barra) barra.style.width = pct + '%';
+    }, 200);
+  });
+</script>
+</body>
+</html>
