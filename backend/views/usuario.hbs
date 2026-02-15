@@ -19,7 +19,7 @@
 
       <!-- Encabezado del perfil -->
       <header class="profile-header">
-        <h1 class="profile-title">Mi Cuenta</h1> <!-- Título principal -->
+        <h1 class="profile-title">Mi Perfil</h1> <!-- Título principal -->
         <p class="user-welcome">Bienvenido {{user.username}} ({{user.role}})</p> <!-- Saludo dinámico -->
         <a href="/logout" class="logout-btn">Cerrar sesión</a> <!-- Botón para cerrar sesión -->
       </header>
@@ -61,10 +61,13 @@
           <h3>Acciones disponibles</h3>
           <ul class="actions-list">
             <li class="action-item">
-              <a href="/buscar-correo" class="action-link">Cambiar mi contraseña</a> <!-- Redirige a cambio de contraseña -->
+              <a href="/buscar-correo" class="action-link">Cambiar mi contraseña</a>
             </li>
             <li class="action-item">
-              <a href="/usuario/editar" class="action-link">Editar mi perfil</a> <!-- Redirige a edición de perfil -->
+              <a href="/usuario/editar" class="action-link">Editar mi perfil</a>
+            </li>
+            <li class="action-item">
+              <a href="/usuario/logros" class="action-link">Ver mis logros</a>
             </li>
             
           </ul>
@@ -74,8 +77,8 @@
       <button onclick="window.location.href='/menu_principal'" class="back-button">
         Regresar
       </button>
-      </div> <!-- Fin profile-body -->
-    </div> <!-- Fin profile-card -->
-  </div> <!-- Fin profile-full -->
+      </div>
+    </div> 
+  </div> 
 </body>
 </html>

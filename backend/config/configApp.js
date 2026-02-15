@@ -533,6 +533,7 @@ const verificationR = require('../routes/verification.router.js');
 const duelo_competitivo = require('../routes/duelo_competitivo.js');
 const duelosErrorHandler = require('../routes/dueloErrorHandler.js');
 const promocionR = require("../routes/rangos.router.js");
+const materiasCarrera =require("../routes/materias_carrera.router.js")
 
 // ════════════════════════════════════════════════════════════════
 // ✅✅✅ ORDEN CRÍTICO DE MONTAJE
@@ -569,7 +570,7 @@ app.use('/', profileR);
 app.use('/', rankingR);
 app.use('/', rankingCarreraR);
 app.use('/', usuarioR);
-app.use('/api/promocion', promocionR); // ✅ NUEVO: Router de promociones
+app.use('/api/promocion', promocionR);
 
 // 6️⃣ SEXTO: Rutas de administración y editor
 app.use('/editor', editorR);
@@ -578,6 +579,7 @@ app.use('/', verificaAdminR);
 // 7️⃣ SÉPTIMO: Rutas de contenido
 app.use('/', datoR);
 app.use('/', materiasR);
+app.use('/',materiasCarrera)
 app.use('/', ligasR);
 app.use('/', formulario1R);
 

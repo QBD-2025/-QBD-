@@ -1,4 +1,4 @@
-// examen.controller.js - VERSIÓN CORREGIDA
+// examenCarrera.controller.js - CONTROLADOR PARA EXÁMENES POR CARRERA
 // =================================================================
 // VARIABLES GLOBALES
 // =================================================================
@@ -12,113 +12,167 @@ let tiempoRestante = 600;
 let intervaloCronometro = null;
 let mostrarSoloNoRespondidas = true;
 let timerAdvertencia = null;
+let tematicaSeleccionada = null;
 let dificultadSeleccionada = null;
 
 // =================================================================
 // VALIDACIÓN INICIAL
 // =================================================================
 window.addEventListener('DOMContentLoaded', () => {
-    console.log('\n🚀 === INICIO CARGA PÁGINA ===');
+    console.log('\n🚀 === INICIO CARGA PÁGINA CARRERA ===');
     
-    const inputIdMateria = document.getElementById('inputIdMateria');
+    const inputIdCarrera = document.getElementById('inputIdCarrera');
     const totalPreguntas = document.querySelectorAll('.contenedor-pregunta').length;
-    const modalDificultad = document.getElementById('modalDificultad');
+    const modalTematicaDificultad = document.getElementById('modalTematicaDificultad');
     const errorMsg = document.body.dataset.errorMsg;
     
     console.log('📊 Estado inicial:');
-    console.log(`   - ID Materia: ${inputIdMateria?.value || 'No encontrado'}`);
+    console.log(`   - ID Carrera: ${inputIdCarrera?.value || 'No encontrado'}`);
     console.log(`   - Total preguntas: ${totalPreguntas}`);
-    console.log(`   - Modal presente: ${modalDificultad ? 'Sí' : 'No'}`);
+    console.log(`   - Modal presente: ${modalTematicaDificultad ? 'Sí' : 'No'}`);
     console.log(`   - Mensaje error: ${errorMsg || 'Ninguno'}`);
+    console.log(`   - Temáticas disponibles: ${window.TEMATICAS?.length || 0}`);
     
-    // Validar ID materia
-    if (inputIdMateria) {
-        if (inputIdMateria.value === 'null' || inputIdMateria.value === 'undefined' || inputIdMateria.value === '') {
-            console.warn('⚠️ ID Materia inválido, limpiando...');
-            inputIdMateria.value = '';
+    // Validar ID carrera
+    if (inputIdCarrera) {
+        if (inputIdCarrera.value === 'null' || inputIdCarrera.value === 'undefined' || inputIdCarrera.value === '') {
+            console.warn('⚠️ ID Carrera inválido, limpiando...');
+            inputIdCarrera.value = '';
         }
     } else {
-        console.error('❌ Input ID Materia no encontrado en el DOM');
+        console.error('❌ Input ID Carrera no encontrado en el DOM');
     }
     
     // Manejar mensaje de error
     if (errorMsg) {
         console.log('⚠️ Mostrando mensaje de error');
         alert(errorMsg);
-        if (modalDificultad) {
-            modalDificultad.classList.remove('oculto');
+        if (modalTematicaDificultad) {
+            modalTematicaDificultad.classList.remove('oculto');
         }
     }
     
-    // Verificar si debe mostrarse el modal por atributo de Handlebars
-    const debeMotrarModal = modalDificultad && !modalDificultad.classList.contains('oculto');
-    console.log(`🎭 Modal debe mostrarse: ${debeMotrarModal}`);
+    // Configurar event listeners para temáticas y dificultades
+    configurarEventListenersModal();
     
-    console.log('✅ === FIN CARGA PÁGINA ===\n');
+    console.log('✅ === FIN CARGA PÁGINA CARRERA ===\n');
 });
 
 // =================================================================
-// MODAL DE DIFICULTAD
+// MODAL DE TEMÁTICA Y DIFICULTAD
 // =================================================================
-function abrirModalDificultad() {
-    console.log('🎭 Abriendo modal de dificultad');
-    const modal = document.getElementById('modalDificultad');
+function abrirModalTematicaDificultad() {
+    console.log('🎭 Abriendo modal de temática y dificultad');
+    const modal = document.getElementById('modalTematicaDificultad');
     if (modal) {
         modal.classList.remove('oculto');
+        // Asegurar que empiece en el paso de temática
+        document.getElementById('pasoTematica')?.classList.remove('oculto');
+        document.getElementById('pasoDificultad')?.classList.add('oculto');
     } else {
         console.error('❌ Modal no encontrado');
     }
 }
 
-function cerrarModalDificultad() {
-    console.log('🎭 Cerrando modal de dificultad');
-    const modal = document.getElementById('modalDificultad');
+function cerrarModalTematicaDificultad() {
+    console.log('🎭 Cerrando modal de temática y dificultad');
+    const modal = document.getElementById('modalTematicaDificultad');
     if (modal) {
         modal.classList.add('oculto');
     }
 }
 
+function volverATematica() {
+    console.log('🔙 Volviendo al paso de temática');
+    document.getElementById('pasoTematica')?.classList.remove('oculto');
+    document.getElementById('pasoDificultad')?.classList.add('oculto');
+}
+
 // =================================================================
-// EVENT LISTENERS PARA DIFICULTAD
+// EVENT LISTENERS PARA TEMÁTICA Y DIFICULTAD
 // =================================================================
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🔌 Configurando event listeners de dificultad');
+function configurarEventListenersModal() {
+    console.log('🔌 Configurando event listeners del modal');
     
+    // Event listeners para temáticas
+    const opcionesTematica = document.querySelectorAll('.opcion-tematica');
+    console.log(`   - Opciones de temática: ${opcionesTematica.length}`);
+    
+    opcionesTematica.forEach((opcion, index) => {
+        opcion.addEventListener('click', function() {
+            tematicaSeleccionada = this.dataset.tematica;
+            const textoTematica = this.querySelector('.tematica-titulo')?.textContent;
+            
+            console.log(`\n📚 === TEMÁTICA SELECCIONADA ===`);
+            console.log(`   - ID Temática: ${tematicaSeleccionada}`);
+            console.log(`   - Nombre: ${textoTematica}`);
+            console.log(`   - Índice botón: ${index}`);
+            
+            // Marcar visualmente la selección
+            opcionesTematica.forEach(o => o.classList.remove('seleccionada'));
+            this.classList.add('seleccionada');
+            
+            // Actualizar texto en el paso 2
+            const textoElement = document.getElementById('tematicaSeleccionadaTexto');
+            if (textoElement) {
+                textoElement.textContent = textoTematica;
+            }
+            
+            // Mostrar paso de dificultad
+            setTimeout(() => {
+                document.getElementById('pasoTematica')?.classList.add('oculto');
+                document.getElementById('pasoDificultad')?.classList.remove('oculto');
+            }, 200);
+            
+            console.log('✅ === FIN SELECCIÓN TEMÁTICA ===\n');
+        });
+    });
+    
+    // Event listeners para dificultades
     const opcionesDificultad = document.querySelectorAll('.opcion-dificultad');
-    console.log(`   - Opciones encontradas: ${opcionesDificultad.length}`);
+    console.log(`   - Opciones de dificultad: ${opcionesDificultad.length}`);
     
     opcionesDificultad.forEach((opcion, index) => {
         opcion.addEventListener('click', function() {
-            const dificultad = this.dataset.dificultad;
-            const idMateria = document.getElementById('inputIdMateria')?.value;
+            dificultadSeleccionada = this.dataset.dificultad;
+            const idCarrera = document.getElementById('inputIdCarrera')?.value;
             
-            console.log(`\n🎯 === SELECCIÓN DE DIFICULTAD ===`);
-            console.log(`   - Dificultad: ${dificultad}`);
-            console.log(`   - ID Materia: ${idMateria}`);
+            console.log(`\n⚡ === DIFICULTAD SELECCIONADA ===`);
+            console.log(`   - Dificultad: ${dificultadSeleccionada}`);
+            console.log(`   - Temática: ${tematicaSeleccionada}`);
+            console.log(`   - ID Carrera: ${idCarrera}`);
             console.log(`   - Índice botón: ${index}`);
             
-            // Validar ID materia
-            if (!idMateria || idMateria === 'null' || idMateria === 'undefined' || idMateria === '') {
-                console.error('❌ ID Materia inválido');
-                alert('❌ Error: No se pudo determinar la materia. Por favor, recarga la página.');
+            // Validar que haya temática seleccionada
+            if (!tematicaSeleccionada) {
+                console.error('❌ No hay temática seleccionada');
+                alert('⚠️ Por favor, primero selecciona una temática.');
+                volverATematica();
                 return;
             }
             
-            // Construir URL con parámetro de dificultad
-            const nuevaURL = `/examen/${idMateria}?dificultad=${dificultad}`;
+            // Validar ID carrera
+            if (!idCarrera || idCarrera === 'null' || idCarrera === 'undefined' || idCarrera === '') {
+                console.error('❌ ID Carrera inválido');
+                alert('❌ Error: No se pudo determinar la carrera. Por favor, recarga la página.');
+                return;
+            }
+            
+            // Construir URL con parámetros
+            const nuevaURL = `/examen-carrera/${idCarrera}?tematica=${tematicaSeleccionada}&dificultad=${dificultadSeleccionada}`;
             console.log(`🔄 Redirigiendo a: ${nuevaURL}`);
-            console.log('✅ === FIN SELECCIÓN ===\n');
+            console.log('✅ === FIN SELECCIÓN DIFICULTAD ===\n');
             
             window.location.href = nuevaURL;
         });
     });
-});
+}
 
 // =================================================================
 // FUNCIÓN COMENZAR EXAMEN
 // =================================================================
 function comenzarExamen() {
-    console.log('\n▶️ === INICIO EXAMEN ===');
+    console.log('\n▶️ === INICIO EXAMEN CARRERA ===');
     
     const totalPreguntas = preguntas.length;
     console.log(`📊 Total preguntas disponibles: ${totalPreguntas}`);
@@ -126,15 +180,18 @@ function comenzarExamen() {
     // Validar que haya preguntas
     if (totalPreguntas === 0) {
         console.error('❌ No hay preguntas cargadas');
-        alert('Por favor, selecciona una dificultad primero');
-        abrirModalDificultad();
+        alert('Por favor, configura el examen primero');
+        abrirModalTematicaDificultad();
         return;
     }
     
-    // Obtener dificultad de la URL
+    // Obtener dificultad y temática de la URL
     const urlParams = new URLSearchParams(window.location.search);
     dificultadSeleccionada = urlParams.get('dificultad') || '2';
+    tematicaSeleccionada = urlParams.get('tematica');
+    
     console.log(`⚡ Dificultad seleccionada: ${dificultadSeleccionada}`);
+    console.log(`📚 Temática seleccionada: ${tematicaSeleccionada}`);
     
     // Registrar hora de inicio
     fechaInicioExamen = new Date().toISOString();
@@ -151,7 +208,7 @@ function comenzarExamen() {
     iniciarExamen();
     iniciarCronometro();
     
-    console.log('✅ === EXAMEN INICIADO ===\n');
+    console.log('✅ === EXAMEN CARRERA INICIADO ===\n');
 }
 
 // =================================================================
@@ -353,18 +410,19 @@ document.querySelectorAll('.btn-finalizar').forEach(btn => btn.addEventListener(
 // FINALIZAR EXAMEN
 // =================================================================
 function finalizarExamen() {
-    console.log('\n🏁 === FINALIZANDO EXAMEN ===');
+    console.log('\n🏁 === FINALIZANDO EXAMEN CARRERA ===');
     console.log(`📦 Total respuestas: ${Object.keys(respuestasUsuario).length}`);
     console.log(`⚡ Dificultad: ${dificultadSeleccionada}`);
+    console.log(`📚 Temática: ${tematicaSeleccionada}`);
     
     clearInterval(intervaloCronometro);
     
-    const inputIdMateria = document.getElementById('inputIdMateria');
-    console.log(`📚 ID Materia: ${inputIdMateria?.value}`);
+    const inputIdCarrera = document.getElementById('inputIdCarrera');
+    console.log(`🎓 ID Carrera: ${inputIdCarrera?.value}`);
     
-    if (!inputIdMateria || !inputIdMateria.value) {
-        console.error('❌ No se pudo determinar la materia');
-        alert('❌ Error: No se pudo determinar la materia');
+    if (!inputIdCarrera || !inputIdCarrera.value) {
+        console.error('❌ No se pudo determinar la carrera');
+        alert('❌ Error: No se pudo determinar la carrera');
         return;
     }
     
@@ -372,7 +430,7 @@ function finalizarExamen() {
     document.getElementById('inputRespuestas').value = JSON.stringify(respuestasUsuario);
     document.getElementById('inputFechaInicio').value = fechaInicioExamen;
     
-    // Asegurar campo de dificultad
+    // Asegurar campos de dificultad y temática
     let inputDificultad = document.getElementById('inputDificultad');
     if (!inputDificultad) {
         console.log('➕ Creando campo de dificultad');
@@ -384,33 +442,24 @@ function finalizarExamen() {
     }
     inputDificultad.value = dificultadSeleccionada || '2';
     
+    let inputTematica = document.getElementById('inputTematica');
+    if (!inputTematica) {
+        console.log('➕ Creando campo de temática');
+        inputTematica = document.createElement('input');
+        inputTematica.type = 'hidden';
+        inputTematica.name = 'id_tematica';
+        inputTematica.id = 'inputTematica';
+        document.getElementById('formResultados').appendChild(inputTematica);
+    }
+    inputTematica.value = tematicaSeleccionada;
+    
     console.log('✅ Formulario preparado, enviando...');
     console.log('✅ === FIN FINALIZACIÓN ===\n');
     
     document.getElementById('formResultados').submit();
 }
 
-// =================================================================
-// SISTEMA DE TEMAS
-// =================================================================
-document.addEventListener('DOMContentLoaded', function() {
-    const themeToggle = document.getElementById('theme-toggle');
-    const currentTheme = localStorage.getItem('theme') || 'light';
-    
-    document.documentElement.setAttribute('data-theme', currentTheme);
-    
-    if (themeToggle) {
-        themeToggle.checked = currentTheme === 'dark';
-        
-        themeToggle.addEventListener('change', function() {
-            const newTheme = this.checked ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-        });
-    }
-});
-
 // Asegurar que inicia en modo pre-examen
 document.body.classList.remove('mostrar-examen');
 
-console.log('✅ Controlador de examen cargado completamente');
+console.log('✅ Controlador de examen de carrera cargado completamente');

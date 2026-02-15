@@ -701,3 +701,227 @@ header {
         width: 100%;
     }
 }
+/* ========================================
+   MODAL DE SELECCIÓN DE DIFICULTAD
+======================================== */
+
+.modal-dificultad {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-dificultad.oculto {
+    display: none;
+}
+
+.modal-dificultad-content {
+    background: var(--bg-primary);
+    padding: 40px;
+    border-radius: 25px;
+    max-width: 900px;
+    width: 90%;
+    box-shadow: 0 20px 60px var(--shadow-heavy);
+    border: 3px solid var(--accent-yellow);
+    animation: slideUp 0.4s ease;
+}
+
+.modal-dificultad-content h2 {
+    color: var(--accent-blue);
+    margin-bottom: 15px;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
+}
+
+.modal-dificultad-content > p {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+    line-height: 1.5;
+}
+
+.opciones-dificultad {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.opcion-dificultad {
+    background: var(--bg-secondary);
+    border: 3px solid transparent;
+    border-radius: 15px;
+    padding: 30px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.opcion-dificultad::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.opcion-dificultad:hover::before {
+    left: 100%;
+}
+
+.opcion-dificultad:hover {
+    transform: translateY(-8px);
+    border-color: var(--accent-yellow);
+    box-shadow: 0 15px 40px var(--shadow-heavy);
+}
+
+.opcion-dificultad[data-dificultad="1"]:hover {
+    border-color: #28a745;
+    background: linear-gradient(135deg, var(--bg-secondary), rgba(40, 167, 69, 0.1));
+}
+
+.opcion-dificultad[data-dificultad="2"]:hover {
+    border-color: #ffc107;
+    background: linear-gradient(135deg, var(--bg-secondary), rgba(255, 193, 7, 0.1));
+}
+
+.opcion-dificultad[data-dificultad="3"]:hover {
+    border-color: #dc3545;
+    background: linear-gradient(135deg, var(--bg-secondary), rgba(220, 53, 69, 0.1));
+}
+
+.dificultad-icono {
+    font-size: 4rem;
+    margin-bottom: 15px;
+    filter: drop-shadow(0 4px 8px var(--shadow-light));
+}
+
+.dificultad-titulo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+    margin-bottom: 10px;
+}
+
+.dificultad-puntos {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--accent-yellow);
+    margin-bottom: 10px;
+}
+
+.dificultad-descripcion {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.modal-dificultad-botones {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.btn-cancelar-dificultad {
+    padding: 12px 30px;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid #545b62;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-cancelar-dificultad:hover {
+    background: #5a6268;
+    transform: translateY(-3px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .modal-dificultad-content {
+        padding: 25px;
+        width: 95%;
+    }
+    
+    .opciones-dificultad {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-dificultad-content h2 {
+        font-size: 1.5rem;
+    }
+}
+/* ========================================
+   ESTILOS ADICIONALES PARA MENSAJES DE ERROR
+======================================== */
+
+.error-message {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+    color: white;
+    padding: 20px 25px;
+    border-radius: 15px;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 25px rgba(238, 90, 90, 0.3);
+    border: 2px solid #ff5252;
+    animation: shake 0.5s ease-in-out, fadeIn 0.8s ease-out 0.3s both;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.error-message i {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.error-message p {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+/* Estilos para el helper eq de Handlebars (si no está definido) */
+/* Nota: Esto es CSS, el helper debe estar en tu archivo de helpers de Handlebars */
+
+/* Responsive para mensaje de error */
+@media (max-width: 768px) {
+    .error-message {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .error-message i {
+        font-size: 2.5rem;
+    }
+}

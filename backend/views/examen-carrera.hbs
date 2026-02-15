@@ -1,9 +1,8 @@
-<!--Examen.hbs- examenes generales por materias generales-->
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Examen Interactivo</title>
+  <title>Examen de {{carrera}}</title>
   <link rel="stylesheet" href="/css/examen.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -13,11 +12,11 @@
 <div class="pre-examen-container" id="preExamenContent">
   <div class="pre-examen-content">
     <div class="pre-examen-header">
-      <h1><i class="fas fa-graduation-cap"></i> Examen de {{materia}}</h1>
-      <p>Demuestra tus conocimientos y compite por un lugar en el ranking global</p>
+      <h1><i class="fas fa-user-graduate"></i> Examen de {{carrera}}</h1>
+      <p>Demuestra tu dominio en tu área de especialización</p>
     </div>
 
-    {{!-- ✅ Mostrar mensaje de error si no hay preguntas --}}
+    {{!-- Mostrar mensaje de error si no hay preguntas --}}
     {{#if errorMsg}}
     <div class="error-message">
       <i class="fas fa-exclamation-triangle"></i>
@@ -59,7 +58,7 @@
     {{#if ultimoExamen}}
     <div class="previous-result">
       <i class="fas fa-chart-line" style="font-size: 36px; margin-bottom: 10px;"></i>
-      <p>Tu último examen: <strong>{{ultimoExamen}}%</strong></p>
+      <p>Tu último examen de {{carrera}}: <strong>{{ultimoExamen}}%</strong></p>
     </div>
     {{else}}
     <div class="no-previous-results">
@@ -71,64 +70,98 @@
     <!-- Información del examen -->
     <div class="exam-info">
       <h2 class="section-title"><i class="fas fa-info-circle"></i> Información del Examen</h2>
-      <div class="info-item"><i class="fas fa-book"></i><div><strong>Materia:</strong> {{materia}}</div></div>
-      <div class="info-item"><i class="fas fa-question-circle"></i><div><strong>Preguntas:</strong> {{#if preguntas.length}}{{preguntas.length}}{{else}}Selecciona dificultad{{/if}}</div></div>
+      <div class="info-item"><i class="fas fa-graduation-cap"></i><div><strong>Carrera:</strong> {{carrera}}</div></div>
+      {{#if tematicaNombre}}
+      <div class="info-item"><i class="fas fa-book-open"></i><div><strong>Temática:</strong> {{tematicaNombre}}</div></div>
+      {{/if}}
+      <div class="info-item"><i class="fas fa-question-circle"></i><div><strong>Preguntas:</strong> {{#if preguntas.length}}{{preguntas.length}}{{else}}Selecciona temática y dificultad{{/if}}</div></div>
       <div class="info-item"><i class="fas fa-clock"></i><div><strong>Duración:</strong> 10 minutos aproximadamente</div></div>
       <div class="info-item"><i class="fas fa-star"></i><div><strong>Puntuación máxima:</strong> {{#if dificultad}}{{#if (eq dificultad "1")}}40 puntos{{else if (eq dificultad "2")}}100 puntos{{else}}200 puntos{{/if}}{{else}}Depende de la dificultad{{/if}}</div></div>
       
       <div class="pre-examen-buttons">
-        <!-- MODAL DE SELECCIÓN DE DIFICULTAD -->
-        <div id="modalDificultad" class="modal-dificultad {{#unless mostrarModal}}oculto{{/unless}}">
-          <div class="modal-dificultad-content">
-            <h2><i class="fas fa-sliders-h"></i> Selecciona la Dificultad</h2>
-            <p>Elige el nivel de dificultad para tu examen. Cada nivel otorga diferentes puntos por pregunta correcta.</p>
+        
+        <!-- MODAL DE SELECCIÓN DE TEMÁTICA Y DIFICULTAD -->
+        <div id="modalTematicaDificultad" class="modal-dificultad {{#unless mostrarModal}}oculto{{/unless}}">
+          <div class="modal-dificultad-content" style="max-width: 800px;">
+            <h2><i class="fas fa-layer-group"></i> Configura tu Examen</h2>
+            <p>Primero selecciona la temática que deseas estudiar, luego elige la dificultad del examen.</p>
             
-            <div class="opciones-dificultad">
-              <button class="opcion-dificultad" data-dificultad="1">
-                <div class="dificultad-icono">😊</div>
-                <div class="dificultad-titulo">Fácil</div>
-                <div class="dificultad-puntos">2 puntos por pregunta</div>
-                <div class="dificultad-descripcion">Preguntas básicas y directas</div>
-              </button>
+            <!-- PASO 1: SELECCIÓN DE TEMÁTICA -->
+            <div id="pasoTematica" class="paso-configuracion">
+              <h3><i class="fas fa-book"></i> Paso 1: Selecciona una Temática</h3>
               
-              <button class="opcion-dificultad" data-dificultad="2">
-                <div class="dificultad-icono">🤔</div>
-                <div class="dificultad-titulo">Normal</div>
-                <div class="dificultad-puntos">5 puntos por pregunta</div>
-                <div class="dificultad-descripcion">Preguntas de nivel medio</div>
-              </button>
+              {{#if tematicas.length}}
+              <div class="opciones-tematica">
+                {{#each tematicas}}
+                <button class="opcion-tematica" data-tematica="{{id_tematica}}">
+                  <div class="tematica-icono"><i class="fas fa-bookmark"></i></div>
+                  <div class="tematica-titulo">{{descripcion}}</div>
+                </button>
+                {{/each}}
+              </div>
+              {{else}}
+              <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>No hay temáticas disponibles para esta carrera.</p>
+              </div>
+              {{/if}}
+            </div>
+
+            <!-- PASO 2: SELECCIÓN DE DIFICULTAD (Oculto inicialmente) -->
+            <div id="pasoDificultad" class="paso-configuracion oculto">
+              <h3><i class="fas fa-sliders-h"></i> Paso 2: Selecciona la Dificultad</h3>
+              <p>Has seleccionado: <strong id="tematicaSeleccionadaTexto"></strong></p>
               
-              <button class="opcion-dificultad" data-dificultad="3">
-                <div class="dificultad-icono">🔥</div>
-                <div class="dificultad-titulo">Difícil</div>
-                <div class="dificultad-puntos">10 puntos por pregunta</div>
-                <div class="dificultad-descripcion">Preguntas avanzadas y complejas</div>
+              <div class="opciones-dificultad">
+                <button class="opcion-dificultad" data-dificultad="1">
+                  <div class="dificultad-icono">😊</div>
+                  <div class="dificultad-titulo">Fácil</div>
+                  <div class="dificultad-puntos">2 puntos por pregunta</div>
+                  <div class="dificultad-descripcion">Preguntas básicas y directas</div>
+                </button>
+                
+                <button class="opcion-dificultad" data-dificultad="2">
+                  <div class="dificultad-icono">🤔</div>
+                  <div class="dificultad-titulo">Normal</div>
+                  <div class="dificultad-puntos">5 puntos por pregunta</div>
+                  <div class="dificultad-descripcion">Preguntas de nivel medio</div>
+                </button>
+                
+                <button class="opcion-dificultad" data-dificultad="3">
+                  <div class="dificultad-icono">🔥</div>
+                  <div class="dificultad-titulo">Difícil</div>
+                  <div class="dificultad-puntos">10 puntos por pregunta</div>
+                  <div class="dificultad-descripcion">Preguntas avanzadas y complejas</div>
+                </button>
+              </div>
+              
+              <button class="btn-volver-paso" onclick="volverATematica()">
+                <i class="fas fa-arrow-left"></i> Volver a Temáticas
               </button>
             </div>
             
             <div class="modal-dificultad-botones">
-              <button class="btn-cancelar-dificultad" onclick="cerrarModalDificultad()">
+              <button class="btn-cancelar-dificultad" onclick="cerrarModalTematicaDificultad()">
                 <i class="fas fa-times"></i> Cancelar
               </button>
             </div>
           </div>
         </div>
         
-        <button class="pre-examen-btn btn-secondary" onclick="location.href='/materias'">
-          <i class="fas fa-arrow-left"></i> Volver Atrás
+        <button class="pre-examen-btn btn-secondary" onclick="location.href='/materias_carrera'">
+          <i class="fas fa-arrow-left"></i> Volver a Carreras
         </button>
         <button class="pre-examen-btn btn-primary" onclick="location.href='/ranking'">
-          <i class="fas fa-trophy"></i> Ver Ranking Completo
+          <i class="fas fa-trophy"></i> Ver Ranking
         </button>
         
-        {{!-- ✅ Solo mostrar botón de iniciar si hay preguntas cargadas --}}
         {{#if preguntas.length}}
         <button class="pre-examen-btn btn-success pulse" onclick="comenzarExamen()">
           <i class="fas fa-play"></i> Iniciar Examen
         </button>
         {{else}}
-        <button class="pre-examen-btn btn-success pulse" onclick="abrirModalDificultad()">
-          <i class="fas fa-play"></i> Seleccionar Dificultad
+        <button class="pre-examen-btn btn-success pulse" onclick="abrirModalTematicaDificultad()">
+          <i class="fas fa-cog"></i> Configurar Examen
         </button>
         {{/if}}
       </div>
@@ -139,7 +172,7 @@
 <!-- SECCIÓN EXAMEN -->
 <div id="examenContent">
   <header>
-    Examen - {{materia}}
+    Examen - {{carrera}} {{#if tematicaNombre}}({{tematicaNombre}}){{/if}}
     <div><button onclick="volverAPreExamen()" class="btn-volver">Regresar</button></div>
   </header>
 
@@ -182,11 +215,12 @@
     <div id="listaPreguntasNavegacion"></div>
     </div>
       
-  <form id="formResultados" method="POST" action="/resultados" style="display:none;">
-    <input type="hidden" name="id_materia" id="inputIdMateria" value="{{id_materia}}">
+  <form id="formResultados" method="POST" action="/resultados-carrera" style="display:none;">
+    <input type="hidden" name="id_carrera" id="inputIdCarrera" value="{{id_carrera}}">
     <input type="hidden" name="respuestas" id="inputRespuestas">
     <input type="hidden" name="fecha_inicio_str" id="inputFechaInicio">
     <input type="hidden" name="id_dificultad" id="inputDificultad" value="{{dificultad}}">
+    <input type="hidden" name="id_tematica" id="inputTematica" value="{{tematica}}">
  </form>
 </div>
 
@@ -198,26 +232,28 @@
   </div>
 </div>
 
-<script src="/public/js/examen.controller.js" defer></script>
+<script src="/public/js/examenCarrera.controller.js" defer></script>
 
-{{!-- ✅ Script para manejar modal automáticamente --}}
 <script>
+// Variables globales para la configuración
+window.ID_CARRERA = '{{id_carrera}}';
+window.TEMATICAS = {{{json tematicas}}};
+
 window.addEventListener('DOMContentLoaded', () => {
-    const modalDificultad = document.getElementById('modalDificultad');
+    const modalTematicaDificultad = document.getElementById('modalTematicaDificultad');
     const errorMsg = document.body.dataset.errorMsg;
     
     // Si hay mensaje de error, mostrar alerta y modal
     if (errorMsg) {
         alert(errorMsg);
-        if (modalDificultad) {
-            modalDificultad.classList.remove('oculto');
+        if (modalTematicaDificultad) {
+            modalTematicaDificultad.classList.remove('oculto');
         }
     }
     
-    // Si mostrarModal es true, abrir el modal
     {{#if mostrarModal}}
-    if (modalDificultad) {
-        modalDificultad.classList.remove('oculto');
+    if (modalTematicaDificultad) {
+        modalTematicaDificultad.classList.remove('oculto');
     }
     {{/if}}
 });

@@ -178,20 +178,4 @@ router.use((err, req, res, next) => {
     res.status(500).send('Error interno del servidor');
 });
 
-console.log('\n═══════════════════════════════════════════════════════════');
-console.log('[ROUTER]: ✅ Rutas de usuario cargadas');
-console.log('  - GET  /usuario');
-console.log('  - GET  /usuario/perfil/:id_usuario');
-console.log('  - GET  /api/usuario/stats/:id_usuario');
-console.log('  - GET  /api/usuario/mini-perfil/:id_usuario');
-console.log('  - GET  /api/usuario/puntos-actuales   ✅ NUEVO');
-console.log('  - GET  /api/usuario/carreras           ✅ NUEVO');
-console.log('  - GET  /usuario/logros                 ✅ NUEVO');
-console.log('  - GET  /usuario/editar');
-console.log('  - POST /usuario/editar');
-console.log('  - GET  /usuario/historial');
-console.log('  - GET  /usuario/historial/examen/:id_examen');
-console.log('  - GET  /usuario/historial/duelo/:id_duelo');
-console.log('═══════════════════════════════════════════════════════════\n');
-
 module.exports = router;
