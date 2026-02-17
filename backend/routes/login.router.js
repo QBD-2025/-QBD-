@@ -141,7 +141,7 @@ router.post('/login', async (req, res) => {
         }
 
         // Validar contraseña
-        const match = await (password, user.password);
+        const match = await(password, user.password);
         if (!match) return res.redirect('/login?error=Contraseña incorrecta');
 
         // ⭐ OBTENER LA CARRERA DEL USUARIO

@@ -535,6 +535,8 @@ const duelosErrorHandler = require('../routes/dueloErrorHandler.js');
 const promocionR = require("../routes/rangos.router.js");
 const materiasCarrera =require("../routes/materias_carrera.router.js")
 const amistades =require("../routes/amistades.router.js")
+const sinCarreraR = require('../routes/sin-carrera.js');
+
 // ════════════════════════════════════════════════════════════════
 // ✅✅✅ ORDEN CRÍTICO DE MONTAJE
 // ════════════════════════════════════════════════════════════════
@@ -566,6 +568,7 @@ app.use('/', simuladorR);
 app.use('/', sopaLetrasR);
 
 // 5️⃣ QUINTO: Rutas de perfil y rankings
+app.use('/', sinCarreraR);  // montarlo junto a loginR
 app.use('/', profileR);
 app.use('/', rankingR);
 app.use('/', rankingCarreraR);
