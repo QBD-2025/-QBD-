@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 14-02-2026 a las 08:38:07
+-- Tiempo de generación: 17-02-2026 a las 13:38:16
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -47,6 +47,29 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_inicializar_puntos_nuevo_usuario
 END$$
 
 DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `amistades`
+--
+
+CREATE TABLE `amistades` (
+  `id_amistad` int(11) NOT NULL,
+  `id_solicitante` int(11) NOT NULL COMMENT 'Quien envió la solicitud',
+  `id_receptor` int(11) NOT NULL COMMENT 'Quien recibe la solicitud',
+  `estado` enum('pendiente','aceptado','rechazado') NOT NULL DEFAULT 'pendiente',
+  `fecha_solicitud` datetime NOT NULL DEFAULT current_timestamp(),
+  `fecha_respuesta` datetime DEFAULT NULL COMMENT 'Cuando aceptó o rechazó',
+  `puede_reenviar_desde` datetime DEFAULT NULL COMMENT 'Fecha a partir de la cual se puede reenviar solicitud tras rechazo'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tabla de relaciones de amistad entre usuarios';
+
+--
+-- Volcado de datos para la tabla `amistades`
+--
+
+INSERT INTO `amistades` (`id_amistad`, `id_solicitante`, `id_receptor`, `estado`, `fecha_solicitud`, `fecha_respuesta`, `puede_reenviar_desde`) VALUES
+(2, 32, 51, 'pendiente', '2026-02-17 01:46:27', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -459,7 +482,11 @@ INSERT INTO `duelos_desconexiones` (`id`, `id_duelo`, `id_usuario`, `timestamp_d
 (561, '08c42233-718f-4429-85e9-9cb54656766a', 51, '2026-02-10 16:42:00', '{\"preguntaActual\":10,\"estado\":\"en_juego\"}', 'rapido', 60000, 1),
 (562, '08c42233-718f-4429-85e9-9cb54656766a', 32, '2026-02-10 16:42:09', '{\"preguntaActual\":10,\"estado\":\"en_juego\"}', 'rapido', 60000, 1),
 (563, '51fc0366-3ae2-49a6-8902-8a86ef34de9c', 51, '2026-02-10 17:07:05', '{\"preguntaActual\":10,\"estado\":\"en_juego\"}', 'rapido', 60000, 1),
-(564, '51fc0366-3ae2-49a6-8902-8a86ef34de9c', 32, '2026-02-10 17:25:28', '{\"preguntaActual\":10,\"estado\":\"en_juego\"}', 'rapido', 60000, 1);
+(564, '51fc0366-3ae2-49a6-8902-8a86ef34de9c', 32, '2026-02-10 17:25:28', '{\"preguntaActual\":10,\"estado\":\"en_juego\"}', 'rapido', 60000, 1),
+(580, '43c54b5a-4fad-4874-b761-1fe4a29f3d2f', 62, '2026-02-14 07:57:36', '{\"preguntaActual\":10,\"estado\":\"en_juego\"}', 'rapido', 60000, 1),
+(581, '43c54b5a-4fad-4874-b761-1fe4a29f3d2f', 51, '2026-02-14 08:04:59', '{\"preguntaActual\":10,\"estado\":\"en_juego\"}', 'rapido', 0, 1),
+(586, 'e0864e58-1e73-45e0-8e94-9c1db2d32951', 63, '2026-02-17 01:57:40', '{\"preguntaActual\":10,\"estado\":\"en_juego\"}', 'rapido', 60000, 1),
+(588, 'e0864e58-1e73-45e0-8e94-9c1db2d32951', 51, '2026-02-17 02:01:11', '{\"preguntaActual\":10,\"estado\":\"en_juego\"}', 'rapido', 60000, 1);
 
 -- --------------------------------------------------------
 
@@ -532,6 +559,7 @@ INSERT INTO `duelos_rapidos` (`id_sala`, `id_retador`, `id_defensor`, `modo`, `i
 ('3ebddc6b-01e3-4fda-abeb-6cf379132123', 32, 51, 'carrera', 1, '2', 0, 40, 2, 1, 0, 0, 'en_juego', 5, 10, 0, 0, 0, 1, '[1393,1457,1446,1478,1298,1264,1470,1253,1328,1269]', '{\"1264\":{\"51\":{\"esCorrecta\":true,\"idRespuesta\":5133}},\"1393\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5649},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5650}}}', '{\"1264\":{\"51\":{\"esCorrecta\":true,\"idRespuesta\":5133}},\"1393\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5649},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5650}}}', 'matchmaking', '2026-02-07 21:33:00', '2026-02-07 21:33:33', 8),
 ('40c0b34e-941f-4b1d-b4ea-ec2dc61b27cf', 32, 51, 'carrera', 1, '2', 0, 40, 3, 1, 0, 0, 'en_juego', 5, 10, 0, 0, 0, 0, '[1467,1172,1238,1502,1221,1332,1449,1398,1284,1391]', '{}', '{}', 'matchmaking', '2026-02-08 01:27:58', '2026-02-08 01:29:06', 2),
 ('42d522f9-6c09-4075-8366-081c2fef7ba1', 32, 51, 'carrera', 1, '3', 0, 40, 2, 3, 0, 0, 'en_juego', 9, 10, 0, 16, 0, 1, '[1301,1401,1199,1520,1299,1216,1176,1429,1257,1305]', '{\"1176\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":4781,\"timestamp\":1770743161842},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4783,\"timestamp\":1770743159509}},\"1216\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":4941,\"timestamp\":1770743152897},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4943,\"timestamp\":1770743151984}},\"1257\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5106,\"timestamp\":1770743190285},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5105,\"timestamp\":1770743187859}},\"1299\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5276,\"timestamp\":1770743145151},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5275,\"timestamp\":1770743142481}},\"1301\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5281,\"timestamp\":1770743091839},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5284,\"timestamp\":1770743090962}}}', '{\"1176\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":4781,\"timestamp\":1770743161842},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4783,\"timestamp\":1770743159509}},\"1216\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":4941,\"timestamp\":1770743152897},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4943,\"timestamp\":1770743151984}},\"1257\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5106,\"timestamp\":1770743190285},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5105,\"timestamp\":1770743187859}},\"1299\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5276,\"timestamp\":1770743145151},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5275,\"timestamp\":1770743142481}},\"1301\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5281,\"timestamp\":1770743091839},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5284,\"timestamp\":1770743090962}}}', 'matchmaking', '2026-02-10 17:04:47', '2026-02-10 17:06:33', 4),
+('43c54b5a-4fad-4874-b761-1fe4a29f3d2f', 51, 62, 'carrera', 1, '2', 0, 40, 2, 3, 0, 0, 'en_juego', 10, 10, 0, 0, 0, 0, '[1446,1252,1461,1427,1192,1273,1298,1262,1334,1385]', '{\"1192\":{\"51\":{\"esCorrecta\":true,\"idRespuesta\":4845,\"timestamp\":1771055555098},\"62\":{\"esCorrecta\":false,\"idRespuesta\":4846,\"timestamp\":1771055554005}},\"1252\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":5086,\"timestamp\":1771055540573},\"62\":{\"esCorrecta\":true,\"idRespuesta\":5085,\"timestamp\":1771055539216}},\"1273\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":5171,\"timestamp\":1771055561515},\"62\":{\"esCorrecta\":true,\"idRespuesta\":5169,\"timestamp\":1771055559826}},\"1298\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":5272,\"timestamp\":1771055567384},\"62\":{\"esCorrecta\":false,\"idRespuesta\":5272,\"timestamp\":1771055566370}},\"1427\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":5788,\"timestamp\":1771055549624},\"62\":{\"esCorrecta\":true,\"idRespuesta\":5785,\"timestamp\":1771055548318}}}', '{\"1192\":{\"51\":{\"esCorrecta\":true,\"idRespuesta\":4845,\"timestamp\":1771055555098},\"62\":{\"esCorrecta\":false,\"idRespuesta\":4846,\"timestamp\":1771055554005}},\"1252\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":5086,\"timestamp\":1771055540573},\"62\":{\"esCorrecta\":true,\"idRespuesta\":5085,\"timestamp\":1771055539216}},\"1273\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":5171,\"timestamp\":1771055561515},\"62\":{\"esCorrecta\":true,\"idRespuesta\":5169,\"timestamp\":1771055559826}},\"1298\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":5272,\"timestamp\":1771055567384},\"62\":{\"esCorrecta\":false,\"idRespuesta\":5272,\"timestamp\":1771055566370}},\"1427\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":5788,\"timestamp\":1771055549624},\"62\":{\"esCorrecta\":true,\"idRespuesta\":5785,\"timestamp\":1771055548318}}}', 'matchmaking', '2026-02-14 07:51:56', '2026-02-14 08:04:58', 0),
 ('46893c4e-062e-4d97-8b06-cc810532883d', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 18:13:29', '2026-02-08 18:13:30', NULL),
 ('46a6dc9f-a926-47c6-a386-5108fb33ce5c', 32, 51, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-10 06:11:04', '2026-02-10 06:12:19', NULL),
 ('492b7ee0-9a85-4c60-b4a2-2d7950b1a02c', 32, 51, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-07 23:38:11', '2026-02-07 23:40:45', NULL),
@@ -559,9 +587,9 @@ INSERT INTO `duelos_rapidos` (`id_sala`, `id_retador`, `id_defensor`, `modo`, `i
 ('8614f91e-37e5-409b-8266-460993de6637', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 19:01:40', '2026-02-08 19:01:40', NULL),
 ('889b182e-5f02-4952-a2ee-b802fe7609f8', 32, 51, 'carrera', 1, '2', 0, 40, 3, 1, 0, 0, 'en_juego', 6, 10, 0, 0, 0, 0, '[1326,1332,1199,1225,1490,1200,1441,1341,1366,1479]', '{\"1199\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4874},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4875}},\"1326\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5381},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5381}},\"1332\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5405},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5407}}}', '{\"1199\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4874},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4875}},\"1326\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5381},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5381}},\"1332\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5405},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5407}}}', 'matchmaking', '2026-02-07 22:36:53', '2026-02-07 22:51:01', 0),
 ('8c420391-b362-4d06-8b93-f5a8539c1880', 32, 51, 'carrera', 1, 'normal', 0, 40, 3, 2, 0, 0, 'en_juego', 9, 10, 0, 0, 1, 0, '[1486,1287,1304,1410,1414,1258,1241,1191,1206,1387]', '{\"1191\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4843},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4844}},\"1206\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":4901},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4902}},\"1241\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5043},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5041}},\"1258\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5110},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5112}},\"1287\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5225},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5228}},\"1304\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5296},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5293}},\"1410\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5719},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5717}},\"1414\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5735},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5735}}}', '{\"1191\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4843},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4844}},\"1206\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":4901},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4902}},\"1241\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5043},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5041}},\"1258\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5110},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5112}},\"1287\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5225},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5228}},\"1304\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5296},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5293}},\"1410\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5719},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5717}},\"1414\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5735},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5735}}}', 'matchmaking', '2026-02-07 18:46:36', '2026-02-07 18:47:52', 9),
-('8f7cee9e-34e2-4e0f-b8d5-a667eedd085e', 32, 51, 'carrera', 1, '2', 20, 40, NULL, 3, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-09 04:17:13', '2026-02-09 04:44:45', NULL),
-('905e078a-8931-4e12-a67d-37dce1f7f40d', 32, 51, 'carrera', 1, '2', 0, 40, 1, 1, 0, 0, 'en_juego', 10, 10, 0, 7, 0, 1, '[1485,1431,1448,1467,1254,1498,1178,1255,1247,1165]', '{\"1165\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4740,\"timestamp\":1770667201139},\"51\":{\"esCorrecta\":true,\"idRespuesta\":4737,\"timestamp\":1770667198935}},\"1178\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4791,\"timestamp\":1770667180339},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4791,\"timestamp\":1770667178126}},\"1247\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5067,\"timestamp\":1770667193908},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5068,\"timestamp\":1770667192491}},\"1254\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5095,\"timestamp\":1770667171977},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5096,\"timestamp\":1770667170875}},\"1255\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5099,\"timestamp\":1770667187206},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5100,\"timestamp\":1770667186139}}}', '{\"1165\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4740,\"timestamp\":1770667201139},\"51\":{\"esCorrecta\":true,\"idRespuesta\":4737,\"timestamp\":1770667198935}},\"1178\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4791,\"timestamp\":1770667180339},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4791,\"timestamp\":1770667178126}},\"1247\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5067,\"timestamp\":1770667193908},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5068,\"timestamp\":1770667192491}},\"1254\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5095,\"timestamp\":1770667171977},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5096,\"timestamp\":1770667170875}},\"1255\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5099,\"timestamp\":1770667187206},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5100,\"timestamp\":1770667186139}}}', 'matchmaking', '2026-02-09 19:59:29', '2026-02-09 20:00:36', 0);
+('8f7cee9e-34e2-4e0f-b8d5-a667eedd085e', 32, 51, 'carrera', 1, '2', 20, 40, NULL, 3, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-09 04:17:13', '2026-02-09 04:44:45', NULL);
 INSERT INTO `duelos_rapidos` (`id_sala`, `id_retador`, `id_defensor`, `modo`, `id_carrera`, `dificultad`, `apuesta`, `bote`, `categoria_retador`, `categoria_defensor`, `gambito_retador`, `gambito_defensor`, `estado`, `pregunta_actual`, `total_preguntas`, `puntos_retador`, `puntos_defensor`, `racha_retador`, `racha_defensor`, `preguntas_ids`, `respuestas_retador`, `respuestas_defensor`, `tipo_origen`, `fecha_inicio`, `fecha_ultima_actividad`, `tiempo_restante_pregunta`) VALUES
+('905e078a-8931-4e12-a67d-37dce1f7f40d', 32, 51, 'carrera', 1, '2', 0, 40, 1, 1, 0, 0, 'en_juego', 10, 10, 0, 7, 0, 1, '[1485,1431,1448,1467,1254,1498,1178,1255,1247,1165]', '{\"1165\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4740,\"timestamp\":1770667201139},\"51\":{\"esCorrecta\":true,\"idRespuesta\":4737,\"timestamp\":1770667198935}},\"1178\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4791,\"timestamp\":1770667180339},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4791,\"timestamp\":1770667178126}},\"1247\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5067,\"timestamp\":1770667193908},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5068,\"timestamp\":1770667192491}},\"1254\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5095,\"timestamp\":1770667171977},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5096,\"timestamp\":1770667170875}},\"1255\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5099,\"timestamp\":1770667187206},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5100,\"timestamp\":1770667186139}}}', '{\"1165\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4740,\"timestamp\":1770667201139},\"51\":{\"esCorrecta\":true,\"idRespuesta\":4737,\"timestamp\":1770667198935}},\"1178\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4791,\"timestamp\":1770667180339},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4791,\"timestamp\":1770667178126}},\"1247\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5067,\"timestamp\":1770667193908},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5068,\"timestamp\":1770667192491}},\"1254\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5095,\"timestamp\":1770667171977},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5096,\"timestamp\":1770667170875}},\"1255\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5099,\"timestamp\":1770667187206},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5100,\"timestamp\":1770667186139}}}', 'matchmaking', '2026-02-09 19:59:29', '2026-02-09 20:00:36', 0),
 ('995a1e62-6ed2-44a9-b93b-9ab727c81a9d', 32, 51, 'carrera', 1, '2', 0, 40, 2, 3, 0, 0, 'en_juego', 9, 10, 81, 0, 4, 0, '[1339,1381,1163,1231,1392,1248,1429,1470,1486,1229]', '{\"1163\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4730,\"timestamp\":1770663929623},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4730,\"timestamp\":1770663928183}},\"1231\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5001,\"timestamp\":1770663936081},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5004,\"timestamp\":1770663934217}},\"1248\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5069,\"timestamp\":1770663947846},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5070,\"timestamp\":1770663946419}},\"1339\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5435,\"timestamp\":1770663917435},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5436,\"timestamp\":1770663911819}},\"1381\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5601,\"timestamp\":1770663922967},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5602,\"timestamp\":1770663922685}},\"1392\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5645,\"timestamp\":1770663941227},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5645,\"timestamp\":1770663942215}},\"1429\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5793,\"timestamp\":1770663956950},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5796,\"timestamp\":1770663955856}}}', '{\"1163\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":4730,\"timestamp\":1770663929623},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4730,\"timestamp\":1770663928183}},\"1231\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5001,\"timestamp\":1770663936081},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5004,\"timestamp\":1770663934217}},\"1248\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5069,\"timestamp\":1770663947846},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5070,\"timestamp\":1770663946419}},\"1339\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5435,\"timestamp\":1770663917435},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5436,\"timestamp\":1770663911819}},\"1381\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5601,\"timestamp\":1770663922967},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5602,\"timestamp\":1770663922685}},\"1392\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5645,\"timestamp\":1770663941227},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5645,\"timestamp\":1770663942215}},\"1429\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5793,\"timestamp\":1770663956950},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5796,\"timestamp\":1770663955856}}}', 'matchmaking', '2026-02-09 19:05:07', '2026-02-09 19:06:02', 4),
 ('9c3d5cc6-31c6-4142-90a9-03333cd5875a', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 18:04:05', '2026-02-08 18:04:06', NULL),
 ('9f2127c6-62ad-4c33-a108-6738692e2ccb', 20, 53, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 19:26:23', '2026-02-08 19:26:28', NULL),
@@ -580,6 +608,7 @@ INSERT INTO `duelos_rapidos` (`id_sala`, `id_retador`, `id_defensor`, `modo`, `i
 ('d95f3fca-3580-400a-b0c0-66efb7a3d27f', 51, 52, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 01:17:37', '2026-02-08 01:17:50', NULL),
 ('dca059b6-f52f-42d4-b86c-143b8880d013', 32, 51, 'carrera', 1, '2', 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 04:32:00', '2026-02-08 04:32:53', NULL),
 ('dfa6460a-57b9-43d9-a5cc-797df5f90436', 32, 51, 'carrera', 1, '2', 0, 40, 1, 2, 0, 0, 'en_juego', 9, 10, 0, 0, 0, 0, '[1174,1463,1273,1514,1478,1383,1385,1372,1239,1413]', '{\"1174\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":4773},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4776}},\"1239\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":5035}},\"1383\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5609},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5610}},\"1385\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5618},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5617}}}', '{\"1174\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":4773},\"51\":{\"esCorrecta\":false,\"idRespuesta\":4776}},\"1239\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":5035}},\"1383\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":5609},\"51\":{\"esCorrecta\":false,\"idRespuesta\":5610}},\"1385\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":5618},\"51\":{\"esCorrecta\":true,\"idRespuesta\":5617}}}', 'matchmaking', '2026-02-08 05:15:55', '2026-02-08 05:17:13', 0),
+('e0864e58-1e73-45e0-8e94-9c1db2d32951', 51, 63, 'carrera', 1, '2', 0, 40, 2, 3, 0, 0, 'en_juego', 10, 10, 30, 30, 2, 1, '[1319,1467,1198,1377,1364,1416,1206,1423,1218,1261]', '{\"1198\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":4872,\"timestamp\":1771293371516},\"63\":{\"esCorrecta\":true,\"idRespuesta\":4869,\"timestamp\":1771293370554}},\"1206\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":4904,\"timestamp\":1771293402632},\"63\":{\"esCorrecta\":false,\"idRespuesta\":4903,\"timestamp\":1771293411579}},\"1218\":{\"51\":{\"esCorrecta\":true,\"idRespuesta\":4949,\"timestamp\":1771293445833}},\"1261\":{\"51\":{\"esCorrecta\":true,\"idRespuesta\":5121,\"timestamp\":1771293450194},\"63\":{\"esCorrecta\":true,\"idRespuesta\":5121,\"timestamp\":1771293450728}},\"1319\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":5354,\"timestamp\":1771293364887}},\"1364\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":5534,\"timestamp\":1771293385320},\"63\":{\"esCorrecta\":true,\"idRespuesta\":5533,\"timestamp\":1771293383583}},\"1377\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":5587,\"timestamp\":1771293379472},\"63\":{\"esCorrecta\":false,\"idRespuesta\":5588,\"timestamp\":1771293377605}},\"1416\":{\"51\":{\"esCorrecta\":true,\"idRespuesta\":5741,\"timestamp\":1771293390547},\"63\":{\"esCorrecta\":true,\"idRespuesta\":5741,\"timestamp\":1771293398734}},\"1423\":{\"63\":{\"esCorrecta\":true,\"idRespuesta\":5769,\"timestamp\":1771293416364}}}', '{\"1198\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":4872,\"timestamp\":1771293371516},\"63\":{\"esCorrecta\":true,\"idRespuesta\":4869,\"timestamp\":1771293370554}},\"1206\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":4904,\"timestamp\":1771293402632},\"63\":{\"esCorrecta\":false,\"idRespuesta\":4903,\"timestamp\":1771293411579}},\"1218\":{\"51\":{\"esCorrecta\":true,\"idRespuesta\":4949,\"timestamp\":1771293445833}},\"1261\":{\"51\":{\"esCorrecta\":true,\"idRespuesta\":5121,\"timestamp\":1771293450194},\"63\":{\"esCorrecta\":true,\"idRespuesta\":5121,\"timestamp\":1771293450728}},\"1319\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":5354,\"timestamp\":1771293364887}},\"1364\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":5534,\"timestamp\":1771293385320},\"63\":{\"esCorrecta\":true,\"idRespuesta\":5533,\"timestamp\":1771293383583}},\"1377\":{\"51\":{\"esCorrecta\":false,\"idRespuesta\":5587,\"timestamp\":1771293379472},\"63\":{\"esCorrecta\":false,\"idRespuesta\":5588,\"timestamp\":1771293377605}},\"1416\":{\"51\":{\"esCorrecta\":true,\"idRespuesta\":5741,\"timestamp\":1771293390547},\"63\":{\"esCorrecta\":true,\"idRespuesta\":5741,\"timestamp\":1771293398734}},\"1423\":{\"63\":{\"esCorrecta\":true,\"idRespuesta\":5769,\"timestamp\":1771293416364}}}', 'matchmaking', '2026-02-17 01:55:51', '2026-02-17 02:01:11', 0),
 ('e556786a-1ba0-4079-9f0c-6081e246783f', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 18:57:57', '2026-02-08 18:57:57', NULL),
 ('e6a6e7ce-3b43-4276-8918-4b46a8ee3bf3', 16, 20, 'general', NULL, NULL, 20, 40, NULL, NULL, 0, 0, '', 0, 10, 0, 0, 0, 0, NULL, '{}', '{}', 'matchmaking', '2026-02-08 18:17:19', '2026-02-08 18:17:19', NULL),
 ('e720cec8-d03e-42c3-85d3-ac463a42b49f', 32, 51, 'general', NULL, NULL, 0, 40, 12, 19, 0, 0, 'en_juego', 9, 10, 9, 0, 1, 0, '[738,842,775,564,853,730,589,868,722,599]', '{\"564\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":2335,\"timestamp\":1770668808123},\"51\":{\"esCorrecta\":false,\"idRespuesta\":2336,\"timestamp\":1770668806960}},\"589\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":2433,\"timestamp\":1770668828357},\"51\":{\"esCorrecta\":false,\"idRespuesta\":2434,\"timestamp\":1770668827321}},\"722\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":2965,\"timestamp\":1770668842617},\"51\":{\"esCorrecta\":false,\"idRespuesta\":2967,\"timestamp\":1770668841493}},\"730\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":2997,\"timestamp\":1770668820244},\"51\":{\"esCorrecta\":false,\"idRespuesta\":2999,\"timestamp\":1770668818676}},\"738\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":3032,\"timestamp\":1770668787146},\"51\":{\"esCorrecta\":true,\"idRespuesta\":3029,\"timestamp\":1770668786175}},\"775\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":3178,\"timestamp\":1770668800921},\"51\":{\"esCorrecta\":true,\"idRespuesta\":3177,\"timestamp\":1770668799741}},\"842\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":3446,\"timestamp\":1770668793207},\"51\":{\"esCorrecta\":false,\"idRespuesta\":3446,\"timestamp\":1770668794310}},\"853\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":3490,\"timestamp\":1770668814215},\"51\":{\"esCorrecta\":true,\"idRespuesta\":3489,\"timestamp\":1770668812543}},\"868\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":3550,\"timestamp\":1770668836278},\"51\":{\"esCorrecta\":true,\"idRespuesta\":3549,\"timestamp\":1770668835044}}}', '{\"564\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":2335,\"timestamp\":1770668808123},\"51\":{\"esCorrecta\":false,\"idRespuesta\":2336,\"timestamp\":1770668806960}},\"589\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":2433,\"timestamp\":1770668828357},\"51\":{\"esCorrecta\":false,\"idRespuesta\":2434,\"timestamp\":1770668827321}},\"722\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":2965,\"timestamp\":1770668842617},\"51\":{\"esCorrecta\":false,\"idRespuesta\":2967,\"timestamp\":1770668841493}},\"730\":{\"32\":{\"esCorrecta\":true,\"idRespuesta\":2997,\"timestamp\":1770668820244},\"51\":{\"esCorrecta\":false,\"idRespuesta\":2999,\"timestamp\":1770668818676}},\"738\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":3032,\"timestamp\":1770668787146},\"51\":{\"esCorrecta\":true,\"idRespuesta\":3029,\"timestamp\":1770668786175}},\"775\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":3178,\"timestamp\":1770668800921},\"51\":{\"esCorrecta\":true,\"idRespuesta\":3177,\"timestamp\":1770668799741}},\"842\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":3446,\"timestamp\":1770668793207},\"51\":{\"esCorrecta\":false,\"idRespuesta\":3446,\"timestamp\":1770668794310}},\"853\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":3490,\"timestamp\":1770668814215},\"51\":{\"esCorrecta\":true,\"idRespuesta\":3489,\"timestamp\":1770668812543}},\"868\":{\"32\":{\"esCorrecta\":false,\"idRespuesta\":3550,\"timestamp\":1770668836278},\"51\":{\"esCorrecta\":true,\"idRespuesta\":3549,\"timestamp\":1770668835044}}}', 'matchmaking', '2026-02-09 20:26:21', '2026-02-09 20:27:25', 9),
@@ -651,6 +680,7 @@ INSERT INTO `estatus_pregunta` (`id_estatus_p`, `estatus`) VALUES
 CREATE TABLE `examen` (
   `id_examen` int(11) NOT NULL,
   `id_materia` int(10) DEFAULT NULL,
+  `id_carrera` int(7) DEFAULT NULL,
   `fecha_inicio` datetime NOT NULL,
   `fecha_termino` datetime NOT NULL,
   `duracion` time NOT NULL,
@@ -661,18 +691,25 @@ CREATE TABLE `examen` (
 -- Volcado de datos para la tabla `examen`
 --
 
-INSERT INTO `examen` (`id_examen`, `id_materia`, `fecha_inicio`, `fecha_termino`, `duracion`, `puntuacion_competencia`) VALUES
-(1, 1, '2025-11-22 14:27:00', '2025-11-22 14:27:10', '00:00:10', NULL),
-(2, 1, '2025-11-22 14:26:57', '2025-11-22 14:29:00', '00:01:22', NULL),
-(3, 19, '2025-11-22 14:28:01', '2025-11-22 14:31:25', '00:02:04', NULL),
-(4, 2, '2025-11-22 14:41:19', '2025-11-22 14:41:47', '00:00:27', NULL),
-(5, 2, '2025-11-22 14:42:04', '2025-11-22 14:42:54', '00:00:49', NULL),
-(6, 2, '2025-11-22 14:43:28', '2025-11-22 14:44:32', '00:00:00', NULL),
-(7, 2, '2025-11-22 14:45:13', '2025-11-22 14:45:29', '00:00:16', NULL),
-(8, 1, '2025-11-22 18:22:34', '2025-11-22 18:22:47', '00:00:13', NULL),
-(9, 1, '2025-11-22 18:22:14', '2025-11-22 18:24:45', '00:01:50', NULL),
-(10, 1, '2025-11-24 19:48:59', '2025-11-24 19:50:05', '00:00:00', NULL),
-(11, 2, '2025-11-24 19:51:44', '2025-11-24 19:51:56', '00:00:12', NULL);
+INSERT INTO `examen` (`id_examen`, `id_materia`, `id_carrera`, `fecha_inicio`, `fecha_termino`, `duracion`, `puntuacion_competencia`) VALUES
+(1, 1, NULL, '2025-11-22 14:27:00', '2025-11-22 14:27:10', '00:00:10', NULL),
+(2, 1, NULL, '2025-11-22 14:26:57', '2025-11-22 14:29:00', '00:01:22', NULL),
+(3, 19, NULL, '2025-11-22 14:28:01', '2025-11-22 14:31:25', '00:02:04', NULL),
+(4, 2, NULL, '2025-11-22 14:41:19', '2025-11-22 14:41:47', '00:00:27', NULL),
+(5, 2, NULL, '2025-11-22 14:42:04', '2025-11-22 14:42:54', '00:00:49', NULL),
+(6, 2, NULL, '2025-11-22 14:43:28', '2025-11-22 14:44:32', '00:00:00', NULL),
+(7, 2, NULL, '2025-11-22 14:45:13', '2025-11-22 14:45:29', '00:00:16', NULL),
+(8, 1, NULL, '2025-11-22 18:22:34', '2025-11-22 18:22:47', '00:00:13', NULL),
+(9, 1, NULL, '2025-11-22 18:22:14', '2025-11-22 18:24:45', '00:01:50', NULL),
+(10, 1, NULL, '2025-11-24 19:48:59', '2025-11-24 19:50:05', '00:00:00', NULL),
+(11, 2, NULL, '2025-11-24 19:51:44', '2025-11-24 19:51:56', '00:00:12', NULL),
+(12, 1, NULL, '2026-02-14 11:55:18', '2026-02-14 11:55:23', '00:00:04', NULL),
+(13, 1, NULL, '2026-02-14 23:54:33', '2026-02-14 23:55:31', '00:00:58', NULL),
+(14, 21, NULL, '2026-02-14 23:55:49', '2026-02-14 23:56:09', '00:00:20', NULL),
+(15, NULL, 1, '2026-02-15 01:15:34', '2026-02-15 01:15:58', '00:00:24', NULL),
+(16, NULL, 1, '2026-02-15 02:16:33', '2026-02-15 02:16:44', '00:00:11', NULL),
+(17, 1, NULL, '2026-02-16 19:37:28', '2026-02-16 19:47:29', '00:06:00', NULL),
+(18, 1, NULL, '2026-02-16 19:50:50', '2026-02-16 19:51:17', '00:00:27', NULL);
 
 -- --------------------------------------------------------
 
@@ -888,7 +925,25 @@ INSERT INTO `historial` (`id_examen`, `id_usuario`, `id_pregunta`, `id_respuesta
 (11, 32, 54, NULL, 0, 0),
 (11, 32, 55, 219, 0, 0),
 (11, 32, 56, 224, 0, 0),
-(11, 32, 57, 228, 0, 0);
+(11, 32, 57, 228, 0, 0),
+(12, 51, 1022, NULL, 0, 0),
+(12, 51, 1027, NULL, 0, 0),
+(12, 51, 1028, NULL, 0, 0),
+(12, 51, 1031, NULL, 0, 0),
+(12, 51, 1037, NULL, 0, 0),
+(12, 51, 1046, NULL, 0, 0),
+(12, 51, 1057, NULL, 0, 0),
+(12, 51, 1076, NULL, 0, 0),
+(12, 51, 1101, NULL, 0, 0),
+(12, 51, 1105, NULL, 0, 0),
+(12, 51, 1111, NULL, 0, 0),
+(12, 51, 1114, NULL, 0, 0),
+(12, 51, 1115, NULL, 0, 0),
+(12, 51, 1118, NULL, 0, 0),
+(12, 51, 1121, NULL, 0, 0),
+(12, 51, 1126, NULL, 0, 0),
+(12, 51, 1127, NULL, 0, 0),
+(12, 51, 1141, NULL, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -990,7 +1045,17 @@ INSERT INTO `historial_duelos` (`id_duelo`, `id_sala`, `id_retador`, `id_defenso
 (418, '51fc0366-3ae2-49a6-8902-8a86ef34de9c', 32, 51, 32, 17, 118, '2026-02-10 17:07:49', NULL, 0, 'abandono', 'timeout', 0, 'general', 'carrera', 1, 2, 10, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
 (419, '51fc0366-3ae2-49a6-8902-8a86ef34de9c', 32, 51, 51, 17, 118, '2026-02-10 17:07:58', NULL, 0, 'abandono', 'timeout', 0, 'general', 'carrera', 1, 2, 10, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
 (420, '51fc0366-3ae2-49a6-8902-8a86ef34de9c', 32, 51, 32, 17, 118, '2026-02-10 17:08:05', NULL, 0, 'abandono', 'timeout', 0, 'general', 'carrera', 1, 2, 10, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
-(421, '51fc0366-3ae2-49a6-8902-8a86ef34de9c', 32, 51, 51, 17, 118, '2026-02-10 17:26:28', NULL, 0, 'abandono', 'timeout', 0, 'general', 'carrera', 1, 2, 10, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL);
+(421, '51fc0366-3ae2-49a6-8902-8a86ef34de9c', 32, 51, 51, 17, 118, '2026-02-10 17:26:28', NULL, 0, 'abandono', 'timeout', 0, 'general', 'carrera', 1, 2, 10, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(422, '43c54b5a-4fad-4874-b761-1fe4a29f3d2f', 51, 62, 62, 6, 38, '2026-02-14 07:53:42', NULL, 0, NULL, NULL, 0, '', 'carrera', 1, 2, 10, 1, 3, 6, 38, 10.00, 30.00, 8.58, 6.87, 1, 1, 0, 0, 0, 0, NULL),
+(423, '43c54b5a-4fad-4874-b761-1fe4a29f3d2f', 51, 62, 51, 0, 0, '2026-02-14 07:55:15', NULL, 0, 'abandono', 'timeout', 0, 'general', 'carrera', 1, 2, 10, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(424, '43c54b5a-4fad-4874-b761-1fe4a29f3d2f', 51, 62, 62, 0, 0, '2026-02-14 07:55:19', NULL, 0, 'abandono', 'timeout', 0, 'general', 'carrera', 1, 2, 10, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(425, '43c54b5a-4fad-4874-b761-1fe4a29f3d2f', 51, 62, 51, 0, 0, '2026-02-14 07:58:32', NULL, 0, 'abandono', 'timeout', 0, 'general', 'carrera', 1, 2, 10, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(426, '43c54b5a-4fad-4874-b761-1fe4a29f3d2f', 51, 62, 51, 0, 0, '2026-02-14 07:58:37', NULL, 0, 'abandono', 'timeout', 0, 'general', 'carrera', 1, 2, 10, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(427, 'e0864e58-1e73-45e0-8e94-9c1db2d32951', 51, 63, 63, 36, 56, '2026-02-17 01:57:32', NULL, 0, NULL, NULL, 0, '', 'carrera', 1, 2, 10, 3, 5, 36, 56, 30.00, 50.00, 5.73, 5.67, 2, 2, 0, 0, 0, 0, NULL),
+(428, 'e0864e58-1e73-45e0-8e94-9c1db2d32951', 51, 63, 51, 30, 30, '2026-02-17 01:58:36', NULL, 0, 'abandono', 'timeout', 0, 'general', 'carrera', 1, 2, 10, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(429, 'e0864e58-1e73-45e0-8e94-9c1db2d32951', 51, 63, 51, 30, 30, '2026-02-17 01:58:40', NULL, 0, 'abandono', 'timeout', 0, 'general', 'carrera', 1, 2, 10, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(430, 'e0864e58-1e73-45e0-8e94-9c1db2d32951', 51, 63, 63, 30, 30, '2026-02-17 01:59:17', NULL, 0, 'abandono', 'timeout', 0, 'general', 'carrera', 1, 2, 10, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL),
+(431, 'e0864e58-1e73-45e0-8e94-9c1db2d32951', 51, 63, 63, 30, 30, '2026-02-17 02:02:11', NULL, 0, 'abandono', 'timeout', 0, 'general', 'carrera', 1, 2, 10, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -1157,11 +1222,17 @@ INSERT INTO `notificaciones` (`id_notificacion`, `id_usuario_destinatario`, `id_
 (284, 51, 32, 'duelo_cancelado', '🚫 Diego Leonardo Portilla Rangel canceló el duelo', '{\"salaId\":\"duelo_general_1764156846570_c8aek8yj3\",\"canceladoPor\":\"Diego Leonardo Portilla Rangel\"}', 0, '2025-11-26 11:39:44'),
 (289, 51, 32, 'resultado_duelo', '🏆 ¡Victoria! Derrotaste a Diego Leonardo Portilla Rangel (2/20) +100 pts', '{\"id_duelo\":\"duelo_general_1764157190295_x1ywimx9e\",\"resultado\":\"victoria\",\"correctas\":2,\"total\":20,\"porcentaje\":\"10.00\"}', 0, '2025-11-26 11:40:44'),
 (290, 51, 32, 'duelo_cancelado', '🚫 Diego Leonardo Portilla Rangel canceló el duelo', '{\"salaId\":\"duelo_general_1764157190295_x1ywimx9e\",\"canceladoPor\":\"Diego Leonardo Portilla Rangel\"}', 0, '2025-11-26 11:41:12'),
-(292, 32, 51, 'duelo_aceptado', '✅ Tu desafío fue aceptado', '{\"salaId\":\"duelo_general_1770494098797_46sp9coka\",\"tipo_duelo\":\"general\",\"apuesta\":100,\"dificultad\":2}', 0, '2026-02-07 19:55:14'),
-(293, 51, 32, 'duelo_aceptado', '⚔️ Duelo activo', '{\"salaId\":\"duelo_general_1770494098797_46sp9coka\",\"tipo_duelo\":\"general\",\"apuesta\":100,\"dificultad\":2}', 0, '2026-02-07 19:55:14'),
-(294, 32, 51, 'duelo_abandonado', '¡DIEGO LEONARDO PORTILLA RANGEL abandonó el duelo! Ganaste 100 puntos globales 🏆', '{\"id_duelo\":\"duelo_general_1770494098797_46sp9coka\",\"motivo\":\"Abandono voluntario\",\"ganancia\":100,\"tipo_duelo\":\"general\"}', 0, '2026-02-07 19:55:52'),
 (295, 51, 32, 'duelo_abandonado', '¡Diego Leonardo Portilla Rangel abandonó el duelo! Ganaste 100 puntos globales 🏆', '{\"id_duelo\":\"duelo_general_1770494098797_46sp9coka\",\"motivo\":\"Abandono voluntario\",\"ganancia\":100,\"tipo_duelo\":\"general\"}', 0, '2026-02-07 19:56:23'),
-(298, 32, 56, 'desafio_duelo_rapido', '⚔️ Callme Body te desafía a un duelo general!', '{\"salaId\":\"c8863bd9-cd90-4c90-9b4f-4a6c2caf3402\",\"modo\":\"general\",\"dificultad\":null,\"idCarrera\":null,\"nombreCarrera\":null,\"idRemitente\":56,\"usernameRemitente\":\"Callme Body\",\"fotoRemitente\":\"https://lh3.googleusercontent.com/a/ACg8ocKOQIcMt82GirDhVD7RKf46uXmUBDLEXwiPPio9YZGxdxgTCg=s96-c\"}', 0, '2026-02-10 20:36:36');
+(302, 51, 32, 'duelo_cancelado', '🚫 Diego Leonardo Portilla Rangel canceló el duelo', '{\"salaId\":\"duelo_general_1770494098797_46sp9coka\",\"canceladoPor\":\"Diego Leonardo Portilla Rangel\"}', 0, '2026-02-17 02:35:42'),
+(304, 52, 51, 'invitacion', 'DIEGO LEONARDO PORTILLA RANGEL te ha desafiado a Ahorcado', '{\"salaId\":\"d5251e48-983e-4184-a5ff-6b0e3f3d4544?modo=enfrentamiento\",\"juego\":\"Ahorcado\",\"modo\":\"enfrentamiento\"}', 0, '2026-02-17 02:48:12'),
+(309, 51, 32, 'amistad_aceptada', 'Diego Leonardo Portilla Rangel aceptó tu solicitud de amistad 🎉', '{\"id_amigo\":32,\"username\":\"Diego Leonardo Portilla Rangel\"}', 0, '2026-02-17 07:32:47'),
+(310, 51, 32, 'solicitud_amistad', 'Diego Leonardo Portilla Rangel te envió una solicitud de amistad', '{\"id_solicitante\":32,\"username\":\"Diego Leonardo Portilla Rangel\"}', 0, '2026-02-17 07:46:27'),
+(311, 20, 32, 'invitacion', 'Diego Leonardo Portilla Rangel te ha desafiado a Sopa', '{\"salaId\":\"bc6776a3-3f0a-4412-a275-e5daace2a899?modo=enfrentamiento\",\"juego\":\"Sopa\",\"modo\":\"enfrentamiento\"}', 0, '2026-02-17 08:50:57'),
+(312, 20, 32, 'invitacion', 'Diego Leonardo Portilla Rangel te ha desafiado a Sopa', '{\"salaId\":\"97c02e2b-093f-4e37-bbcc-1d1853ac816d?modo=enfrentamiento\",\"juego\":\"Sopa\",\"modo\":\"enfrentamiento\"}', 0, '2026-02-17 08:50:58'),
+(313, 20, 32, 'invitacion', 'Diego Leonardo Portilla Rangel te ha desafiado a Sopa', '{\"salaId\":\"97e5485a-6d32-4ae9-88ac-cbb4721f99f1?modo=enfrentamiento\",\"juego\":\"Sopa\",\"modo\":\"enfrentamiento\"}', 0, '2026-02-17 08:50:58'),
+(314, 20, 32, 'invitacion', 'Diego Leonardo Portilla Rangel te ha desafiado a Sopa', '{\"salaId\":\"3f64f038-acc5-4618-88af-3d8d50e577db?modo=enfrentamiento\",\"juego\":\"Sopa\",\"modo\":\"enfrentamiento\"}', 0, '2026-02-17 08:50:58'),
+(315, 20, 32, 'invitacion', 'Diego Leonardo Portilla Rangel te ha desafiado a Sopa', '{\"salaId\":\"21416d2b-d970-4b43-a9ad-6ba66f651270?modo=enfrentamiento\",\"juego\":\"Sopa\",\"modo\":\"enfrentamiento\"}', 0, '2026-02-17 08:54:12'),
+(316, 20, 51, 'invitacion', 'DIEGO LEONARDO PORTILLA RANGEL te ha desafiado a Sopa', '{\"salaId\":\"7d777cbc-3fc7-4cd2-a5fa-110152f80eef?modo=enfrentamiento\",\"juego\":\"Sopa\",\"modo\":\"enfrentamiento\"}', 0, '2026-02-17 10:16:04');
 
 -- --------------------------------------------------------
 
@@ -4191,7 +4262,157 @@ INSERT INTO `pregunta` (`id_pregunta`, `id_materia`, `id_carrera`, `id_tematica`
 (2597, NULL, NULL, 12, 3, '¿Cómo se aplica la teoría de la información en arquitectura?', 'Midiendo complejidad y organización espacial mediante entropía y redundancia de elementos arquitectónicos.', 20, 10, NULL),
 (2598, NULL, NULL, 12, 3, '¿Qué es la arquitectura de superficies mínimas?', 'Formas que minimizan área para volumen dado, inspiradas en pompas de jabón y estructuras tensadas.', 20, 10, NULL),
 (2599, NULL, NULL, 12, 3, '¿Cómo se relaciona la teoría del caos determinista con el urbanismo?', 'Sistemas urbanos que aunque siguen reglas deterministas, generan patrones impredecibles a largo plazo.', 20, 10, NULL),
-(2600, NULL, NULL, 12, 3, '¿Qué implica el diseño basado en optimización multiobjetivo?', 'Balancear múltiples criterios conflictivos (costo, energía, estética) mediante algoritmos evolutivos para encontrar soluciones óptimas.', 20, 10, NULL);
+(2600, NULL, NULL, 12, 3, '¿Qué implica el diseño basado en optimización multiobjetivo?', 'Balancear múltiples criterios conflictivos (costo, energía, estética) mediante algoritmos evolutivos para encontrar soluciones óptimas.', 20, 10, NULL),
+(2601, 1, NULL, NULL, 1, '¿Cuánto es 5 + 3?', 'La suma de 5 y 3 es 8', 2, 0, NULL),
+(2602, 1, NULL, NULL, 1, '¿Cuánto es 10 - 4?', 'La resta de 10 menos 4 es 6', 2, 0, NULL),
+(2603, 1, NULL, NULL, 1, '¿Cuánto es 3 × 4?', 'La multiplicación de 3 por 4 es 12', 2, 0, NULL),
+(2604, 1, NULL, NULL, 1, '¿Cuánto es 20 ÷ 5?', 'La división de 20 entre 5 es 4', 2, 0, NULL),
+(2605, 1, NULL, NULL, 1, '¿Cuál es el doble de 7?', 'El doble de 7 es 14', 2, 0, NULL),
+(2606, 1, NULL, NULL, 1, '¿Cuánto es la mitad de 18?', 'La mitad de 18 es 9', 2, 0, NULL),
+(2607, 1, NULL, NULL, 1, '¿Cuánto es 15 + 15?', 'La suma de 15 y 15 es 30', 2, 0, NULL),
+(2608, 1, NULL, NULL, 1, '¿Cuánto es 8 × 2?', 'La multiplicación de 8 por 2 es 16', 2, 0, NULL),
+(2609, 1, NULL, NULL, 1, '¿Cuánto es 50 - 25?', 'La resta de 50 menos 25 es 25', 2, 0, NULL),
+(2610, 1, NULL, NULL, 1, '¿Cuántos lados tiene un triángulo?', 'Un triángulo tiene 3 lados', 2, 0, NULL),
+(2611, 1, NULL, NULL, 1, '¿Cuántos lados tiene un cuadrado?', 'Un cuadrado tiene 4 lados', 2, 0, NULL),
+(2612, 1, NULL, NULL, 1, '¿Cuánto es 100 ÷ 10?', 'La división de 100 entre 10 es 10', 2, 0, NULL),
+(2613, 1, NULL, NULL, 1, '¿Cuál es el número par después del 9?', 'El número par después del 9 es 10', 2, 0, NULL),
+(2614, 1, NULL, NULL, 1, '¿Cuánto es 6 + 6?', 'La suma de 6 y 6 es 12', 2, 0, NULL),
+(2615, 1, NULL, NULL, 1, '¿Cuánto es 7 × 3?', 'La multiplicación de 7 por 3 es 21', 2, 0, NULL),
+(2616, 1, NULL, NULL, 1, '¿Cuánto es 40 - 15?', 'La resta de 40 menos 15 es 25', 2, 0, NULL),
+(2617, 1, NULL, NULL, 1, '¿Cuántos centímetros hay en un metro?', 'Un metro tiene 100 centímetros', 2, 0, NULL),
+(2618, 1, NULL, NULL, 1, '¿Cuánto es 9 + 1?', 'La suma de 9 y 1 es 10', 2, 0, NULL),
+(2619, 1, NULL, NULL, 1, '¿Cuál es el triple de 5?', 'El triple de 5 es 15', 2, 0, NULL),
+(2620, 1, NULL, NULL, 1, '¿Cuánto es 12 ÷ 3?', 'La división de 12 entre 3 es 4', 2, 0, NULL),
+(2621, 1, NULL, NULL, 1, '¿Cuántos ángulos tiene un triángulo?', 'Un triángulo tiene 3 ángulos', 2, 0, NULL),
+(2622, 1, NULL, NULL, 1, '¿Cuánto es 25 + 25?', 'La suma de 25 y 25 es 50', 2, 0, NULL),
+(2623, 1, NULL, NULL, 1, '¿Cuánto es 5 × 5?', 'La multiplicación de 5 por 5 es 25', 2, 0, NULL),
+(2624, 1, NULL, NULL, 1, '¿Cuánto es 30 - 10?', 'La resta de 30 menos 10 es 20', 2, 0, NULL),
+(2625, 1, NULL, NULL, 1, '¿Cuánto es la mitad de 10?', 'La mitad de 10 es 5', 2, 0, NULL),
+(2626, 1, NULL, NULL, 1, '¿Cuánto es 2 + 2 + 2?', 'La suma de 2+2+2 es 6', 2, 0, NULL),
+(2627, 1, NULL, NULL, 1, '¿Cuánto es 16 ÷ 4?', 'La división de 16 entre 4 es 4', 2, 0, NULL),
+(2628, 1, NULL, NULL, 1, '¿Cuántos minutos hay en una hora?', 'Una hora tiene 60 minutos', 2, 0, NULL),
+(2629, 1, NULL, NULL, 1, '¿Cuánto es 9 × 2?', 'La multiplicación de 9 por 2 es 18', 2, 0, NULL),
+(2630, 1, NULL, NULL, 1, '¿Cuánto es 60 - 30?', 'La resta de 60 menos 30 es 30', 2, 0, NULL),
+(2631, 1, NULL, NULL, 1, '¿Cuál es el cuádruple de 2?', 'El cuádruple de 2 es 8', 2, 0, NULL),
+(2632, 1, NULL, NULL, 1, '¿Cuánto es 11 + 9?', 'La suma de 11 y 9 es 20', 2, 0, NULL),
+(2633, 1, NULL, NULL, 1, '¿Cuánto es 8 × 3?', 'La multiplicación de 8 por 3 es 24', 2, 0, NULL),
+(2634, 1, NULL, NULL, 1, '¿Cuánto es 45 - 20?', 'La resta de 45 menos 20 es 25', 2, 0, NULL),
+(2635, 1, NULL, NULL, 1, '¿Cuántas horas tiene un día?', 'Un día tiene 24 horas', 2, 0, NULL),
+(2636, 1, NULL, NULL, 1, '¿Cuánto es 18 ÷ 2?', 'La división de 18 entre 2 es 9', 2, 0, NULL),
+(2637, 1, NULL, NULL, 1, '¿Cuánto es 4 + 5 + 6?', 'La suma de 4+5+6 es 15', 2, 0, NULL),
+(2638, 1, NULL, NULL, 1, '¿Cuántos lados tiene un pentágono?', 'Un pentágono tiene 5 lados', 2, 0, NULL),
+(2639, 1, NULL, NULL, 1, '¿Cuánto es 10 × 3?', 'La multiplicación de 10 por 3 es 30', 2, 0, NULL),
+(2640, 1, NULL, NULL, 1, '¿Cuánto es 80 - 40?', 'La resta de 80 menos 40 es 40', 2, 0, NULL),
+(2641, 1, NULL, NULL, 1, '¿Cuánto es la mitad de 20?', 'La mitad de 20 es 10', 2, 0, NULL),
+(2642, 1, NULL, NULL, 1, '¿Cuánto es 7 + 8?', 'La suma de 7 y 8 es 15', 2, 0, NULL),
+(2643, 1, NULL, NULL, 1, '¿Cuánto es 6 × 4?', 'La multiplicación de 6 por 4 es 24', 2, 0, NULL),
+(2644, 1, NULL, NULL, 1, '¿Cuánto es 35 ÷ 5?', 'La división de 35 entre 5 es 7', 2, 0, NULL),
+(2645, 1, NULL, NULL, 1, '¿Cuántos días tiene una semana?', 'Una semana tiene 7 días', 2, 0, NULL),
+(2646, 1, NULL, NULL, 1, '¿Cuánto es 13 + 7?', 'La suma de 13 y 7 es 20', 2, 0, NULL),
+(2647, 1, NULL, NULL, 1, '¿Cuánto es 9 × 3?', 'La multiplicación de 9 por 3 es 27', 2, 0, NULL),
+(2648, 1, NULL, NULL, 1, '¿Cuánto es 55 - 25?', 'La resta de 55 menos 25 es 30', 2, 0, NULL),
+(2649, 1, NULL, NULL, 1, '¿Cuántos lados tiene un hexágono?', 'Un hexágono tiene 6 lados', 2, 0, NULL),
+(2650, 1, NULL, NULL, 1, '¿Cuánto es 24 ÷ 6?', 'La división de 24 entre 6 es 4', 2, 0, NULL),
+(2651, 1, NULL, NULL, 2, '¿Cuánto es 15 × 8?', 'La multiplicación de 15 por 8 es 120', 5, 0, NULL),
+(2652, 1, NULL, NULL, 2, '¿Cuánto es 144 ÷ 12?', 'La división de 144 entre 12 es 12', 5, 0, NULL),
+(2653, 1, NULL, NULL, 2, '¿Cuál es el 25% de 200?', 'El 25% de 200 es 50', 5, 0, NULL),
+(2654, 1, NULL, NULL, 2, '¿Cuánto es 3² + 4²?', 'La suma de 9 + 16 es 25', 5, 0, NULL),
+(2655, 1, NULL, NULL, 2, '¿Cuál es el área de un cuadrado de 5 cm de lado?', 'El área es 25 cm²', 5, 0, NULL),
+(2656, 1, NULL, NULL, 2, '¿Cuánto es 7 × 13?', 'La multiplicación de 7 por 13 es 91', 5, 0, NULL),
+(2657, 1, NULL, NULL, 2, '¿Cuánto es 256 ÷ 16?', 'La división de 256 entre 16 es 16', 5, 0, NULL),
+(2658, 1, NULL, NULL, 2, 'Si un libro cuesta $45 y tiene 20% de descuento, ¿cuánto pagas?', 'El 20% de 45 es 9, por lo que pagas $36', 5, 0, NULL),
+(2659, 1, NULL, NULL, 2, '¿Cuánto es √64?', 'La raíz cuadrada de 64 es 8', 5, 0, NULL),
+(2660, 1, NULL, NULL, 2, '¿Cuál es el perímetro de un rectángulo de 8 cm × 5 cm?', 'El perímetro es 26 cm', 5, 0, NULL),
+(2661, 1, NULL, NULL, 2, '¿Cuánto es 18 × 12?', 'La multiplicación de 18 por 12 es 216', 5, 0, NULL);
+INSERT INTO `pregunta` (`id_pregunta`, `id_materia`, `id_carrera`, `id_tematica`, `id_dificultad`, `pregunta`, `retroalimentacion`, `puntos`, `puntos_carrera`, `imagen`) VALUES
+(2662, 1, NULL, NULL, 2, '¿Cuánto es 0.5 + 0.25 + 0.75?', 'La suma es 1.5', 5, 0, NULL),
+(2663, 1, NULL, NULL, 2, '¿Cuál es el 10% de 350?', 'El 10% de 350 es 35', 5, 0, NULL),
+(2664, 1, NULL, NULL, 2, '¿Cuánto es 5³?', '5 al cubo es 125', 5, 0, NULL),
+(2665, 1, NULL, NULL, 2, '¿Cuánto es 225 ÷ 15?', 'La división de 225 entre 15 es 15', 5, 0, NULL),
+(2666, 1, NULL, NULL, 2, '¿Cuál es el área de un triángulo con base 10 y altura 6?', 'El área es 30 unidades²', 5, 0, NULL),
+(2667, 1, NULL, NULL, 2, '¿Cuánto es 23 × 4?', 'La multiplicación de 23 por 4 es 92', 5, 0, NULL),
+(2668, 1, NULL, NULL, 2, 'Si 3x = 21, ¿cuánto vale x?', 'x = 7', 5, 0, NULL),
+(2669, 1, NULL, NULL, 2, '¿Cuánto es √100?', 'La raíz cuadrada de 100 es 10', 5, 0, NULL),
+(2670, 1, NULL, NULL, 2, '¿Cuál es el 50% de 88?', 'El 50% de 88 es 44', 5, 0, NULL),
+(2671, 1, NULL, NULL, 2, '¿Cuánto es 17 × 6?', 'La multiplicación de 17 por 6 es 102', 5, 0, NULL),
+(2672, 1, NULL, NULL, 2, '¿Cuánto es 3/4 + 1/4?', 'La suma es 1 o 4/4', 5, 0, NULL),
+(2673, 1, NULL, NULL, 2, '¿Cuál es el área de un círculo con radio 3? (π ≈ 3.14)', 'El área es aproximadamente 28.26 unidades²', 5, 0, NULL),
+(2674, 1, NULL, NULL, 2, '¿Cuánto es 2⁵?', '2 a la quinta potencia es 32', 5, 0, NULL),
+(2675, 1, NULL, NULL, 2, '¿Cuánto es 420 ÷ 21?', 'La división de 420 entre 21 es 20', 5, 0, NULL),
+(2676, 1, NULL, NULL, 2, 'Si 5x - 10 = 25, ¿cuánto vale x?', 'x = 7', 5, 0, NULL),
+(2677, 1, NULL, NULL, 2, '¿Cuánto es 19 × 7?', 'La multiplicación de 19 por 7 es 133', 5, 0, NULL),
+(2678, 1, NULL, NULL, 2, '¿Cuál es el 15% de 400?', 'El 15% de 400 es 60', 5, 0, NULL),
+(2679, 1, NULL, NULL, 2, '¿Cuánto es √144?', 'La raíz cuadrada de 144 es 12', 5, 0, NULL),
+(2680, 1, NULL, NULL, 2, '¿Cuánto es 2/3 + 1/6?', 'La suma es 5/6', 5, 0, NULL),
+(2681, 1, NULL, NULL, 2, '¿Cuál es el perímetro de un cuadrado de 12 cm de lado?', 'El perímetro es 48 cm', 5, 0, NULL),
+(2682, 1, NULL, NULL, 2, '¿Cuánto es 14 × 11?', 'La multiplicación de 14 por 11 es 154', 5, 0, NULL),
+(2683, 1, NULL, NULL, 2, '¿Cuánto es 1.5 × 8?', 'El resultado es 12', 5, 0, NULL),
+(2684, 1, NULL, NULL, 2, 'Si un producto cuesta $80 y aumenta un 25%, ¿cuál es su nuevo precio?', 'El 25% de 80 es 20, el nuevo precio es $100', 5, 0, NULL),
+(2685, 1, NULL, NULL, 2, '¿Cuánto es 4² × 3?', '16 × 3 = 48', 5, 0, NULL),
+(2686, 1, NULL, NULL, 2, '¿Cuánto es 540 ÷ 18?', 'La división de 540 entre 18 es 30', 5, 0, NULL),
+(2687, 1, NULL, NULL, 2, '¿Cuál es el área de un rectángulo de 12 cm × 7 cm?', 'El área es 84 cm²', 5, 0, NULL),
+(2688, 1, NULL, NULL, 2, '¿Cuánto es 25 × 8?', 'La multiplicación de 25 por 8 es 200', 5, 0, NULL),
+(2689, 1, NULL, NULL, 2, '¿Cuánto es √49?', 'La raíz cuadrada de 49 es 7', 5, 0, NULL),
+(2690, 1, NULL, NULL, 2, 'Si 4x + 8 = 32, ¿cuánto vale x?', 'x = 6', 5, 0, NULL),
+(2691, 1, NULL, NULL, 2, '¿Cuál es el 20% de 250?', 'El 20% de 250 es 50', 5, 0, NULL),
+(2692, 1, NULL, NULL, 2, '¿Cuánto es 3/5 + 1/5?', 'La suma es 4/5', 5, 0, NULL),
+(2693, 1, NULL, NULL, 2, '¿Cuánto es 16 × 9?', 'La multiplicación de 16 por 9 es 144', 5, 0, NULL),
+(2694, 1, NULL, NULL, 2, '¿Cuál es el volumen de un cubo de 4 cm de lado?', 'El volumen es 64 cm³', 5, 0, NULL),
+(2695, 1, NULL, NULL, 2, '¿Cuánto es 6³?', '6 al cubo es 216', 5, 0, NULL),
+(2696, 1, NULL, NULL, 2, '¿Cuánto es 675 ÷ 25?', 'La división de 675 entre 25 es 27', 5, 0, NULL),
+(2697, 1, NULL, NULL, 2, '¿Cuál es el doble de 2.5 × 8?', '2.5 × 8 = 20, su doble es 40', 5, 0, NULL),
+(2698, 1, NULL, NULL, 2, '¿Cuánto es √81?', 'La raíz cuadrada de 81 es 9', 5, 0, NULL),
+(2699, 1, NULL, NULL, 2, 'Si un número multiplicado por 7 da 91, ¿cuál es el número?', 'El número es 13', 5, 0, NULL),
+(2700, 1, NULL, NULL, 2, '¿Cuál es el 30% de 150?', 'El 30% de 150 es 45', 5, 0, NULL),
+(2701, 1, NULL, NULL, 3, '¿Cuánto es (15 + 8) × (12 - 5)?', 'Primero resuelve los paréntesis: 23 × 7 = 161', 10, 0, NULL),
+(2702, 1, NULL, NULL, 3, 'Si f(x) = 3x² - 5x + 2, ¿cuánto es f(3)?', 'f(3) = 3(9) - 5(3) + 2 = 27 - 15 + 2 = 14', 10, 0, NULL),
+(2703, 1, NULL, NULL, 3, '¿Cuál es el valor de x en la ecuación 2x² - 8 = 0?', 'x = ±2', 10, 0, NULL),
+(2704, 1, NULL, NULL, 3, '¿Cuánto es la suma de los primeros 10 números naturales?', 'La suma es 55 (fórmula: n(n+1)/2)', 10, 0, NULL),
+(2705, 1, NULL, NULL, 3, '¿Cuál es el área de un círculo con diámetro 14? (π ≈ 3.14)', 'Radio = 7, área ≈ 153.86 unidades²', 10, 0, NULL),
+(2706, 1, NULL, NULL, 3, 'Si log₁₀(x) = 2, ¿cuánto vale x?', 'x = 100', 10, 0, NULL),
+(2707, 1, NULL, NULL, 3, '¿Cuál es la derivada de f(x) = x³?', 'f\'(x) = 3x²', 10, 0, NULL),
+(2708, 1, NULL, NULL, 3, '¿Cuánto es el factorial de 5 (5!)?', '5! = 5×4×3×2×1 = 120', 10, 0, NULL),
+(2709, 1, NULL, NULL, 3, 'Si sen(θ) = 0.5, ¿cuál es θ en grados? (0° < θ < 90°)', 'θ = 30°', 10, 0, NULL),
+(2710, 1, NULL, NULL, 3, '¿Cuál es el perímetro de un círculo con radio 7? (π ≈ 3.14)', 'Perímetro = 2πr ≈ 43.96 unidades', 10, 0, NULL),
+(2711, 1, NULL, NULL, 3, '¿Cuánto es √(169 + 56)?', '√225 = 15', 10, 0, NULL),
+(2712, 1, NULL, NULL, 3, 'Si 3ˣ = 81, ¿cuánto vale x?', 'x = 4 (porque 3⁴ = 81)', 10, 0, NULL),
+(2713, 1, NULL, NULL, 3, '¿Cuál es el volumen de una esfera con radio 3? (π ≈ 3.14)', 'V = 4/3πr³ ≈ 113.04 unidades³', 10, 0, NULL),
+(2714, 1, NULL, NULL, 3, '¿Cuánto es el valor de x en: x² + 6x + 9 = 0?', 'x = -3 (ecuación con raíz doble)', 10, 0, NULL),
+(2715, 1, NULL, NULL, 3, '¿Cuál es el cociente de 1024 ÷ 32?', 'El cociente es 32', 10, 0, NULL),
+(2716, 1, NULL, NULL, 3, 'Si cos(θ) = √3/2, ¿cuál es θ en grados? (0° < θ < 90°)', 'θ = 30°', 10, 0, NULL),
+(2717, 1, NULL, NULL, 3, '¿Cuánto es 7⁴?', '7 a la cuarta potencia es 2401', 10, 0, NULL),
+(2718, 1, NULL, NULL, 3, '¿Cuál es la pendiente de la recta que pasa por (2,3) y (6,11)?', 'Pendiente = (11-3)/(6-2) = 2', 10, 0, NULL),
+(2719, 1, NULL, NULL, 3, '¿Cuánto es √(25 × 16)?', '√400 = 20', 10, 0, NULL),
+(2720, 1, NULL, NULL, 3, 'Si 2ˣ⁺¹ = 32, ¿cuánto vale x?', 'x = 4 (porque 2⁵ = 32, entonces x+1 = 5)', 10, 0, NULL),
+(2721, 1, NULL, NULL, 3, '¿Cuál es el área de un trapecio con bases 8 y 12, y altura 5?', 'Área = (8+12)×5/2 = 50 unidades²', 10, 0, NULL),
+(2722, 1, NULL, NULL, 3, '¿Cuánto es la integral de 2x dx?', 'La integral es x² + C', 10, 0, NULL),
+(2723, 1, NULL, NULL, 3, 'Si tan(θ) = 1, ¿cuál es θ en grados? (0° < θ < 90°)', 'θ = 45°', 10, 0, NULL),
+(2724, 1, NULL, NULL, 3, '¿Cuál es el valor de x en: x³ = 125?', 'x = 5', 10, 0, NULL),
+(2725, 1, NULL, NULL, 3, '¿Cuánto es el área de un rombo con diagonales de 10 y 8?', 'Área = (10×8)/2 = 40 unidades²', 10, 0, NULL),
+(2726, 1, NULL, NULL, 3, 'Si log₂(x) = 5, ¿cuánto vale x?', 'x = 32', 10, 0, NULL),
+(2727, 1, NULL, NULL, 3, '¿Cuál es el volumen de un cilindro con radio 4 y altura 6? (π ≈ 3.14)', 'V = πr²h ≈ 301.44 unidades³', 10, 0, NULL),
+(2728, 1, NULL, NULL, 3, '¿Cuánto es (3² + 4²)² ?', '(9 + 16)² = 25² = 625', 10, 0, NULL),
+(2729, 1, NULL, NULL, 3, 'Si f(x) = 2x - 3 y g(x) = x², ¿cuánto es f(g(2))?', 'g(2) = 4, f(4) = 2(4) - 3 = 5', 10, 0, NULL),
+(2730, 1, NULL, NULL, 3, '¿Cuál es el máximo común divisor de 48 y 72?', 'El MCD es 24', 10, 0, NULL),
+(2731, 1, NULL, NULL, 3, '¿Cuánto es √(144/9)?', '√16 = 4', 10, 0, NULL),
+(2732, 1, NULL, NULL, 3, 'Si x² - 5x + 6 = 0, ¿cuáles son los valores de x?', 'x = 2 o x = 3', 10, 0, NULL),
+(2733, 1, NULL, NULL, 3, '¿Cuál es el mínimo común múltiplo de 12 y 18?', 'El MCM es 36', 10, 0, NULL),
+(2734, 1, NULL, NULL, 3, '¿Cuánto es sen²(30°) + cos²(30°)?', 'Siempre es 1 (identidad fundamental)', 10, 0, NULL),
+(2735, 1, NULL, NULL, 3, 'Si una secuencia aritmética tiene a₁ = 5 y d = 3, ¿cuál es a₁₀?', 'a₁₀ = 5 + 9(3) = 32', 10, 0, NULL),
+(2736, 1, NULL, NULL, 3, '¿Cuál es el área bajo la curva y = x de x = 0 a x = 4?', 'Área = x²/2 |₀⁴ = 8 unidades²', 10, 0, NULL),
+(2737, 1, NULL, NULL, 3, '¿Cuánto es ³√343?', 'La raíz cúbica de 343 es 7', 10, 0, NULL),
+(2738, 1, NULL, NULL, 3, 'Si la probabilidad de un evento es 3/5, ¿cuál es la probabilidad del complemento?', 'La probabilidad del complemento es 2/5', 10, 0, NULL),
+(2739, 1, NULL, NULL, 3, '¿Cuál es el valor de x en: 5ˣ = 625?', 'x = 4 (porque 5⁴ = 625)', 10, 0, NULL),
+(2740, 1, NULL, NULL, 3, '¿Cuánto es el área de un pentágono regular con lado 6 y apotema 4.13?', 'Área = (perímetro × apotema)/2 ≈ 61.95 unidades²', 10, 0, NULL),
+(2741, 1, NULL, NULL, 3, 'Si f(x) = x² + 2x - 3, ¿cuáles son las raíces?', 'x = 1 o x = -3', 10, 0, NULL),
+(2742, 1, NULL, NULL, 3, '¿Cuál es la suma de una progresión geométrica: 2 + 4 + 8 + 16 + 32?', 'La suma es 62', 10, 0, NULL),
+(2743, 1, NULL, NULL, 3, '¿Cuánto es el discriminante de x² + 6x + 9?', 'Δ = b² - 4ac = 36 - 36 = 0', 10, 0, NULL),
+(2744, 1, NULL, NULL, 3, 'Si una función es f(x) = 1/x, ¿cuál es su dominio?', 'Todos los reales excepto x = 0', 10, 0, NULL),
+(2745, 1, NULL, NULL, 3, '¿Cuál es el volumen de un cono con radio 5 y altura 12? (π ≈ 3.14)', 'V = (1/3)πr²h ≈ 314 unidades³', 10, 0, NULL),
+(2746, 1, NULL, NULL, 3, '¿Cuánto es lim(x→0) sen(x)/x?', 'El límite es 1', 10, 0, NULL),
+(2747, 1, NULL, NULL, 3, 'Si dos matrices A(2×3) y B(3×2) se multiplican, ¿qué dimensión tiene AB?', 'La matriz resultante es 2×2', 10, 0, NULL),
+(2748, 1, NULL, NULL, 3, '¿Cuál es el número de combinaciones de 5 elementos tomados de 3 en 3?', 'C(5,3) = 10', 10, 0, NULL),
+(2749, 1, NULL, NULL, 3, '¿Cuánto es la distancia entre los puntos (1,2) y (4,6)?', 'd = √[(4-1)² + (6-2)²] = 5', 10, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -10063,7 +10284,400 @@ INSERT INTO `respuesta` (`id_respuesta`, `id_pregunta`, `respuesta`, `correcta`,
 (5797, 1430, 'Entregar software en partes pequeñas y funcionales en lugar de todo al final', 1, 1),
 (5798, 1430, 'Aumentar funcionalidades lentamente', 0, 1),
 (5799, 1430, 'Desarrollo paso a paso', 0, 1),
-(5800, 1430, 'Crecimiento gradual del código', 0, 1);
+(5800, 1430, 'Crecimiento gradual del código', 0, 1),
+(5801, 2701, '161', 1, 10),
+(5802, 2701, '151', 0, 0),
+(5803, 2701, '171', 0, 0),
+(5804, 2701, '140', 0, 0),
+(5805, 2702, '14', 1, 10),
+(5806, 2702, '12', 0, 0),
+(5807, 2702, '16', 0, 0),
+(5808, 2702, '10', 0, 0),
+(5809, 2703, '±2', 1, 10),
+(5810, 2703, '±4', 0, 0),
+(5811, 2703, '2', 0, 0),
+(5812, 2703, '±3', 0, 0),
+(5813, 2704, '55', 1, 10),
+(5814, 2704, '50', 0, 0),
+(5815, 2704, '60', 0, 0),
+(5816, 2704, '45', 0, 0),
+(5817, 2705, '153.86 unidades²', 1, 10),
+(5818, 2705, '143.86 unidades²', 0, 0),
+(5819, 2705, '163.86 unidades²', 0, 0),
+(5820, 2705, '140 unidades²', 0, 0),
+(5821, 2706, '100', 1, 10),
+(5822, 2706, '10', 0, 0),
+(5823, 2706, '1000', 0, 0),
+(5824, 2706, '20', 0, 0),
+(5825, 2707, '3x²', 1, 10),
+(5826, 2707, 'x²', 0, 0),
+(5827, 2707, '3x', 0, 0),
+(5828, 2707, 'x³', 0, 0),
+(5829, 2708, '120', 1, 10),
+(5830, 2708, '110', 0, 0),
+(5831, 2708, '130', 0, 0),
+(5832, 2708, '100', 0, 0),
+(5833, 2709, '30°', 1, 10),
+(5834, 2709, '45°', 0, 0),
+(5835, 2709, '60°', 0, 0),
+(5836, 2709, '25°', 0, 0),
+(5837, 2710, '43.96 unidades', 1, 10),
+(5838, 2710, '38.96 unidades', 0, 0),
+(5839, 2710, '48.96 unidades', 0, 0),
+(5840, 2710, '40 unidades', 0, 0),
+(5841, 2711, '15', 1, 10),
+(5842, 2711, '14', 0, 0),
+(5843, 2711, '16', 0, 0),
+(5844, 2711, '13', 0, 0),
+(5845, 2712, '4', 1, 10),
+(5846, 2712, '3', 0, 0),
+(5847, 2712, '5', 0, 0),
+(5848, 2712, '27', 0, 0),
+(5849, 2713, '113.04 unidades³', 1, 10),
+(5850, 2713, '103.04 unidades³', 0, 0),
+(5851, 2713, '123.04 unidades³', 0, 0),
+(5852, 2713, '100 unidades³', 0, 0),
+(5853, 2714, '-3', 1, 10),
+(5854, 2714, '3', 0, 0),
+(5855, 2714, '-6', 0, 0),
+(5856, 2714, '9', 0, 0),
+(5857, 2715, '32', 1, 10),
+(5858, 2715, '30', 0, 0),
+(5859, 2715, '34', 0, 0),
+(5860, 2715, '28', 0, 0),
+(5861, 2716, '30°', 1, 10),
+(5862, 2716, '45°', 0, 0),
+(5863, 2716, '60°', 0, 0),
+(5864, 2716, '25°', 0, 0),
+(5865, 2717, '2401', 1, 10),
+(5866, 2717, '2301', 0, 0),
+(5867, 2717, '2501', 0, 0),
+(5868, 2717, '2100', 0, 0),
+(5869, 2718, '2', 1, 10),
+(5870, 2718, '3', 0, 0),
+(5871, 2718, '1', 0, 0),
+(5872, 2718, '4', 0, 0),
+(5873, 2719, '20', 1, 10),
+(5874, 2719, '18', 0, 0),
+(5875, 2719, '22', 0, 0),
+(5876, 2719, '25', 0, 0),
+(5877, 2720, '4', 1, 10),
+(5878, 2720, '3', 0, 0),
+(5879, 2720, '5', 0, 0),
+(5880, 2720, '16', 0, 0),
+(5881, 2721, '50 unidades²', 1, 10),
+(5882, 2721, '45 unidades²', 0, 0),
+(5883, 2721, '55 unidades²', 0, 0),
+(5884, 2721, '40 unidades²', 0, 0),
+(5885, 2722, 'x² + C', 1, 10),
+(5886, 2722, '2x² + C', 0, 0),
+(5887, 2722, 'x + C', 0, 0),
+(5888, 2722, '2x + C', 0, 0),
+(5889, 2723, '45°', 1, 10),
+(5890, 2723, '30°', 0, 0),
+(5891, 2723, '60°', 0, 0),
+(5892, 2723, '90°', 0, 0),
+(5893, 2724, '5', 1, 10),
+(5894, 2724, '4', 0, 0),
+(5895, 2724, '6', 0, 0),
+(5896, 2724, '25', 0, 0),
+(5897, 2725, '40 unidades²', 1, 10),
+(5898, 2725, '36 unidades²', 0, 0),
+(5899, 2725, '44 unidades²', 0, 0),
+(5900, 2725, '80 unidades²', 0, 0),
+(5901, 2726, '32', 1, 10),
+(5902, 2726, '10', 0, 0),
+(5903, 2726, '25', 0, 0),
+(5904, 2726, '16', 0, 0),
+(5905, 2727, '301.44 unidades³', 1, 10),
+(5906, 2727, '291.44 unidades³', 0, 0),
+(5907, 2727, '311.44 unidades³', 0, 0),
+(5908, 2727, '280 unidades³', 0, 0),
+(5909, 2728, '625', 1, 10),
+(5910, 2728, '525', 0, 0),
+(5911, 2728, '725', 0, 0),
+(5912, 2728, '500', 0, 0),
+(5913, 2729, '5', 1, 10),
+(5914, 2729, '4', 0, 0),
+(5915, 2729, '6', 0, 0),
+(5916, 2729, '3', 0, 0),
+(5917, 2730, '24', 1, 10),
+(5918, 2730, '12', 0, 0),
+(5919, 2730, '36', 0, 0),
+(5920, 2730, '18', 0, 0),
+(5921, 2731, '4', 1, 10),
+(5922, 2731, '3', 0, 0),
+(5923, 2731, '5', 0, 0),
+(5924, 2731, '6', 0, 0),
+(5925, 2732, '2 y 3', 1, 10),
+(5926, 2732, '1 y 6', 0, 0),
+(5927, 2732, '-2 y -3', 0, 0),
+(5928, 2732, '3 y 4', 0, 0),
+(5929, 2733, '36', 1, 10),
+(5930, 2733, '24', 0, 0),
+(5931, 2733, '48', 0, 0),
+(5932, 2733, '54', 0, 0),
+(5933, 2734, '1', 1, 10),
+(5934, 2734, '0.5', 0, 0),
+(5935, 2734, '2', 0, 0),
+(5936, 2734, '0', 0, 0),
+(5937, 2735, '32', 1, 10),
+(5938, 2735, '30', 0, 0),
+(5939, 2735, '35', 0, 0),
+(5940, 2735, '28', 0, 0),
+(5941, 2736, '8 unidades²', 1, 10),
+(5942, 2736, '6 unidades²', 0, 0),
+(5943, 2736, '10 unidades²', 0, 0),
+(5944, 2736, '4 unidades²', 0, 0),
+(5945, 2737, '7', 1, 10),
+(5946, 2737, '6', 0, 0),
+(5947, 2737, '8', 0, 0),
+(5948, 2737, '9', 0, 0),
+(5949, 2738, '2/5', 1, 10),
+(5950, 2738, '3/5', 0, 0),
+(5951, 2738, '1/5', 0, 0),
+(5952, 2738, '4/5', 0, 0),
+(5953, 2739, '4', 1, 10),
+(5954, 2739, '3', 0, 0),
+(5955, 2739, '5', 0, 0),
+(5956, 2739, '125', 0, 0),
+(5957, 2740, '61.95 unidades²', 1, 10),
+(5958, 2740, '51.95 unidades²', 0, 0),
+(5959, 2740, '71.95 unidades²', 0, 0),
+(5960, 2740, '60 unidades²', 0, 0),
+(5961, 2741, '1 y -3', 1, 10);
+INSERT INTO `respuesta` (`id_respuesta`, `id_pregunta`, `respuesta`, `correcta`, `puntos`) VALUES
+(5962, 2741, '-1 y 3', 0, 0),
+(5963, 2741, '2 y -3', 0, 0),
+(5964, 2741, '-1 y -3', 0, 0),
+(5965, 2742, '62', 1, 10),
+(5966, 2742, '60', 0, 0),
+(5967, 2742, '64', 0, 0),
+(5968, 2742, '58', 0, 0),
+(5969, 2743, '0', 1, 10),
+(5970, 2743, '36', 0, 0),
+(5971, 2743, '9', 0, 0),
+(5972, 2743, '45', 0, 0),
+(5973, 2744, 'Todos los reales excepto x = 0', 1, 10),
+(5974, 2744, 'Todos los reales', 0, 0),
+(5975, 2744, 'Solo x > 0', 0, 0),
+(5976, 2744, 'Solo x < 0', 0, 0),
+(5977, 2745, '314 unidades³', 1, 10),
+(5978, 2745, '304 unidades³', 0, 0),
+(5979, 2745, '324 unidades³', 0, 0),
+(5980, 2745, '300 unidades³', 0, 0),
+(5981, 2746, '1', 1, 10),
+(5982, 2746, '0', 0, 0),
+(5983, 2746, '∞', 0, 0),
+(5984, 2746, '0.5', 0, 0),
+(5985, 2747, '2×2', 1, 10),
+(5986, 2747, '3×3', 0, 0),
+(5987, 2747, '2×3', 0, 0),
+(5988, 2747, '3×2', 0, 0),
+(5989, 2748, '10', 1, 10),
+(5990, 2748, '15', 0, 0),
+(5991, 2748, '20', 0, 0),
+(5992, 2748, '6', 0, 0),
+(5993, 2749, '5', 1, 10),
+(5994, 2749, '4', 0, 0),
+(5995, 2749, '6', 0, 0),
+(5996, 2749, '3', 0, 0),
+(6001, 2701, '161', 1, 10),
+(6002, 2701, '151', 0, 0),
+(6003, 2701, '171', 0, 0),
+(6004, 2701, '140', 0, 0),
+(6005, 2702, '14', 1, 10),
+(6006, 2702, '12', 0, 0),
+(6007, 2702, '16', 0, 0),
+(6008, 2702, '10', 0, 0),
+(6009, 2703, '±2', 1, 10),
+(6010, 2703, '±4', 0, 0),
+(6011, 2703, '2', 0, 0),
+(6012, 2703, '±3', 0, 0),
+(6013, 2704, '55', 1, 10),
+(6014, 2704, '50', 0, 0),
+(6015, 2704, '60', 0, 0),
+(6016, 2704, '45', 0, 0),
+(6017, 2705, '153.86 unidades²', 1, 10),
+(6018, 2705, '143.86 unidades²', 0, 0),
+(6019, 2705, '163.86 unidades²', 0, 0),
+(6020, 2705, '140 unidades²', 0, 0),
+(6021, 2706, '100', 1, 10),
+(6022, 2706, '10', 0, 0),
+(6023, 2706, '1000', 0, 0),
+(6024, 2706, '20', 0, 0),
+(6025, 2707, '3x²', 1, 10),
+(6026, 2707, 'x²', 0, 0),
+(6027, 2707, '3x', 0, 0),
+(6028, 2707, 'x³', 0, 0),
+(6029, 2708, '120', 1, 10),
+(6030, 2708, '110', 0, 0),
+(6031, 2708, '130', 0, 0),
+(6032, 2708, '100', 0, 0),
+(6033, 2709, '30°', 1, 10),
+(6034, 2709, '45°', 0, 0),
+(6035, 2709, '60°', 0, 0),
+(6036, 2709, '25°', 0, 0),
+(6037, 2710, '43.96 unidades', 1, 10),
+(6038, 2710, '38.96 unidades', 0, 0),
+(6039, 2710, '48.96 unidades', 0, 0),
+(6040, 2710, '40 unidades', 0, 0),
+(6041, 2711, '15', 1, 10),
+(6042, 2711, '14', 0, 0),
+(6043, 2711, '16', 0, 0),
+(6044, 2711, '13', 0, 0),
+(6045, 2712, '4', 1, 10),
+(6046, 2712, '3', 0, 0),
+(6047, 2712, '5', 0, 0),
+(6048, 2712, '27', 0, 0),
+(6049, 2713, '113.04 unidades³', 1, 10),
+(6050, 2713, '103.04 unidades³', 0, 0),
+(6051, 2713, '123.04 unidades³', 0, 0),
+(6052, 2713, '100 unidades³', 0, 0),
+(6053, 2714, '-3', 1, 10),
+(6054, 2714, '3', 0, 0),
+(6055, 2714, '-6', 0, 0),
+(6056, 2714, '9', 0, 0),
+(6057, 2715, '32', 1, 10),
+(6058, 2715, '30', 0, 0),
+(6059, 2715, '34', 0, 0),
+(6060, 2715, '28', 0, 0),
+(6061, 2716, '30°', 1, 10),
+(6062, 2716, '45°', 0, 0),
+(6063, 2716, '60°', 0, 0),
+(6064, 2716, '25°', 0, 0),
+(6065, 2717, '2401', 1, 10),
+(6066, 2717, '2301', 0, 0),
+(6067, 2717, '2501', 0, 0),
+(6068, 2717, '2100', 0, 0),
+(6069, 2718, '2', 1, 10),
+(6070, 2718, '3', 0, 0),
+(6071, 2718, '1', 0, 0),
+(6072, 2718, '4', 0, 0),
+(6073, 2719, '20', 1, 10),
+(6074, 2719, '18', 0, 0),
+(6075, 2719, '22', 0, 0),
+(6076, 2719, '25', 0, 0),
+(6077, 2720, '4', 1, 10),
+(6078, 2720, '3', 0, 0),
+(6079, 2720, '5', 0, 0),
+(6080, 2720, '16', 0, 0),
+(6081, 2721, '50 unidades²', 1, 10),
+(6082, 2721, '45 unidades²', 0, 0),
+(6083, 2721, '55 unidades²', 0, 0),
+(6084, 2721, '40 unidades²', 0, 0),
+(6085, 2722, 'x² + C', 1, 10),
+(6086, 2722, '2x² + C', 0, 0),
+(6087, 2722, 'x + C', 0, 0),
+(6088, 2722, '2x + C', 0, 0),
+(6089, 2723, '45°', 1, 10),
+(6090, 2723, '30°', 0, 0),
+(6091, 2723, '60°', 0, 0),
+(6092, 2723, '90°', 0, 0),
+(6093, 2724, '5', 1, 10),
+(6094, 2724, '4', 0, 0),
+(6095, 2724, '6', 0, 0),
+(6096, 2724, '25', 0, 0),
+(6097, 2725, '40 unidades²', 1, 10),
+(6098, 2725, '36 unidades²', 0, 0),
+(6099, 2725, '44 unidades²', 0, 0),
+(6100, 2725, '80 unidades²', 0, 0),
+(6101, 2726, '32', 1, 10),
+(6102, 2726, '10', 0, 0),
+(6103, 2726, '25', 0, 0),
+(6104, 2726, '16', 0, 0),
+(6105, 2727, '301.44 unidades³', 1, 10),
+(6106, 2727, '291.44 unidades³', 0, 0),
+(6107, 2727, '311.44 unidades³', 0, 0),
+(6108, 2727, '280 unidades³', 0, 0),
+(6109, 2728, '625', 1, 10),
+(6110, 2728, '525', 0, 0),
+(6111, 2728, '725', 0, 0),
+(6112, 2728, '500', 0, 0),
+(6113, 2729, '5', 1, 10),
+(6114, 2729, '4', 0, 0),
+(6115, 2729, '6', 0, 0),
+(6116, 2729, '3', 0, 0),
+(6117, 2730, '24', 1, 10),
+(6118, 2730, '12', 0, 0),
+(6119, 2730, '36', 0, 0),
+(6120, 2730, '18', 0, 0),
+(6121, 2731, '4', 1, 10),
+(6122, 2731, '3', 0, 0),
+(6123, 2731, '5', 0, 0),
+(6124, 2731, '6', 0, 0),
+(6125, 2732, '2 y 3', 1, 10),
+(6126, 2732, '1 y 6', 0, 0),
+(6127, 2732, '-2 y -3', 0, 0),
+(6128, 2732, '3 y 4', 0, 0),
+(6129, 2733, '36', 1, 10),
+(6130, 2733, '24', 0, 0),
+(6131, 2733, '48', 0, 0),
+(6132, 2733, '54', 0, 0),
+(6133, 2734, '1', 1, 10),
+(6134, 2734, '0.5', 0, 0),
+(6135, 2734, '2', 0, 0),
+(6136, 2734, '0', 0, 0),
+(6137, 2735, '32', 1, 10),
+(6138, 2735, '30', 0, 0),
+(6139, 2735, '35', 0, 0),
+(6140, 2735, '28', 0, 0),
+(6141, 2736, '8 unidades²', 1, 10),
+(6142, 2736, '6 unidades²', 0, 0),
+(6143, 2736, '10 unidades²', 0, 0),
+(6144, 2736, '4 unidades²', 0, 0),
+(6145, 2737, '7', 1, 10),
+(6146, 2737, '6', 0, 0),
+(6147, 2737, '8', 0, 0),
+(6148, 2737, '9', 0, 0),
+(6149, 2738, '2/5', 1, 10),
+(6150, 2738, '3/5', 0, 0),
+(6151, 2738, '1/5', 0, 0),
+(6152, 2738, '4/5', 0, 0),
+(6153, 2739, '4', 1, 10),
+(6154, 2739, '3', 0, 0),
+(6155, 2739, '5', 0, 0),
+(6156, 2739, '125', 0, 0),
+(6157, 2740, '61.95 unidades²', 1, 10),
+(6158, 2740, '51.95 unidades²', 0, 0),
+(6159, 2740, '71.95 unidades²', 0, 0),
+(6160, 2740, '60 unidades²', 0, 0),
+(6161, 2741, '1 y -3', 1, 10),
+(6162, 2741, '-1 y 3', 0, 0),
+(6163, 2741, '2 y -3', 0, 0),
+(6164, 2741, '-1 y -3', 0, 0),
+(6165, 2742, '62', 1, 10),
+(6166, 2742, '60', 0, 0),
+(6167, 2742, '64', 0, 0),
+(6168, 2742, '58', 0, 0),
+(6169, 2743, '0', 1, 10),
+(6170, 2743, '36', 0, 0),
+(6171, 2743, '9', 0, 0),
+(6172, 2743, '45', 0, 0),
+(6173, 2744, 'Todos los reales excepto x = 0', 1, 10),
+(6174, 2744, 'Todos los reales', 0, 0),
+(6175, 2744, 'Solo x > 0', 0, 0),
+(6176, 2744, 'Solo x < 0', 0, 0),
+(6177, 2745, '314 unidades³', 1, 10),
+(6178, 2745, '304 unidades³', 0, 0),
+(6179, 2745, '324 unidades³', 0, 0),
+(6180, 2745, '300 unidades³', 0, 0),
+(6181, 2746, '1', 1, 10),
+(6182, 2746, '0', 0, 0),
+(6183, 2746, '∞', 0, 0),
+(6184, 2746, '0.5', 0, 0),
+(6185, 2747, '2×2', 1, 10),
+(6186, 2747, '3×3', 0, 0),
+(6187, 2747, '2×3', 0, 0),
+(6188, 2747, '3×2', 0, 0),
+(6189, 2748, '10', 1, 10),
+(6190, 2748, '15', 0, 0),
+(6191, 2748, '20', 0, 0),
+(6192, 2748, '6', 0, 0),
+(6193, 2749, '5', 1, 10),
+(6194, 2749, '4', 0, 0),
+(6195, 2749, '6', 0, 0),
+(6196, 2749, '3', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -10255,7 +10869,7 @@ INSERT INTO `usuario` (`id_usuario`, `username`, `apodo`, `email`, `password`, `
 (29, 'UsuarioNuevo', NULL, 'temp_1763997431785@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL),
 (30, 'UsuarioNuevo', NULL, 'temp_1763997438097@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL),
 (31, 'UsuarioNuevo', NULL, 'temp_1763997438414@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL),
-(32, 'Diego Leonardo Portilla Rangel', NULL, 'diegoleonardoportillarangel@gmail.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocIaPQcn0v68nX8MmJBXi6wlqTkWzH_rY8IxQUlWzWcoi0OmqA=s96-c', NULL, NULL, NULL, 1388, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL),
+(32, 'Diego Leonardo Portilla Rangel', NULL, 'diegoleonardoportillarangel@gmail.com', '', NULL, 1, NULL, NULL, NULL, 1, 2, 'https://lh3.googleusercontent.com/a/ACg8ocIaPQcn0v68nX8MmJBXi6wlqTkWzH_rY8IxQUlWzWcoi0OmqA=s96-c', NULL, NULL, NULL, 1388, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL),
 (33, 'UsuarioNuevo', NULL, 'temp_1763997454776@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL),
 (34, 'UsuarioNuevo', NULL, 'temp_1763997457244@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL),
 (35, 'UsuarioNuevo', NULL, 'temp_1763997457274@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL),
@@ -10274,7 +10888,7 @@ INSERT INTO `usuario` (`id_usuario`, `username`, `apodo`, `email`, `password`, `
 (48, 'UsuarioNuevo', NULL, 'temp_1763997524330@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL),
 (49, 'UsuarioNuevo', NULL, 'temp_1763997527985@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL),
 (50, 'UsuarioNuevo', NULL, 'temp_1763997528571@example.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 1000, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL),
-(51, 'DIEGO LEONARDO PORTILLA RANGEL', 'jj', '23301061550112@cetis155.edu.mx', '', 'nbnnbbbbbb', 1, NULL, NULL, NULL, 1, 2, 'https://lh3.googleusercontent.com/a/ACg8ocKtBXwgDIhRiaDLOdXrXO4jJ2EY37zCDAfXjwEhrxzbOvkb8VU=s96-c', NULL, NULL, NULL, 1325, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL),
+(51, 'DIEGO LEONARDO PORTILLA RANGEL', 'jj', '23301061550112@cetis155.edu.mx', '', 'nbnnbbbbbb', 1, NULL, NULL, NULL, 1, 2, 'https://lh3.googleusercontent.com/a/ACg8ocKtBXwgDIhRiaDLOdXrXO4jJ2EY37zCDAfXjwEhrxzbOvkb8VU=s96-c', NULL, NULL, NULL, 1331, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL),
 (52, 'SeniorSoldado Razosonicko', NULL, 'seniorsoldadorazosonicko@gmail.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocKVXZadFM9541Ln4-jyli_S8mXGoUHDqRZiDe848toObV2_HQ=s96-c', NULL, NULL, NULL, 1000, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL),
 (53, 'asdasd', NULL, 'dolac87803@cimario.com', '$2b$10$8CyNChd7pxHdFTyqb5YpNOyvpi9Lvs7YgAWonkgi.zEXPe/H16Te.', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 100, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL),
 (55, 'Manytimes For theway', NULL, 'manytimesfortheway@gmail.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocKW2BfXMJKDnvDITxUihz6qNNikCSjeOhc1b06sgaxRkRyTcw=s96-c', NULL, NULL, NULL, 0, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL),
@@ -10283,7 +10897,9 @@ INSERT INTO `usuario` (`id_usuario`, `username`, `apodo`, `email`, `password`, `
 (58, 'Diego joto', NULL, 'djoto0404@gmail.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocJAoD4wyobuLeKqrSDeUdPCQ7dBRrTKuvcdhJVl6r1khdKIeQ=s96-c', NULL, NULL, NULL, 50, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL),
 (59, 'Shake Shake', NULL, 'ifeelsocloses@gmail.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocI0zhJFmYYuns9RpBOgjXU6AOFxNCUd7v5AswKgbkWl0qnAsA=s96-c', NULL, NULL, NULL, 50, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL),
 (60, 'Terreneitor Pados', NULL, 'padosterreneitor@gmail.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocJQKczlEgdSGMLwryvVctajXqgRxZ-dQL2xwJYTafET_8-Wlw=s96-c', NULL, NULL, NULL, 50, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL),
-(61, 'Waiting Forlive', NULL, 'waitingforlive757@gmail.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocL9HSBqK2k90iZ1LxdfpydZx9IWFvUbhQ7BeCz0ZaG-axJJ5g=s96-c', NULL, NULL, NULL, 50, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL);
+(61, 'Waiting Forlive', NULL, 'waitingforlive757@gmail.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocL9HSBqK2k90iZ1LxdfpydZx9IWFvUbhQ7BeCz0ZaG-axJJ5g=s96-c', NULL, NULL, NULL, 50, 0, 0, 0, '2026-02-13 12:46:40', NULL, NULL),
+(62, 'Cportilla Arandas', NULL, 'cportillaarandas@gmail.com', '', NULL, 1, NULL, NULL, NULL, 1, 1, 'https://lh3.googleusercontent.com/a/ACg8ocJrrs7EULzvlDfaen2_zr4f_myT1_c6qtD4KlUtikfDJiI14Q=s96-c', NULL, NULL, NULL, 80, 0, 0, 0, '2026-02-14 01:50:03', NULL, NULL),
+(63, 'ffff', NULL, 'lamanoarribadanza@gmail.com', '$2b$10$43i6diuDrkJ6wuGo/POJbe61C/xdUrSt2mc/MIYNwTzHhxqXvc2qe', NULL, 1, NULL, NULL, NULL, 1, 1, NULL, NULL, NULL, NULL, 136, 0, 0, 0, '2026-02-16 14:42:07', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -10319,7 +10935,9 @@ INSERT INTO `usuario_carrera` (`id_usuario`, `id_carrera`) VALUES
 (57, 1),
 (59, 1),
 (60, 1),
-(61, 1);
+(61, 1),
+(62, 1),
+(63, 1);
 
 -- --------------------------------------------------------
 
@@ -10352,7 +10970,14 @@ INSERT INTO `usuario_examen` (`id_usuario`, `id_examen`, `maximo`, `obtenido`, `
 (16, 7, 20, 2, '2025-11-22 14:45:13', '2025-11-22 14:45:29', 10.00),
 (20, 8, 20, 1, '2025-11-22 18:22:34', '2025-11-22 18:22:47', 5.00),
 (32, 10, 17, 4, '2025-11-24 19:48:59', '2025-11-24 19:50:05', 23.53),
-(32, 11, 20, 0, '2025-11-24 19:51:44', '2025-11-24 19:51:56', 0.00);
+(32, 11, 20, 0, '2025-11-24 19:51:44', '2025-11-24 19:51:56', 0.00),
+(51, 12, 18, 0, '2026-02-14 11:55:18', '2026-02-14 11:55:23', 0.00),
+(51, 13, 48, 1, '2026-02-14 23:54:33', '2026-02-14 23:55:31', 2.08),
+(51, 14, 20, 0, '2026-02-14 23:55:49', '2026-02-14 23:56:09', 0.00),
+(51, 15, 100, 5, '2026-02-15 01:15:34', '2026-02-15 01:15:58', 5.00),
+(51, 16, 200, 0, '2026-02-15 02:16:33', '2026-02-15 02:16:44', 0.00),
+(51, 17, 128, 0, '2026-02-16 19:37:28', '2026-02-16 19:47:29', 0.00),
+(63, 18, 48, 1, '2026-02-16 19:50:50', '2026-02-16 19:51:17', 2.08);
 
 -- --------------------------------------------------------
 
@@ -12533,7 +13158,7 @@ CREATE TABLE `usuario_puntos_carrera` (
 INSERT INTO `usuario_puntos_carrera` (`id_usuario`, `id_carrera`, `puntos`, `fecha_actualizacion`) VALUES
 (32, 1, 1295, '2026-02-10 17:06:40'),
 (32, 11, 77, '2026-02-07 18:03:56'),
-(51, 1, 909, '2026-02-10 17:06:40'),
+(51, 1, 951, '2026-02-17 01:57:32'),
 (51, 11, 216, '2026-02-07 18:03:56'),
 (52, 1, 24, '2026-02-08 01:16:10'),
 (56, 1, 50, '2026-02-10 20:32:38'),
@@ -12541,7 +13166,9 @@ INSERT INTO `usuario_puntos_carrera` (`id_usuario`, `id_carrera`, `puntos`, `fec
 (58, 1, 50, '2026-02-12 19:14:59'),
 (59, 1, 50, '2026-02-13 04:30:04'),
 (60, 1, 50, '2026-02-13 04:32:23'),
-(61, 1, 50, '2026-02-13 04:34:40');
+(61, 1, 50, '2026-02-13 04:34:40'),
+(62, 1, 88, '2026-02-14 07:53:42'),
+(63, 1, 56, '2026-02-17 01:57:32');
 
 -- --------------------------------------------------------
 
@@ -12599,6 +13226,16 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 -- Índices para tablas volcadas
 --
+
+--
+-- Indices de la tabla `amistades`
+--
+ALTER TABLE `amistades`
+  ADD PRIMARY KEY (`id_amistad`),
+  ADD UNIQUE KEY `uq_amistad` (`id_solicitante`,`id_receptor`),
+  ADD KEY `idx_receptor` (`id_receptor`),
+  ADD KEY `idx_solicitante` (`id_solicitante`),
+  ADD KEY `idx_estado` (`estado`);
 
 --
 -- Indices de la tabla `carrera`
@@ -12691,7 +13328,8 @@ ALTER TABLE `estatus_pregunta`
 --
 ALTER TABLE `examen`
   ADD PRIMARY KEY (`id_examen`),
-  ADD KEY `fk_materia_examen` (`id_materia`);
+  ADD KEY `fk_materia_examen` (`id_materia`),
+  ADD KEY `fk_examen_carrera` (`id_carrera`);
 
 --
 -- Indices de la tabla `historial`
@@ -12888,6 +13526,12 @@ ALTER TABLE `usuario_puntos_carrera`
 --
 
 --
+-- AUTO_INCREMENT de la tabla `amistades`
+--
+ALTER TABLE `amistades`
+  MODIFY `id_amistad` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT de la tabla `carrera`
 --
 ALTER TABLE `carrera`
@@ -12915,7 +13559,7 @@ ALTER TABLE `dificultad`
 -- AUTO_INCREMENT de la tabla `duelos_desconexiones`
 --
 ALTER TABLE `duelos_desconexiones`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=579;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=590;
 
 --
 -- AUTO_INCREMENT de la tabla `duelos_preguntas`
@@ -12945,13 +13589,13 @@ ALTER TABLE `estatus_pregunta`
 -- AUTO_INCREMENT de la tabla `examen`
 --
 ALTER TABLE `examen`
-  MODIFY `id_examen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id_examen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de la tabla `historial_duelos`
 --
 ALTER TABLE `historial_duelos`
-  MODIFY `id_duelo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=422;
+  MODIFY `id_duelo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=432;
 
 --
 -- AUTO_INCREMENT de la tabla `insignias`
@@ -12975,7 +13619,7 @@ ALTER TABLE `materias`
 -- AUTO_INCREMENT de la tabla `notificaciones`
 --
 ALTER TABLE `notificaciones`
-  MODIFY `id_notificacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=299;
+  MODIFY `id_notificacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=317;
 
 --
 -- AUTO_INCREMENT de la tabla `opcion_pregunta`
@@ -12993,7 +13637,7 @@ ALTER TABLE `palabras`
 -- AUTO_INCREMENT de la tabla `pregunta`
 --
 ALTER TABLE `pregunta`
-  MODIFY `id_pregunta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2601;
+  MODIFY `id_pregunta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2750;
 
 --
 -- AUTO_INCREMENT de la tabla `pregunta_encuesta`
@@ -13005,7 +13649,7 @@ ALTER TABLE `pregunta_encuesta`
 -- AUTO_INCREMENT de la tabla `respuesta`
 --
 ALTER TABLE `respuesta`
-  MODIFY `id_respuesta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5801;
+  MODIFY `id_respuesta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6197;
 
 --
 -- AUTO_INCREMENT de la tabla `status`
@@ -13029,23 +13673,30 @@ ALTER TABLE `tipo_usuario`
 -- AUTO_INCREMENT de la tabla `usuario`
 --
 ALTER TABLE `usuario`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
 
 --
 -- AUTO_INCREMENT de la tabla `usuario_insignias`
 --
 ALTER TABLE `usuario_insignias`
-  MODIFY `id_usuario_insignia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1024;
+  MODIFY `id_usuario_insignia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=913;
 
 --
 -- AUTO_INCREMENT de la tabla `usuario_logros`
 --
 ALTER TABLE `usuario_logros`
-  MODIFY `id_usuario_logro` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2048;
+  MODIFY `id_usuario_logro` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1201;
 
 --
 -- Restricciones para tablas volcadas
 --
+
+--
+-- Filtros para la tabla `amistades`
+--
+ALTER TABLE `amistades`
+  ADD CONSTRAINT `fk_amistad_receptor` FOREIGN KEY (`id_receptor`) REFERENCES `usuario` (`id_usuario`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_amistad_solicitante` FOREIGN KEY (`id_solicitante`) REFERENCES `usuario` (`id_usuario`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `carrera_materia`
@@ -13085,6 +13736,7 @@ ALTER TABLE `duelos_respuestas`
 -- Filtros para la tabla `examen`
 --
 ALTER TABLE `examen`
+  ADD CONSTRAINT `fk_examen_carrera` FOREIGN KEY (`id_carrera`) REFERENCES `carrera` (`id_carrera`),
   ADD CONSTRAINT `fk_materia_examen` FOREIGN KEY (`id_materia`) REFERENCES `materias` (`id_materia`);
 
 --
