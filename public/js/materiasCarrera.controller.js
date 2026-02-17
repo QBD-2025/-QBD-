@@ -1,4 +1,4 @@
-// materiasCarrera.controller.js - ACTUALIZADO
+// materiasCarrera.controller.js - ACTUALIZADO o numero 2
 const materias = window.DATA_MATERIAS; 
 
 const carousel = document.getElementById('carousel');

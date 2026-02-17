@@ -1,6 +1,6 @@
 /**
  * Helper para seleccionar palabras aleatorias de la base de datos
- * backend/utils/palabrasHelper.js
+ * backend/utils/socket-Helper.js
  */
 
 async function seleccionarPalabraAleatoria(pool, idMateria) {

@@ -534,7 +534,7 @@ const duelo_competitivo = require('../routes/duelo_competitivo.js');
 const duelosErrorHandler = require('../routes/dueloErrorHandler.js');
 const promocionR = require("../routes/rangos.router.js");
 const materiasCarrera =require("../routes/materias_carrera.router.js")
-
+const amistades =require("../routes/amistades.router.js")
 // ════════════════════════════════════════════════════════════════
 // ✅✅✅ ORDEN CRÍTICO DE MONTAJE
 // ════════════════════════════════════════════════════════════════
@@ -577,6 +577,7 @@ app.use('/editor', editorR);
 app.use('/', verificaAdminR);
 
 // 7️⃣ SÉPTIMO: Rutas de contenido
+app.use('/',amistades)
 app.use('/', datoR);
 app.use('/', materiasR);
 app.use('/',materiasCarrera)
