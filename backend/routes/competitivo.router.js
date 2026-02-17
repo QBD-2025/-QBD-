@@ -137,7 +137,7 @@ router.get('/portal', async (req, res) => {
             carrera_descripcion: carrera ? carrera.descripcion : null
         };
         
-        res.render('DUELODELASCENSO', {
+        res.render('DueloDelAscenso', {
             layout: 'main',
             user: userWithCarrera,
             stats: {
