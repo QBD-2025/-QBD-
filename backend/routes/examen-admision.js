@@ -113,8 +113,8 @@ const db = require('../db/conexion');
     const duracionMs = fechaTermino.getTime() - fechaInicio.getTime();
     const duracionSegundos = Math.round(duracionMs / 1000);
     const [examenResult] = await db.query(
-    'INSERT INTO examen (id_materia, duracion) VALUES (NULL, ?)',
-    [duracionSegundos]
+        'INSERT INTO examen (id_materia, duracion, fecha_inicio) VALUES (NULL, ?, ?)',
+        [duracionSegundos, fechaInicio]
     );
     const id_examen = examenResult.insertId;
     const porcentaje = puntosMaximos > 0 ? parseFloat(((puntosObtenidos / puntosMaximos) * 100).toFixed(2)) : 0;
