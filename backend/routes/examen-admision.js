@@ -110,6 +110,8 @@ const db = require('../db/conexion');
     });
     }
 
+    const duracionMs = fechaTermino.getTime() - fechaInicio.getTime();
+    const duracionSegundos = Math.round(duracionMs / 1000);
     // Convertir segundos a formato TIME que espera MySQL (HH:MM:SS)
     const horas = Math.floor(duracionSegundos / 3600);
     const minutos = Math.floor((duracionSegundos % 3600) / 60);
