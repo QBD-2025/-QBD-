@@ -2,7 +2,8 @@
 const express = require('express');
 const exphbs = require('express-handlebars');
 const path = require('path');
-const http = require('http');
+const fs = require('fs')
+const https = require('https');
 const { Server } = require('socket.io');
 require('dotenv').config();
 const mysql = require('mysql2/promise');
@@ -26,20 +27,43 @@ const pool = mysql.createPool({
 
 // ------------------ Inicialización de Express ------------------
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-    cors: { 
-        origin: "http://localhost:3005", 
-        methods: ["GET", "POST"] 
-    },
-    maxHttpBufferSize: 1e8,
-    pingTimeout: 60000
-});
 
-// ✅✅✅ CRÍTICO: EXPONER IO EN MÚLTIPLES LUGARES
+// =================== ⚙️ SERVIDOR HTTPS ===================
+const sslOptions = {
+  key: fs.readFileSync('/etc/letsencrypt/live/quebuendato.duckdns.org/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/quebuendato.duckdns.org/fullchain.pem')
+};
+
+const httpsServer = https.createServer(sslOptions, app);
+const io = new Server(httpsServer, {
+  cors: { 
+    origin: [
+      "https://quebuendato.duckdns.org:3005",
+      "http://quebuendato.duckdns.org:3005",
+      "http://localhost:3005",
+      "https://localhost:3005"
+    ],
+    methods: ["GET", "POST"],
+    credentials: true
+  },
+  maxHttpBufferSize: 1e8,
+  pingTimeout: 60000
+});
+// =================== 🔁 REDIRECCIÓN AUTOMÁTICA HTTP→HTTPS ===================
+const http = require('http');
+http.createServer((req, res) => {
+  const redirectUrl = `https://${req.headers.host}${req.url}`;
+  res.writeHead(301, { Location: redirectUrl });
+  res.end();
+}).listen(80, () => console.log('🌐 Servidor HTTP redirigiendo todo a HTTPS'));
+app.use((req, res, next) => {
+  if (req.secure) return next();
+  return res.redirect('https://' + req.headers.host + req.url);
+});
+// ✅ Exponer Socket.IO globalmente
 app.set('io', io);
 global.io = io;
-console.log('[SOCKET.IO]: ✅ Instancia creada y expuesta en app y global');
+console.log('[SOCKET.IO]: ✅ Instancia creada y expuesta globalmente');
 
 // ✅ MIDDLEWARE CRÍTICO: Forzar JSON en rutas de notificaciones
 app.use('/aceptar', (req, res, next) => {
@@ -168,11 +192,16 @@ app.use('/js', express.static(path.join(__dirname, '../../frontend/js')));
 app.use('/public', express.static(path.join(__dirname, '../../public')))
 
 // ------------------ Configuración de sesiones ------------------
+// ------------------ Configuración de sesiones ------------------
 const sessionMiddleware = session({
-    secret: process.env.SESSION_SECRET || 'clave_segura_ganopapa',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { maxAge: 1000 * 60 * 60 * 24 }
+  secret: process.env.SESSION_SECRET || 'clave_segura_ganopapa',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { 
+    maxAge: 1000 * 60 * 60 * 24,
+    secure: true, // 🔒 Cookies solo por HTTPS
+    sameSite: 'lax'
+  }
 });
 app.use(sessionMiddleware);
 io.engine.use(sessionMiddleware);
@@ -180,7 +209,6 @@ io.engine.use(sessionMiddleware);
 // ------------------ Passport ------------------
 app.use(passport.initialize());
 app.use(passport.session());
-
 // ✅ Exponer usuario, pool, mailer e IO en todas las requests
 app.use((req, res, next) => {
     if (req.session.user) {
@@ -853,34 +881,17 @@ process.on('unhandledRejection', (reason, promise) => {
     console.error('[UNHANDLED REJECTION]:', reason);
 });
 
-// ------------------ Iniciar servidor ------------------
+// ------------------ INICIO DEL SERVIDOR HTTPS ------------------
 const PORT = process.env.PORT || 3005;
-server.listen(PORT, () => {
-    console.log(`
-╔═══════════════════════════════════════════════════════╗
-║  🎮 SERVIDOR QUE BUEN DATO - VERSIÓN UNIFICADA       ║
-║  🌐 http://localhost:${PORT}                         ║
-║  ✅ Sistema de matchmaking competitivo activado      ║
-║  ✅ Sistema de rangos y promociones activado         ║
-║  ✅ Estadísticas de duelos rápidos activadas         ║
-║  ✅ Sockets configurados correctamente               ║
-║  ✅ Socket.IO expuesto en app.set('io')              ║
-║  ✅ global.crearSalaPendienteBD definida             ║
-╚═══════════════════════════════════════════════════════╝
-    `);
-    
-    setTimeout(() => {
-        console.log('\n═══════════════════════════════════════════════════════════');
-        console.log('[CONFIG]: 🔍 VERIFICACIÓN POST-INICIO - VERSIÓN UNIFICADA');
-        console.log('═══════════════════════════════════════════════════════════');
-        console.log('  - Sockets conectados:', io.engine.clientsCount);
-        console.log('  - Maps globales OK:', 
-            global.salasPendientes instanceof Map && 
-            global.salasEspera instanceof Map
-        );
-        console.log('  - crearSalaPendienteBD:', typeof global.crearSalaPendienteBD);
-        console.log('  - Sistema de rangos:', typeof verificarPromocionDisponible);
-        console.log('  - Helpers de estadísticas: ✅ Activos');
-        console.log('═══════════════════════════════════════════════════════════');
-    }, 2000);
+httpsServer.listen(PORT, () => {
+  console.log(`
+╔═══════════════════════════════════════════════════════════════╗
+║  🔒 SERVIDOR SEGURO (HTTPS) - ¡QUE BUEN DATO!                ║
+║  🌍 Dominio: https://quebuendato.duckdns.org:${PORT}          ║
+║  ✅ HTTPS con Let's Encrypt activo                            ║
+║  ✅ Redirección HTTP→HTTPS configurada                        ║
+║  ✅ Socket.IO y sesiones funcionando                          ║
+║  ✅ Sistema de rangos, duelos y estadísticas en línea         ║
+╚═══════════════════════════════════════════════════════════════╝
+  `);
 });
