@@ -20,7 +20,7 @@ async function enviarCorreoVerificacion(correoDestino, token) {
     });
 
     // 🔗 Determinar URL base dinámica (producción o desarrollo)
-    const baseUrl = process.env.APP_BASE_URL || `http://localhost:${process.env.PORT || 3005}`;
+    const baseUrl = process.env.APP_BASE_URL || `https://localhost:${process.env.PORT || 3005}`;
     const verifyLink = `${baseUrl}/verificar-cuenta?correo=${encodeURIComponent(correoDestino)}&token=${token}`;
 
     // Contenido HTML del correo
@@ -75,7 +75,7 @@ async function enviarCorreoRecuperacion(correoDestino, token) {
     });
 
     // 🔗 Determinar URL base dinámica (producción o desarrollo)
-    const baseUrl = process.env.APP_BASE_URL || `http://localhost:${process.env.PORT || 3005}`;
+    const baseUrl = process.env.APP_BASE_URL || `https://localhost:${process.env.PORT || 3005}`;
     const resetLink = `${baseUrl}/cambiar-contrasena?token=${token}`;
 
     // Contenido HTML del correo

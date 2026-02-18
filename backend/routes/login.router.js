@@ -126,7 +126,7 @@ router.post('/login', async (req, res) => {
         }
 
         // ✅ CORREGIDO: Validar contraseña con bcrypt.compare
-        const match = await (password, user.password);
+        const match = await bcrypt.compare(password, user.password);
         if (!match) return res.redirect('/login?error=Contraseña incorrecta');
 
         // Verificar si el usuario tiene carrera asignada
