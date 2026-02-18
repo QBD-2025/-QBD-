@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/conexion');
-
+//.................
     router.get('/examen-exani', async (req, res) => {
         try {
             const preguntasPorMateria = 20;
