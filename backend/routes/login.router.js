@@ -90,7 +90,7 @@ router.post('/login', async (req, res) => {
             [email]
         );
 
-        if (rows.length === 0) return res.redirect('/login?error=El usuario no existe');
+        if (rows.length === 0) return res.redirect('/login?error=Correo electronico o contraseña incorrectos');
 
         const user = rows[0];
 
@@ -125,9 +125,8 @@ router.post('/login', async (req, res) => {
             return res.redirect(`/verificacion?correo=${encodeURIComponent(email)}&error=Cuenta no verificada`);
         }
 
-        // ✅ CORREGIDO: Validar contraseña con bcrypt.compare
         const match = await bcrypt.compare(password, user.password);
-        if (!match) return res.redirect('/login?error=Contraseña incorrecta');
+        if (!match) return res.redirect('/login?error=Correo electronico o contraseña incorrectos');
 
         // Verificar si el usuario tiene carrera asignada
         const [carreraResult] = await req.pool.query(

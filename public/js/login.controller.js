@@ -21,8 +21,6 @@
       // Validación simple del correo electrónico
       const emailRegex = /^[^\s@]+@[^\s@]+\.(com|mx)$/i;
       if (!emailRegex.test(email.value)) {
-        errorSpan.textContent = "El correo no es válido";
-        email.style.border = "2px solid red";
         event.preventDefault();
         return;
       }
