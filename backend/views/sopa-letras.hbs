@@ -18,6 +18,7 @@
 
     <div class="layout">
       <section class="game card">
+
         <!-- ========== MODO NORMAL (INDIVIDUAL/COOPERATIVO) ========== -->
         <div id="normal-mode">
           <div class="status panel">
@@ -45,27 +46,27 @@
         <div id="confrontation-mode" style="display: none;">
           
           <!-- PANEL DE VOTACIÓN DE CATEGORÍA -->
-          <div id="voting-panel" class="panel" style="display: none; text-align: center; margin-bottom: 20px; padding: 20px; background: #f0f9ff; border-radius: 8px; border: 2px solid #3b82f6;">
-            <h4 style="margin-bottom: 15px; color: #1e40af;">🗳️ Selección de Categoría</h4>
+          <div id="voting-panel" class="panel" style="display: none;">
+            <h4>🗳️ Selección de Categoría</h4>
             
-            <!-- ÁREA 1: Muestra el estado actual de la votación -->
-            <div id="propuesta-actual" style="margin-bottom: 15px; padding: 10px; background: white; border-radius: 6px;">
-              <p style="margin: 0;">Esperando que un jugador proponga una categoría...</p>
+            <!-- ÁREA 1: Estado actual de la votación -->
+            <div id="propuesta-actual">
+              <p>Esperando que un jugador proponga una categoría...</p>
             </div>
             
-            <!-- ÁREA 2: Formulario para PROPONER una categoría (solo visible cuando puedes proponer) -->
-            <div id="area-proponer" style="display: none; margin-bottom: 15px;">
-              <label for="confrontation-categoria-select" style="display: block; margin-bottom: 8px; font-weight: 600;">Elige una categoría:</label>
-              <select id="confrontation-categoria-select" style="padding: 8px; margin-bottom: 10px; width: 100%; max-width: 300px;">
+            <!-- ÁREA 2: Proponer categoría -->
+            <div id="area-proponer" style="display: none;">
+              <label for="confrontation-categoria-select">Elige una categoría:</label>
+              <select id="confrontation-categoria-select">
                 <option>Cargando...</option>
               </select>
-              <button id="propose-category-btn" class="primary" style="padding: 10px 20px;">📤 Proponer</button>
+              <button id="propose-category-btn" class="primary">📤 Proponer</button>
             </div>
 
-            <!-- ÁREA 3: Botones para VOTAR (solo visible cuando recibes una propuesta) -->
-            <div id="area-votar" style="display: none; margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
-              <button id="aceptar-categoria-btn" class="primary" style="padding: 10px 20px; background: #10b981;">✅ Aceptar</button>
-              <button id="rechazar-categoria-btn" style="padding: 10px 20px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer;">❌ Rechazar</button>
+            <!-- ÁREA 3: Votar -->
+            <div id="area-votar" style="display: none;">
+              <button id="aceptar-categoria-btn" class="primary btn-aceptar">✅ Aceptar</button>
+              <button id="rechazar-categoria-btn" class="btn-rechazar">❌ Rechazar</button>
             </div>
           </div>
           
@@ -131,21 +132,61 @@
         </aside>
       </section>
 
-      <!-- PANEL LATERAL DERECHO: Jugadores y Chat -->
+      <!-- ============================================================
+           PANEL LATERAL DERECHO: Jugadores (Amigos / Ranking) + Chat
+      ============================================================ -->
       <aside class="side">
+
+        <!-- ── PANEL DE JUGADORES CON TABS ── -->
         <div class="panel card" id="jugadores-panel">
-          <h3>🟢 Jugadores activos</h3>
-          <ul id="lista-jugadores"></ul>
+          <div class="panel-tabs">
+            <button class="tab-btn active" data-tab="amigos">
+              💜 Amigos
+            </button>
+            <button class="tab-btn" data-tab="ranking">
+              🏆 Ranking
+            </button>
+          </div>
+
+          <!-- TAB: AMIGOS -->
+          <div class="tab-content active" id="tab-amigos">
+            <div class="tab-header">
+              <span class="tab-title">Tus amigos</span>
+              <span class="count-badge" id="amigos-count">0</span>
+            </div>
+            <ul id="lista-amigos" class="lista-jugadores">
+              <li class="empty-state">
+                <span>😴</span>
+                <p>Cargando amigos...</p>
+              </li>
+            </ul>
+          </div>
+
+          <!-- TAB: RANKING GLOBAL -->
+          <div class="tab-content" id="tab-ranking">
+            <div class="tab-header">
+              <span class="tab-title">Top jugadores</span>
+              <span class="count-badge" id="ranking-count">—</span>
+            </div>
+            <ul id="lista-ranking" class="lista-jugadores">
+              <li class="empty-state">
+                <span>⏳</span>
+                <p>Cargando ranking...</p>
+              </li>
+            </ul>
+          </div>
         </div>
 
+        <!-- ── PANEL DE CHAT ── -->
         <div class="panel card" id="chat-panel">
           <h3>💬 Chat</h3>
           <div id="chatBox"></div>
           <div class="chat-input">
-            <input id="chatInput" type="text" placeholder="Escribe un mensaje…">
-            <button id="chatBtn" class="chat-send">Enviar</button>
+            <input id="chatInput" type="text" placeholder="Escribe un mensaje…" autocomplete="off">
+            <button id="chatBtn" class="chat-send">↑</button>
           </div>
         </div>
+
       </aside>
     </div>
   </div>
@@ -192,7 +233,6 @@
   <script>
     window.USER_DATA={{{json user}}}
   </script>
-
   <script src="/public/js/sopaLetras.controller.js" defer></script>
 
 </body>

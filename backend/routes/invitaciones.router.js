@@ -504,7 +504,81 @@ router.post('/aceptar/:idNotificacion', async (req, res) => {
                 redirigir: urlRedireccion
             });
         }
-        
+                
+        // 🤝 SOLICITUD DE AMISTAD ACEPTADA
+        if (notificacion.tipo === 'solicitud_amistad') {
+            console.log('[ACEPTAR]: 🤝 PROCESANDO SOLICITUD DE AMISTAD');
+
+            const idSolicitante = notificacion.id_usuario_remitente;
+            const receptorUsername = req.session.user.username;
+
+            // 1️⃣ Actualizar tabla amistades
+            const [updateResult] = await conn.query(`
+                UPDATE amistades
+                SET estado = 'aceptado', fecha_respuesta = NOW()
+                WHERE id_solicitante = ? 
+                AND id_receptor = ? 
+                AND estado = 'pendiente'
+            `, [idSolicitante, userId]);
+
+            if (updateResult.affectedRows === 0) {
+                // La solicitud ya fue procesada (race condition o ya no existe)
+                await conn.query(
+                    `DELETE FROM notificaciones WHERE id_notificacion = ?`,
+                    [idNotificacion]
+                );
+                await conn.commit();
+                conn.release();
+                return res.status(404).json({
+                    success: false,
+                    message: 'Solicitud de amistad no encontrada o ya procesada'
+                });
+            }
+
+            // 2️⃣ Eliminar notificación original
+            await conn.query(
+                `DELETE FROM notificaciones WHERE id_notificacion = ?`,
+                [idNotificacion]
+            );
+
+            // 3️⃣ Crear notificación de confirmación para el solicitante
+            await conn.query(`
+                INSERT INTO notificaciones 
+                    (id_usuario_destinatario, id_usuario_remitente, tipo, mensaje, extra_data)
+                VALUES (?, ?, 'amistad_aceptada', ?, ?)
+            `, [
+                idSolicitante,
+                userId,
+                `${receptorUsername} aceptó tu solicitud de amistad 🎉`,
+                JSON.stringify({ id_amigo: userId, username: receptorUsername })
+            ]);
+
+            await conn.commit();
+            conn.release();
+
+            // 4️⃣ Emitir socket al solicitante
+            const io = req.app.get('io') || global.io;
+            if (io) {
+                const usuariosConectados = global.usuariosConectados || new Map();
+                const solicitanteSocketId = usuariosConectados.get(parseInt(idSolicitante));
+                if (solicitanteSocketId) {
+                    io.to(solicitanteSocketId).emit('notificacion_recibida');
+                }
+                // También actualizar el ranking del receptor por si está en pantalla
+                io.to(userId.toString()).emit('amistad_actualizada');
+            }
+
+            console.log('[ACEPTAR]: ✅ AMISTAD ESTABLECIDA');
+            console.log('═══════════════════════════════════════════════════════════');
+
+            return res.json({
+                success: true,
+                tipo: 'solicitud_amistad',
+                message: `¡Ahora eres amigo de ${req.session.user.username}!`  
+                // El frontend en notificacion.controller.js ya maneja este tipo
+                // y muestra el overlay de confirmación
+            });
+        }
         // ════════════════════════════════════════════════════════
         // 📚 DUELO 48H (sin cambios)
         // ════════════════════════════════════════════════════════
@@ -731,6 +805,50 @@ router.post('/rechazar/:idNotificacion', async (req, res) => {
                     });
                 }
             }
+        }
+                
+        // 🤝 SOLICITUD DE AMISTAD RECHAZADA
+        if (notificacion.tipo === 'solicitud_amistad') {
+            console.log('[RECHAZAR] 🤝 Rechazando solicitud de amistad');
+
+            const idSolicitante = notificacion.id_usuario_remitente;
+
+            // Actualizar estado en tabla amistades + fijar fecha de reenvío (7 días)
+            await conn.query(`
+                UPDATE amistades
+                SET 
+                    estado = 'rechazado',
+                    fecha_respuesta = NOW(),
+                    puede_reenviar_desde = DATE_ADD(NOW(), INTERVAL 7 DAY)
+                WHERE id_solicitante = ? 
+                AND id_receptor = ? 
+                AND estado = 'pendiente'
+            `, [idSolicitante, userId]);
+
+            // Eliminar notificación (el solicitante NO se entera del rechazo)
+            await conn.query(
+                `DELETE FROM notificaciones WHERE id_notificacion = ?`,
+                [idNotificacion]
+            );
+
+            await conn.commit();
+            conn.release();
+
+            console.log('[RECHAZAR] ✅ Solicitud de amistad rechazada');
+            return res.json({ success: true, message: 'Solicitud rechazada' });
+        }
+
+        // 🎉 NOTIFICACIÓN DE AMISTAD ACEPTADA (solo limpiar, sin lógica extra)
+        if (notificacion.tipo === 'amistad_aceptada') {
+            await conn.query(
+                `DELETE FROM notificaciones WHERE id_notificacion = ?`,
+                [idNotificacion]
+            );
+
+            await conn.commit();
+            conn.release();
+
+            return res.json({ success: true, message: 'Notificación eliminada' });
         }
 
         // 🚫 Si es DUELO ACEPTADO (tipo: duelo_aceptado) - CANCELAR DUELO

@@ -33,7 +33,6 @@ const isEditor = (req, res, next) => {
 // Menú principal
 router.get('/menu_principal', isAuthenticated, async (req, res) => {
     try {
-        // ✨ VERIFICAR SI ES PRIMER INGRESO
         const [userData] = await req.pool.query(
             'SELECT primer_ingreso, puntos FROM usuario WHERE id_usuario = ?',
             [req.session.user.id_usuario]
@@ -42,7 +41,6 @@ router.get('/menu_principal', isAuthenticated, async (req, res) => {
         const esPrimerIngreso = userData[0]?.primer_ingreso === 1;
         const puntosActuales = userData[0]?.puntos || 0;
 
-        // Si es primer ingreso, marcar como visto
         if (esPrimerIngreso) {
             await req.pool.query(
                 'UPDATE usuario SET primer_ingreso = 0 WHERE id_usuario = ?',
@@ -54,7 +52,7 @@ router.get('/menu_principal', isAuthenticated, async (req, res) => {
             layout: 'main',
             title: 'Perfil',
             user: req.session.user,
-            mostrarBienvenida: esPrimerIngreso, // ✨ Pasar flag a la vista
+            mostrarBienvenida: esPrimerIngreso,
             puntosActuales: puntosActuales
         });
 
@@ -80,19 +78,6 @@ router.get('/login', (req, res) => {
     });
 });
 
-router.get('/sin-carrera', async (req, res) =>{
-    try {
-        const [carreras] = await req.pool.query(
-            `SELECT id_carrera, descripcion
-            FROM carrera`
-            );
-    res.render('eleccion-carrera', {carreras, layout:false});
-    } catch (error) {
-        console.error(error)
-        res.status(500).send('Error al cargar carreras')
-    }
-})
-
 // Procesar login
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
@@ -101,7 +86,7 @@ router.post('/login', async (req, res) => {
         const [rows] = await req.pool.query(
             `SELECT id_usuario, username, email, password, verificado, 
             id_tp_usuario, id_status, suspension_fin, foto_perfil, apodo, descripcion, primer_ingreso
-            from usuario WHERE email = ?`,
+            FROM usuario WHERE email = ?`,
             [email]
         );
 
@@ -140,11 +125,11 @@ router.post('/login', async (req, res) => {
             return res.redirect(`/verificacion?correo=${encodeURIComponent(email)}&error=Cuenta no verificada`);
         }
 
-        // Validar contraseña
+        // ✅ CORREGIDO: Validar contraseña con bcrypt.compare
         const match = await bcrypt.compare(password, user.password);
         if (!match) return res.redirect('/login?error=Contraseña incorrecta');
 
-        // ⭐ OBTENER LA CARRERA DEL USUARIO
+        // Verificar si el usuario tiene carrera asignada
         const [carreraResult] = await req.pool.query(
             `SELECT c.id_carrera 
             FROM carrera c
@@ -154,30 +139,8 @@ router.post('/login', async (req, res) => {
             [user.id_usuario]
         );
 
-        if (!carreraResult || carreraResult.length === 0){
-            // ✅ CORREGIDO: usar foto_perfil en lugar de avatarUrl
-            req.session.user = {
-                id_usuario: user.id_usuario,
-                username: user.username,
-                email: user.email,
-                apodo: user.apodo || user.username,
-                descripcion: user.descripcion || '',
-                foto_perfil: user.foto_perfil || '/uploads/default_avatar.png',
-                id_tp_usuario: user.id_tp_usuario,
-                id_carrera: null,
-                primer_ingreso: user.primer_ingreso || 0 // ✨ Agregar flag
-            };
-
-            const [carreras] = await req.pool.query(
-                `SELECT id_carrera, descripcion
-                FROM carrera`
-            );
-
-            return res.redirect('/sin-carrera');
-        }
-
-        // ✅ CORREGIDO: Crear sesión completa con todos los campos
-        req.session.user = {
+        // Construir objeto de sesión base
+        const sessionData = {
             id_usuario: user.id_usuario,
             username: user.username,
             email: user.email,
@@ -185,17 +148,8 @@ router.post('/login', async (req, res) => {
             descripcion: user.descripcion || '',
             foto_perfil: user.foto_perfil || '/uploads/default_avatar.png',
             id_tp_usuario: user.id_tp_usuario,
-            id_carrera: carreraResult.length > 0 ? carreraResult[0].id_carrera : null,
-            primer_ingreso: user.primer_ingreso || 0 // ✨ Agregar flag
+            primer_ingreso: user.primer_ingreso || 0
         };
-
-        console.log('✅ Usuario logueado:', {
-            id: req.session.user.id_usuario,
-            username: req.session.user.username,
-            foto_perfil: req.session.user.foto_perfil,
-            carrera: req.session.user.id_carrera,
-            primer_ingreso: req.session.user.primer_ingreso
-        });
 
         // Marcar usuario activo
         if (user.id_status !== 1) {
@@ -205,26 +159,52 @@ router.post('/login', async (req, res) => {
         // Agregar a sesiones activas
         global.sesionesActivas.add(user.id_usuario);
 
+        // Sin carrera → redirigir a elegir carrera
+        if (!carreraResult || carreraResult.length === 0) {
+            req.session.user = { ...sessionData, id_carrera: null };
+            return req.session.save((err) => {
+                if (err) {
+                    console.error('Error guardando sesión:', err);
+                    return res.redirect('/login?error=serverError');
+                }
+                return res.redirect('/sin-carrera');
+            });
+        }
+
+        // Con carrera → sesión completa
+        req.session.user = { ...sessionData, id_carrera: carreraResult[0].id_carrera };
+
+        console.log('✅ Usuario logueado:', {
+            id: req.session.user.id_usuario,
+            username: req.session.user.username,
+            carrera: req.session.user.id_carrera,
+            primer_ingreso: req.session.user.primer_ingreso
+        });
+
         req.session.save(async (err) => {
             if (err) {
                 console.error('Error guardando sesión:', err);
                 return res.redirect('/login?error=serverError');
             }
 
-            // Redirecciones según rol
             switch (user.id_tp_usuario) {
                 case 3:
                     return res.redirect('/admin');
                 case 2:
                     return res.redirect('/editor/panel');
                 default: {
-                    const [datos] = await req.pool.query('SELECT dato, imagen FROM dato_curioso ORDER BY RAND() LIMIT 1');
-                    const datoCurioso = datos[0];
-                    return res.render('dato-sesion', {
-                        layout: false,
-                        dato: datoCurioso.dato,
-                        imagen: datoCurioso.imagen ? datoCurioso.imagen.toString('base64') : null,
-                    });
+                    try {
+                        const [datos] = await req.pool.query('SELECT dato, imagen FROM dato_curioso ORDER BY RAND() LIMIT 1');
+                        const datoCurioso = datos[0];
+                        return res.render('dato-sesion', {
+                            layout: false,
+                            dato: datoCurioso.dato,
+                            imagen: datoCurioso.imagen ? datoCurioso.imagen.toString('base64') : null,
+                        });
+                    } catch (error) {
+                        console.error('Error al obtener dato curioso:', error);
+                        return res.redirect('/menu_principal');
+                    }
                 }
             }
         });
@@ -235,7 +215,7 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// ✨ RUTA MEJORADA: Asignar carrera + otorgar puntos
+// ─── Asignar carrera + otorgar puntos ─────────────────────────────────────────
 router.post('/asignar-carrera', isAuthenticated, async (req, res) => {
     const userId = req.session.user?.id_usuario;
     const { id_carrera } = req.body;
@@ -246,42 +226,52 @@ router.post('/asignar-carrera', isAuthenticated, async (req, res) => {
     }
 
     try {
-        // Insertar carrera
         await req.pool.query(
             'INSERT INTO usuario_carrera (id_usuario, id_carrera) VALUES (?, ?)',
             [userId, id_carrera]
-        );  
-        
-        // ✨ OTORGAR PUNTOS INICIALES (50 generales + 50 de carrera)
-        console.log('🎁 Otorgando puntos de bienvenida...');
+        );
+
+        // Otorgar puntos iniciales
         await req.pool.query(
             'CALL sp_inicializar_puntos_nuevo_usuario(?, ?)',
             [userId, id_carrera]
         );
-        
-        // ✅ Actualizar sesión con carrera
+
+        // Actualizar sesión con la carrera elegida
         req.session.user.id_carrera = id_carrera;
 
-        console.log('✅ Carrera asignada y puntos otorgados');
+        console.log('✅ Carrera asignada y puntos otorgados al usuario:', userId);
 
-        switch (req.session.user.id_tp_usuario) {
-            case 3:
-                return res.redirect('/admin');
-            case 2:
-                return res.redirect('/editor/panel');
-            default: {
-                const [datos] = await req.pool.query('SELECT dato, imagen FROM dato_curioso ORDER BY RAND() LIMIT 1');
-                const datoCurioso = datos[0];
-                return res.render('dato-sesion', {
-                    layout: false,
-                    dato: datoCurioso.dato,
-                    imagen: datoCurioso.imagen ? datoCurioso.imagen.toString('base64') : null,
-                });
+        return req.session.save(async (err) => {
+            if (err) {
+                console.error('Error guardando sesión tras asignar carrera:', err);
+                return res.redirect('/sin-carrera?error=serverError');
             }
-        }
+
+            switch (req.session.user.id_tp_usuario) {
+                case 3:
+                    return res.redirect('/admin');
+                case 2:
+                    return res.redirect('/editor/panel');
+                default: {
+                    try {
+                        const [datos] = await req.pool.query('SELECT dato, imagen FROM dato_curioso ORDER BY RAND() LIMIT 1');
+                        const datoCurioso = datos[0];
+                        return res.render('dato-sesion', {
+                            layout: false,
+                            dato: datoCurioso.dato,
+                            imagen: datoCurioso.imagen ? datoCurioso.imagen.toString('base64') : null,
+                        });
+                    } catch (error) {
+                        console.error('Error al obtener dato curioso tras asignar carrera:', error);
+                        return res.redirect('/menu_principal');
+                    }
+                }
+            }
+        });
     } catch (error) {
         console.error('Error al guardar carrera:', error);
-        res.status(500).send('Error al asignar carrera');
+        return res.status(500).send('Error al asignar carrera');
     }
 });
 
@@ -311,6 +301,7 @@ router.get('/editor/panel', isAuthenticated, isEditor, (req, res) => {
     });
 });
 
+// Logout
 router.get('/logout', async (req, res) => {
     try {
         if (req.session.user) {
@@ -322,7 +313,6 @@ router.get('/logout', async (req, res) => {
         req.session.destroy(err => {
             if (err) console.error('Error al destruir sesión:', err);
             res.clearCookie('connect.sid');
-            // Redirige siempre a la página pública
             return res.redirect('/');
         });
     } catch (error) {
@@ -333,6 +323,5 @@ router.get('/logout', async (req, res) => {
         });
     }
 });
-
 
 module.exports = router;

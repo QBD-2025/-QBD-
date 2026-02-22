@@ -1,17 +1,11 @@
 /* ======================================================
-  Archivo: ahorcado.css
-  Propósito: Estilos para el juego de Ahorcado, incluyendo
-            header, tarjetas, teclado virtual, vistas
-            cooperativo/enfrentamiento, chat, votaciones
-  Autor: [Tu Nombre o nombres]
-  Fecha de creación: 12/10/2025
-  Última modificación: 12/10/2025
-  Notas: Contiene variables CSS, media queries y animaciones
+  Archivo: ahorcado_confrontation.css
+  Propósito: Estilos para el juego de Ahorcado
+  Última modificación: Responsive + scrollable player lists
 ====================================================== */
 
 /* ===== VARIABLES GLOBALES ===== */
 :root {
-  /* TEMA CLARO */
   --primary: #6c5ce7;
   --secondary: #a29bfe;
   --accent: #fd79a8;
@@ -25,17 +19,21 @@
   --shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   --shadow-hover: 0 15px 30px rgba(0, 0, 0, 0.15);
   --transition: all 0.3s ease;
-  
-  /* Colores adicionales tema claro */
   --bg-body: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   --header-bg: rgba(255, 255, 255, 0.9);
   --canvas-bg: #f8f9fa;
   --panel-bg: #f8f9fa;
   --text-color: #2d3436;
+  --tab-active-bg: var(--primary);
+  --tab-inactive-bg: #e8e8e8;
+  --tab-inactive-color: #636e72;
+  --list-border: rgba(108, 92, 231, 0.1);
+  --gold: #f9ca24;
+  --silver: #b2bec3;
+  --bronze: #e17055;
 }
 
 [data-theme="dark"] {
-  /* TEMA OSCURO */
   --primary: #6c00ff;
   --secondary: #8b5cf6;
   --accent: #ff4081;
@@ -48,13 +46,15 @@
   --card-bg: #1e1e3c;
   --shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
   --shadow-hover: 0 15px 30px rgba(0, 0, 0, 0.5);
-  
-  /* Colores adicionales tema oscuro */
   --bg-body: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 100%);
   --header-bg: rgba(30, 30, 60, 0.9);
   --canvas-bg: #2d2b55;
   --panel-bg: #2d2b55;
   --text-color: #f7f7f7;
+  --tab-active-bg: var(--primary);
+  --tab-inactive-bg: #3a3a5c;
+  --tab-inactive-color: #a0a0c0;
+  --list-border: rgba(139, 92, 246, 0.15);
 }
 
 /* ===== RESET GENERAL ===== */
@@ -64,14 +64,14 @@
   box-sizing: border-box;
 }
 
-/* ===== ESTILOS DEL BODY ===== */
+/* ===== BODY ===== */
 body {
   font-family: 'Poppins', sans-serif;
   background: var(--bg-body);
   color: var(--text-color);
   min-height: 100vh;
-  padding: 20px;
-  padding-top: 100px; /* Ajusta la distancia superior para el header */
+  padding: 10px;
+  padding-top: 90px;
   transition: var(--transition);
 }
 
@@ -81,60 +81,67 @@ body {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
-/* ===== HEADER MEJORADO ===== */
+/* ===== HEADER ===== */
 .header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 15px 25px;
+  padding: 10px 20px;
   background: var(--header-bg);
-  border-radius: 16px;
   box-shadow: var(--shadow);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   transition: var(--transition);
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .title {
-  font-size: 1.8rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: var(--primary);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  white-space: nowrap;
 }
 
 .pill {
   background: var(--primary);
   color: white;
-  padding: 8px 16px;
+  padding: 6px 14px;
   border-radius: 50px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   display: flex;
   align-items: center;
   gap: 5px;
-}
-
-.pill strong {
-  font-weight: 600;
+  white-space: nowrap;
 }
 
 .header button {
   background: var(--primary);
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 8px 16px;
   border-radius: 50px;
   font-weight: 500;
+  font-family: 'Poppins', sans-serif;
   cursor: pointer;
   transition: var(--transition);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 .header button:hover {
@@ -143,37 +150,40 @@ body {
   box-shadow: var(--shadow-hover);
 }
 
-/* ===== TARJETAS Y CONTENEDORES ===== */
+/* ===== TARJETAS ===== */
 .card {
   background: var(--card-bg);
   border-radius: 16px;
-  padding: 20px;
+  padding: 18px;
   box-shadow: var(--shadow);
   transition: var(--transition);
   color: var(--text-color);
-}
-
-.card:hover {
-  box-shadow: var(--shadow-hover);
-  transform: translateY(-5px);
 }
 
 /* ===== VISTA COOPERATIVO ===== */
 #vista-cooperativo {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: 20px;
+  gap: 16px;
+  align-items: start;
 }
 
 .game {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ===== CONTROLES ===== */
 .controls {
   display: flex;
-  gap: 15px;
+  gap: 10px;
   align-items: center;
   flex-wrap: wrap;
 }
@@ -181,10 +191,11 @@ body {
 .controls label {
   font-weight: 500;
   color: var(--text-color);
+  font-size: 0.9rem;
 }
 
 .controls select {
-  padding: 10px 15px;
+  padding: 8px 12px;
   border-radius: 10px;
   border: 2px solid var(--secondary);
   background: var(--card-bg);
@@ -193,6 +204,9 @@ body {
   color: var(--text-color);
   cursor: pointer;
   transition: var(--transition);
+  font-size: 0.85rem;
+  flex: 1;
+  min-width: 120px;
 }
 
 .controls select:focus {
@@ -204,14 +218,17 @@ body {
   background: var(--primary);
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 8px 16px;
   border-radius: 10px;
   font-weight: 500;
+  font-family: 'Poppins', sans-serif;
   cursor: pointer;
   transition: var(--transition);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 .controls button:hover {
@@ -219,14 +236,14 @@ body {
   transform: translateY(-2px);
 }
 
-/* ===== CANVAS DEL JUEGO ===== */
+/* ===== CANVAS ===== */
 .canvas-wrap {
   display: flex;
   justify-content: center;
   align-items: center;
   background: var(--canvas-bg);
   border-radius: 16px;
-  padding: 20px;
+  padding: 15px;
   border: 2px solid var(--secondary);
   position: relative;
   transition: var(--transition);
@@ -236,9 +253,10 @@ canvas {
   border-radius: 10px;
   background: var(--card-bg);
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  height: auto;
 }
 
-/* Fondo animado del canvas */
 .canvas-wrap::before {
   content: "";
   position: absolute;
@@ -247,50 +265,52 @@ canvas {
   background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
   z-index: -1;
   filter: blur(10px);
-  opacity: 0.5;
+  opacity: 0.4;
 }
 
 /* ===== PISTA Y PALABRA ===== */
 .pista {
   text-align: center;
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 500;
   color: var(--primary);
   background: rgba(162, 155, 254, 0.2);
-  padding: 10px 15px;
+  padding: 8px 12px;
   border-radius: 10px;
 }
 
 .word {
   text-align: center;
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: 700;
-  letter-spacing: 8px;
+  letter-spacing: 6px;
   color: var(--text-color);
-  padding: 15px;
+  padding: 12px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 10px;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.08);
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 .wrong {
   text-align: center;
-  font-size: 1.2rem;
+  font-size: 1rem;
   color: var(--danger);
   font-weight: 500;
 }
 
 /* ===== TECLADO VIRTUAL ===== */
-#teclado-coop, #teclado-local, #teclado-oponente {
+#teclado-coop,
+#teclado-local,
+#teclado-oponente {
   display: grid;
   grid-template-columns: repeat(9, 1fr);
-  gap: 8px;
-  padding: 15px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
+  gap: 6px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
   box-shadow: var(--shadow);
-  backdrop-filter: blur(10px);
 }
 
 #teclado-coop button,
@@ -298,9 +318,9 @@ canvas {
 #teclado-oponente button {
   aspect-ratio: 1;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   font-weight: 700;
-  font-size: 1.2rem;
+  font-size: 1rem;
   background: var(--primary);
   color: white;
   cursor: pointer;
@@ -308,12 +328,14 @@ canvas {
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: 'Poppins', sans-serif;
+  min-width: 0;
 }
 
 #teclado-coop button:hover:not(:disabled),
 #teclado-local button:hover:not(:disabled) {
   background: var(--secondary);
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
 }
 
@@ -324,96 +346,220 @@ canvas {
   color: var(--text-color);
   cursor: not-allowed;
   transform: none;
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 /* ===== VISTA ENFRENTAMIENTO ===== */
 #vista-enfrentamiento {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 20px;
+  grid-template-columns: 1fr 300px 1fr;
+  gap: 16px;
+  align-items: start;
 }
 
 .game-enfrentamiento {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 14px;
 }
 
 .game-enfrentamiento h2 {
   text-align: center;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   color: var(--primary);
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.1);
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(10px);
 }
 
 /* ===== TIMER ===== */
 .timer-container {
   text-align: center;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 700;
   color: var(--danger);
   background: var(--card-bg);
-  padding: 10px 20px;
+  padding: 8px 18px;
   border-radius: 50px;
   box-shadow: var(--shadow);
-  margin-bottom: 20px;
-  transition: var(--transition);
+  margin-bottom: 10px;
 }
 
-/* ===== PANEL DE JUGADORES Y CHAT ===== */
+/* ===== PANEL LATERAL (JUGADORES + CHAT) ===== */
 .panel {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.panel:last-child {
+  margin-bottom: 0;
 }
 
 .panel h3 {
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   color: var(--primary);
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 0.95rem;
 }
 
-#lista-jugadores {
+/* ===== TABS DE JUGADORES (Amigos / Ranking) ===== */
+.players-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+  background: var(--panel-bg);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  background: var(--tab-inactive-bg);
+  color: var(--tab-inactive-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.tab-btn.active {
+  background: var(--tab-active-bg);
+  color: white;
+  box-shadow: 0 2px 8px rgba(108, 92, 231, 0.4);
+}
+
+.tab-btn:hover:not(.active) {
+  background: var(--secondary);
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* ===== CONTENEDORES DE LISTAS (con scroll) ===== */
+.players-list-container {
+  height: 220px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: 10px;
+  background: var(--panel-bg);
+  scrollbar-width: thin;
+  scrollbar-color: var(--secondary) transparent;
+}
+
+.players-list-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.players-list-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.players-list-container::-webkit-scrollbar-thumb {
+  background: var(--secondary);
+  border-radius: 4px;
+}
+
+/* ===== LISTAS DE JUGADORES ===== */
+#lista-jugadores,
+#lista-amigos {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  padding: 4px;
 }
 
-#lista-jugadores li {
+#lista-jugadores li,
+#lista-amigos li {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 15px;
-  background: var(--panel-bg);
-  border-radius: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
   transition: var(--transition);
   color: var(--text-color);
+  gap: 8px;
+  border-bottom: 1px solid var(--list-border);
+  min-height: 44px;
 }
 
-#lista-jugadores li:hover {
-  background: var(--secondary);
-  transform: translateX(5px);
-  color: white;
+#lista-jugadores li:last-child,
+#lista-amigos li:last-child {
+  border-bottom: none;
+}
+
+#lista-jugadores li:hover,
+#lista-amigos li:hover {
+  background: rgba(108, 92, 231, 0.1);
+}
+
+.player-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.player-rank {
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel-bg);
+  color: var(--text-color);
+  flex-shrink: 0;
+}
+
+.player-rank.gold   { background: var(--gold); color: #2d3436; }
+.player-rank.silver { background: var(--silver); color: #2d3436; }
+.player-rank.bronze { background: var(--bronze); color: white; }
+
+.player-name {
+  font-weight: 500;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+.player-points {
+  font-size: 0.72rem;
+  color: var(--secondary);
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .actions {
   display: flex;
-  gap: 8px;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
-.btn-invite, .btn-challenge {
-  padding: 5px 10px;
+.btn-invite,
+.btn-challenge {
+  padding: 4px 8px;
   border: none;
   border-radius: 6px;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
+  font-family: 'Poppins', sans-serif;
   cursor: pointer;
   transition: var(--transition);
+  white-space: nowrap;
 }
 
 .btn-invite {
@@ -426,31 +572,59 @@ canvas {
   color: var(--dark);
 }
 
-.btn-invite:hover, .btn-challenge:hover {
-  transform: scale(1.1);
+.btn-invite:hover,
+.btn-challenge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* Mensaje vacío en listas */
+.empty-list-msg {
+  text-align: center;
+  padding: 24px 12px;
+  color: var(--text-color);
+  opacity: 0.5;
+  font-size: 0.82rem;
+}
+
+.empty-list-msg i {
+  display: block;
+  font-size: 1.6rem;
+  margin-bottom: 6px;
 }
 
 /* ===== CHAT ===== */
 #chatBox {
-  height: 200px;
+  height: 160px;
   overflow-y: auto;
-  padding: 10px;
+  padding: 8px;
   background: var(--panel-bg);
   border-radius: 10px;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  transition: var(--transition);
+  gap: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--secondary) transparent;
+}
+
+#chatBox::-webkit-scrollbar {
+  width: 3px;
+}
+
+#chatBox::-webkit-scrollbar-thumb {
+  background: var(--secondary);
+  border-radius: 3px;
 }
 
 #chatBox div {
-  padding: 8px 12px;
-  border-radius: 10px;
+  padding: 6px 10px;
+  border-radius: 8px;
   background: var(--card-bg);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
   color: var(--text-color);
-  transition: var(--transition);
+  font-size: 0.82rem;
+  line-height: 1.4;
 }
 
 #chatBox .u {
@@ -460,18 +634,20 @@ canvas {
 
 .chat-input {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 #chatInput {
   flex: 1;
-  padding: 10px 15px;
+  padding: 8px 12px;
   border-radius: 50px;
   border: 2px solid var(--secondary);
   font-family: 'Poppins', sans-serif;
+  font-size: 0.82rem;
   transition: var(--transition);
   background: var(--card-bg);
   color: var(--text-color);
+  min-width: 0;
 }
 
 #chatInput:focus {
@@ -484,14 +660,16 @@ canvas {
   color: white;
   border: none;
   border-radius: 50px;
-  padding: 10px 20px;
+  padding: 8px 16px;
   cursor: pointer;
   transition: var(--transition);
+  font-family: 'Poppins', sans-serif;
+  flex-shrink: 0;
 }
 
 .chat-send:hover {
   background: var(--secondary);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 /* ===== PANEL DE VOTACIÓN ===== */
@@ -501,123 +679,189 @@ canvas {
 
 #panel-votacion-enfrentamiento h3 {
   justify-content: center;
+  font-size: 0.9rem;
 }
 
-#area-proponer, #area-votar {
+#area-proponer,
+#area-votar {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  margin-top: 15px;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 #area-proponer select {
-  padding: 10px;
+  padding: 8px 10px;
   border-radius: 10px;
   border: 2px solid var(--secondary);
   font-family: 'Poppins', sans-serif;
   background: var(--card-bg);
   color: var(--text-color);
+  font-size: 0.85rem;
+  width: 100%;
 }
 
-#proponer-btn, #aceptar-btn, #rechazar-btn {
-  padding: 10px 20px;
+#proponer-btn,
+#aceptar-btn,
+#rechazar-btn {
+  padding: 8px 16px;
   border: none;
   border-radius: 10px;
   font-weight: 500;
+  font-family: 'Poppins', sans-serif;
   cursor: pointer;
   transition: var(--transition);
+  font-size: 0.85rem;
 }
 
 #proponer-btn { background: var(--primary); color: white; }
-#aceptar-btn { background: var(--success); color: white; }
-#rechazar-btn { background: var(--danger); color: white; }
+#aceptar-btn  { background: var(--success); color: white; }
+#rechazar-btn { background: var(--danger);  color: white; }
 
-#proponer-btn:hover, #aceptar-btn:hover, #rechazar-btn:hover {
-  transform: translateY(-3px);
+#proponer-btn:hover,
+#aceptar-btn:hover,
+#rechazar-btn:hover {
+  transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
 }
 
-/* ===== BOTÓN TOGGLE TEMA ===== */
-.theme-toggle {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: var(--primary);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  font-size: 1.5rem;
-  cursor: pointer;
-  box-shadow: var(--shadow);
-  transition: var(--transition);
-  z-index: 1000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+/* ===== ANIMACIONES ===== */
+@keyframes pulse  { 0%,100% { transform: scale(1); }  50% { transform: scale(1.05); } }
+@keyframes float  { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-.theme-toggle:hover {
-  transform: scale(1.1);
-  background: var(--secondary);
-}
+.pulse  { animation: pulse 0.5s ease-in-out; }
+.float  { animation: float 3s ease-in-out infinite; }
+.fade-in { animation: fadeIn 0.2s ease-out; }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 1200px) {
-  #vista-cooperativo, #vista-enfrentamiento {
+/* ===== TABLET (≤ 1100px) ===== */
+@media (max-width: 1100px) {
+  #vista-cooperativo {
     grid-template-columns: 1fr;
   }
-  
-  .side { order: 2; }
 
-  #teclado-coop, #teclado-local, #teclado-oponente {
+  #vista-enfrentamiento {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  #vista-enfrentamiento .side {
+    grid-column: 1 / -1;
+    order: -1;
+  }
+
+  #vista-enfrentamiento .game-enfrentamiento:first-child {
+    order: 1;
+  }
+
+  #vista-enfrentamiento .game-enfrentamiento:last-child {
+    order: 2;
+  }
+
+  #teclado-coop,
+  #teclado-local,
+  #teclado-oponente {
     grid-template-columns: repeat(7, 1fr);
   }
 }
 
+/* ===== MOBILE (≤ 768px) ===== */
 @media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    gap: 15px;
-    text-align: center;
-  }
-  
-  .controls {
-    flex-direction: column;
-    align-items: stretch;
+  body {
+    padding: 8px;
+    padding-top: 80px;
   }
 
-  #teclado-coop, #teclado-local, #teclado-oponente {
+  .header {
+    padding: 8px 14px;
+    gap: 8px;
+  }
+
+  .title {
+    font-size: 1.1rem;
+  }
+
+  .pill {
+    font-size: 0.75rem;
+    padding: 5px 10px;
+  }
+
+  #vista-cooperativo,
+  #vista-enfrentamiento {
+    grid-template-columns: 1fr;
+  }
+
+  #vista-enfrentamiento .side {
+    order: -1;
+  }
+
+  .word {
+    font-size: 1.2rem;
+    letter-spacing: 4px;
+  }
+
+  #teclado-coop,
+  #teclado-local,
+  #teclado-oponente {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+    padding: 8px;
+  }
+
+  #teclado-coop button,
+  #teclado-local button,
+  #teclado-oponente button {
+    font-size: 0.85rem;
+    border-radius: 6px;
+  }
+
+  .players-list-container {
+    height: 180px;
+  }
+
+  #chatBox {
+    height: 130px;
+  }
+
+  canvas {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .card {
+    padding: 12px;
+    border-radius: 12px;
+  }
+}
+
+/* ===== MOBILE PEQUEÑO (≤ 420px) ===== */
+@media (max-width: 420px) {
+  .header {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .pill { display: none; }
+
+  #teclado-coop,
+  #teclado-local,
+  #teclado-oponente {
     grid-template-columns: repeat(5, 1fr);
   }
-  
+
   .word {
-    font-size: 1.5rem;
-    letter-spacing: 5px;
+    font-size: 1rem;
+    letter-spacing: 3px;
   }
-  
-  .theme-toggle {
-    width: 50px;
-    height: 50px;
-    font-size: 1.2rem;
-    top: 15px;
-    right: 15px;
+
+  .btn-invite,
+  .btn-challenge {
+    font-size: 0.65rem;
+    padding: 3px 6px;
+  }
+
+  .player-name {
+    max-width: 70px;
   }
 }
-
-/* ===== ANIMACIONES ===== */
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
-  100% { transform: translateY(0px); }
-}
-
-.pulse { animation: pulse 0.5s ease-in-out; }
-.float { animation: float 3s ease-in-out infinite; }

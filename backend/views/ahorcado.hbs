@@ -20,7 +20,7 @@
     {{!-- VISTA 1: MODO COOPERATIVO --}}
     <div id="vista-cooperativo">
       <section class="game card">
-        <div class="controls"> 
+        <div class="controls">
           <label for="categoria-coop"><i class="fas fa-tag"></i> Categoría:</label>
           <select id="categoria-coop">
             <option>Cargando categorías...</option>
@@ -52,7 +52,7 @@
         <div class="wrong" id="incorrectas-local"></div>
         <div id="teclado-local" class="teclado-enfrentamiento"></div>
       </section>
-      
+
       <aside class="side" id="panel-central-enfrentamiento">
         <div class="timer-container">
           <i class="fas fa-clock"></i> Tiempo: <span id="timer">02:00</span>
@@ -73,10 +73,11 @@
 
     {{!-- Elementos Comunes --}}
     <div id="elementos-comunes" style="display: none;">
-      <div class="panel card" id="jugadores-panel">
-        <h3><i class="fas fa-users"></i> Jugadores activos</h3>
-        <ul id="lista-jugadores"></ul>
-      </div>
+
+      {{!-- Panel de jugadores con tabs (Amigos / Ranking) --}}
+      {{!-- El JS construye el contenido de este panel --}}
+      <div class="panel card" id="jugadores-panel"></div>
+
       <div class="panel card" id="chat-panel">
         <h3><i class="fas fa-comments"></i> Chat</h3>
         <div id="chatBox"></div>
@@ -85,34 +86,33 @@
           <button id="chatBtn" class="chat-send"><i class="fas fa-paper-plane"></i></button>
         </div>
       </div>
+
       <div class="panel card" id="panel-votacion-enfrentamiento" style="display: none;">
-          <h3><i class="fas fa-vote-yea"></i> Selección de Categoría</h3>
-          <div id="propuesta-actual">
-              <p>Esperando que un jugador proponga una categoría...</p>
-          </div>
-          
-          <div id="area-proponer" style="display: none;">
-              <label for="categoria-enfrentamiento-select">Elige una categoría:</label>
-              <select id="categoria-enfrentamiento-select"><option>Cargando...</option></select>
-              <button id="proponer-btn">Proponer</button>
-          </div>
-
-        <div id="area-votar" style="display: none;">
-            <button id="aceptar-btn">✅ Aceptar</button>
-            <button id="rechazar-btn">❌ Rechazar</button>
+        <h3><i class="fas fa-vote-yea"></i> Selección de Categoría</h3>
+        <div id="propuesta-actual">
+          <p>Esperando que un jugador proponga una categoría...</p>
         </div>
+        <div id="area-proponer" style="display: none;">
+          <label for="categoria-enfrentamiento-select">Elige una categoría:</label>
+          <select id="categoria-enfrentamiento-select"><option>Cargando...</option></select>
+          <button id="proponer-btn">Proponer</button>
+        </div>
+        <div id="area-votar" style="display: none;">
+          <button id="aceptar-btn">✅ Aceptar</button>
+          <button id="rechazar-btn">❌ Rechazar</button>
+        </div>
+      </div>
 
     </div>
-    </div>
-</div>
+  </div>
 
-<script src="/socket.io/socket.io.js"></script>
-<script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
     window.SALA_CONFIG = {
-        salaId: "{{salaId}}",
-        user: {{{json user}}}
+      salaId: "{{salaId}}",
+      user: {{{json user}}}
     };
-</script>
-<script src= "/public/js/ahorcado.controller.js" defer></script>
+  </script>
+  <script src="/public/js/ahorcado.controller.js" defer></script>
 </body>
 </html>

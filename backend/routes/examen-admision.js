@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/conexion');
-
+//.................
     router.get('/examen-exani', async (req, res) => {
         try {
             const preguntasPorMateria = 20;
@@ -112,9 +112,15 @@ const db = require('../db/conexion');
 
     const duracionMs = fechaTermino.getTime() - fechaInicio.getTime();
     const duracionSegundos = Math.round(duracionMs / 1000);
+    // Convertir segundos a formato TIME que espera MySQL (HH:MM:SS)
+    const horas = Math.floor(duracionSegundos / 3600);
+    const minutos = Math.floor((duracionSegundos % 3600) / 60);
+    const segundos = duracionSegundos % 60;
+    const duracionTime = `${String(horas).padStart(2,'0')}:${String(minutos).padStart(2,'0')}:${String(segundos).padStart(2,'0')}`;
+
     const [examenResult] = await db.query(
-    'INSERT INTO examen (id_materia, duracion) VALUES (NULL, ?)',
-    [duracionSegundos]
+        'INSERT INTO examen (id_materia, duracion, fecha_inicio, fecha_termino) VALUES (NULL, ?, ?, ?)',
+        [duracionTime, fechaInicio, fechaTermino]
     );
     const id_examen = examenResult.insertId;
     const porcentaje = puntosMaximos > 0 ? parseFloat(((puntosObtenidos / puntosMaximos) * 100).toFixed(2)) : 0;

@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatBox = document.getElementById('chatBox');
     const chatInput = document.getElementById('chatInput');
     const chatBtn = document.getElementById('chatBtn');
-    const listaJugadoresEl = document.getElementById('lista-jugadores');
 
     const categoriaCoopSelect = document.getElementById("categoria-coop");
     const pistaCoopDiv = document.getElementById("pista-coop");
@@ -36,7 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvasOponente = document.getElementById("canvas-oponente");
     const ctxOponente = canvasOponente ? canvasOponente.getContext("2d") : null;
     const pistaLocalDiv = document.getElementById('pista-local');
-    const pistaOponenteDiv = document.getElementById('pista-oponente');
     const panelVotacion = document.getElementById('panel-votacion-enfrentamiento');
     const propuestaActualDiv = document.getElementById('propuesta-actual');
     const areaProponerDiv = document.getElementById('area-proponer');
@@ -49,6 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let timerInterval = null;
     const MAX_ERRORES = 10;
 
+    // ──────────────────────────────────────────
+    // SETUP DE VISTAS
+    // ──────────────────────────────────────────
     if (modo === 'enfrentamiento') {
         vistaEnfrentamiento.style.display = 'grid';
         vistaCooperativo.style.display = 'none';
@@ -63,6 +64,191 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('panel-central-coop').append(jugadoresPanel, chatPanel);
     }
 
+    // ──────────────────────────────────────────
+    // PANEL DE JUGADORES: TABS + LISTAS CON SCROLL
+    // ──────────────────────────────────────────
+    function buildPlayersPanel() {
+        const panel = document.getElementById('jugadores-panel');
+        panel.innerHTML = `
+            <h3><i class="fas fa-users"></i> Jugadores</h3>
+            <div class="players-tabs">
+                <button class="tab-btn active" id="tab-amigos">
+                    <i class="fas fa-heart"></i> Amigos
+                </button>
+                <button class="tab-btn" id="tab-ranking">
+                    <i class="fas fa-trophy"></i> Ranking
+                </button>
+            </div>
+            <div class="players-list-container" id="players-list-wrap">
+                <!-- Tab amigos -->
+                <div id="pane-amigos">
+                    <ul id="lista-amigos"></ul>
+                </div>
+                <!-- Tab ranking -->
+                <div id="pane-ranking" style="display:none;">
+                    <ul id="lista-jugadores"></ul>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('tab-amigos').addEventListener('click', () => switchTab('amigos'));
+        document.getElementById('tab-ranking').addEventListener('click', () => switchTab('ranking'));
+    }
+
+    function switchTab(tab) {
+        const tabAmigos   = document.getElementById('tab-amigos');
+        const tabRanking  = document.getElementById('tab-ranking');
+        const paneAmigos  = document.getElementById('pane-amigos');
+        const paneRanking = document.getElementById('pane-ranking');
+
+        if (tab === 'amigos') {
+            tabAmigos.classList.add('active');
+            tabRanking.classList.remove('active');
+            paneAmigos.style.display = 'block';
+            paneRanking.style.display = 'none';
+        } else {
+            tabRanking.classList.add('active');
+            tabAmigos.classList.remove('active');
+            paneRanking.style.display = 'block';
+            paneAmigos.style.display = 'none';
+        }
+    }
+
+    // ──────────────────────────────────────────
+    // CARGAR AMIGOS DEL USUARIO
+    // ──────────────────────────────────────────
+    async function cargarAmigos() {
+        const lista = document.getElementById('lista-amigos');
+        if (!lista) return;
+
+        try {
+            const res = await fetch('/api/amistades/mis-amigos');
+            const data = await res.json();
+            const amigos = data.amigos || [];
+
+            lista.innerHTML = '';
+
+            if (amigos.length === 0) {
+                lista.innerHTML = `
+                    <div class="empty-list-msg">
+                        <i class="fas fa-user-friends"></i>
+                        Aún no tienes amigos.<br>¡Desafía a alguien!
+                    </div>`;
+                return;
+            }
+
+            amigos.forEach(amigo => {
+                if (amigo.id_usuario === usuario.id_usuario) return;
+                const li = document.createElement('li');
+                li.className = 'fade-in';
+                li.innerHTML = `
+                    <div class="player-info">
+                        <span class="player-name" title="${amigo.username}">
+                            <i class="fas fa-circle" style="color:var(--success);font-size:.5rem;"></i>
+                            ${amigo.username}
+                        </span>
+                        <span class="player-points">${amigo.puntos ?? 0} pts</span>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-invite" data-id="${amigo.id_usuario}" title="Invitar">🤝</button>
+                        <button class="btn-challenge" data-id="${amigo.id_usuario}" title="Enfrentar">⚔️</button>
+                    </div>`;
+                lista.appendChild(li);
+            });
+        } catch (err) {
+            console.error('Error al cargar amigos:', err);
+        }
+    }
+
+    // ──────────────────────────────────────────
+    // CARGAR RANKING GENERAL (por puntos)
+    // ──────────────────────────────────────────
+    async function cargarRanking() {
+        const lista = document.getElementById('lista-jugadores');
+        if (!lista) return;
+
+        try {
+            const res = await fetch('/jugadores');
+            const jugadores = await res.json();
+
+            lista.innerHTML = '';
+
+            if (jugadores.length === 0) {
+                lista.innerHTML = `
+                    <div class="empty-list-msg">
+                        <i class="fas fa-ghost"></i>
+                        Sin jugadores activos.
+                    </div>`;
+                return;
+            }
+
+            jugadores.forEach((jugador, idx) => {
+                if (jugador.id === usuario.id_usuario) return;
+
+                const pos = idx + 1;
+                let rankClass = '';
+                if (pos === 1) rankClass = 'gold';
+                else if (pos === 2) rankClass = 'silver';
+                else if (pos === 3) rankClass = 'bronze';
+
+                const li = document.createElement('li');
+                li.className = 'fade-in';
+                li.innerHTML = `
+                    <div class="player-info">
+                        <span class="player-rank ${rankClass}">${pos}</span>
+                        <span class="player-name" title="${jugador.username}">${jugador.username}</span>
+                        <span class="player-points">${jugador.puntos ?? 0} pts</span>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-invite" data-id="${jugador.id}" title="Invitar">🤝</button>
+                        <button class="btn-challenge" data-id="${jugador.id}" title="Enfrentar">⚔️</button>
+                    </div>`;
+                lista.appendChild(li);
+            });
+        } catch (err) {
+            console.error('Error al cargar ranking:', err);
+        }
+    }
+
+    // Delegar click para ambas listas (amigos + ranking)
+    document.getElementById('jugadores-panel').addEventListener('click', async (e) => {
+        const target = e.target.closest('button');
+        if (!target) return;
+        const idJugador = target.dataset.id;
+        if (!idJugador) return;
+
+        try {
+            if (target.classList.contains('btn-invite')) {
+                const response = await fetch(`/invitar/${idJugador}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ salaId, juego: 'Ahorcado' })
+                });
+                const data = await response.json();
+                alert(data.message || 'Error');
+
+            } else if (target.classList.contains('btn-challenge')) {
+                const response = await fetch(`/enfrentar/${idJugador}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ juego: 'Ahorcado' })
+                });
+                const data = await response.json();
+                if (data.salaId && data.modo === 'enfrentamiento') {
+                    alert('¡Desafío enviado! Serás redirigido a la sala de enfrentamiento.');
+                    window.location.href = `/ahorcado/${data.salaId}?modo=enfrentamiento`;
+                } else {
+                    alert(data.message || 'Error al desafiar');
+                }
+            }
+        } catch (error) {
+            console.error('Error en acción de jugador:', error);
+        }
+    });
+
+    // ──────────────────────────────────────────
+    // HELPERS DE JUEGO
+    // ──────────────────────────────────────────
     function crearTeclado(container, onLetraClick, isEnabled = true) {
         if (!container) return;
         container.innerHTML = "";
@@ -93,43 +279,22 @@ document.addEventListener('DOMContentLoaded', () => {
             .join(' ');
         div.textContent = palabraMostrada;
     }
-    
+
     function dibujarAhorcado(ctx, errores) {
         if (!ctx) return;
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         ctx.strokeStyle = '#333';
         ctx.lineWidth = 4;
-
-        if (errores >= 1) { 
-            ctx.beginPath(); ctx.moveTo(10, 340); ctx.lineTo(290, 340); ctx.stroke();
-        }
-        if (errores >= 2) { 
-            ctx.beginPath(); ctx.moveTo(50, 340); ctx.lineTo(50, 20); ctx.stroke();
-        }
-        if (errores >= 3) { 
-            ctx.beginPath(); ctx.moveTo(48, 20); ctx.lineTo(250, 20); ctx.stroke();
-        }
-        if (errores >= 4) { 
-            ctx.beginPath(); ctx.moveTo(250, 20); ctx.lineTo(250, 60); ctx.stroke();
-        }
-        if (errores >= 5) { 
-            ctx.beginPath(); ctx.arc(250, 90, 30, 0, Math.PI * 2); ctx.stroke();
-        }
-        if (errores >= 6) { 
-            ctx.beginPath(); ctx.moveTo(250, 120); ctx.lineTo(250, 220); ctx.stroke();
-        }
-        if (errores >= 7) { 
-            ctx.beginPath(); ctx.moveTo(250, 150); ctx.lineTo(200, 190); ctx.stroke();
-        }
-        if (errores >= 8) { 
-            ctx.beginPath(); ctx.moveTo(250, 150); ctx.lineTo(300, 190); ctx.stroke();
-        }
-        if (errores >= 9) { 
-            ctx.beginPath(); ctx.moveTo(250, 220); ctx.lineTo(200, 280); ctx.stroke();
-        }
-        if (errores >= 10) { 
-            ctx.beginPath(); ctx.moveTo(250, 220); ctx.lineTo(300, 280); ctx.stroke();
-        }
+        if (errores >= 1)  { ctx.beginPath(); ctx.moveTo(10, 340); ctx.lineTo(290, 340); ctx.stroke(); }
+        if (errores >= 2)  { ctx.beginPath(); ctx.moveTo(50, 340); ctx.lineTo(50, 20);   ctx.stroke(); }
+        if (errores >= 3)  { ctx.beginPath(); ctx.moveTo(48, 20);  ctx.lineTo(250, 20);  ctx.stroke(); }
+        if (errores >= 4)  { ctx.beginPath(); ctx.moveTo(250, 20); ctx.lineTo(250, 60);  ctx.stroke(); }
+        if (errores >= 5)  { ctx.beginPath(); ctx.arc(250, 90, 30, 0, Math.PI * 2);      ctx.stroke(); }
+        if (errores >= 6)  { ctx.beginPath(); ctx.moveTo(250, 120); ctx.lineTo(250, 220); ctx.stroke(); }
+        if (errores >= 7)  { ctx.beginPath(); ctx.moveTo(250, 150); ctx.lineTo(200, 190); ctx.stroke(); }
+        if (errores >= 8)  { ctx.beginPath(); ctx.moveTo(250, 150); ctx.lineTo(300, 190); ctx.stroke(); }
+        if (errores >= 9)  { ctx.beginPath(); ctx.moveTo(250, 220); ctx.lineTo(200, 280); ctx.stroke(); }
+        if (errores >= 10) { ctx.beginPath(); ctx.moveTo(250, 220); ctx.lineTo(300, 280); ctx.stroke(); }
     }
 
     async function fetchAndPopulateCategories(selectElement) {
@@ -137,13 +302,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/ahorcado/materias');
             if (!response.ok) throw new Error('No se pudo obtener las materias.');
             const materias = await response.json();
-            
             selectElement.innerHTML = '';
             if (materias.length === 0) {
                 selectElement.innerHTML = '<option>No hay categorías disponibles</option>';
                 return;
             }
-            
             materias.forEach(materia => {
                 const option = document.createElement('option');
                 option.value = materia.id_materia;
@@ -158,7 +321,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function unirseASala() {
         if (!salaId) return;
-        
         if (modo === 'enfrentamiento') {
             socket.emit('joinConfrontation', { salaId, usuario: usuario.username, userId: usuario.id_usuario });
         } else {
@@ -167,6 +329,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ──────────────────────────────────────────
+    // MODO COOPERATIVO
+    // ──────────────────────────────────────────
     if (modo === 'cooperativo') {
         crearTeclado(tecladoCoopDiv, (letra, btn) => {
             socket.emit('intentarLetra', { salaId, letra });
@@ -183,14 +348,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         socket.on('estadoPartida', (estado) => {
             if (!estado || !estado.palabraSecreta) return;
-            
             dibujarAhorcado(ctxCoop, estado.letrasIncorrectas.length);
             mostrarPalabra(palabraCoopDiv, estado.palabraSecreta, estado.letrasCorrectas);
             incorrectasCoopDiv.textContent = `Incorrectas: ${estado.letrasIncorrectas.join(' ')}`;
             pistaCoopDiv.textContent = `Pista: ${estado.pista || 'Sin pista'}`;
             actualizarTeclado(tecladoCoopDiv, [...estado.letrasCorrectas, ...estado.letrasIncorrectas]);
-            
-            // Bloquear teclado si se alcanzó el máximo de errores
             if (estado.letrasIncorrectas.length >= MAX_ERRORES) {
                 tecladoCoopDiv.querySelectorAll('button').forEach(btn => btn.disabled = true);
             }
@@ -199,14 +361,17 @@ document.addEventListener('DOMContentLoaded', () => {
         socket.on('juegoTerminado', (resultado) => {
             tecladoCoopDiv.innerHTML = "<h3>Juego Terminado</h3>";
             setTimeout(() => {
-                const mensaje = resultado.ganador 
-                    ? `¡Ganaron! 🎉 La palabra era: ${resultado.palabra}` 
+                const mensaje = resultado.ganador
+                    ? `¡Ganaron! 🎉 La palabra era: ${resultado.palabra}`
                     : `Perdieron 😢 La palabra era: ${resultado.palabra}`;
                 alert(mensaje);
             }, 200);
         });
     }
 
+    // ──────────────────────────────────────────
+    // MODO ENFRENTAMIENTO
+    // ──────────────────────────────────────────
     if (modo === 'enfrentamiento') {
         crearTeclado(tecladoLocalDiv, (letra, btn) => {
             socket.emit('enfrentamiento:intentarLetra', { salaId, letra });
@@ -217,13 +382,9 @@ document.addEventListener('DOMContentLoaded', () => {
         function startTimer(initialTime) {
             if (timerInterval) clearInterval(timerInterval);
             let timeLeft = initialTime;
-
             timerInterval = setInterval(() => {
                 timeLeft--;
-                if (timeLeft < 0) {
-                    clearInterval(timerInterval);
-                    return;
-                }
+                if (timeLeft < 0) { clearInterval(timerInterval); return; }
                 const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
                 const seconds = (timeLeft % 60).toString().padStart(2, '0');
                 timerEl.textContent = `${minutes}:${seconds}`;
@@ -235,36 +396,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 palabraLocalDiv.textContent = "Esperando oponente...";
                 return;
             }
-
             panelVotacion.style.display = 'none';
             document.querySelectorAll('.game-enfrentamiento').forEach(el => el.style.visibility = 'visible');
             document.querySelector('.timer-container').style.display = 'block';
+            if (gameStarted && !timerInterval) startTimer(gameState.gameTime);
 
-            if (gameStarted && !timerInterval) {
-                startTimer(gameState.gameTime);
-            }
-
-            const localPlayer = gameState.player1.id === usuario.id_usuario ? gameState.player1 : gameState.player2;
+            const localPlayer    = gameState.player1.id === usuario.id_usuario ? gameState.player1 : gameState.player2;
             const opponentPlayer = gameState.player1.id === usuario.id_usuario ? gameState.player2 : gameState.player1;
 
-            if (opponentPlayer) {
-                nombreOponenteEl.textContent = opponentPlayer.username;
-            } else {
-                nombreOponenteEl.textContent = "Esperando...";
-            }
-            
+            nombreOponenteEl.textContent = opponentPlayer ? opponentPlayer.username : "Esperando...";
+
             const erroresLocal = localPlayer.letrasIncorrectas.length;
             dibujarAhorcado(ctxLocal, erroresLocal);
-            pistaLocalDiv.textContent = `Pista: ${localPlayer.pista}`;
+            if (pistaLocalDiv) pistaLocalDiv.textContent = `Pista: ${localPlayer.pista}`;
             mostrarPalabra(palabraLocalDiv, localPlayer.palabraSecreta, localPlayer.letrasCorrectas);
             incorrectasLocalDiv.textContent = `Intentos restantes: ${MAX_ERRORES - erroresLocal}`;
             actualizarTeclado(tecladoLocalDiv, [...localPlayer.letrasCorrectas, ...localPlayer.letrasIncorrectas]);
+            if (erroresLocal >= MAX_ERRORES) tecladoLocalDiv.querySelectorAll('button').forEach(btn => btn.disabled = true);
 
-            if (erroresLocal >= MAX_ERRORES) {
-                tecladoLocalDiv.querySelectorAll('button').forEach(btn => btn.disabled = true);
-            }
-
-            if(opponentPlayer) {
+            if (opponentPlayer) {
                 const erroresOponente = opponentPlayer.letrasIncorrectas.length;
                 dibujarAhorcado(ctxOponente, erroresOponente);
                 mostrarPalabra(palabraOponenteDiv, opponentPlayer.palabraSecreta, opponentPlayer.letrasCorrectas);
@@ -274,10 +424,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         socket.on('enfrentamiento:esperandoOponente', () => {
-             panelVotacion.style.display = 'block';
-             propuestaActualDiv.innerHTML = `<p>Esperando a tu oponente...</p>`;
-             areaProponerDiv.style.display = 'none';
-             areaVotarDiv.style.display = 'none';
+            panelVotacion.style.display = 'block';
+            propuestaActualDiv.innerHTML = `<p>Esperando a tu oponente...</p>`;
+            areaProponerDiv.style.display = 'none';
+            areaVotarDiv.style.display = 'none';
         });
 
         socket.on('enfrentamiento:iniciarVotacion', () => {
@@ -291,11 +441,9 @@ document.addEventListener('DOMContentLoaded', () => {
             panelVotacion.style.display = 'block';
             propuestaActualDiv.innerHTML = `<p><strong>${proponente}</strong> ha propuesto: <strong>${textoMateria}</strong></p>`;
             areaProponerDiv.style.display = 'none';
-            if (proponente !== usuario.username) {
-                areaVotarDiv.style.display = 'block';
-            }
+            if (proponente !== usuario.username) areaVotarDiv.style.display = 'block';
         });
-        
+
         socket.on('enfrentamiento:propuestaRechazada', ({ votante }) => {
             alert(`${votante} ha rechazado la propuesta. ¡Vuelvan a proponer!`);
             propuestaActualDiv.innerHTML = `<p>Propuesta rechazada. Esperando nueva propuesta...</p>`;
@@ -311,28 +459,22 @@ document.addEventListener('DOMContentLoaded', () => {
             areaProponerDiv.style.display = 'none';
         };
 
-        aceptarBtn.onclick = () => {
-            socket.emit('enfrentamiento:votarCategoria', { salaId, voto: 'aceptado' });
-            areaVotarDiv.style.display = 'none';
-        };
-
-        rechazarBtn.onclick = () => {
-            socket.emit('enfrentamiento:votarCategoria', { salaId, voto: 'rechazado' });
-            areaVotarDiv.style.display = 'none';
-        };
+        aceptarBtn.onclick  = () => { socket.emit('enfrentamiento:votarCategoria', { salaId, voto: 'aceptado' });  areaVotarDiv.style.display = 'none'; };
+        rechazarBtn.onclick = () => { socket.emit('enfrentamiento:votarCategoria', { salaId, voto: 'rechazado' }); areaVotarDiv.style.display = 'none'; };
 
         socket.on('gameOver', ({ winner }) => {
             if (timerInterval) clearInterval(timerInterval);
             tecladoLocalDiv.innerHTML = "<h3>Partida Terminada</h3>";
             tecladoOponenteDiv.innerHTML = "";
             let mensaje = "¡Ha sido un empate! 🤝";
-            if (winner) {
-                mensaje = winner === usuario.id_usuario ? '¡Ganaste la partida! 🏆' : '¡Perdiste la partida! 😔';
-            }
+            if (winner) mensaje = winner === usuario.id_usuario ? '¡Ganaste la partida! 🏆' : '¡Perdiste la partida! 😔';
             setTimeout(() => alert(mensaje), 500);
         });
     }
 
+    // ──────────────────────────────────────────
+    // CHAT
+    // ──────────────────────────────────────────
     function mostrarMensaje(user, msg) {
         const msgDiv = document.createElement('div');
         msgDiv.innerHTML = `<span class="u">${user}:</span> <span>${msg}</span>`;
@@ -347,107 +489,58 @@ document.addEventListener('DOMContentLoaded', () => {
             chatInput.value = '';
         }
     }
-    
+
     chatBtn.addEventListener('click', enviarMensaje);
     chatInput.addEventListener('keypress', (e) => e.key === 'Enter' && enviarMensaje());
-    
     socket.on('nuevoMensaje', (data) => {
         if (data.usuario && data.mensaje) mostrarMensaje(data.usuario, data.mensaje);
     });
 
-    async function cargarJugadoresActivos() {
-        try {
-            const res = await fetch('/jugadores');
-            const jugadores = await res.json();
-            listaJugadoresEl.innerHTML = '';
-            
-            jugadores.forEach(jugador => {
-                if (jugador.id === usuario.id_usuario) return;
-                const item = document.createElement('li');
-                item.innerHTML = `<span>${jugador.username}</span> <div class="actions"><button class="btn-invite" data-id="${jugador.id}">Invitar 🤝</button><button class="btn-challenge" data-id="${jugador.id}">Enfrentar ⚔️</button></div>`;
-                listaJugadoresEl.appendChild(item);
-            });
-        } catch (error) { 
-            console.error('Error al cargar jugadores:', error); 
-        }
-    }
-
-    listaJugadoresEl.addEventListener('click', async (e) => {
-        const target = e.target;
-        const idJugador = target.dataset.id;
-        if (!idJugador) return;
-
-        try {
-            if (target.classList.contains('btn-invite')) {
-                const response = await fetch(`/invitar/${idJugador}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ salaId: salaId, juego: 'Ahorcado' })
-                });
-                const data = await response.json();
-                alert(data.message || 'Error');
-
-            } else if (target.classList.contains('btn-challenge')) {
-                const response = await fetch(`/enfrentar/${idJugador}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ juego: 'Ahorcado' })
-                });
-                const data = await response.json();
-                if (data.salaId && data.modo === 'enfrentamiento') {
-                    alert('¡Desafío enviado! Serás redirigido a la sala de enfrentamiento.');
-                    window.location.href = `/ahorcado/${data.salaId}?modo=enfrentamiento`;
-                } else {
-                    alert(data.message || 'Error al desafiar');
-                }
-            }
-        } catch (error) {
-            console.error('Error en acción de jugador:', error);
-        }
-    });
-
+    // ──────────────────────────────────────────
+    // ERRORES DE SOCKET
+    // ──────────────────────────────────────────
     socket.on('error', (error) => {
         console.error('Error del servidor:', error);
         alert(error.mensaje || 'Ha ocurrido un error');
     });
-    
+
+    // ──────────────────────────────────────────
+    // INICIALIZACIÓN
+    // ──────────────────────────────────────────
+    buildPlayersPanel();
+
     if (modo === 'cooperativo') {
-        fetchAndPopulateCategories(categoriaCoopSelect).then(() => {
-            unirseASala();
-        });
+        fetchAndPopulateCategories(categoriaCoopSelect).then(() => unirseASala());
     } else {
         fetchAndPopulateCategories(categoriaEnfrentamientoSelect);
         unirseASala();
-    } 
-    
-    cargarJugadoresActivos();
-    setInterval(cargarJugadoresActivos, 15000);
-
-
-
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    const themeToggle = document.getElementById('theme-toggle');
-    const currentTheme = localStorage.getItem('theme') || 'light';
-    
-    // Aplicar el tema guardado
-    if (currentTheme === 'dark') {
-        document.body.setAttribute('data-theme', 'dark');
-        themeToggle.checked = true;
     }
-    
-    // Escuchar cambios en el toggle
-    themeToggle.addEventListener('change', function() {
-        if (this.checked) {
+
+    // Carga inicial de ambas listas
+    cargarAmigos();
+    cargarRanking();
+
+    // Refresco periódico
+    setInterval(() => { cargarAmigos(); cargarRanking(); }, 20000);
+
+    // ──────────────────────────────────────────
+    // TEMA OSCURO/CLARO
+    // ──────────────────────────────────────────
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        if (currentTheme === 'dark') {
             document.body.setAttribute('data-theme', 'dark');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            document.body.removeAttribute('data-theme');
-            localStorage.setItem('theme', 'light');
+            themeToggle.checked = true;
         }
-    });
-});
-
-
+        themeToggle.addEventListener('change', function () {
+            if (this.checked) {
+                document.body.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+    }
 });

@@ -3,17 +3,34 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gato Culto - Multijugador</title>
+    <title>Gato Culto — Multijugador</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/gato.css" />
 </head>
 <body>
-    <div id="notification"></div>
-    
+    <!-- Notificación flotante -->
+    <div id="notification" role="alert" aria-live="polite"></div>
+
+    <!-- HUD superior en móvil -->
+    <div class="mobile-hud">
+        <div class="hud-status" id="hud-status-text">Conectando...</div>
+        <button class="hud-toggle-btn" id="hud-toggle-btn" aria-label="Abrir panel">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </button>
+    </div>
+
     <!-- Modal para preguntas -->
-    <div id="question-modal">
+    <div id="question-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-text">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Pregunta</h3>
+                <div class="modal-title-row">
+                    <span class="modal-icon">🧠</span>
+                    <h3 class="modal-title" id="modal-title-text">Pregunta</h3>
+                </div>
+                <div class="modal-timer" id="modal-timer-bar">
+                    <div class="timer-fill" id="timer-fill"></div>
+                </div>
             </div>
             <div class="question-text" id="modal-question-text"></div>
             <div class="question-options-modal" id="modal-options"></div>
@@ -23,41 +40,157 @@
         </div>
     </div>
 
+    <!-- Overlay del panel lateral en móvil -->
+    <div class="panel-overlay" id="panel-overlay"></div>
+
     <div class="gato-container">
+        <!-- Área de juego principal -->
         <main class="game-main">
-            <div id="game-status-display">Cargando partida...</div>
-            <div id="board"></div>
+            <div class="game-header">
+                <h1 class="game-title">
+                    <span class="title-icon">🐱</span>
+                    Gato Culto
+                </h1>
+                <div id="game-status-display" class="status-badge">Cargando partida...</div>
+            </div>
+
+            <!-- Panel lobby (solo visible antes de empezar) -->
+            <div id="lobby-panel" class="lobby-card">
+                <div class="lobby-header">
+                    <span class="lobby-icon">🏠</span>
+                    <h2>Sala de Espera</h2>
+                </div>
+                <div id="lobby-state" class="lobby-state-text">Conectando...</div>
+
+                <div id="start-game-controls" class="hidden control-group">
+                    <label class="control-label" for="materias-select">
+                        <span class="label-icon">📚</span> Selecciona una categoría
+                    </label>
+                    <select id="materias-select" class="styled-select"></select>
+                    <button id="propose-start-btn" class="btn btn-primary btn-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        Proponer Inicio
+                    </button>
+                </div>
+
+                <div id="vote-controls" class="hidden vote-group">
+                    <div class="vote-proposal-card">
+                        <p id="vote-proposal-text"></p>
+                    </div>
+                    <div class="vote-buttons">
+                        <button id="vote-yes-btn" class="btn btn-success btn-vote">
+                            ✅ Aceptar
+                        </button>
+                        <button id="vote-no-btn" class="btn btn-danger btn-vote">
+                            ❌ Rechazar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tablero de juego -->
+            <div id="board" aria-label="Tablero de Gato Culto"></div>
+
+            <!-- Jugadores en la sala -->
+            <div class="players-bar">
+                <div class="players-bar-label">Jugadores</div>
+                <ul id="players-list" class="players-inline-list"></ul>
+            </div>
         </main>
 
-        <aside class="side-panel">
-            <div id="lobby-panel" class="panel">
-                <h3>Sala de Espera</h3>
-                <div id="lobby-state">Conectando...</div>
-                <div id="start-game-controls" class="hidden" style="text-align: center; margin-top: 10px;">
-                    <label for="materias-select">Categoría:</label>
-                    <select id="materias-select"></select>
-                    <button id="propose-start-btn">Proponer Inicio</button>
-                </div>
-                 <div id="vote-controls" class="hidden" style="text-align: center; margin-top: 10px;">
-                    <p id="vote-proposal-text"></p>
-                    <button id="vote-yes-btn">✅ Aceptar</button>
-                    <button id="vote-no-btn">❌ Rechazar</button>
-                </div>
-            </div>
-            <div class="panel"><h3>Jugadores en la Sala</h3><ul id="players-list"></ul></div>
+        <!-- Panel lateral -->
+        <aside class="side-panel" id="side-panel">
+            <button class="panel-close-btn" id="panel-close-btn" aria-label="Cerrar panel">✕</button>
 
-            <div class="panel">
-                <h3>Jugadores Activos</h3>
-                <ul id="lista-jugadores-activos"><li>Cargando...</li></ul>
+            <!-- Tabs de navegación -->
+            <div class="tabs-nav" role="tablist">
+                <button class="tab-btn active" data-tab="friends" role="tab" aria-selected="true">
+                    <span class="tab-icon">👥</span>
+                    <span class="tab-label">Amigos</span>
+                </button>
+                <button class="tab-btn" data-tab="ranking" role="tab" aria-selected="false">
+                    <span class="tab-icon">🏆</span>
+                    <span class="tab-label">Ranking</span>
+                </button>
+                <button class="tab-btn" data-tab="chat" role="tab" aria-selected="false">
+                    <span class="tab-icon">💬</span>
+                    <span class="tab-label">Chat</span>
+                    <span class="tab-badge hidden" id="chat-badge"></span>
+                </button>
             </div>
-            
-            <div class="panel"><h3>💬 Chat de la Sala</h3><div id="chatBox"></div><div class="chat-input"><input id="chatInput" type="text" placeholder="Escribe un mensaje…"><button id="chatBtn">Enviar</button></div></div>
+
+            <!-- Tab: Amigos -->
+            <div class="tab-content active" id="tab-friends">
+                <div class="panel-section">
+                    <div class="section-header">
+                        <h3>Mis Amigos</h3>
+                        <span class="section-count" id="friends-count">0</span>
+                    </div>
+                    <div class="search-box">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        <input type="text" id="friends-search" placeholder="Buscar amigo..." class="search-input">
+                    </div>
+                    <ul id="lista-amigos" class="player-list">
+                        <li class="list-loading">
+                            <span class="loading-dot"></span> Cargando amigos...
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="panel-section">
+                    <div class="section-header">
+                        <h3>Todos los Jugadores</h3>
+                        <span class="section-count" id="active-count">0</span>
+                    </div>
+                    <ul id="lista-jugadores-activos" class="player-list">
+                        <li class="list-loading">
+                            <span class="loading-dot"></span> Cargando jugadores...
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tab: Ranking -->
+            <div class="tab-content" id="tab-ranking">
+                <div class="panel-section">
+                    <div class="section-header">
+                        <h3>Clasificación Global</h3>
+                        <button class="refresh-btn" id="refresh-ranking-btn" aria-label="Actualizar ranking">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+                        </button>
+                    </div>
+                    <ul id="lista-ranking" class="player-list ranking-list">
+                        <li class="list-loading">
+                            <span class="loading-dot"></span> Cargando ranking...
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tab: Chat -->
+            <div class="tab-content" id="tab-chat">
+                <div class="chat-wrapper">
+                    <div id="chatBox" aria-live="polite" aria-label="Chat de la sala"></div>
+                    <div class="chat-input-row">
+                        <input
+                            id="chatInput"
+                            type="text"
+                            placeholder="Escribe un mensaje…"
+                            maxlength="200"
+                            autocomplete="off"
+                        >
+                        <button id="chatBtn" class="chat-send-btn" aria-label="Enviar mensaje">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </aside>
     </div>
 
 <script>
-    window.MATERIAS_DATA= {{{json materias}}}
-    window.DATA_USER = {{{json user}}}
+    window.MATERIAS_DATA = {{{json materias}}};
+    window.DATA_USER = {{{json user}}};
 </script>
 <script src="/socket.io/socket.io.js"></script>
 <script src="/public/js/gato.controller.js" defer></script>

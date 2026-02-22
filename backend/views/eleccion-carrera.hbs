@@ -1,95 +1,42 @@
+<!--eleccion-carrera.hbs-->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Selección de Carrera | QueBuenDato.com.mx</title>
-    <meta name="description" content="Elige tu carrera profesional y comienza tu camino al éxito académico">
-    
-    <!-- Estilos -->
-    <link rel="stylesheet" href="/css/sin-carrera.css">
-    
-    <!-- Fuentes -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Meta tags para SEO y social media -->
-    <meta property="og:title" content="Selección de Carrera - QueBuenDato">
-    <meta property="og:description" content="Elige tu carrera profesional y comienza tu camino al éxito">
-    <meta property="og:type" content="website">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exámenes por Carrera</title>
+  
+  <link rel="stylesheet" href="/css/eleccion-examen.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Fondo decorativo -->
-    <div class="body-bg"></div>
+  <!-- Contenedor del carrusel -->
+  <div class="carousel-container">
+    <h1 style="text-align: center; color: var(--text-primary); margin-bottom: 2rem; font-size: 2.5rem;">
+      <i class="fas fa-graduation-cap"></i> Selecciona tu Carrera
+    </h1>
     
-    <!-- Contenedor principal -->
-    <main class="career-selection-container" role="main">
-        <!-- Encabezado -->
-        <header class="career-header">
-            <div class="career-icon-wrapper">
-                <div class="career-icon" aria-hidden="true"></div>
-                <div class="career-icon-glow" aria-hidden="true"></div>
-            </div>
-            
-            <h1 class="career-title">
-                ¡Vaya! Parece que no tienes una carrera asignada
-            </h1>
-            
-            <p class="career-subtitle">
-                No te preocupes, este es el primer paso hacia tu éxito profesional. 
-                Elige tu carrera y comienza esta emocionante journey.
-            </p>
-        </header>
+    <div class="carousel" id="carousel"></div>
 
-        <!-- Formulario -->
-        <form action="/asignar-carrera" method="POST" class="career-form" id="careerForm" novalidate>
-            <div class="form-group">
-                <label for="carrera" class="form-label">
-                    Selecciona tu carrera profesional
-                </label>
-                
-                <div class="select-container">
-                    <select 
-                        name="id_carrera" 
-                        id="carrera" 
-                        class="career-select" 
-                        required
-                        aria-required="true"
-                        aria-describedby="career-help"
-                    >
-                        <option value="" disabled selected hidden>
-                            👇 Elige una carrera de la lista...
-                        </option>
-                        {{#each carreras}}
-                            <option value="{{this.id_carrera}}">
-                                {{this.descripcion}}
-                            </option>
-                        {{/each}} 
-                    </select>
-                </div>
-                
-                <small id="career-help" class="help-text" style="display: none;">
-                    Selecciona una carrera para continuar
-                </small>
-            </div>
+    <!-- Botones de control -->
+    <div class="controls">
+      <button onclick="location.href='/examen-aleatorio'" class="boton-aleatorio">
+        <i class="fas fa-dice"></i> Aleatorio
+      </button>
+      <button onclick="location.href='/materias'">
+        <i class="fas fa-arrow-left"></i> Regresar
+      </button>
+    </div>
+  </div>
 
-            <!-- Botón de acción -->
-            <div class="btn-container">
-                <button 
-                    type="submit" 
-                    class="btn-save" 
-                    id="submitBtn"
-                    disabled
-                >
-                    <span class="btn-icon" aria-hidden="true">🚀</span>
-                    <span class="btn-text">Iniciar Mi Journey</span>
-                </button>
-            </div>
-        </form>
-    </main>
+  <!-- Zonas invisibles para detectar clicks a izquierda y derecha -->
+  <div id="leftZone" class="zone-click izquierda"></div>
+  <div id="rightZone" class="zone-click derecha"></div>
 
-    <!-- JavaScript mejorado -->
-    <script src="/public/js/eleccionCarrera.controller.js" defer></script>
+  <script>
+    window.DATA_MATERIAS = {{{json materias}}};
+  </script>
+
+  <script src="/public/js/materiasCarrera.controller.js" defer></script>
 </body>
 </html>

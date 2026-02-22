@@ -7,7 +7,6 @@ router.get('/auth/google',
 );
 
 router.get('/auth/google/callback',
-    // Middleware personalizado para capturar el error ANTES de redirigir
     (req, res, next) => {
         passport.authenticate('google', (err, user, info) => {
             if (err) {
@@ -15,9 +14,7 @@ router.get('/auth/google/callback',
                 return res.redirect('/login?error=serverError');
             }
 
-            // ✅ Si no hay usuario pero hay info, verificar el estado
             if (!user && info) {
-                // Usuario pendiente
                 if (info.message === 'pending') {
                     return res.render('estado-cuenta', {
                         layout: false,
@@ -26,7 +23,6 @@ router.get('/auth/google/callback',
                     });
                 }
 
-                // Usuario suspendido
                 if (info.message === 'suspended') {
                     return res.render('estado-cuenta', {
                         layout: false,
@@ -35,16 +31,13 @@ router.get('/auth/google/callback',
                     });
                 }
 
-                // Otro error
                 return res.redirect('/login?error=' + encodeURIComponent(info.message || 'Error al autenticar'));
             }
 
-            // Si no hay usuario y no hay info, error genérico
             if (!user) {
                 return res.redirect('/login?error=Error al autenticar con Google');
             }
 
-            // ✅ Login exitoso, establecer sesión manualmente
             req.logIn(user, async (loginErr) => {
                 if (loginErr) {
                     console.error('Error al establecer sesión:', loginErr);
@@ -52,7 +45,6 @@ router.get('/auth/google/callback',
                 }
 
                 try {
-                    // Verificar si el usuario ya tiene carrera
                     const [carreraResult] = await req.pool.query(
                         `SELECT c.id_carrera
                         FROM carrera c
@@ -62,25 +54,8 @@ router.get('/auth/google/callback',
                         [user.id_usuario]
                     );
 
-                    // Crear sesión parcial si no tiene carrera
-                    if (!carreraResult || carreraResult.length === 0) {
-                        req.session.user = {
-                            id_usuario: user.id_usuario,
-                            username: user.username,
-                            email: user.email,
-                            apodo: user.apodo || user.username,
-                            descripcion: user.descripcion || '',
-                            id_tp_usuario: user.id_tp_usuario,
-                            foto_perfil: user.foto_perfil || '/uploads/default_avatar.png',
-                            id_carrera: null,
-                            primer_ingreso: user.primer_ingreso || 0 // ✨ Agregar flag
-                        };
-                        global.sesionesActivas.add(user.id_usuario);
-                        return res.redirect('/sin-carrera');
-                    }
-
-                    // Crear sesión completa si ya tiene carrera
-                    req.session.user = {
+                    // Objeto de sesión base
+                    const sessionData = {
                         id_usuario: user.id_usuario,
                         username: user.username,
                         email: user.email,
@@ -88,13 +63,22 @@ router.get('/auth/google/callback',
                         descripcion: user.descripcion || '',
                         id_tp_usuario: user.id_tp_usuario,
                         foto_perfil: user.foto_perfil || '/uploads/default_avatar.png',
-                        id_carrera: carreraResult[0].id_carrera,
-                        primer_ingreso: user.primer_ingreso || 0 // ✨ Agregar flag
+                        primer_ingreso: user.primer_ingreso || 0
                     };
 
+                    global.sesionesActivas = global.sesionesActivas || new Set();
+
+                    // Sin carrera → redirigir a /sin-carrera (que renderiza elegir_carrera)
+                    if (!carreraResult || carreraResult.length === 0) {
+                        req.session.user = { ...sessionData, id_carrera: null };
+                        global.sesionesActivas.add(user.id_usuario);
+                        return res.redirect('/sin-carrera');
+                    }
+
+                    // Con carrera → sesión completa
+                    req.session.user = { ...sessionData, id_carrera: carreraResult[0].id_carrera };
                     global.sesionesActivas.add(user.id_usuario);
 
-                    // Redirección según rol
                     switch (user.id_tp_usuario) {
                         case 3:
                             return res.redirect('/admin');

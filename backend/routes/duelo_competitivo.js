@@ -28,7 +28,7 @@ router.get('/matchmaking', async (req, res) => {
         // El resultado estará en userData[0]
         // Calcular ranking (posición en el ranking global)
         const [rankingData] = await pool.query(
-            `SELECT COUNT(*) + 1 as rank
+            `SELECT COUNT(*) + 1
              FROM usuario 
              WHERE puntos > (SELECT puntos FROM usuario WHERE id_usuario = ?)`,
             [userId]

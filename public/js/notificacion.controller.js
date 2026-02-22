@@ -234,6 +234,7 @@ if (window.usuarioActual) {
                         </button>
                     `;
                 }
+
                 else if (notif.tipo === 'invitacion') {
                     li.innerHTML = `
                         <span>🎮 ${notif.mensaje}</span>
@@ -291,6 +292,43 @@ if (window.usuarioActual) {
                         <button class="btn-eliminar" 
                                 data-id="${notif.id_notificacion}" 
                                 style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-left: 5px;">
+                            ✕
+                        </button>
+                    `;
+                  
+                }
+                // 📩 SOLICITUD DE AMISTAD (tú recibes la solicitud)
+                else if (notif.tipo === 'solicitud_amistad') {
+                    li.innerHTML = `
+                        <span>🤝 ${notif.mensaje}</span>
+                        <button class="btn-aceptar"
+                                data-id="${notif.id_notificacion}"
+                                data-tipo="solicitud_amistad"
+                                style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+                                    color: white; border: none; padding: 8px 14px;
+                                    border-radius: 5px; cursor: pointer; margin-left: 8px;
+                                    font-weight: bold; font-size: 13px;">
+                            Aceptar
+                        </button>
+                        <button class="btn-rechazar"
+                                data-id="${notif.id_notificacion}"
+                                style="background: #dc3545; color: white; border: none;
+                                    padding: 5px 10px; border-radius: 3px; cursor: pointer;
+                                    margin-left: 5px;">
+                            ✕
+                        </button>
+                    `;
+                }
+
+                // 🎉 AMISTAD ACEPTADA (tú enviaste la solicitud y fue aceptada)
+                else if (notif.tipo === 'amistad_aceptada') {
+                    li.innerHTML = `
+                        <span>🎉 ${notif.mensaje}</span>
+                        <button class="btn-eliminar"
+                                data-id="${notif.id_notificacion}"
+                                style="background: #dc3545; color: white; border: none;
+                                    padding: 5px 10px; border-radius: 3px; cursor: pointer;
+                                    margin-left: 5px;">
                             ✕
                         </button>
                     `;
@@ -683,8 +721,9 @@ if (window.usuarioActual) {
                             
                             return;
                         }
-                        
-                        // 🎮 INVITACIÓN A MINIJUEGO
+
+
+                                                // 🎮 INVITACIÓN A MINIJUEGO
                         if (data.tipo === 'invitacion') {
                             console.log('[BTN]: 🎮 INVITACIÓN ACEPTADA, redirigiendo:', data.redirigir);
                             

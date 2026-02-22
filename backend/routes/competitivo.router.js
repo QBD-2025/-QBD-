@@ -84,16 +84,7 @@ async function actualizarNotificacionesAlTerminar(salaId, conn) {
     }
 }
 
-// Obtener ranking del usuario
-async function obtenerRankingUsuario(idUsuario) {
-    const [ranking] = await pool.query(`
-        SELECT COUNT(*) + 1 as puesto
-        FROM usuario
-        WHERE puntos > (SELECT puntos FROM usuario WHERE id_usuario = ?)
-    `, [idUsuario]);
-    
-    return ranking[0].puesto;
-}
+
 
 // =============================================
 // 🏠 PORTAL PRINCIPAL
@@ -146,7 +137,7 @@ router.get('/portal', async (req, res) => {
             carrera_descripcion: carrera ? carrera.descripcion : null
         };
         
-        res.render('duelodelascenso', {
+        res.render('DueloDelAscenso', {
             layout: 'main',
             user: userWithCarrera,
             stats: {
@@ -270,7 +261,7 @@ router.get('/api/ranking/carrera/:id_carrera', async (req, res) => {
         res.status(500).json({ error: 'Error al obtener ranking' });
     }
 });
-
+//.....demas codigo funcional
 // =============================================
 // 🎯 VERIFICAR DUELO ACTIVO
 // =============================================
