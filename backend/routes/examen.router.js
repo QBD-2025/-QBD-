@@ -170,7 +170,7 @@ router.get('/examen/:id_materia', isAuthenticated, async (req, res) => {
             mostrarModal,
             errorMsg,
             dificultad: dificultad || null,
-            layout: false
+            layout: "main"
         });
 
         console.log(`✅ === FIN GET EXAMEN ===\n`);

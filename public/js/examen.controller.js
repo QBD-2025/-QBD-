@@ -556,7 +556,7 @@ function finalizarExamen() {
 // =================================================================
 document.addEventListener('DOMContentLoaded', function() {
     const themeToggle = document.getElementById('theme-toggle');
-    const currentTheme = localStorage.getItem('theme') || 'light';
+    const currentTheme = localStorage.getItem('theme') || 'dark';
     
     document.documentElement.setAttribute('data-theme', currentTheme);
     
