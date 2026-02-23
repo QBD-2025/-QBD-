@@ -395,7 +395,7 @@ body {
 }
 
 .form-label::before {
-  content: '📚';
+  content: '';
   filter: grayscale(0.3);
   font-size: 1.2rem;
   transition: var(--transicion-rapida);

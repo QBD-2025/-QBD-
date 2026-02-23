@@ -2,8 +2,9 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../db/conexion');
+const { isAuthenticated } = require('../middlewares/auth');
 
-router.get('/ranking', async (req, res) => {
+router.get('/ranking', isAuthenticated, async (req, res) => {
     try {
         const [rows] = await pool.query(`
             SELECT 
@@ -16,24 +17,23 @@ router.get('/ranking', async (req, res) => {
                 r.fecha_actualizacion
             FROM usuario u
             LEFT JOIN ranking r ON u.id_usuario = r.id_usuario
-            where u.verificado = 1
+            WHERE u.verificado = 1
             ORDER BY u.puntos DESC, r.fecha_actualizacion ASC
             LIMIT 100
         `);
 
         const usuariosConAvatar = rows.map((user, index) => {
             let foto_perfil = user.foto_perfil;
-            
+
             if (!foto_perfil || foto_perfil.trim() === '') {
                 foto_perfil = '/uploads/default_avatar.png';
-            }
-            else if (!foto_perfil.startsWith('/') && !foto_perfil.startsWith('http')) {
+            } else if (!foto_perfil.startsWith('/') && !foto_perfil.startsWith('http')) {
                 foto_perfil = `/uploads/${foto_perfil}`;
             }
-            
+
             return {
                 ...user,
-                foto_perfil: foto_perfil,
+                foto_perfil,
                 posicion_real: index + 1
             };
         });
@@ -41,12 +41,13 @@ router.get('/ranking', async (req, res) => {
         res.render('ranking', {
             title: 'Ranking',
             usuarios: usuariosConAvatar,
-            layout: "main"
+            layout: 'main',
+            user: req.session.user
         });
     } catch (err) {
         console.error('Error al obtener ranking:', err);
         res.status(500).send('Error al obtener ranking');
     }
-}); 
+});
 
 module.exports = router;

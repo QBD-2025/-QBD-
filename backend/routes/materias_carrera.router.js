@@ -4,10 +4,14 @@ const router = express.Router();
 const db = require('../db/conexion');
 const { isAuthenticated } = require('../middlewares/auth');
 
+function hasValidAnswerCount(respuestas) {
+    return Array.isArray(respuestas) && respuestas.length > 0 && respuestas.length <= 4;
+}
+
 // ===================================================================================
 // GET LISTA DE CARRERAS (Carrusel)
 // ===================================================================================
-router.get('/materias_carrera', async (req, res) => {
+router.get('/materias_carrera', isAuthenticated, async (req, res) => {
     try {
         console.log('\n🎓 === CARGANDO CARRERAS ===');
         
@@ -29,7 +33,7 @@ router.get('/materias_carrera', async (req, res) => {
 // ===================================================================================
 // GET TEMÁTICAS DE UNA CARRERA
 // ===================================================================================
-router.get('/carrera/:id_carrera/tematicas', async (req, res) => {
+router.get('/carrera/:id_carrera/tematicas', isAuthenticated, async (req, res) => {
     const { id_carrera } = req.params;
     
     try {
@@ -53,7 +57,7 @@ router.get('/carrera/:id_carrera/tematicas', async (req, res) => {
 // ===================================================================================
 // GET EXAMEN POR CARRERA - CON SELECCIÓN DE TEMÁTICA Y DIFICULTAD
 // ===================================================================================
-router.get('/examen-carrera/:id_carrera', async (req, res) => {
+router.get('/examen-carrera/:id_carrera', isAuthenticated, async (req, res) => {
     const { id_carrera } = req.params;
     const { tematica, dificultad } = req.query;
     const id_usuario = req.session.user?.id_usuario;
@@ -135,24 +139,38 @@ router.get('/examen-carrera/:id_carrera', async (req, res) => {
             // Verificar cuántas preguntas existen
             const [[countRow]] = await db.query(
                 `SELECT COUNT(*) as total 
-                FROM pregunta 
-                WHERE id_carrera = ? AND id_tematica = ? AND id_dificultad = ?`,
+                FROM pregunta p
+                WHERE p.id_carrera = ? 
+                  AND p.id_tematica = ? 
+                  AND p.id_dificultad = ?
+                  AND (
+                    SELECT COUNT(*)
+                    FROM respuesta r
+                    WHERE r.id_pregunta = p.id_pregunta
+                  ) BETWEEN 1 AND 4`,
                 [id_carrera, tematica, dificultad]
             );
             
             console.log(`📈 Total preguntas disponibles: ${countRow.total}`);
 
-            if (countRow.total === 0) {
-                console.warn(`⚠️ No hay preguntas para esta combinación`);
-                errorMsg = `No hay preguntas disponibles para esta temática y dificultad. Por favor, selecciona otra combinación.`;
+            if (countRow.total < 10) {
+                console.warn(`No hay suficientes preguntas para esta combinacion`);
+                errorMsg = `No hay suficientes preguntas validas para esta combinacion (se requieren 10 con entre 1 y 4 respuestas).`;
             } else {
                 // Cargar preguntas aleatorias
                 [preguntas] = await db.query(
-                    `SELECT id_pregunta, pregunta, retroalimentacion, puntos_carrera as puntos 
-                    FROM pregunta 
-                    WHERE id_carrera = ? AND id_tematica = ? AND id_dificultad = ?
+                    `SELECT p.id_pregunta, p.pregunta, p.retroalimentacion, p.puntos_carrera as puntos 
+                    FROM pregunta p
+                    WHERE p.id_carrera = ? 
+                      AND p.id_tematica = ? 
+                      AND p.id_dificultad = ?
+                      AND (
+                        SELECT COUNT(*)
+                        FROM respuesta r
+                        WHERE r.id_pregunta = p.id_pregunta
+                      ) BETWEEN 1 AND 4
                     ORDER BY RAND() 
-                    LIMIT 20`,
+                    LIMIT 10`,
                     [id_carrera, tematica, dificultad]
                 );
 
@@ -162,17 +180,25 @@ router.get('/examen-carrera/:id_carrera', async (req, res) => {
                     console.warn(`⚠️ Query no retornó preguntas`);
                     errorMsg = `Error al cargar preguntas. Intenta de nuevo.`;
                 } else {
-                    // Cargar respuestas para cada pregunta
+                    const preguntasValidas = [];
+
+                    // Cargar respuestas para cada pregunta y filtrar inv?lidas
                     for (let pregunta of preguntas) {
                         const [respuestas] = await db.query(
                             'SELECT id_respuesta, respuesta, correcta FROM respuesta WHERE id_pregunta = ?',
                             [pregunta.id_pregunta]
                         );
+                        if (!hasValidAnswerCount(respuestas)) {
+                            continue;
+                        }
                         pregunta.respuestas = respuestas;
-                        console.log(`  ✓ Pregunta ${pregunta.id_pregunta}: ${respuestas.length} respuestas`);
+                        console.log(`  ??? Pregunta ${pregunta.id_pregunta}: ${respuestas.length} respuestas`);
+                        preguntasValidas.push(pregunta);
                     }
 
-                    // Guardar en sesión
+                    preguntas = preguntasValidas;
+
+                    // Guardar en sesi??n
                     req.session.preguntasExamen = preguntas.map(p => ({
                         id_pregunta: p.id_pregunta
                     }));
@@ -180,13 +206,18 @@ router.get('/examen-carrera/:id_carrera', async (req, res) => {
                     req.session.tematicaExamen = parseInt(tematica);
                     req.session.carreraExamen = parseInt(id_carrera);
                     
-                    console.log(`💾 Guardado en sesión:`);
+                    console.log(`???? Guardado en sesi??n:`);
                     console.log(`   - Preguntas: ${req.session.preguntasExamen.length}`);
                     console.log(`   - Dificultad: ${req.session.dificultadExamen}`);
-                    console.log(`   - Temática: ${req.session.tematicaExamen}`);
+                    console.log(`   - Tem??tica: ${req.session.tematicaExamen}`);
                     console.log(`   - Carrera: ${req.session.carreraExamen}`);
 
-                    mostrarModal = false; // No mostrar modal si hay preguntas
+                    if (preguntas.length > 0) {
+                        mostrarModal = false; // No mostrar modal si hay preguntas
+                    } else {
+                        mostrarModal = true;
+                        errorMsg = `No hay suficientes preguntas validas para esta combinacion (se requieren 10 con entre 1 y 4 respuestas).`;
+                    }
                 }
             }
         } else {
@@ -357,3 +388,4 @@ router.post('/resultados-carrera', isAuthenticated, async (req, res) => {
 });
 
 module.exports = router;
+

@@ -70,18 +70,10 @@ window.addEventListener('DOMContentLoaded', () => {
     console.log(`   - Total preguntas: ${totalPreguntas}`);
     console.log(`   - Mensaje error: ${errorMsg || 'Ninguno'}`);
     
-    // Manejar mensaje de error
+    // Manejar mensaje de error (sin abrir modales automáticamente)
     if (errorMsg) {
-        console.log('⚠️ Mostrando mensaje de error');
+        console.log('Mostrando mensaje de error');
         alert(errorMsg);
-        
-        if (TIPO_EXAMEN === 'MATERIA') {
-            const modalDificultad = document.getElementById('modalDificultad');
-            if (modalDificultad) modalDificultad.classList.remove('oculto');
-        } else if (TIPO_EXAMEN === 'CARRERA') {
-            const modalTematicaDificultad = document.getElementById('modalTematicaDificultad');
-            if (modalTematicaDificultad) modalTematicaDificultad.classList.remove('oculto');
-        }
     }
     
     console.log('✅ === FIN CARGA PÁGINA ===\n');

@@ -20,8 +20,9 @@ class ThemeAnimationManager {
   }
 
   getCurrentTheme() {
-    return document.documentElement.hasAttribute('data-theme') ? 'dark' : 'light';
+    return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
   }
+
 
   getThemeConfig() {
     return this.config[this.currentTheme];

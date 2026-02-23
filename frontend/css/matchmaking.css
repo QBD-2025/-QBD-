@@ -538,9 +538,18 @@ body::before {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
     transition: all var(--transicion-rapida);
     cursor: pointer;
     color: var(--texto-principal); /* Añadido color de texto */
+}
+
+.player-main {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
 .player-item:hover {
@@ -560,6 +569,7 @@ body::before {
 .player-info {
     flex: 1;
     margin-left: 12px;
+    min-width: 0;
 }
 
 .player-info strong {
@@ -567,12 +577,18 @@ body::before {
     color: var(--texto-principal); /* Cambiado a variable de texto */
     font-size: 1rem;
     margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .player-info p {
     color: var(--texto-secundario); /* Cambiado a variable de texto */
     font-size: 0.9rem;
     margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .player-actions {

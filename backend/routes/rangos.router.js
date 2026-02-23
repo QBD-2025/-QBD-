@@ -80,9 +80,6 @@ async function crearNotificacionPromocion(userId, puntos, conn = null) {
 // ✅✅✅ FUNCIÓN CORREGIDA - SIEMPRE CONSULTA PUNTOS TOTALES
 async function verificarPromocionDisponible(userId, puntosNuevos = null) {
     try {
-        console.log(`\n═══════════════════════════════════════════════════════════`);
-        console.log(`[VERIFICAR PROMOCIÓN]: Iniciando para usuario ${userId}`);
-        console.log(`[VERIFICAR PROMOCIÓN]: Puntos del evento: ${puntosNuevos || 'N/A'}`);
         
         // ✅ SIEMPRE consultar los puntos TOTALES actuales del usuario
         const [usuario] = await pool.query(
@@ -91,8 +88,6 @@ async function verificarPromocionDisponible(userId, puntosNuevos = null) {
         );
         
         if (usuario.length === 0) {
-            console.log(`[VERIFICAR PROMOCIÓN]: ❌ Usuario ${userId} no encontrado`);
-            console.log(`═══════════════════════════════════════════════════════════\n`);
             return;
         }
         
@@ -104,16 +99,9 @@ async function verificarPromocionDisponible(userId, puntosNuevos = null) {
         else if (id_tp_usuario === 3) rolActual = 'admin';
         else if (id_tp_usuario === 4) rolActual = 'revisor'
         
-        console.log(`[VERIFICAR PROMOCIÓN]: Estado del usuario:`);
-        console.log(`  - ID: ${userId}`);
-        console.log(`  - Puntos TOTALES: ${puntos}`);
-        console.log(`  - id_tp_usuario: ${id_tp_usuario}`);
-        console.log(`  - Rol actual: ${rolActual}`);
         
         // Si ya es admin, no hacer nada
         if (id_tp_usuario === 3) {
-            console.log(`[VERIFICAR PROMOCIÓN]: ℹ️ Usuario ya es admin, no verificar`);
-            console.log(`═══════════════════════════════════════════════════════════\n`);
             return;
         }
         
@@ -121,21 +109,17 @@ async function verificarPromocionDisponible(userId, puntosNuevos = null) {
         let notificacionCreada = false;
         
         if (id_tp_usuario === 1 && puntos >= 5000) {
-            console.log(`[VERIFICAR PROMOCIÓN]: 🎯 Usuario alcanzó 2500+ puntos (Revisor disponible)`);
             await crearNotificacionPromocion(userId, puntos);
             notificacionCreada = true;
         } else if (id_tp_usuario === 2 && puntos >= 5000) {
-            console.log(`[VERIFICAR PROMOCIÓN]: 🎯 Editor alcanzó 5000+ puntos (Revisor disponible)`);
             await crearNotificacionPromocion(userId, puntos);
             notificacionCreada = true;
         } else {
             const puntosNecesarios = id_tp_usuario === 1 ? 2500 - puntos : 5000 - puntos;
-            console.log(`[VERIFICAR PROMOCIÓN]: ⏳ Aún no alcanza umbrales`);
             console.log(`  - Necesita ${puntosNecesarios} puntos más para ${id_tp_usuario === 1 ? 'Editor' : 'Revisor'}`);
         }
         
         if (notificacionCreada) {
-            console.log(`[VERIFICAR PROMOCIÓN]: ✅ Notificación de promoción enviada`);
         }
         
         console.log(`═══════════════════════════════════════════════════════════\n`);

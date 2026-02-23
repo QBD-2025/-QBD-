@@ -484,3 +484,109 @@ footer {
 }
 
 /* ================== FIN DEL ARCHIVO ================== */ 
+
+/* ================== NUEVO BOTÓN FLOTANTE DE CASA ================== */
+.floating-home {
+    position: fixed;
+    bottom: clamp(15px, 4vw, 25px);
+    left: clamp(15px, 4vw, 25px);  /* Cambiado a la izquierda */
+    width: clamp(50px, 12vw, 70px);
+    height: clamp(50px, 12vw, 70px);
+    border-radius: var(--radius-full);
+    background: var(--accent-yellow);
+    color: var(--text-primary);
+    border: none;
+    border-bottom: clamp(2px, 0.5vw, 4px) solid #e0a800;
+    font-size: clamp(20px, 5vw, 28px);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 clamp(3px, 1vw, 6px) clamp(8px, 2vw, 15px) var(--shadow-medium);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulseHome 2s infinite;
+    /* Mejora área táctil */
+    min-width: 44px;
+    min-height: 44px;
+}
+
+/* Animación específica para el botón de casa */
+@keyframes pulseHome {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 clamp(3px, 1vw, 6px) clamp(8px, 2vw, 15px) var(--shadow-medium);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 clamp(6px, 2vw, 12px) clamp(15px, 4vw, 25px) var(--shadow-heavy);
+    }
+}
+
+/* Estilo específico para tema oscuro */
+[data-theme="dark"] .floating-home {
+    background: linear-gradient(135deg, var(--header-gradient-start), var(--header-gradient-end));
+    border-bottom: clamp(2px, 0.5vw, 4px) solid var(--header-gradient-end);
+    color: white;
+}
+
+/* Hover solo para dispositivos con mouse */
+@media (hover: hover) {
+    .floating-home:hover {
+        background: #ffd44f;
+        transform: translateY(clamp(-3px, -1vw, -5px)) scale(1.05);
+        box-shadow: 0 clamp(4px, 1.2vw, 8px) clamp(10px, 3vw, 20px) var(--shadow-heavy);
+        animation: none;
+    }
+    
+    [data-theme="dark"] .floating-home:hover {
+        background: linear-gradient(135deg, var(--header-gradient-end), var(--header-gradient-start));
+        box-shadow: 0 clamp(4px, 1.2vw, 8px) clamp(10px, 3vw, 20px) rgba(108, 0, 255, 0.6);
+    }
+}
+
+.floating-home:active {
+    transform: translateY(2px);
+    border-bottom-width: clamp(1px, 0.3vw, 2px);
+    box-shadow: 0 clamp(2px, 0.5vw, 3px) clamp(4px, 1vw, 8px) var(--shadow-light);
+}
+
+[data-theme="dark"] .floating-home:active {
+    border-bottom-color: var(--header-gradient-end);
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .floating-home {
+        width: clamp(45px, 10vw, 60px);
+        height: clamp(45px, 10vw, 60px);
+        font-size: clamp(18px, 4vw, 24px);
+        bottom: clamp(15px, 3vw, 20px);
+        left: clamp(15px, 3vw, 20px);
+    }
+}
+
+@media (max-width: 480px) {
+    .floating-home {
+        width: 45px;
+        height: 45px;
+        font-size: 20px;
+        bottom: 15px;
+        left: 15px;
+    }
+}
+
+/* Orientación horizontal */
+@media (max-height: 30rem) and (orientation: landscape) {
+    .floating-home {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+}
+
+/* Focus states para accesibilidad */
+.floating-home:focus-visible {
+    outline: 3px solid var(--accent-yellow);
+    outline-offset: 3px;
+}

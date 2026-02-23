@@ -1,16 +1,30 @@
-    // Ejecutar cuando el contenido del DOM haya cargado
-    window.addEventListener('DOMContentLoaded', () => {
-      
-      // Obtener referencia al elemento de audio
-      const sonido = document.getElementById('sonidoCurioso');
-      
-      // Intentar reproducir el audio automáticamente
-      sonido.play().catch(err => {
-        console.warn("El sonido no se pudo reproducir automáticamente:", err);
-      });
+window.addEventListener('DOMContentLoaded', () => {
+  const sonido = document.getElementById('sonidoCurioso');
+  let audioDesbloqueado = false;
 
-      // Redirigir al usuario al menú principal al hacer clic en cualquier parte de la página
-      document.body.addEventListener('click', () => {
-        window.location.href = "/menu_principal";
-      });
+  // Intentar reproducir automáticamente
+  sonido.play()
+    .then(() => { audioDesbloqueado = true; })
+    .catch(() => {
+      // Autoplay bloqueado — esperar primer click para desbloquear
+      console.warn('Autoplay bloqueado, esperando interacción del usuario.');
     });
+
+  document.body.addEventListener('click', () => {
+    if (!audioDesbloqueado) {
+      // Primer click: solo desbloquear el audio, NO redirigir aún
+      sonido.play()
+        .then(() => { audioDesbloqueado = true; })
+        .catch(err => console.warn('No se pudo reproducir:', err));
+      return;
+    }
+
+    // Audio ya sonando: redirigir
+    window.location.href = '/menu_principal';
+  });
+
+  // Cuando el audio termine de forma natural, redirigir
+  sonido.addEventListener('ended', () => {
+    window.location.href = '/menu_principal';
+  });
+});

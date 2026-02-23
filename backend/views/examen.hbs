@@ -78,7 +78,7 @@
       
       <div class="pre-examen-buttons">
         <!-- MODAL DE SELECCIÓN DE DIFICULTAD -->
-        <div id="modalDificultad" class="modal-dificultad {{#unless mostrarModal}}oculto{{/unless}}">
+        <div id="modalDificultad" class="modal-dificultad oculto">
           <div class="modal-dificultad-content">
             <h2><i class="fas fa-sliders-h"></i> Selecciona la Dificultad</h2>
             <p>Elige el nivel de dificultad para tu examen. Cada nivel otorga diferentes puntos por pregunta correcta.</p>
@@ -203,24 +203,12 @@
 {{!-- ✅ Script para manejar modal automáticamente --}}
 <script>
 window.addEventListener('DOMContentLoaded', () => {
-    const modalDificultad = document.getElementById('modalDificultad');
     const errorMsg = document.body.dataset.errorMsg;
-    
-    // Si hay mensaje de error, mostrar alerta y modal
     if (errorMsg) {
         alert(errorMsg);
-        if (modalDificultad) {
-            modalDificultad.classList.remove('oculto');
-        }
     }
-    
-    // Si mostrarModal es true, abrir el modal
-    {{#if mostrarModal}}
-    if (modalDificultad) {
-        modalDificultad.classList.remove('oculto');
-    }
-    {{/if}}
 });
 </script>
 </body>
 </html>
+

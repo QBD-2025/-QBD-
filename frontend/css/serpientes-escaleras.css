@@ -1,10 +1,10 @@
 /* ============================================= */
 /* SERPIENTES Y ESCALERAS - CSS COMPLETO
-   Versión 2.0 | Mobile-First + Players Panel    */
+   Versión 3.0 | Players Panel Redesign          */
 /* ============================================= */
 
 /* ================== IMPORT FONTS ================== */
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 /* ================== VARIABLES CSS ================== */
 :root {
@@ -35,6 +35,7 @@
     /* TIPOGRAFÍA */
     --font-main: 'Nunito', sans-serif;
     --font-ui: 'Space Grotesk', sans-serif;
+    --font-heading: 'Syne', sans-serif;
 
     /* LAYOUT */
     --panel-max-height: 420px;
@@ -176,6 +177,70 @@ body {
 }
 
 /* ============================================= */
+/* PANEL JUGADORES (VERSION SIMPLE CON SCROLL)   */
+/* ============================================= */
+
+#jugadores-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 260px;
+    max-height: calc(100dvh - 240px);
+    overflow: hidden;
+}
+
+#jugadores-panel h3 {
+    flex-shrink: 0;
+}
+
+#jugadores-panel .player-list,
+#lista-jugadores {
+    list-style: none;
+    margin: 0;
+    padding: 0 4px 0 0;
+    flex: 1 1 auto;
+    min-height: 220px;
+    max-height: calc(100dvh - 330px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) var(--border-color);
+}
+
+#jugadores-panel .player-list::-webkit-scrollbar,
+#lista-jugadores::-webkit-scrollbar {
+    width: 8px;
+}
+
+#jugadores-panel .player-list::-webkit-scrollbar-track,
+#lista-jugadores::-webkit-scrollbar-track {
+    background: var(--border-color);
+    border-radius: 99px;
+}
+
+#jugadores-panel .player-list::-webkit-scrollbar-thumb,
+#lista-jugadores::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 999px;
+    border: 2px solid var(--border-color);
+}
+
+#jugadores-panel .player-list li,
+#lista-jugadores li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    border-radius: 10px;
+    background: var(--chat-bg);
+    border: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+/* ============================================= */
 /* PANEL DE JUGADORES - TABS                     */
 /* ============================================= */
 
@@ -185,27 +250,33 @@ body {
 }
 
 .players-tabs {
-    display: flex;
-    border-bottom: 2px solid var(--border-color);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: rgba(0, 0, 0, 0.04);
+    border-bottom: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .players-tabs {
+    background: rgba(0, 0, 0, 0.25);
 }
 
 .tab-btn {
-    flex: 1;
-    padding: 14px 8px;
-    border: none;
-    background: transparent;
-    color: var(--text-muted);
-    font-family: var(--font-main);
-    font-weight: 700;
-    font-size: 0.85rem;
+    all: unset;
     cursor: pointer;
-    transition: all 0.2s ease;
-    border-bottom: 3px solid transparent;
-    margin-bottom: -2px;
+    padding: 14px 8px;
+    text-align: center;
+    font-family: var(--font-heading);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    transition: color 0.2s, background 0.2s, box-shadow 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
+    box-shadow: inset 0 -2px 0 transparent;
 }
 
 .tab-btn:hover {
@@ -215,9 +286,11 @@ body {
 
 .tab-btn--active {
     color: var(--accent);
-    border-bottom-color: var(--accent);
-    background: var(--accent-light);
+    background: var(--panel-bg);
+    box-shadow: inset 0 -2px 0 var(--accent);
 }
+
+.tab-btn .tab-icon { font-size: 1rem; }
 
 /* Contenidos de tabs */
 .tab-content {
@@ -229,28 +302,46 @@ body {
     display: block;
 }
 
-/* Buscador dentro del tab */
+/* ============================================= */
+/* BUSCADOR                                      */
+/* ============================================= */
+
 .players-search {
+    position: relative;
     margin-bottom: 10px;
+}
+
+.players-search .search-icon {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8rem;
+    opacity: 0.4;
+    pointer-events: none;
 }
 
 .players-search input,
 #buscar-amigo {
     width: 100%;
-    padding: 8px 12px;
+    padding: 9px 12px 9px 32px;
     border: 1.5px solid var(--border-color);
-    border-radius: 20px;
+    border-radius: 10px;
     background: var(--chat-bg);
     color: var(--text-primary);
     font-family: var(--font-main);
-    font-size: 0.85rem;
+    font-size: 0.83rem;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, background 0.2s;
 }
+
+.players-search input::placeholder,
+#buscar-amigo::placeholder { color: var(--text-muted); }
 
 .players-search input:focus,
 #buscar-amigo:focus {
     border-color: var(--accent);
+    background: var(--accent-light);
 }
 
 /* ============================================= */
@@ -264,149 +355,234 @@ body {
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    /* Scrollbar personalizada */
+    gap: 3px;
+    padding-right: 3px;
     scrollbar-width: thin;
-    scrollbar-color: var(--accent) var(--border-color);
-    padding-right: 2px;
+    scrollbar-color: var(--accent) transparent;
 }
 
-.players-list::-webkit-scrollbar {
-    width: 5px;
-}
-.players-list::-webkit-scrollbar-track {
-    background: var(--border-color);
-    border-radius: 10px;
-}
+.players-list::-webkit-scrollbar { width: 3px; }
+.players-list::-webkit-scrollbar-track { background: transparent; }
 .players-list::-webkit-scrollbar-thumb {
     background: var(--accent);
-    border-radius: 10px;
+    border-radius: 99px;
 }
 
-/* Item de jugador */
+/* ── Item de jugador ── */
 .players-list li {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 8px 10px;
-    border-radius: var(--border-radius-sm);
-    transition: background 0.15s;
-    min-height: 50px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    transition: background 0.15s, border-color 0.15s;
+    border: 1px solid transparent;
+    cursor: default;
 }
 
 .players-list li:hover {
     background: var(--accent-light);
+    border-color: rgba(106, 17, 203, 0.15);
 }
 
-/* Avatar / foto */
+/* Top 3 row highlight */
+.players-list li.rank-top {
+    background: linear-gradient(90deg, rgba(245, 158, 11, 0.06) 0%, transparent 70%);
+    border-color: rgba(245, 158, 11, 0.12);
+}
+
+.players-list li.rank-top:hover {
+    background: linear-gradient(90deg, rgba(245, 158, 11, 0.1) 0%, var(--accent-light) 70%);
+}
+
+/* ── Avatar wrapper ── */
+.player-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
 .player-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
     object-fit: cover;
     border: 2px solid var(--border-color);
-    flex-shrink: 0;
     background: var(--accent-light);
+    display: block;
 }
 
 .player-avatar--placeholder {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
     border: 2px solid var(--border-color);
-    flex-shrink: 0;
     background: var(--accent-light);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     line-height: 1;
+    flex-shrink: 0;
 }
 
-/* Datos del jugador */
+/* Status dot */
+.player-status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    border: 2px solid var(--panel-bg);
+    position: absolute;
+    bottom: -1px;
+    right: -1px;
+}
+
+.player-status-dot--online  { background: #10b981; box-shadow: 0 0 5px rgba(16,185,129,0.6); }
+.player-status-dot--playing { background: #f59e0b; box-shadow: 0 0 5px rgba(245,158,11,0.6); }
+.player-status-dot--offline { background: var(--text-muted); }
+
+/* ── Datos del jugador ── */
 .player-info {
     flex: 1;
-    min-width: 0; /* Para que el text-overflow funcione */
+    min-width: 0;
 }
 
 .player-info__name {
+    font-family: var(--font-heading);
     font-weight: 700;
-    font-size: 0.88rem;
+    font-size: 0.86rem;
     color: var(--text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 1.2;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
+/* Tag "tú" inline */
+.me-tag {
+    font-family: var(--font-main);
+    font-size: 0.62rem;
+    font-weight: 700;
+    background: var(--accent);
+    color: #fff;
+    padding: 1px 6px;
+    border-radius: 99px;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+}
+
+/* Compatibilidad con clase antigua */
 .player-info__name--me::after {
-    content: ' (tú)';
-    font-weight: 400;
-    color: var(--text-muted);
-    font-size: 0.75rem;
+    content: 'tú';
+    font-family: var(--font-main);
+    font-size: 0.62rem;
+    font-weight: 700;
+    background: var(--accent);
+    color: #fff;
+    padding: 1px 6px;
+    border-radius: 99px;
+    letter-spacing: 0.04em;
+    margin-left: 4px;
 }
 
 .player-info__sub {
-    font-size: 0.75rem;
+    font-size: 0.73rem;
     color: var(--text-muted);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
-/* Acción: botón invitar */
+/* ── Botón invitar ── */
 .btn-invite-friend {
-    padding: 5px 10px;
-    font-size: 0.75rem;
+    padding: 5px 12px;
+    font-size: 0.72rem;
     font-weight: 700;
-    font-family: var(--font-main);
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: 20px;
+    font-family: var(--font-heading);
+    letter-spacing: 0.04em;
+    background: var(--accent-light);
+    color: var(--accent);
+    border: 1.5px solid rgba(106, 17, 203, 0.25);
+    border-radius: 99px;
     cursor: pointer;
     white-space: nowrap;
     flex-shrink: 0;
-    transition: opacity 0.2s, transform 0.15s;
-}
-.btn-invite-friend:hover {
-    opacity: 0.85;
-    transform: scale(1.03);
-}
-.btn-invite-friend:disabled {
-    background: var(--text-muted);
-    cursor: default;
-    transform: none;
+    transition: background 0.2s, color 0.2s, transform 0.15s, border-color 0.2s;
 }
 
-/* Ranking badge */
+.btn-invite-friend:hover {
+    background: var(--accent);
+    color: white;
+    border-color: transparent;
+    transform: scale(1.04);
+}
+
+.btn-invite-friend:disabled {
+    background: transparent;
+    color: var(--text-muted);
+    border-color: var(--border-color);
+    cursor: default;
+    transform: none;
+    opacity: 0.7;
+}
+
+/* ── Ranking badge ── */
 .rank-badge {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 900;
-    font-size: 0.75rem;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 0.78rem;
     flex-shrink: 0;
-    font-family: var(--font-ui);
+    letter-spacing: -0.02em;
 }
 
-.rank-badge--gold   { background: var(--gold);   color: #fff; }
-.rank-badge--silver { background: var(--silver); color: #fff; }
-.rank-badge--bronze { background: var(--bronze); color: #fff; }
-.rank-badge--normal { background: var(--accent-light); color: var(--text-secondary); }
-.rank-badge--me     { background: var(--accent); color: #fff; box-shadow: 0 0 0 2px white, 0 0 0 4px var(--accent); }
+.rank-badge--gold {
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    color: #4a1a00;
+    box-shadow: 0 3px 10px rgba(255, 180, 0, 0.4);
+}
 
-/* Puntos en ranking */
+.rank-badge--silver {
+    background: linear-gradient(135deg, #d0d8f0, #8898c0);
+    color: #1a1e38;
+}
+
+.rank-badge--bronze {
+    background: linear-gradient(135deg, #e8834a, #b85a2a);
+    color: #fff;
+}
+
+.rank-badge--normal {
+    background: var(--chat-bg);
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+}
+
+.rank-badge--me {
+    background: linear-gradient(135deg, var(--accent), #e040fb);
+    color: #fff;
+    box-shadow: 0 3px 12px rgba(106, 17, 203, 0.45);
+}
+
+/* ── Puntos en ranking ── */
 .rank-points {
-    font-weight: 700;
-    font-size: 0.8rem;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 0.82rem;
     color: var(--accent);
     white-space: nowrap;
     flex-shrink: 0;
-    font-family: var(--font-ui);
 }
 
 /* Amigo badge (estrellita) */
@@ -416,25 +592,34 @@ body {
     flex-shrink: 0;
 }
 
-/* Info posición del usuario */
+/* ── Banner posición del usuario ── */
 .ranking-header-info {
     background: var(--accent-light);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-sm);
     padding: 8px 12px;
     margin-bottom: 10px;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--text-secondary);
     text-align: center;
-    display: none; /* se muestra con JS */
+    display: none;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
 }
 
 .ranking-header-info.visible {
-    display: block;
+    display: flex;
 }
 
-/* Paginación */
+.ranking-header-info span {
+    color: var(--accent);
+    font-family: var(--font-heading);
+    font-weight: 800;
+}
+
+/* ── Paginación ── */
 .ranking-pagination {
     display: flex;
     align-items: center;
@@ -442,46 +627,49 @@ body {
     gap: 10px;
     padding: 10px 0 4px;
     border-top: 1px solid var(--border-color);
-    margin-top: 6px;
+    margin-top: 8px;
 }
 
 .rank-nav-btn {
     padding: 5px 14px;
     border: 1.5px solid var(--border-color);
-    border-radius: 20px;
+    border-radius: 99px;
     background: var(--panel-bg);
-    color: var(--text-primary);
-    font-family: var(--font-main);
+    color: var(--text-muted);
+    font-family: var(--font-heading);
     font-weight: 700;
-    font-size: 0.82rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
     cursor: pointer;
     transition: all 0.2s;
 }
+
 .rank-nav-btn:hover:not(:disabled) {
     background: var(--accent);
     color: white;
-    border-color: var(--accent);
+    border-color: transparent;
 }
+
 .rank-nav-btn:disabled {
-    opacity: 0.4;
+    opacity: 0.35;
     cursor: default;
 }
 
 #ranking-page-info {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 600;
     color: var(--text-muted);
     min-width: 50px;
     text-align: center;
 }
 
-/* Estado: cargando / vacío */
+/* ── Estado: cargando / vacío ── */
 .players-list__loading,
 .players-list__empty {
     color: var(--text-muted);
-    font-size: 0.85rem;
+    font-size: 0.83rem;
     text-align: center;
-    padding: 20px 10px;
+    padding: 28px 10px;
     font-style: italic;
 }
 
@@ -951,7 +1139,6 @@ body {
         grid-template-rows: auto auto;
     }
 
-    /* Panel derecho va abajo */
     .side-panel:last-child {
         grid-column: 1 / -1;
         flex-direction: row;
@@ -982,52 +1169,44 @@ body {
     .pill  { font-size: 0.78rem; padding: 4px 10px; }
     .header button { padding: 6px 12px; font-size: 0.8rem; }
 
-    /* Stack completo en móvil */
     .game-container {
         display: flex;
         flex-direction: column;
         gap: 12px;
     }
 
-    /* Panel izquierdo: chat + jugadores en columna */
-    .side-panel--left {
-        order: 2;
+    .side-panel--left { order: 2; }
+    .game-board       { order: 1; }
+    .side-panel:last-child { order: 3; flex-direction: column; }
+
+    :root { --panel-max-height: 260px; }
+
+    #jugadores-panel {
+        max-height: min(48dvh, 380px);
     }
 
-    /* Tablero primero */
-    .game-board {
-        order: 1;
+    #jugadores-panel .player-list,
+    #lista-jugadores {
+        max-height: min(40dvh, 320px);
     }
 
-    /* Panel derecho (reglas) al final */
-    .side-panel:last-child {
-        order: 3;
-        flex-direction: column;
-    }
-
-    /* Panel de jugadores: altura reducida en móvil */
-    :root {
-        --panel-max-height: 260px;
-    }
-
-    /* Chat más compacto */
     #chatBox { height: 140px; }
 
-    /* Board más pequeño */
     .board-container { max-width: 100%; }
     .cell-icon { font-size: clamp(0.9rem, 2.5vw, 1.4rem); }
 
-    /* Dado y controles más compactos */
     .dice { width: 56px; height: 56px; font-size: 2rem; }
     #lanzar-dado { padding: 11px 20px; font-size: 0.9rem; }
     #info-turno { font-size: 0.9rem; min-width: 0; width: 100%; padding: 9px 16px; }
 
-    /* Tabs en móvil */
-    .tab-btn { font-size: 0.8rem; padding: 11px 4px; }
+    .tab-btn { font-size: 0.78rem; padding: 12px 4px; letter-spacing: 0.04em; }
 
-    /* Ranking pagination */
     .ranking-pagination { gap: 8px; }
-    .rank-nav-btn { padding: 4px 10px; font-size: 0.78rem; }
+    .rank-nav-btn { padding: 4px 10px; font-size: 0.75rem; }
+
+    /* Avatares un poco más pequeños en móvil */
+    .player-avatar,
+    .player-avatar--placeholder { width: 32px; height: 32px; font-size: 1.05rem; }
 }
 
 /* ============================================= */
@@ -1042,10 +1221,11 @@ body {
     .dice { width: 48px; height: 48px; font-size: 1.8rem; }
     #lanzar-dado { padding: 10px 16px; font-size: 0.85rem; }
 
-    .players-list li { min-height: 44px; padding: 6px 8px; }
+    .players-list li { padding: 7px 8px; }
     .player-avatar,
-    .player-avatar--placeholder { width: 30px; height: 30px; }
+    .player-avatar--placeholder { width: 30px; height: 30px; font-size: 1rem; border-radius: 8px; }
     .player-info__name { font-size: 0.82rem; }
-    .player-info__sub { font-size: 0.7rem; }
-    .btn-invite-friend { padding: 4px 8px; font-size: 0.7rem; }
+    .player-info__sub  { font-size: 0.7rem; }
+    .btn-invite-friend { padding: 4px 9px; font-size: 0.68rem; }
+    .rank-badge { width: 26px; height: 26px; font-size: 0.72rem; border-radius: 6px; }
 }

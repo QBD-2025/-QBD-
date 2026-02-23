@@ -14,7 +14,6 @@
       <div class="pill">
         <i class="fas fa-user"></i> Jugador: <strong>{{#if user}}{{user.username}}{{else}}Invitado{{/if}}</strong>
       </div>
-      <button onclick="location.href='/minijuegos'"><i class="fas fa-arrow-left"></i> Regresar</button>
     </div>
 
     {{!-- VISTA 1: MODO COOPERATIVO --}}
@@ -25,6 +24,7 @@
           <select id="categoria-coop">
             <option>Cargando categorías...</option>
           </select>
+          <button onclick="location.href='/minijuegos'"><i class="fas fa-arrow-left"></i> Regresar</button>
           <button id="reiniciar-coop"><i class="fas fa-sync-alt"></i> Reiniciar</button>
         </div>
         <div class="canvas-wrap">

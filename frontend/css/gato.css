@@ -1,10 +1,11 @@
 /* ===================================================
-   Gato Culto — CSS v2.0
+   Gato Culto — CSS v2.1
    Diseño: Arcade Cyberpunk Minimal
    Fuentes: Rajdhani + Exo 2
+   + Light Mode support via [data-theme="light"]
 =================================================== */
 
-/* ============ VARIABLES ============ */
+/* ============ VARIABLES — DARK (default) ============ */
 :root {
     --c-bg:          #080c14;
     --c-surface:     #0d1422;
@@ -44,14 +45,128 @@
     --hud-h:         56px;
 }
 
+/* ============ VARIABLES — LIGHT MODE ============ */
+[data-theme="light"] {
+    --c-bg:          #f0f4f8;
+    --c-surface:     #ffffff;
+    --c-surface2:    #e8eef5;
+    --c-border:      #c8d8e8;
+    --c-border-glow: #2563eb;
+    --c-primary:     #2563eb;
+    --c-primary-d:   #1d4ed8;
+    --c-accent:      #0891b2;
+    --c-success:     #059669;
+    --c-danger:      #dc2626;
+    --c-warn:        #d97706;
+    --c-text:        #0f172a;
+    --c-text-muted:  #64748b;
+    --c-text-dim:    #475569;
+    --c-x:           #2563eb;
+    --c-o:           #dc2626;
+    --c-gold:        #d97706;
+    --c-silver:      #64748b;
+    --c-bronze:      #b45309;
+
+    --shadow-sm:     0 1px 3px rgba(0,0,0,.12);
+    --shadow:        0 4px 16px rgba(0,0,0,.12);
+    --shadow-glow:   0 0 20px rgba(37,99,235,.2);
+    --shadow-card:   0 8px 32px rgba(0,0,0,.1);
+}
+
+/* Fondo con textura sutil — light mode override */
+[data-theme="light"] body::before {
+    background-image:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(37,99,235,.08) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 90% 90%, rgba(8,145,178,.05) 0%, transparent 50%);
+}
+
+/* ============ THEME TOGGLE BUTTON ============ */
+.theme-toggle-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    background: var(--c-surface2);
+    border: 1px solid var(--c-border);
+    color: var(--c-text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: var(--transition);
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.theme-toggle-btn:hover {
+    background: var(--c-border);
+    border-color: var(--c-primary);
+    color: var(--c-primary);
+}
+
+/* Icono según tema activo */
+.theme-toggle-btn .icon-dark  { display: inline; }
+.theme-toggle-btn .icon-light { display: none;   }
+
+[data-theme="light"] .theme-toggle-btn .icon-dark  { display: none;   }
+[data-theme="light"] .theme-toggle-btn .icon-light { display: inline; }
+
+/* Versión desktop: dentro del game-header */
+.theme-toggle-desktop {
+    display: flex;
+}
+
+/* ============ BACK BUTTON ============ */
+.btn-back {
+    font-family: var(--font-head);
+    font-size: .85rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    background: transparent;
+    color: var(--c-text-muted);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 8px 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all .2s ease;
+    white-space: nowrap;
+}
+
+.btn-back::before {
+    content: '←';
+    font-size: 1rem;
+    line-height: 1;
+    transition: transform .2s ease;
+}
+
+.btn-back:hover {
+    color: var(--c-text);
+    border-color: var(--c-primary);
+    background: rgba(59,130,246,.08);
+    box-shadow: 0 0 12px rgba(59,130,246,.15);
+}
+
+.btn-back:hover::before {
+    transform: translateX(-3px);
+}
+
+.btn-back:active { transform: scale(.96); }
+
+[data-theme="light"] .btn-back:hover {
+    background: rgba(37,99,235,.06);
+    box-shadow: 0 0 12px rgba(37,99,235,.1);
+}
+
 /* ============ RESET & BASE ============ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* overflow-x en html/body atrapa position:fixed en Android Chrome.
-   Se mueve al contenedor interno. */
 html {
     scroll-behavior: smooth;
-    overflow-x: hidden; /* aquí sí es seguro */
+    overflow-x: hidden;
 }
 
 body {
@@ -60,7 +175,7 @@ body {
     background-color: var(--c-bg);
     color: var(--c-text);
     min-height: 100dvh;
-    /* SIN overflow-x: hidden — en Android Chrome hace que fixed quede atrapado */
+    transition: background-color .3s ease, color .3s ease;
 }
 
 /* Fondo con textura sutil */
@@ -73,6 +188,7 @@ body::before {
         radial-gradient(ellipse 40% 40% at 90% 90%, rgba(6,182,212,.06) 0%, transparent 50%);
     pointer-events: none;
     z-index: 0;
+    transition: background-image .3s ease;
 }
 
 /* ============ MOBILE HUD ============ */
@@ -89,6 +205,13 @@ body::before {
     padding: 0 16px;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
+    transition: background .3s ease, border-color .3s ease;
+}
+
+/* Light mode: HUD claro */
+[data-theme="light"] .mobile-hud {
+    background: rgba(240,244,248,.94);
 }
 
 .hud-status {
@@ -99,7 +222,7 @@ body::before {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: calc(100% - 56px);
+    max-width: calc(100% - 100px);
 }
 
 .hud-toggle-btn {
@@ -184,6 +307,10 @@ body::before {
     box-shadow: 0 0 16px rgba(16,185,129,.2);
 }
 
+[data-theme="light"] .status-badge.my-turn {
+    background: linear-gradient(135deg, rgba(5,150,105,.12), rgba(8,145,178,.08));
+}
+
 /* ============ LOBBY CARD ============ */
 .lobby-card {
     background: var(--c-surface);
@@ -262,7 +389,7 @@ body::before {
 }
 
 .styled-select:focus { border-color: var(--c-primary); box-shadow: var(--shadow-glow); }
-.styled-select option { background: var(--c-surface2); }
+.styled-select option { background: var(--c-surface2); color: var(--c-text); }
 
 /* ============ BUTTONS ============ */
 .btn {
@@ -302,6 +429,11 @@ body::before {
 .btn-ghost    { background: var(--c-surface2); color: var(--c-text-dim); border: 1px solid var(--c-border); }
 .btn-full     { width: 100%; }
 .btn-sm       { font-size: .8rem; padding: 6px 14px; border-radius: var(--radius-sm); }
+
+/* Light mode: sombras de botón más suaves */
+[data-theme="light"] .btn-primary { box-shadow: 0 4px 14px rgba(37,99,235,.25); }
+[data-theme="light"] .btn-success { box-shadow: 0 4px 14px rgba(5,150,105,.2); }
+[data-theme="light"] .btn-danger  { box-shadow: 0 4px 14px rgba(220,38,38,.2); }
 
 /* ============ VOTE CONTROLS ============ */
 .vote-group { display: flex; flex-direction: column; gap: 14px; }
@@ -363,10 +495,18 @@ body::before {
     transition: opacity .2s;
 }
 
+[data-theme="light"] .cell::before {
+    background: radial-gradient(circle at center, rgba(37,99,235,.06), transparent 70%);
+}
+
 .cell:not(.disabled):hover {
     border-color: var(--c-primary);
     transform: translateY(-3px) scale(1.02);
     box-shadow: 0 8px 24px rgba(59,130,246,.2);
+}
+
+[data-theme="light"] .cell:not(.disabled):hover {
+    box-shadow: 0 8px 24px rgba(37,99,235,.15);
 }
 
 .cell:not(.disabled):hover::before { opacity: 1; }
@@ -381,9 +521,17 @@ body::before {
     text-shadow: 0 0 16px rgba(96,165,250,.6);
 }
 
+[data-theme="light"] .symbol-x {
+    text-shadow: 0 0 16px rgba(37,99,235,.35);
+}
+
 .symbol-o {
     color: var(--c-o);
     text-shadow: 0 0 16px rgba(248,113,113,.6);
+}
+
+[data-theme="light"] .symbol-o {
+    text-shadow: 0 0 16px rgba(220,38,38,.3);
 }
 
 /* Tablero activo (tu turno) */
@@ -392,8 +540,17 @@ body::before {
     box-shadow: 0 0 24px rgba(16,185,129,.12);
 }
 
+[data-theme="light"] .turno-activo {
+    border: 2px solid rgba(5,150,105,.5);
+    box-shadow: 0 0 24px rgba(5,150,105,.1);
+}
+
 .turno-activo .cell:not(.disabled) {
     border-color: rgba(16,185,129,.35);
+}
+
+[data-theme="light"] .turno-activo .cell:not(.disabled) {
+    border-color: rgba(5,150,105,.4);
 }
 
 /* ============ PLAYERS BAR ============ */
@@ -451,7 +608,6 @@ body::before {
     max-height: calc(100dvh - 48px);
 }
 
-/* Desktop: sticky — en un selector separado para que mobile lo pise fácil */
 @media (min-width: 901px) {
     .side-panel {
         position: sticky;
@@ -511,10 +667,16 @@ body::before {
 
 .tab-btn:hover { color: var(--c-text-dim); background: rgba(255,255,255,.03); }
 
+[data-theme="light"] .tab-btn:hover { background: rgba(0,0,0,.04); }
+
 .tab-btn.active {
     color: var(--c-primary);
     border-bottom-color: var(--c-primary);
     background: rgba(59,130,246,.06);
+}
+
+[data-theme="light"] .tab-btn.active {
+    background: rgba(37,99,235,.06);
 }
 
 .tab-badge {
@@ -652,8 +814,9 @@ body::before {
     display: flex;
     align-items: center;
     gap: 8px;
-    min-width: 0;
+    min-width: 0;   /* permite que el hijo haga ellipsis */
     flex: 1;
+    overflow: hidden;
 }
 
 .player-avatar {
@@ -668,7 +831,7 @@ body::before {
     font-size: .875rem;
     font-weight: 700;
     color: #fff;
-    flex-shrink: 0;
+    flex-shrink: 0; /* el avatar nunca se encoge */
 }
 
 .player-name {
@@ -679,6 +842,7 @@ body::before {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;   /* necesario para que ellipsis funcione dentro de flex */
 }
 
 .player-pts {
@@ -687,9 +851,13 @@ body::before {
     font-weight: 600;
     color: var(--c-text-muted);
     white-space: nowrap;
+    flex-shrink: 0; /* los puntos tampoco se encogen */
 }
 
-.player-actions { flex-shrink: 0; }
+.player-actions {
+    flex-shrink: 0; /* el botón siempre visible, nunca aplastado */
+    margin-left: 4px;
+}
 
 .btn-invite {
     font-family: var(--font-head);
@@ -705,6 +873,11 @@ body::before {
     cursor: pointer;
     transition: var(--transition);
     white-space: nowrap;
+}
+
+[data-theme="light"] .btn-invite {
+    background: rgba(37,99,235,.1);
+    border-color: rgba(37,99,235,.25);
 }
 
 .btn-invite:hover {
@@ -746,6 +919,8 @@ body::before {
 .rank-3 { background: rgba(217,119,6,.15);  color: var(--c-bronze); border-color: var(--c-bronze); }
 
 .rank-me { background: rgba(59,130,246,.15) !important; border-color: var(--c-primary) !important; }
+
+[data-theme="light"] .rank-me { background: rgba(37,99,235,.1) !important; }
 
 .pts-pill {
     font-family: var(--font-head);
@@ -812,6 +987,11 @@ body::before {
     border-bottom-right-radius: 4px;
 }
 
+[data-theme="light"] .chat-message.own {
+    background: rgba(37,99,235,.1);
+    border-color: rgba(37,99,235,.2);
+}
+
 .chat-message.other {
     background: var(--c-surface2);
     border: 1px solid var(--c-border);
@@ -854,6 +1034,7 @@ body::before {
 }
 
 #chatInput:focus { border-color: var(--c-primary); box-shadow: 0 0 0 3px rgba(59,130,246,.12); }
+[data-theme="light"] #chatInput:focus { box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
 #chatInput::placeholder { color: var(--c-text-muted); }
 
 .chat-send-btn {
@@ -916,6 +1097,10 @@ body::before {
     pointer-events: none;
     transition: opacity .25s ease;
     padding: 16px;
+}
+
+[data-theme="light"] #question-modal {
+    background: rgba(15,23,42,.6);
 }
 
 #question-modal.show {
@@ -1029,6 +1214,10 @@ body::before {
     transform: translateX(4px);
 }
 
+[data-theme="light"] .option-btn:hover {
+    background: rgba(37,99,235,.06);
+}
+
 .option-btn:hover::before { opacity: 1; }
 
 .option-btn:disabled { cursor: not-allowed; }
@@ -1040,10 +1229,18 @@ body::before {
     font-weight: 600;
 }
 
+[data-theme="light"] .option-btn.correct {
+    background: rgba(5,150,105,.1);
+}
+
 .option-btn.incorrect {
     background: rgba(239,68,68,.12);
     border-color: var(--c-danger);
     color: var(--c-danger);
+}
+
+[data-theme="light"] .option-btn.incorrect {
+    background: rgba(220,38,38,.08);
 }
 
 .feedback-section {
@@ -1058,9 +1255,17 @@ body::before {
     border-left: 3px solid var(--c-success);
 }
 
+[data-theme="light"] .feedback-correct {
+    background: rgba(5,150,105,.07);
+}
+
 .feedback-incorrect {
     background: rgba(239,68,68,.08);
     border-left: 3px solid var(--c-danger);
+}
+
+[data-theme="light"] .feedback-incorrect {
+    background: rgba(220,38,38,.06);
 }
 
 .feedback-text {
@@ -1112,7 +1317,6 @@ body::before {
 }
 
 /* ============ HANDLE DEL BOTTOM SHEET ============ */
-/* Oculto por defecto, solo se muestra con JS cuando isBottomSheet() es true */
 .sheet-handle {
     display: none;
     width: 44px;
@@ -1126,10 +1330,12 @@ body::before {
 .sheet-handle:active { cursor: grabbing; }
 .sheet-handle.visible { display: flex; }
 
-/* ============ RESPONSIVE — TODO MOBILE/TABLET (≤ 900px) ============ */
+/* ============ RESPONSIVE — MOBILE/TABLET (≤ 900px) ============ */
 @media (max-width: 900px) {
 
-    /* ── HUD fijo arriba ── */
+    /* Ocultar toggle desktop en mobile */
+    .theme-toggle-desktop { display: none; }
+
     .mobile-hud { display: flex; }
 
     .gato-container {
@@ -1140,8 +1346,6 @@ body::before {
 
     .game-main { padding-bottom: 16px; }
 
-    /* ── SIDE PANEL: BOTTOM SHEET ── */
-    /* Mayor especificidad con aside#side-panel para ganarle al sticky base */
     aside#side-panel,
     .side-panel {
         position: fixed;
@@ -1172,16 +1376,10 @@ body::before {
                     0 -2px 0   var(--c-primary);
     }
 
-    /* Handle visible siempre en mobile */
     .sheet-handle { display: flex; }
-
-    /* Botón X: oculto (se cierra deslizando o tocando overlay) */
     .panel-close-btn { display: none !important; }
-
-    /* Tabs sin border-radius */
     .tabs-nav { border-radius: 0; }
 
-    /* Contenido scrolleable dentro del sheet */
     .tab-content {
         flex: 1;
         overflow-y: auto;
@@ -1193,13 +1391,11 @@ body::before {
     .player-list    { max-height: 36dvh; }
     .ranking-list   { max-height: 46dvh !important; }
 
-    /* Overlay */
     .panel-overlay.visible {
         display: block;
         background: rgba(0, 0, 0, .65);
     }
 
-    /* ── MODAL DE PREGUNTA: también bottom sheet ── */
     #question-modal {
         align-items: flex-end;
         padding: 0;
@@ -1211,7 +1407,6 @@ body::before {
         max-height: 90dvh;
         border-radius: 20px 20px 0 0;
         padding: 20px 18px 28px;
-        /* Anular el translateY+scale del desktop */
         transform: translateY(30px);
     }
 
@@ -1219,7 +1414,6 @@ body::before {
         transform: translateY(0);
     }
 
-    /* ── Ajustes de texto ── */
     .game-title     { font-size: 1.4rem; }
     .status-badge   { font-size: .9rem; padding: 8px 16px; }
     #board          { width: min(380px, 94vw); gap: 8px; }
@@ -1243,7 +1437,6 @@ body::before {
     .cell           { font-size: clamp(1.8rem, 14vw, 3.2rem); border-radius: var(--radius-sm); }
     .game-title     { font-size: 1.2rem; }
     .status-badge   { font-size: .82rem; padding: 7px 12px; }
-    /* Solo íconos en tabs cuando el espacio es muy chico */
     .tab-btn .tab-label { display: none; }
     .tab-btn        { padding: 14px 4px; }
     .tab-btn .tab-icon { font-size: 1.4rem; }

@@ -1,4 +1,7 @@
-/*eleccion-examen.css*/
+/* ===========================================================
+   ELECCION-EXAMEN.CSS - Botones acomodados correctamente
+   =========================================================== */
+
 :root {
     --bg-primary: #ffffff;
     --bg-secondary: #f8f9fa;
@@ -58,6 +61,7 @@ body {
     }
 }
 
+/* ================== CONTENEDOR PRINCIPAL ================== */
 .carousel-container {
     width: 600px;
     height: 330px;
@@ -84,6 +88,7 @@ body {
     transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ================== TARJETAS ================== */
 .card {
     position: absolute;
     width: 200px;
@@ -118,83 +123,7 @@ body {
     box-shadow: 0 0 20px 8px rgba(108, 0, 255, 0.8);
 }
 
-.controls {
-    margin-top: 30px;
-    text-align: center;
-    animation: fadeIn 0.8s ease-out 0.6s both;
-}
-
-button {
-    background: var(--accent-yellow);
-    border: none;
-    color: var(--text-primary);
-    padding: 1rem 2rem;
-    margin: 0 12px;
-    font-size: 1.1rem;
-    border-radius: 25px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 6px 15px rgba(255, 193, 7, 0.4);
-    border-bottom: 3px solid #e0a800;
-    font-weight: 600;
-    position: relative;
-    overflow: hidden;
-}
-
-button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    transition: left 0.5s;
-}
-
-button:hover::before {
-    left: 100%;
-}
-
-button:hover {
-    background: #ffd44f;
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(255, 193, 7, 0.6);
-}
-
-.boton-aleatorio {
-    background: linear-gradient(135deg, #ff8800, #ffaa00);
-    color: var(--text-primary);
-    border: 2px solid #e66f00;
-    font-weight: bold;
-    border-bottom: 3px solid #cc5500;
-}
-
-.boton-aleatorio:hover {
-    background: linear-gradient(135deg, #ff6600, #ff8800);
-    box-shadow: 0 10px 25px rgba(255, 102, 0, 0.6);
-    transform: translateY(-3px);
-}
-
-.zone-click {
-    position: fixed;
-    top: 0;
-    width: 33.33%;
-    height: 100vh;
-    z-index: 10;
-    cursor: pointer !important;
-    transition: background-color 0.3s ease;
-}
-
-.izquierda { 
-    left: 0; 
-}
-
-.derecha { 
-    right: 0; 
-}
-
-
+/* ================== GIFS ================== */
 .gif-materia {
     width: 100%;
     max-height: 150px;
@@ -236,6 +165,145 @@ button:hover {
     line-height: 1.4;
 }
 
+/* ================== CONTROLES - BOTONES ACOMODADOS ================== */
+.controls {
+    margin-top: 40px;
+    text-align: center;
+    animation: fadeIn 0.8s ease-out 0.6s both;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    z-index: 20;
+}
+
+/* Estilo base para todos los botones */
+.controls button {
+    background: var(--accent-yellow);
+    border: none;
+    color: var(--text-primary);
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 15px rgba(255, 193, 7, 0.4);
+    border-bottom: 3px solid #e0a800;
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 160px;
+    white-space: nowrap;
+}
+
+[data-theme="dark"] .controls button {
+    box-shadow: 0 6px 15px rgba(108, 0, 255, 0.4);
+    border-bottom: 3px solid #4c1d95;
+}
+
+/* Efecto shine */
+.controls button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s;
+}
+
+.controls button:hover::before {
+    left: 100%;
+}
+
+.controls button:hover {
+    background: #ffd44f;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(255, 193, 7, 0.6);
+}
+
+[data-theme="dark"] .controls button:hover {
+    background: #8b5cf6;
+    box-shadow: 0 10px 25px rgba(108, 0, 255, 0.6);
+}
+
+/* Botón Aleatorio - Misma altura que los demás */
+.boton-aleatorio {
+    background: linear-gradient(135deg, #ff8800, #ffaa00) !important;
+    color: var(--text-primary) !important;
+    border: 2px solid #e66f00 !important;
+    border-bottom: 3px solid #cc5500 !important;
+    font-weight: bold !important;
+    padding: 12px 24px !important;
+    min-width: 160px !important;
+    height: auto !important;
+    line-height: normal !important;
+}
+
+.boton-aleatorio:hover {
+    background: linear-gradient(135deg, #ff6600, #ff8800) !important;
+    box-shadow: 0 10px 25px rgba(255, 102, 0, 0.6) !important;
+}
+
+/* Botón de regresar - mismo estilo que los demás */
+.controls button:last-of-type {
+    background: var(--accent-yellow);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .controls button:last-of-type {
+    background: #6c00ff;
+    color: white;
+}
+
+/* ================== ZONAS DE CLICK ================== */
+.zone-click {
+    position: fixed;
+    top: 0;
+    width: 20%;
+    height: 100vh;
+    z-index: 10;
+    cursor: pointer !important;
+    transition: background-color 0.3s ease;
+}
+
+.izquierda { 
+    left: 0; 
+}
+
+.derecha { 
+    right: 0; 
+}
+
+/* Feedback visual al pasar el mouse por zonas */
+.izquierda:hover {
+    background: linear-gradient(90deg, rgba(255, 193, 7, 0.1), transparent);
+}
+
+.derecha:hover {
+    background: linear-gradient(90deg, transparent, rgba(255, 193, 7, 0.1));
+}
+
+[data-theme="dark"] .izquierda:hover {
+    background: linear-gradient(90deg, rgba(108, 0, 255, 0.2), transparent);
+}
+
+[data-theme="dark"] .derecha:hover {
+    background: linear-gradient(90deg, transparent, rgba(108, 0, 255, 0.2));
+}
+
+/* ================== RESPONSIVE ================== */
 @media (max-width: 768px) {
     .carousel-container {
         width: 90%;
@@ -248,21 +316,34 @@ button:hover {
         left: calc(50% - 80px);
     }
     
-    button {
-        padding: 0.8rem 1.5rem;
-        font-size: 1rem;
-        margin: 0 8px;
+    /* Botones en columna para móvil */
+    .controls {
+        flex-direction: column;
+        gap: 12px;
+        width: 90%;
+        margin-top: 30px;
     }
     
-    .controls {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        align-items: center;
+    .controls button {
+        width: 100%;
+        min-width: unset;
+        padding: 12px 20px;
+        font-size: 1rem;
     }
     
     .zone-click {
         width: 25%;
+    }
+}
+
+@media (max-width: 480px) {
+    .controls button {
+        font-size: 0.9rem;
+        padding: 10px 16px;
+    }
+    
+    .zone-click {
+        width: 30%;
     }
 }
 
@@ -271,4 +352,195 @@ button:hover {
         animation: none !important;
         transition: none !important;
     }
+}
+/* ================== FLECHAS DE NAVEGACIÓN ================== */
+.arrow {
+    position: absolute;
+    top: 40%;
+    transform: translateY(-50%);
+    width: 50px;
+    height: 50px;
+    background: var(--accent-yellow);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 30;
+    box-shadow: 0 4px 15px var(--shadow-medium);
+    transition: all 0.3s ease;
+    border: 2px solid white;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+}
+
+[data-theme="dark"] .arrow {
+    background: linear-gradient(135deg, var(--header-gradient-start), var(--header-gradient-end));
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.arrow:hover {
+    transform: translateY(-50%) scale(1.15);
+    box-shadow: 0 8px 25px var(--shadow-heavy);
+    background: #ffd44f;
+}
+
+[data-theme="dark"] .arrow:hover {
+    background: linear-gradient(135deg, var(--header-gradient-end), var(--header-gradient-start));
+}
+
+.arrow-left {
+    left: -25px;
+}
+
+.arrow-right {
+    right: -25px;
+}
+
+/* ================== INDICADORES DE POSICIÓN ================== */
+.indicators {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+    z-index: 20;
+}
+
+.indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    border: 2px solid var(--accent-blue);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.indicator.active {
+    background: var(--accent-yellow);
+    border-color: var(--accent-yellow);
+    transform: scale(1.2);
+}
+
+.indicator:hover {
+    transform: scale(1.3);
+    background: var(--accent-yellow);
+}
+
+[data-theme="dark"] .indicator {
+    border-color: var(--accent-blue);
+}
+
+[data-theme="dark"] .indicator.active {
+    background: var(--accent-yellow);
+    border-color: var(--accent-yellow);
+}
+
+/* ================== RESPONSIVE PARA FLECHAS ================== */
+@media (max-width: 768px) {
+    .arrow {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+    
+    .arrow-left {
+        left: -15px;
+    }
+    
+    .arrow-right {
+        right: -15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .arrow {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+    
+    .arrow-left {
+        left: -10px;
+    }
+    
+    .arrow-right {
+        right: -10px;
+    }
+    
+    .indicators {
+        gap: 8px;
+    }
+    
+    .indicator {
+        width: 10px;
+        height: 10px;
+    }
+}
+
+/* ================== ZONAS DE CLICK (mejoradas) ================== */
+.zone-click {
+    position: fixed;
+    top: 0;
+    width: 20%;
+    height: 100vh;
+    z-index: 15;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.izquierda { 
+    left: 0; 
+}
+
+.derecha { 
+    right: 0; 
+}
+
+.izquierda:hover {
+    background: linear-gradient(90deg, rgba(255, 193, 7, 0.15), transparent);
+}
+
+.derecha:hover {
+    background: linear-gradient(90deg, transparent, rgba(255, 193, 7, 0.15));
+}
+
+[data-theme="dark"] .izquierda:hover {
+    background: linear-gradient(90deg, rgba(108, 0, 255, 0.2), transparent);
+}
+
+[data-theme="dark"] .derecha:hover {
+    background: linear-gradient(90deg, transparent, rgba(108, 0, 255, 0.2));
+}
+
+/* Tooltip para indicar navegación */
+.arrow::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    border: 1px solid var(--accent-yellow);
+}
+
+.arrow:hover::after {
+    opacity: 1;
+}
+
+.arrow-left::after {
+    content: "Anterior";
+}
+
+.arrow-right::after {
+    content: "Siguiente";
 }

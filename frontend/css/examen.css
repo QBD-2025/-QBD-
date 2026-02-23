@@ -10,13 +10,10 @@
 
 }   ======================================== */
 
-
-
-
 :root {
-  --exam-header-height: 3.75rem; /* Header del examen móvil */
-  --sidebar-width: 17.5rem;
-  --exam-header-desktop: 4.6875rem; /* Header del examen desktop */
+  --exam-header-height: 7rem; /* Header del examen móvil */
+  --sidebar-width: 17rem;
+  --exam-header-desktop: 2rem; /* Header del examen desktop */
 }
 
 /* Ajuste para tablet+ */
@@ -24,8 +21,7 @@
   :root {
     --exam-header-height: var(--exam-header-desktop);
   }
-}
-
+} 
 /* ========================================
    2. PRE-EXAMEN LAYOUT
    ======================================== */
@@ -97,7 +93,7 @@
 .no-previous-results,
 .exam-info {
   background: var(--bg-secondary, #f8f9fa);
-  border-radius: var(--radius-xl, 1.25rem);
+  border-radius: var(--radius-xl, 1.25rem); 
   padding: var(--space-xl, 1.5rem);
   margin-bottom: var(--space-xl, 1.5rem);
   box-shadow: var(--shadow-md, 0 0.5rem 1rem rgba(0, 0, 0, 0.15));
@@ -392,8 +388,8 @@
    ======================================== */
 .contenedor-pregunta {
   background: linear-gradient(135deg, var(--header-gradient-start, #0815c5), var(--header-gradient-end, #0c0264));
-  max-width: 53.125rem; /* 850px */
-  margin: calc(var(--exam-header-height) + 1rem) auto var(--space-2xl, 2rem);
+  max-width: 53.125rem;
+  margin: calc(var(--exam-header-height) + 1.5rem) auto var(--space-2xl, 2rem);
   padding: var(--space-xl, 1.5rem);
   border-radius: var(--radius-xl, 1.25rem);
   display: none;
@@ -860,7 +856,7 @@
   }
   
   .contenedor-pregunta {
-    margin-top: calc(var(--exam-header-desktop) + 1.5rem);
+    margin-top: calc(var(--exam-header-desktop) + 5rem);
     padding: var(--space-2xl, 2rem);
   }
   
@@ -885,23 +881,22 @@
     padding: var(--space-3xl, 3rem) var(--space-2xl, 2rem);
   }
   
-  /* CRÍTICO: Sidebar pasa a posición FIJA a la izquierda */
   #pendientesContainer {
     position: fixed;
-    top: calc(var(--exam-header-height) + 1rem);
+    top: calc(var(--exam-header-height) + 5rem);
     left: var(--space-lg, 1rem);
-    width: var(--sidebar-width, 17.5rem);
-    max-width: var(--sidebar-width, 17.5rem);
+    width: var(--sidebar-width, 17rem);
+    max-width: var(--sidebar-width, 17rem);
     max-height: calc(100vh - var(--exam-header-height) - 2rem);
     overflow-y: auto;
     margin: 0;
     z-index: 100;
   }
   
-  /* Ajustar margen del contenedor de preguntas para dejar espacio al sidebar */
+  /* CENTRADO REAL: margen izquierdo compensa el sidebar */
   .contenedor-pregunta {
-    margin-left: auto;
-    margin-right: auto;
+    margin-left: calc(var(--sidebar-width) + 1rem);
+    margin-right: 1rem;
   }
 }
 

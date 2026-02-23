@@ -1,204 +1,280 @@
 /* ===========================================================
-Archivo: minijuego.css
------------------------------------------------------------
-Este archivo contiene:
+   MINIJUEGO.CSS - Modo día/noche con botón RGB adaptable
+   =========================================================== */
 
-  1. Reset básico y estilos generales del body
-  2. Contenedor principal (.wrapper)
-  3. Contenedor del carrusel (.carousel-container)
-  4. Carrusel 3D (.carousel)
-  5. Tarjetas del carrusel (.card)
-      - Estilos normales
-      - Hover con sombra y escala
-  6. Controles y botones
-      - Botones normales
-      - Botón aleatorio con animación arcoíris
-  7. Animaciones (background rainbow)
-  -----------------------------------------------------------
-  Todos los elementos usan transiciones y sombras para
-  lograr un efecto visual moderno y llamativo.
-Fecha: [Fecha de creación o última edición]
-=========================================================== */
-
-/* ================== VARIABLES CSS ================== */
+/* ================== VARIABLES MODO CLARO (DEFAULT) ================== */
 :root {
-    /* TEMA CLARO */
-    --bg-body: linear-gradient(145deg, #ededed, #949494);
-    --wrapper-bg: linear-gradient(135deg, #0515a8, #09012c);
-    --wrapper-border: #999;
-    --card-bg: #ededed;
-    --card-color: #06276f;
-    --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    --card-inset: inset 0 0 10px rgba(255, 255, 255, 0.4);
-    --card-hover-glow: hwb(56 0% 0%);
-    --button-bg: linear-gradient(135deg, #f5b70bfd, #fa9702);
-    --button-hover-bg: linear-gradient(135deg, #ff6600, #8f3001);
-    --button-shadow: 0 6px 18px rgba(11, 63, 245, 0.5);
-    --button-hover-shadow: 0 8px 25px rgba(5, 47, 156, 0.85);
-    --random-button-border: #ffffff55;
-    --random-button-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
-    --random-button-hover-shadow: 0 0 20px 8px rgba(255, 255, 255, 0.6);
+  --bg-body: linear-gradient(145deg, #f0f2f5, #d9e0e8);
+  --wrapper-bg: linear-gradient(135deg, #ffffff, #f5f7fa);
+  --wrapper-border: rgba(0, 0, 0, 0.15);
+  --card-bg: #ffffff;
+  --card-color: #1e293b;
+  --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  --card-inset: inset 0 0 10px rgba(255, 255, 255, 0.8);
+  --card-hover-glow: #fbbf24;
+  
+  --button-bg: linear-gradient(135deg, #3b82f6, #2563eb);
+  --button-hover-bg: linear-gradient(135deg, #2563eb, #1d4ed8);
+  --button-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  --button-hover-shadow: 0 8px 20px rgba(59, 130, 246, 0.6);
+  
+  /* Botón RGB - MÁS BRILLANTE PARA DÍA */
+  --random-button-bg: linear-gradient(#fbbf24);
+  --random-button-text: #ffffff;
+  --random-button-border: rgba(255, 255, 255, 0.3);
+  --random-button-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  --random-button-hover-shadow: 0 0 25px 8px rgba(255, 255, 255, 0.8);
+  
+  --btn-volver-bg: #ffffff;
+  --btn-volver-text: #1e293b;
+  --btn-volver-border: #3b82f6;
+  --btn-volver-hover-bg: #3b82f6;
+  --btn-volver-hover-text: #ffffff;
+  
+  --text-primary: #1e293b;
+  --text-secondary: #4b5563;
+  
+  --transition: 0.3s ease;
 }
 
+/* ================== VARIABLES MODO OSCURO ================== */
 [data-theme="dark"] {
-    /* TEMA OSCURO */
-    --bg-body: linear-gradient(145deg, #0a0e27, #1a1a2e);
-    --wrapper-bg: linear-gradient(135deg, #1e3a8a, #6c00ff);
-    --wrapper-border: rgba(108, 0, 255, 0.3);
-    --card-bg: #1a1a2e;
-    --card-color: #ffffff;
-    --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-    --card-inset: inset 0 0 10px rgba(108, 0, 255, 0.2);
-    --card-hover-glow: #6c00ff;
-    --button-bg: linear-gradient(135deg, #6c00ff, #8b5cf6);
-    --button-hover-bg: linear-gradient(135deg, #7a21f8, #4c1d95);
-    --button-shadow: 0 6px 18px rgba(108, 0, 255, 0.6);
-    --button-hover-shadow: 0 8px 25px rgba(108, 0, 255, 0.8);
-    --random-button-border: rgba(255, 255, 255, 0.3);
-    --random-button-shadow: 0 6px 20px rgba(108, 0, 255, 0.4);
-    --random-button-hover-shadow: 0 0 20px 8px rgba(108, 0, 255, 0.7);
+  --bg-body: linear-gradient(145deg, #0a0e27, #1a1f3a);
+  --wrapper-bg: linear-gradient(135deg, #1e293b, #0f172a);
+  --wrapper-border: rgba(108, 0, 255, 0.4);
+  --card-bg: #1e293b;
+  --card-color: #ffffff;
+  --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  --card-inset: inset 0 0 10px rgba(108, 0, 255, 0.3);
+  --card-hover-glow: #6c00ff;
+  
+  --button-bg: linear-gradient(135deg, #6c00ff, #8b5cf6);
+  --button-hover-bg: linear-gradient(135deg, #7a21f8, #4c1d95);
+  --button-shadow: 0 4px 12px rgba(108, 0, 255, 0.5);
+  --button-hover-shadow: 0 8px 20px rgba(108, 0, 255, 0.8);
+  
+  /* Botón RGB - MÁS VIBRANTE PARA NOCHE */
+  --random-button-bg: linear-gradient(#fbbf24);
+  --random-button-text: #ffffff;
+  --random-button-border: rgba(255, 255, 255, 0.2);
+  --random-button-shadow: 0 4px 15px rgba(108, 0, 255, 0.5);
+  --random-button-hover-shadow: 0 0 30px 10px rgba(108, 0, 255, 0.8);
+  
+  --btn-volver-bg: #1e293b;
+  --btn-volver-text: #ffffff;
+  --btn-volver-border: #6c00ff;
+  --btn-volver-hover-bg: #6c00ff;
+  --btn-volver-hover-text: #ffffff;
+  
+  --text-primary: #ffffff;
+  --text-secondary: #cbd5e1;
 }
 
-/* ================== Reset básico y body ================== */
-body {
+/* ================== RESET Y BASE ================== */
+* {
   margin: 0;
   padding: 0;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center; /* Centra todo el contenido */
-  perspective: 1200px; /* Efecto 3D para el carrusel */
-  background: var(--bg-body);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: white;
-  overflow: hidden;
-  user-select: none; /* Evita selección accidental de texto */
-  transition: background 0.5s ease;
+  box-sizing: border-box;
 }
 
-/* ================== Contenedor principal (.wrapper) ================== */
+body {
+  margin: 0;
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  perspective: 1200px;
+  background: var(--bg-body);
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+  color: var(--text-primary);
+  overflow-x: hidden;
+  user-select: none;
+  
+}
+
+/* ================== CONTENEDOR PRINCIPAL ================== */
+.minijuegos-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+/* ================== BOTÓN VOLVER (ESTILO RANKING) ================== */
+
+
+
+
+
+.btn-volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #fbbf24; /* COLOR AMARILLO */
+  border: 2px solid #fbbf24;
+  color: #ffffff; /* texto blanco para contraste */
+  padding: 10px 25px;
+  border-radius: 40px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+  margin-bottom: 10px;
+  align-self: flex-start;
+}
+.btn-volver:hover {
+  background: var(--btn-volver-hover-bg);
+  color: var(--btn-volver-hover-text);
+  transform: translateX(-5px);
+  box-shadow: var(--button-hover-shadow);
+}
+
+/* ================== WRAPER PRINCIPAL ================== */
 .wrapper {
-  padding: 20px 30px;
+  padding: 30px 40px;
   border: 2px solid var(--wrapper-border);
-  border-radius: 18px;
+  border-radius: 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
   box-sizing: border-box;
-  width: max-content;
+  width: fit-content;
+  max-width: 100%;
   background: var(--wrapper-bg);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   transition: all 0.5s ease;
 }
 
-/* ================== Contenedor del carrusel ================== */
+/* ================== CONTENEDOR DEL CARRUSEL ================== */
 .carousel-container {
   width: 1000px;
+  max-width: 100%;
   height: 340px;
   position: relative;
 }
 
-/* ================== Carrusel 3D ================== */
+/* ================== CARRUSEL 3D ================== */
 .carousel {
   width: 100%;
   height: 320px;
   position: relative;
-  transform-style: preserve-3d; /* Mantiene el efecto 3D de las tarjetas */
+  transform-style: preserve-3d;
   transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: grab;
 }
 
-/* ================== Tarjetas (.card) ================== */
+/* ================== TARJETAS ================== */
 .card {
   position: absolute;
   width: 210px;
   height: 270px;
-  left: calc(50% - 105px); /* Centra la tarjeta horizontalmente */
-  top: 30px;
+  left: calc(50% - 105px);
+  top: 25px;
   background: var(--card-bg);
-  border-radius: 18px;
-  box-shadow:
-    var(--card-shadow),
-    var(--card-inset);
+  border-radius: 20px;
+  box-shadow: var(--card-shadow), var(--card-inset);
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   font-weight: 700;
   font-size: 1.5rem;
   color: var(--card-color);
   cursor: pointer;
-  transition: box-shadow 0.4s ease, transform 0.4s ease, background 0.4s ease, color 0.4s ease;
-  backface-visibility: hidden; /* Oculta la parte trasera al girar */
+  transition: all var(--transition);
+  backface-visibility: hidden;
   user-select: none;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-/* Hover de las tarjetas */
-.card:hover {
-  box-shadow:
-    0 0 25px 8px var(--card-hover-glow),
-    0 8px 30px var(--card-hover-glow),
-    inset 0 0 25px var(--card-hover-glow);
-  transform: translateY(-15px) scale(1.05);
-  z-index: 10; /* Trae la tarjeta al frente */
-}
-
-/* ================== Controles y botones ================== */
-.controls {
-  margin-top: 25px;
+  padding: 20px;
   text-align: center;
+  border: 2px solid transparent;
 }
 
-button {
+/* Hover de tarjetas */
+.card:hover {
+  box-shadow: 0 0 30px 10px var(--card-hover-glow),
+              var(--card-shadow);
+  transform: translateY(-15px) scale(1.05);
+  border-color: var(--card-hover-glow);
+  z-index: 10;
+}
+
+/* ================== CONTROLES Y BOTONES ================== */
+.controls {
+  margin-top: 30px;
+  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
+.controls button {
   background: var(--button-bg);
   border: none;
   color: white;
   padding: 14px 28px;
-  margin: 0 12px;
-  font-size: 1.15rem;
-  border-radius: 14px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 40px;
   cursor: pointer;
   box-shadow: var(--button-shadow);
-  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
-  user-select: none;
-  font-weight: 700;
-  letter-spacing: 0.03em;
+  transition: all var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: 0.5px;
+  border: 2px solid transparent;
 }
 
-button:hover,
-button:focus-visible {
+.controls button:hover,
+.controls button:focus-visible {
   background: var(--button-hover-bg);
   box-shadow: var(--button-hover-shadow);
-  transform: translateY(-3px);
-  outline: none;
-}
-
-/* ================== Botón Aleatorio con animación RGB ================== */
-.boton-aleatorio {
-  background: linear-gradient(270deg, #61004e, #2e0079, #cc00ff, #700359, #5205b8, #57006d);
-  background-size: 1200% 1200%;
-  animation: rainbowBackground 8s ease infinite; /* Animación arcoíris */
-  color: #fff;
-  border: 2px solid var(--random-button-border);
-  font-weight: 800;
-  box-shadow: var(--random-button-shadow);
-  padding: 14px 28px;
-  margin: 0 12px;
-  font-size: 1.15rem;
-  border-radius: 14px;
-  cursor: pointer;
-  user-select: none;
-  transition: transform 0.2s ease, box-shadow 0.3s ease;
-}
-
-.boton-aleatorio:hover,
-.boton-aleatorio:focus-visible {
   transform: translateY(-3px) scale(1.05);
-  box-shadow: var(--random-button-hover-shadow);
   outline: none;
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
-/* ================== Animación arcoíris ================== */
-@keyframes rainbowBackground {
+/* ================== BOTÓN ALEATORIO CON RGB ADAPTABLE ================== */
+.boton-aleatorio {
+  background: var(--random-button-bg) !important;
+  background-size: 400% 400% !important;
+  animation: rainbowMove 8s ease infinite !important;
+  color: var(--random-button-text) !important;
+  border: 2px solid var(--random-button-border) !important;
+  font-weight: 800 !important;
+  box-shadow: var(--random-button-shadow) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.boton-aleatorio::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.7s ease;
+}
+
+.boton-aleatorio:hover::before {
+  left: 100%;
+}
+
+.boton-aleatorio:hover {
+  transform: translateY(-3px) scale(1.08) !important;
+  box-shadow: var(--random-button-hover-shadow) !important;
+}
+
+/* Animación RGB */
+@keyframes rainbowMove {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
@@ -209,8 +285,8 @@ button:focus-visible {
   position: fixed;
   top: 20px;
   right: 20px;
-  width: 60px;
-  height: 60px;
+  width: 55px;
+  height: 55px;
   border-radius: 50%;
   background: var(--button-bg);
   border: 2px solid var(--wrapper-border);
@@ -218,7 +294,7 @@ button:focus-visible {
   font-size: 1.5rem;
   cursor: pointer;
   box-shadow: var(--button-shadow);
-  transition: all 0.3s ease;
+  transition: all var(--transition);
   z-index: 1000;
   display: flex;
   justify-content: center;
@@ -226,7 +302,7 @@ button:focus-visible {
 }
 
 .theme-toggle:hover {
-  transform: scale(1.1);
+  transform: scale(1.1) rotate(15deg);
   box-shadow: var(--button-hover-shadow);
 }
 
@@ -237,19 +313,20 @@ button:focus-visible {
   }
 }
 
-@media (max-width: 850px) {
-  .carousel-container {
-    width: 600px;
+@media (max-width: 900px) {
+  .wrapper {
+    padding: 25px 20px;
   }
   
-  .wrapper {
-    padding: 15px 20px;
+  .controls button {
+    padding: 12px 22px;
+    font-size: 1rem;
   }
 }
 
-@media (max-width: 650px) {
+@media (max-width: 700px) {
   .carousel-container {
-    width: 400px;
+    width: 500px;
     height: 300px;
   }
   
@@ -258,20 +335,62 @@ button:focus-visible {
   }
   
   .card {
-    width: 180px;
+    width: 170px;
     height: 230px;
-    left: calc(50% - 90px);
+    left: calc(50% - 85px);
+    font-size: 1.2rem;
   }
   
-  button {
-    padding: 12px 20px;
+  .controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .controls button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .btn-volver {
+    align-self: center;
+  }
+}
+
+@media (max-width: 550px) {
+  .carousel-container {
+    width: 350px;
+    height: 260px;
+  }
+  
+  .carousel {
+    height: 240px;
+  }
+  
+  .card {
+    width: 140px;
+    height: 200px;
+    left: calc(50% - 70px);
     font-size: 1rem;
-    margin: 0 8px;
+    padding: 10px;
   }
   
   .theme-toggle {
-    width: 50px;
-    height: 50px;
+    width: 45px;
+    height: 45px;
     font-size: 1.2rem;
+    top: 10px;
+    right: 10px;
+  }
+}
+
+/* ================== ACCESIBILIDAD ================== */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .boton-aleatorio {
+    animation: none !important;
   }
 }

@@ -3502,7 +3502,7 @@ function renderizarRanking(container, jugadores, modo = 'general') {
         
         // ✅ CRÍTICO: Pasar modo correcto a los botones
         item.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="player-main">
                 <img src="${jugador.foto_perfil || '/uploads/default_avatar.png'}" 
                      alt="Avatar" 
                      class="avatar"
@@ -3515,11 +3515,11 @@ function renderizarRanking(container, jugadores, modo = 'general') {
             <div class="player-actions">
                 <button class="btn-buscar" 
                         onclick="buscarJugadorEnLobby(${jugadorId}, '${(jugador.username || '').replace(/'/g, "\\'")}', '${modo}')">
-                    Invitar Lobby 👤
+                    Invitar
                 </button>
                 <button class="btn-notificar" 
                         onclick="enviarDesafioBD(${jugadorId}, '${(jugador.username || '').replace(/'/g, "\\'")}', this, '${modo}')">
-                    Invitar Notif 📧
+                    Desafio
                 </button>
             </div>
         `;

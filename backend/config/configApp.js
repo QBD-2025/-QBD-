@@ -300,6 +300,8 @@ const originalRedirect = express.response.redirect;
 // Para agregar a configApp.js en la sección de Handlebars
 // =============================================
 
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
 const helpers = {
     // ════════════════════════════════════════════════════════════
     // ✅ HELPERS BÁSICOS

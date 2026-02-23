@@ -1,10 +1,26 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" /> <!-- Codificación de caracteres UTF-8 -->
-  <meta name="viewport" content="width=device-width, initial-scale=1" /> <!-- Responsive en móviles -->
-  <title>Prueba de Examen de Admisión EXANI</title> <!-- Título en la pestaña -->
-  <link rel="stylesheet" href="/css/simulador.css" /> <!-- Hoja de estilos externa -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prueba de Examen de Admisión EXANI</title>
+  
+  {{!-- TEMA GLOBAL - IGUAL QUE CONÓCENOS Y RANKING --}}
+  <script>
+    const tema = localStorage.getItem('theme');
+    if (tema) document.documentElement.setAttribute('data-theme', tema);
+  </script>
+  
+  {{!-- GOOGLE FONTS --}}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  {{!-- FONT AWESOME --}}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  {{!-- ESTILOS PROPIOS --}}
+  <link rel="stylesheet" href="/css/simulador.css" />
 </head>
 <body>
   <!-- Contenedor principal -->
@@ -32,22 +48,40 @@
     </footer>
   </div>
 
-  <!-- Botón flotante circular con emoji 🧷 -->
-  <button class="floating-button" onclick="location.href='/ligas'">🧷</button>
+  <!-- Botón flotante de ligas (existente) -->
+  <button class="floating-button" onclick="location.href='/ligas'" aria-label="Ir a ligas">🧷</button>
+  
+  <!-- NUEVO: Botón flotante de casa para regresar al menú principal (como en Conócenos) -->
+  <button class="floating-home" onclick="location.href='/menu_principal'" aria-label="Volver al menú principal">
+    <i class="fas fa-home"></i>
+  </button>
 
   <script>
-    // Seleccionamos el botón flotante
+    // Seleccionamos los botones flotantes
     const floatingBtn = document.querySelector('.floating-button');
+    const floatingHome = document.querySelector('.floating-home');
 
-    // Al pasar el cursor, detenemos la animación "pulse"
-    floatingBtn.addEventListener('mouseenter', function() {
-      this.style.animation = 'none';
-    });
+    // Animación para el botón de ligas
+    if (floatingBtn) {
+      floatingBtn.addEventListener('mouseenter', function() {
+        this.style.animation = 'none';
+      });
+      
+      floatingBtn.addEventListener('mouseleave', function() {
+        this.style.animation = 'pulse 2s infinite';
+      });
+    }
     
-    // Al salir el cursor, reiniciamos la animación "pulse" infinita de 2s
-    floatingBtn.addEventListener('mouseleave', function() {
-      this.style.animation = 'pulse 2s infinite';
-    });
+    // Animación para el botón de casa
+    if (floatingHome) {
+      floatingHome.addEventListener('mouseenter', function() {
+        this.style.animation = 'none';
+      });
+      
+      floatingHome.addEventListener('mouseleave', function() {
+        this.style.animation = 'pulseHome 2s infinite';
+      });
+    }
   </script>
 </body>
-</html>
+</html> 

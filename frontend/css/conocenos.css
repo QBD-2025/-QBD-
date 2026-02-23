@@ -24,15 +24,15 @@
     
     /* Info panel */
     --info-bg: #ffffff;
-    --info-title: #6a1b9a;
-    --info-subtitle: #6a1b9a;
+    --info-title: #0815c5;
+    --info-subtitle: #0815c5;
     --info-text: #333333;
     --info-divider: #facc15;
     
     /* Features */
     --feature-bg: #f8f9fa;
     --feature-border: #e0e0e0;
-    --feature-icon: #6a1b9a;
+    --feature-icon: #0815c5;
     --feature-text: #333333;
     --feature-hover: #facc15;
     

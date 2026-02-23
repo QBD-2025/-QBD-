@@ -1,1065 +1,437 @@
 /* =============================================
-   🎨 PERFIL PÚBLICO - DISEÑO GAMIFICADO
+   Perfil Público — CSS
+   + Light Mode via [data-theme="light"]
    ============================================= */
 
-/* Variables CSS */
+/* ── Variables DARK (default) ── */
 :root {
-  --color-primary: #6366f1;
-  --color-secondary: #8b5cf6;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
-  --color-info: #3b82f6;
-  
-  --bg-dark: #0f172a;
-  --bg-card: #1e293b;
-  --bg-hover: #334155;
-  
-  --text-primary: #f1f5f9;
-  --text-secondary: #cbd5e1;
+  --bg-dark:    #0f172a;
+  --bg-card:    #1e293b;
+  --bg-card2:   #273549;
+  --accent:     #6366f1;
+  --accent2:    #818cf8;
+  --gold:       #fbbf24;
+  --green:      #10b981;
+  --red:        #ef4444;
+  --blue:       #3b82f6;
+  --text:       #f1f5f9;
   --text-muted: #94a3b8;
-  
-  --border-radius: 16px;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --border:     rgba(255,255,255,0.08);
+  --radius:     14px;
 }
 
-/* Reset y Base */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* ── Variables LIGHT ── */
+[data-theme="light"] {
+  --bg-dark:    #f1f5f9;
+  --bg-card:    #ffffff;
+  --bg-card2:   #f8fafc;
+  --accent:     #4f46e5;
+  --accent2:    #6366f1;
+  --gold:       #d97706;
+  --green:      #059669;
+  --red:        #dc2626;
+  --blue:       #2563eb;
+  --text:       #0f172a;
+  --text-muted: #64748b;
+  --border:     rgba(0,0,0,0.09);
 }
 
-body.perfil-publico-page {
-  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  color: var(--text-primary);
-  min-height: 100vh;
-  padding: 20px;
-  line-height: 1.6;
+/* ── Overrides específicos light ── */
+[data-theme="light"] .perfil-header {
+  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
 }
 
-/* =============================================
-   📦 CONTENEDOR PRINCIPAL
-   ============================================= */
-
-.perfil-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  animation: fadeInUp 0.5s ease;
+[data-theme="light"] .carrera-badge {
+  background: rgba(79,70,229,.08);
+  border-color: rgba(79,70,229,.25);
 }
 
-/* =============================================
-   🎯 ENCABEZADO DEL PERFIL
-   ============================================= */
-
-.perfil-header {
-  background: linear-gradient(135deg, var(--bg-card) 0%, #2d3748 100%);
-  border-radius: var(--border-radius);
-  padding: 40px;
-  margin-bottom: 30px;
-  box-shadow: var(--shadow-lg);
-  position: relative;
-  overflow: hidden;
+[data-theme="light"] .insignia-card.legendaria {
+  box-shadow: 0 0 12px rgba(217,119,6,.25);
 }
 
-.perfil-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+[data-theme="light"] .barra-contenedor {
+  background: rgba(0,0,0,.08);
 }
 
-.btn-volver {
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  color: var(--text-primary);
-  padding: 10px 20px;
+[data-theme="light"] .stat-mini {
+  background: #f1f5f9;
+}
+
+[data-theme="light"] .stat-mini.destacado {
+  border-color: rgba(220,38,38,.25);
+}
+
+[data-theme="light"] .logro-bonus {
+  background: rgba(5,150,105,.1);
+  border-color: rgba(5,150,105,.3);
+}
+
+[data-theme="light"] .dificultad {
+  background: rgba(79,70,229,.08);
+  border-color: rgba(79,70,229,.25);
+}
+
+[data-theme="light"] .btn-ver-todos {
+  background: rgba(79,70,229,.08);
+  border-color: rgba(79,70,229,.3);
+}
+[data-theme="light"] .btn-ver-todos:hover {
+  background: rgba(79,70,229,.18);
+}
+
+[data-theme="light"] .avatar-grande img {
+  border-color: var(--accent);
+}
+
+/* ── Theme Toggle Button ── */
+.theme-toggle-btn {
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  font-size: 1rem;
+  transition: border-color .2s, color .2s;
+  flex-shrink: 0;
+}
+.theme-toggle-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.theme-toggle-btn .icon-dark  { display: inline; }
+.theme-toggle-btn .icon-light { display: none; }
+[data-theme="light"] .theme-toggle-btn .icon-dark  { display: none; }
+[data-theme="light"] .theme-toggle-btn .icon-light { display: inline; }
+
+/* ── Base ── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg-dark);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  min-height: 100vh;
+  transition: background .3s ease, color .3s ease;
+}
+
+/* ── Layout ── */
+.perfil-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Barra top con volver + toggle ── */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ── Volver ── */
+.btn-volver {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 8px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: color .2s, border-color .2s;
 }
+.btn-volver:hover { color: var(--text); border-color: var(--accent); }
 
-.btn-volver:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateX(-5px);
+/* ── Header ── */
+.perfil-header {
+  background: linear-gradient(135deg, #1e293b 0%, #162032 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  transition: background .3s ease;
 }
-
 .header-content {
   display: flex;
-  gap: 30px;
+  gap: 24px;
   align-items: flex-start;
+  margin-top: 20px;
+  flex-wrap: wrap;
 }
-
 .avatar-grande {
   position: relative;
   flex-shrink: 0;
 }
-
 .avatar-grande img {
-  width: 150px;
-  height: 150px;
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
-  border: 5px solid var(--color-primary);
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+  border: 3px solid var(--accent);
   object-fit: cover;
 }
-
 .badge-propio {
   position: absolute;
-  bottom: 10px;
-  right: -10px;
-  background: var(--color-success);
-  color: white;
-  padding: 5px 15px;
-  border-radius: 20px;
-  font-size: 12px;
+  bottom: 0; right: 0;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
   font-weight: 700;
-  box-shadow: var(--shadow-md);
+  padding: 3px 8px;
+  border-radius: 20px;
 }
-
-.info-principal {
-  flex: 1;
-}
-
-.username {
-  font-size: 36px;
-  font-weight: 900;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 5px;
-}
-
-.nombre-real {
-  color: var(--text-muted);
-  font-size: 18px;
-  margin-bottom: 15px;
-}
-
+.info-principal { flex: 1; min-width: 200px; }
+.username  { font-size: 26px; font-weight: 800; color: var(--text); }
+.nombre-real { color: var(--text-muted); font-size: 15px; margin-top: 4px; }
 .carrera-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: rgba(139, 92, 246, 0.2);
-  border: 2px solid rgba(139, 92, 246, 0.4);
-  padding: 8px 16px;
+  gap: 6px;
+  background: rgba(99,102,241,.15);
+  border: 1px solid rgba(99,102,241,.4);
+  color: var(--accent2);
+  padding: 5px 12px;
   border-radius: 20px;
-  color: #c4b5fd;
-  font-weight: 600;
-  margin-bottom: 15px;
+  font-size: 13px;
+  margin-top: 10px;
 }
-
 .descripcion {
-  color: var(--text-secondary);
-  font-size: 16px;
-  line-height: 1.6;
-  margin: 15px 0;
-  padding: 15px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  border-left: 3px solid var(--color-primary);
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-top: 10px;
+  line-height: 1.5;
 }
-
 .fecha-registro {
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: 13px;
+  margin-top: 8px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 15px;
+  gap: 6px;
 }
 
-/* =============================================
-   📊 GRID DE ESTADÍSTICAS PRINCIPALES
-   ============================================= */
-
-.stats-grid-principal {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.stat-card {
-  background: var(--bg-card);
-  border-radius: var(--border-radius);
-  padding: 30px;
-  text-align: center;
-  box-shadow: var(--shadow-md);
-  transition: all 0.3s ease;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-.stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--color-primary);
-}
-
-.stat-card.destacado {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
-  border-color: var(--color-primary);
-}
-
-.stat-icon {
-  font-size: 48px;
-  margin-bottom: 15px;
-}
-
-.stat-valor {
-  font-size: 42px;
-  font-weight: 900;
-  color: var(--text-primary);
-  margin-bottom: 10px;
-}
-
-.stat-label {
-  color: var(--text-muted);
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-weight: 600;
-}
-
-/* =============================================
-   📦 SECCIONES DE CONTENIDO
-   ============================================= */
-
+/* ── Sección genérica ── */
 .seccion-contenido {
   background: var(--bg-card);
-  border-radius: var(--border-radius);
-  padding: 30px;
-  margin-bottom: 30px;
-  box-shadow: var(--shadow-md);
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
 }
-
 .titulo-seccion {
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--text-primary);
-  margin-bottom: 25px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-.titulo-seccion i {
-  color: var(--color-primary);
-}
-
-/* =============================================
-   ⚔️ ESTADÍSTICAS DE DUELOS
-   ============================================= */
-
-.duelos-stats {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 30px;
-}
-
-.stats-barras {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.barra-stat {
-  background: rgba(255, 255, 255, 0.05);
-  padding: 20px;
-  border-radius: 12px;
-  border-left: 4px solid;
-}
-
-.barra-stat.victoria {
-  border-color: var(--color-success);
-}
-
-.barra-stat.empate {
-  border-color: var(--color-warning);
-}
-
-.barra-stat.derrota {
-  border-color: var(--color-danger);
-}
-
-.barra-label {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-
-.barra-contenedor {
-  background: rgba(0, 0, 0, 0.3);
-  height: 12px;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.barra-fill {
-  height: 100%;
-  transition: width 1s ease;
-  border-radius: 6px;
-}
-
-.victoria .barra-fill {
-  background: linear-gradient(90deg, var(--color-success), #34d399);
-}
-
-.empate .barra-fill {
-  background: linear-gradient(90deg, var(--color-warning), #fbbf24);
-}
-
-.derrota .barra-fill {
-  background: linear-gradient(90deg, var(--color-danger), #f87171);
-}
-
-.stats-adicionales {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.stat-mini {
-  background: rgba(255, 255, 255, 0.05);
-  padding: 25px;
-  border-radius: 12px;
-  text-align: center;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-}
-
-.stat-mini:hover {
-  transform: scale(1.05);
-  border-color: var(--color-primary);
-}
-
-.stat-mini.destacado {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(251, 146, 60, 0.2));
-  border-color: var(--color-danger);
-}
-
-.stat-mini .icono {
-  font-size: 36px;
-  margin-bottom: 10px;
-}
-
-.stat-mini .valor {
-  font-size: 32px;
-  font-weight: 900;
-  color: var(--text-primary);
-  margin-bottom: 5px;
-}
-
-.stat-mini .label {
-  color: var(--text-muted);
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* =============================================
-   🎓 CARRERAS
-   ============================================= */
-
-.carreras-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-}
-
-.carrera-card {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.1));
-  border: 2px solid rgba(139, 92, 246, 0.3);
-  border-radius: 12px;
-  padding: 25px;
-  text-align: center;
-  transition: all 0.3s ease;
-}
-
-.carrera-card:hover {
-  transform: translateY(-5px);
-  border-color: var(--color-secondary);
-  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
-}
-
-.carrera-nombre {
-  color: var(--text-secondary);
-  font-weight: 600;
-  margin-bottom: 10px;
-  font-size: 14px;
-}
-
-.carrera-puntos {
-  font-size: 28px;
-  font-weight: 900;
-  color: #c4b5fd;
-}
-
-/* =============================================
-   📜 ÚLTIMOS DUELOS
-   ============================================= */
-
-.duelos-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.duelo-item {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 20px;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 20px;
-  align-items: center;
-  border-left: 4px solid;
-  transition: all 0.3s ease;
-}
-
-.duelo-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  transform: translateX(5px);
-}
-
-.duelo-item.victoria {
-  border-color: var(--color-success);
-}
-
-.duelo-item.derrota {
-  border-color: var(--color-danger);
-}
-
-.duelo-item.empate {
-  border-color: var(--color-warning);
-}
-
-.duelo-fecha {
-  color: var(--text-muted);
-  font-size: 13px;
-  min-width: 150px;
-}
-
-.duelo-info {
-  flex: 1;
-}
-
-.duelo-jugadores {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.jugador-yo {
-  color: var(--color-primary);
-  font-weight: 700;
-}
-
-.vs {
-  color: var(--text-muted);
-  font-size: 12px;
-}
-
-.duelo-resultado {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-}
-
-.puntaje {
-  color: var(--text-primary);
-  font-weight: 700;
-  font-size: 18px;
-}
-
-.dificultad {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.duelo-estado {
-  color: var(--text-secondary);
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 120px;
-  justify-content: flex-end;
-}
-
-/* =============================================
-   🏅 INSIGNIAS PLACEHOLDER
-   ============================================= */
-
-.insignias-preview {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.1));
-  border-color: rgba(251, 191, 36, 0.3);
-}
-
-.insignias-placeholder {
-  text-align: center;
-  padding: 60px 20px;
-}
-
-.icono-placeholder {
-  font-size: 80px;
   margin-bottom: 20px;
-  opacity: 0.5;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
 }
+.titulo-seccion i { color: var(--accent); }
 
-.insignias-placeholder p {
-  color: var(--text-secondary);
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 10px;
+/* ── Stats principales ── */
+.stats-grid-principal {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
 }
-
-.insignias-placeholder small {
-  color: var(--text-muted);
-  font-size: 14px;
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  transition: transform .2s, border-color .2s;
 }
+.stat-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+.stat-card.destacado { border-color: var(--gold); }
+.stat-icon { font-size: 28px; margin-bottom: 8px; }
+.stat-valor { font-size: 26px; font-weight: 900; color: var(--text); }
+.stat-card.destacado .stat-valor { color: var(--gold); }
+.stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
 
-/* =============================================
-   📱 RESPONSIVE
-   ============================================= */
-
-@media (max-width: 768px) {
-  .header-content {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-  
-  .username {
-    font-size: 28px;
-  }
-  
-  .stats-grid-principal {
-    grid-template-columns: 1fr;
-  }
-  
-  .duelos-stats {
-    grid-template-columns: 1fr;
-  }
-  
-  .duelo-item {
-    grid-template-columns: 1fr;
-    text-align: center;
-  }
-  
-  .duelo-estado {
-    justify-content: center;
-  }
-}
-
-/* =============================================
-   ✨ ANIMACIONES
-   ============================================= */
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-}
-
-.stat-card.destacado {
-  animation: pulse 3s ease-in-out infinite;
-}
-/* =============================================
-   🏆 ESTILOS ADICIONALES - LOGROS E INSIGNIAS
-   Agregar al final de perfil-publico.css
-   ============================================= */
-
-/* ═══════════════════════════════════════════
-   🏅 INSIGNIAS SHOWCASE
-   ═══════════════════════════════════════════ */
-
-.insignias-showcase {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.05), rgba(245, 158, 11, 0.05));
-  border-color: rgba(251, 191, 36, 0.2);
-}
-
+/* ── Insignias ── */
 .insignias-grid-perfil {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 16px;
 }
-
 .insignia-card {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 20px;
-  text-align: center;
   position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-}
-
-.insignia-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-}
-
-.insignia-borde {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 16px;
-  border: 3px solid;
-  opacity: 0.6;
-  transition: opacity 0.3s ease;
-}
-
-.insignia-card:hover .insignia-borde {
-  opacity: 1;
-}
-
-.insignia-card img {
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
-  margin-bottom: 15px;
-  filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.3));
-}
-
-.insignia-nombre {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 5px;
-}
-
-.insignia-rareza {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 6px;
-  display: inline-block;
-  margin-top: 5px;
-}
-
-/* Rarezas específicas */
-.insignia-card.comun {
-  border-color: #94a3b8;
-}
-
-.insignia-card.comun .insignia-rareza {
-  background: rgba(148, 163, 184, 0.2);
-  color: #94a3b8;
-}
-
-.insignia-card.rara {
-  border-color: #3b82f6;
-}
-
-.insignia-card.rara .insignia-rareza {
-  background: rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
-}
-
-.insignia-card.epica {
-  border-color: #8b5cf6;
-}
-
-.insignia-card.epica .insignia-rareza {
-  background: rgba(139, 92, 246, 0.2);
-  color: #a78bfa;
-}
-
-.insignia-card.legendaria {
-  border-color: #fbbf24;
-  animation: pulseGold 3s ease-in-out infinite;
-}
-
-.insignia-card.legendaria .insignia-rareza {
-  background: rgba(251, 191, 36, 0.2);
-  color: #fbbf24;
-}
-
-.insignia-card.especial {
-  border-color: #ef4444;
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(220, 38, 38, 0.05));
-}
-
-.insignia-card.especial .insignia-rareza {
-  background: rgba(239, 68, 68, 0.2);
-  color: #f87171;
-}
-
-/* ═══════════════════════════════════════════
-   🏆 LOGROS SHOWCASE
-   ═══════════════════════════════════════════ */
-
-.logros-showcase {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
-  border-color: rgba(99, 102, 241, 0.2);
-}
-
-.logros-grid-perfil {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.logro-card {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-card2);
   border-radius: 12px;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+  padding: 14px 10px;
+  text-align: center;
+  border: 2px solid var(--border);
+  transition: transform .2s, border-color .2s;
+  cursor: default;
 }
-
-.logro-card::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 4px;
-  background: linear-gradient(180deg, #6366f1, #8b5cf6);
-}
-
-.logro-card:hover {
-  background: rgba(255, 255, 255, 0.08);
-  transform: translateX(5px);
-  border-color: rgba(99, 102, 241, 0.4);
-}
-
-.logro-icono {
-  font-size: 48px;
-  flex-shrink: 0;
-  filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.3));
-}
-
-.logro-info {
-  flex: 1;
-}
-
-.logro-nombre {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 5px;
-}
-
-.logro-descripcion {
-  font-size: 13px;
-  color: var(--text-muted);
-  line-height: 1.4;
+.insignia-card:hover { transform: translateY(-4px); }
+.insignia-card img {
+  width: 56px; height: 56px;
+  object-fit: contain;
   margin-bottom: 8px;
 }
+.insignia-nombre { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.insignia-rareza { font-size: 10px; color: var(--text-muted); text-transform: capitalize; margin-top: 4px; }
 
+.insignia-card.comun      { border-color: #94a3b8; }
+.insignia-card.rara       { border-color: #3b82f6; }
+.insignia-card.epica      { border-color: #a855f7; }
+.insignia-card.legendaria { border-color: var(--gold); box-shadow: 0 0 12px rgba(251,191,36,.35); }
+.insignia-card.especial   { border-color: var(--green); }
+
+.sin-insignias {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 30px;
+  font-size: 14px;
+}
+.sin-insignias i { display: block; font-size: 36px; margin-bottom: 12px; opacity: .4; }
+
+/* ── Logros ── */
+.logros-grid-perfil { display: flex; flex-direction: column; gap: 12px; }
+.logro-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  transition: border-color .2s;
+}
+.logro-card:hover { border-color: var(--accent); }
+.logro-icono  { font-size: 28px; flex-shrink: 0; }
+.logro-info   { flex: 1; }
+.logro-nombre { font-weight: 700; font-size: 15px; color: var(--text); }
+.logro-descripcion { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
 .logro-bonus {
   display: inline-block;
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2));
-  color: #fbbf24;
-  padding: 4px 12px;
+  background: rgba(16,185,129,.15);
+  border: 1px solid rgba(16,185,129,.4);
+  color: var(--green);
+  font-size: 12px; font-weight: 700;
+  padding: 2px 8px;
   border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-  border: 1px solid rgba(251, 191, 36, 0.3);
+  margin-top: 6px;
 }
+.logro-fecha { font-size: 12px; color: var(--text-muted); flex-shrink: 0; white-space: nowrap; }
 
-.logro-fecha {
-  font-size: 12px;
-  color: var(--text-muted);
-  text-align: right;
-  min-width: 120px;
-}
-
-/* ═══════════════════════════════════════════
-   🔘 BOTÓN VER TODOS
-   ═══════════════════════════════════════════ */
-
-.ver-todos-logros {
-  margin-top: 25px;
-  text-align: center;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
+.ver-todos-logros { text-align: center; margin-top: 16px; }
 .btn-ver-todos {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  border: none;
-  padding: 14px 30px;
-  border-radius: 10px;
-  color: white;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-}
-
-.btn-ver-todos:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
-}
-
-.btn-ver-todos i {
-  font-size: 18px;
-}
-
-/* ═══════════════════════════════════════════
-   📱 RESPONSIVE
-   ═══════════════════════════════════════════ */
-
-@media (max-width: 768px) {
-  .insignias-grid-perfil {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-  }
-  
-  .insignia-card img {
-    width: 60px;
-    height: 60px;
-  }
-  
-  .logro-card {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .logro-fecha {
-    text-align: center;
-    min-width: auto;
-  }
-  
-  .logro-icono {
-    font-size: 36px;
-  }
-}
-
-@media (max-width: 480px) {
-  .insignias-grid-perfil {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-  
-  .insignia-card {
-    padding: 15px 10px;
-  }
-  
-  .insignia-card img {
-    width: 50px;
-    height: 50px;
-  }
-  
-  .insignia-nombre {
-    font-size: 12px;
-  }
-  
-  .insignia-rareza {
-    font-size: 9px;
-    padding: 3px 6px;
-  }
-}
-
-/* ═══════════════════════════════════════════
-   ✨ ANIMACIONES ADICIONALES
-   ═══════════════════════════════════════════ */
-
-@keyframes pulseGold {
-  0%, 100% {
-    box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 25px rgba(251, 191, 36, 0.6), 0 0 40px rgba(251, 191, 36, 0.3);
-  }
-}
-
-.insignia-card.legendaria img {
-  animation: floatGold 3s ease-in-out infinite;
-}
-
-@keyframes floatGold {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-/* Efecto de brillo en hover para logros */
-.logro-card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(255, 255, 255, 0.1), 
-    transparent
-  );
-  transition: left 0.5s ease;
-}
-
-.logro-card:hover::after {
-  left: 100%;
-}
-
-/* ═══════════════════════════════════════════
-   🎯 ESTADOS ESPECIALES
-   ═══════════════════════════════════════════ */
-
-/* Insignia recién desbloqueada */
-.insignia-card.nueva {
-  animation: nuevoDesbloqueo 1s ease;
-}
-
-@keyframes nuevoDesbloqueo {
-  0% {
-    transform: scale(0) rotate(-180deg);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.2) rotate(10deg);
-  }
-  100% {
-    transform: scale(1) rotate(0deg);
-    opacity: 1;
-  }
-}
-
-/* Logro recién conseguido */
-.logro-card.nuevo {
-  animation: slideInLeft 0.5s ease;
-}
-
-@keyframes slideInLeft {
-  from {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* ═══════════════════════════════════════════
-   🎨 MEJORAS VISUALES
-   ═══════════════════════════════════════════ */
-
-/* Sombra suave para toda la sección */
-.insignias-showcase,
-.logros-showcase {
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-}
-
-/* Tooltip para insignias */
-.insignia-card[title]::after {
-  content: attr(title);
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.9);
-  color: white;
-  padding: 8px 12px;
+  gap: 8px;
+  background: rgba(99,102,241,.15);
+  border: 1px solid rgba(99,102,241,.4);
+  color: var(--accent2);
+  padding: 10px 24px;
   border-radius: 8px;
-  font-size: 12px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  margin-bottom: 8px;
-  z-index: 10;
+  cursor: pointer;
+  font-size: 14px; font-weight: 600;
+  transition: background .2s;
 }
+.btn-ver-todos:hover { background: rgba(99,102,241,.3); }
 
-.insignia-card:hover::after {
-  opacity: 1;
+/* ── Barras de duelos ── */
+.duelos-stats { display: flex; gap: 24px; flex-wrap: wrap; }
+.stats-barras { flex: 1; min-width: 240px; display: flex; flex-direction: column; gap: 14px; }
+.barra-stat .barra-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
 }
-
-/* Indicador de progreso para logros no completados */
-.logro-card.incompleto {
-  opacity: 0.6;
-  filter: grayscale(50%);
+.barra-stat .barra-label strong { color: var(--text); }
+.barra-contenedor {
+  background: rgba(255,255,255,.06);
+  border-radius: 20px;
+  height: 8px;
+  overflow: hidden;
 }
+.barra-fill { height: 100%; border-radius: 20px; transition: width 1s cubic-bezier(.4,0,.2,1); }
+.barra-stat.victoria .barra-fill { background: var(--green); }
+.barra-stat.empate   .barra-fill { background: var(--gold); }
+.barra-stat.derrota  .barra-fill { background: var(--red); }
 
-.logro-card.incompleto:hover {
-  opacity: 0.8;
-  filter: grayscale(30%);
+.stats-adicionales { display: flex; gap: 16px; align-items: center; }
+.stat-mini { text-align: center; padding: 16px 20px; background: var(--bg-card2); border-radius: 10px; }
+.stat-mini.destacado { border: 1px solid rgba(239,68,68,.3); }
+.stat-mini .icono { font-size: 22px; }
+.stat-mini .valor { font-size: 22px; font-weight: 800; color: var(--text); margin: 4px 0; }
+.stat-mini .label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
+
+/* ── Carreras ── */
+.carreras-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
 }
-
-/* Badge de "Nuevo" */
-.badge-nuevo {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: #ef4444;
-  color: white;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  animation: pulse 2s ease-in-out infinite;
+.carrera-card {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
+.carrera-nombre { font-size: 14px; color: var(--text); font-weight: 600; }
+.carrera-puntos { font-size: 16px; font-weight: 800; color: var(--gold); }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.05);
-  }
+/* ── Últimos duelos ── */
+.duelos-lista { display: flex; flex-direction: column; gap: 10px; }
+.duelo-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-left: 4px solid transparent;
+  border-radius: 10px;
+  padding: 14px 18px;
+  flex-wrap: wrap;
+}
+.duelo-item.victoria { border-left-color: var(--green); }
+.duelo-item.derrota  { border-left-color: var(--red); }
+.duelo-item.empate   { border-left-color: var(--gold); }
+
+.duelo-fecha    { font-size: 12px; color: var(--text-muted); flex-shrink: 0; }
+.duelo-info     { flex: 1; }
+.duelo-jugadores { font-size: 14px; font-weight: 600; color: var(--text); }
+.duelo-jugadores .vs { color: var(--text-muted); margin: 0 8px; }
+.jugador-yo { color: var(--accent2); }
+.duelo-resultado { margin-top: 4px; display: flex; align-items: center; gap: 10px; }
+.puntaje  { font-size: 13px; color: var(--text-muted); }
+.dificultad {
+  font-size: 11px;
+  background: rgba(99,102,241,.15);
+  border: 1px solid rgba(99,102,241,.3);
+  color: var(--accent2);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.duelo-estado { font-size: 13px; font-weight: 700; flex-shrink: 0; }
+.duelo-item.victoria .duelo-estado { color: var(--green); }
+.duelo-item.derrota  .duelo-estado { color: var(--red); }
+.duelo-item.empate   .duelo-estado { color: var(--gold); }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .header-content    { flex-direction: column; }
+  .duelos-stats      { flex-direction: column; }
+  .stats-adicionales { flex-direction: row; }
+  .top-bar           { gap: 8px; }
 }

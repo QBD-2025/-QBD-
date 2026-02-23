@@ -78,7 +78,7 @@ router.get('/examen/:id_materia', async (req, res) => {
             // Guardar en sesión
             req.session.preguntasExamen = preguntas.map(p => ({id_pregunta: p.id_pregunta}));
             req.session.dificultadExamen = parseInt(dificultad);
-            console.log(`💾 Guardado en sesión: ${req.session.preguntasExamen.length} preguntas, dificultad ${req.session.dificultadExamen}`);
+            req.session.id_materia;
         }
         
         // Obtener último examen del usuario
@@ -129,10 +129,11 @@ router.get('/examen/:id_materia', async (req, res) => {
 // ========================
 router.post('/resultados', isAuthenticated, async (req, res) => {
     try {
-        const { id_materia, respuestas, fecha_inicio_str } = req.body;
+        const {respuestas, fecha_inicio_str } = req.body;
         const id_usuario = req.session.user.id_usuario;
         const respuestasUsuario = JSON.parse(respuestas);
         const id_dificultad = req.session.dificultadExamen || 2; // Default: Normal
+        const id_materia = req.body.id_materia || req.session.idMateriaExamen;
 
         console.log(`📊 Procesando resultados - Usuario: ${id_usuario}, Dificultad: ${id_dificultad}`);
 
@@ -217,9 +218,13 @@ router.post('/resultados', isAuthenticated, async (req, res) => {
 
         console.log(`✅ Examen guardado con ID: ${id_examen}`);
 
-        // Renderizar resultados del examen
+        const [[materiaRow]] = await db.query(
+            'SELECT descripcion FROM materias WHERE id_materia = ?',
+            [id_materia]
+        );
+
         res.render('resultados', {
-            materia: preguntas[0]?.materia || detallesRespuestas[0]?.pregunta || 'Examen',
+            materia: materiaRow?.descripcion || 'Examen',
             preguntas: detallesRespuestas,
             puntosTotales: puntosObtenidos,
             totalPreguntas: puntosMaximos,
