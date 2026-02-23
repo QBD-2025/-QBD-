@@ -39,7 +39,7 @@ const db = require('../db/conexion');
     res.render('examen-admision', {
     title: 'Examen de Admisión',
     preguntas: preguntasFinales,
-    layout: false,
+    layout: "main",
     rankingData: topGlobal,
     topPlayer: topGlobal[0] || null,
     ultimoExamen

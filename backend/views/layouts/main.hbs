@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/public/css/achievement-popup.css">
+    <link rel="stylesheet" href="/css/archivement-popup.css">
 
 </head>
 <body>
@@ -25,7 +25,6 @@
         <div class="top-right-nav">
             {{#if user}}
                 <span class="nav-username">Hola, {{user.username}}</span>
-                {{!-- 🎨 TOGGLE DE TEMA --}}
                 <div class="theme-toggle-wrapper">
                     <label class="theme-toggle-container"> 
                         <input type="checkbox" class="theme-toggle-input" id="theme-toggle"> 
@@ -80,9 +79,13 @@
                         {{#if (eq user.id_tp_usuario 3)}}
                             <li><a href="/admin">Permisos</a></li>
                             <li><a href="/editor">Editor</a></li>
+                            <li><a href="/revisor">Revisor</a></li>
                         {{/if}}
                         {{#if (eq user.id_tp_usuario 2)}}
                             <li><a href="/editor">Editor</a></li>
+                        {{/if}}
+                        {{#if (eq user.id_tp_usuario 4)}}
+                            <li><a href="/revisor">Revisor</a></li>
                         {{/if}}
                         <li><a href="/logout" class="cerrar-sesion">Cerrar sesión</a></li>
                     </ul>
@@ -102,16 +105,46 @@
 
 {{#if user}}
 <script>
-    window.usuarioActual = {
-        id_usuario: {{user.id_usuario}},
-        username: "{{user.username}}",
-        email: "{{user.email}}",
-        foto: "{{user.foto_perfil}}",
-        rol: {{user.id_tp_usuario}}
-    };
+  window.usuarioActual = {
+    id_usuario: {{user.id_usuario}},
+    username: "{{user.username}}",
+    email: "{{user.email}}",
+    foto: "{{user.foto_perfil}}",
+    rol: {{user.id_tp_usuario}}
+  };
 </script>
 {{/if}}
+
 <script src="/public/js/notificacion.controller.js" defer></script>
-<script src="/public/js/achievement-popup.js" defer></script>
+<script src="/js/archievement-popup.js" defer></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const toggle = document.getElementById("theme-toggle");
+  if (!toggle) return;
+
+  const savedTheme = localStorage.getItem("theme") || "dark";
+
+  document.documentElement.setAttribute("data-theme", savedTheme);
+
+  // ✅ checked = oscuro
+  toggle.checked = savedTheme === "dark";
+
+  toggle.addEventListener("change", () => {
+    const newTheme = toggle.checked ? "dark" : "light";
+
+    document.documentElement.setAttribute("data-theme", newTheme);
+    localStorage.setItem("theme", newTheme);
+  });
+
+  window.addEventListener("storage", (e) => {
+    if (e.key === "theme") {
+      document.documentElement.setAttribute("data-theme", e.newValue);
+      toggle.checked = e.newValue === "dark";
+    }
+  });
+});
+</script>
+
 </body>
 </html>

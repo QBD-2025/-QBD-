@@ -1,45 +1,78 @@
 /* ======================================================
-  Archivo: admin.css
-  Propósito: Estilos de la interfaz de administración
-  Autor: [Tu Nombre o nombres]
-  Fecha de creación: 12/10/2025
-  Última modificación: 12/10/2025
-  Notas: Contiene estilos generales, header, contenedores,
-          tablas, badges, botones y media queries.
-====================================================== */
+   Archivo: admin-responsive.css
+   Propósito: Estilos de la interfaz de administración - VERSIÓN RESPONSIVA
+   Mobile First - Optimizado para todos los dispositivos
+   ====================================================== */
 
 /* ======================================================
-      Estilos generales del body y fuente principal
-    ====================================================== */
-  body { 
+   1. VARIABLES Y CONFIGURACIÓN GLOBAL
+   ====================================================== */
+:root {
+    /* Colores principales */
+    --primary-dark: #0515a8;
+    --primary-darker: #09012c;
+    --primary-light: #2563eb;
+    --bg-light: #cce6ff;
+    --bg-table: #cce6ff;
+    --text-dark: #1e3a8a;
+    --text-light: #e0f2fe;
+    --border-color: #a3c9f9;
+    
+    /* Sombras */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    
+    /* Espaciado fluido */
+    --spacing-xs: clamp(0.25rem, 0.5vw, 0.5rem);
+    --spacing-sm: clamp(0.5rem, 1vw, 1rem);
+    --spacing-md: clamp(1rem, 2vw, 1.5rem);
+    --spacing-lg: clamp(1.5rem, 3vw, 2rem);
+    --spacing-xl: clamp(2rem, 4vw, 2.5rem);
+    
+    /* Bordes */
+    --radius-sm: clamp(4px, 1vw, 6px);
+    --radius-md: clamp(6px, 1.5vw, 8px);
+    --radius-lg: clamp(8px, 2vw, 12px);
+    --radius-xl: clamp(12px, 3vw, 20px);
+}
+
+/* ======================================================
+   2. ESTILOS GENERALES - MOBILE FIRST
+   ====================================================== */
+body { 
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background-color: #cce6ff; /* Fondo azul claro */
+    background-color: var(--bg-light);
     margin: 0;
     padding: 0;
-    color: #1e3a8a; /* Texto principal */
-    line-height: 1.6; /* Espaciado entre líneas */
-  }
-  
-  /* ======================================================
-      Header de la administración
-    ====================================================== */
-  .admin-header {
-    width: 100%;
-    background: linear-gradient(135deg, #0515a8, #09012c); /* degradado azul-oscuro */
-    color: #a6bacc; /* color de texto */
-    padding: 10px 20px;
+    color: var(--text-dark);
+    line-height: 1.6;
+    min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
-    justify-content: space-around;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+/* ======================================================
+   3. HEADER DE ADMINISTRACIÓN - RESPONSIVO
+   ====================================================== */
+.admin-header {
+    width: 100%;
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-darker));
+    color: var(--text-light);
+    padding: var(--spacing-sm) var(--spacing-md);
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    flex-wrap: wrap; /* permite que los elementos bajen de línea si es necesario */
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-                0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    gap: var(--spacing-sm);
+    box-shadow: var(--shadow-md);
     position: relative;
-    margin-top: 0;
-  }
-  
-  /* Línea decorativa en el header */
-  .admin-header::after {
+    z-index: 100;
+}
+
+/* Línea decorativa en el header */
+.admin-header::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -47,221 +80,534 @@
     right: 0;
     height: 4px;
     background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(0,0,0,0.2), rgba(255,255,255,0.1));
-  }
-  
-  /* Logo en el header */
-  .logo-image-header {
-    width: 100px;
+}
+
+/* Contenedor flexible para el header */
+.header-content {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Logo en el header */
+.logo-image-header {
+    width: clamp(60px, 15vw, 100px);
     height: auto;
-    margin-right: 15px;
-  }
-  
-  /* Título principal del admin */
-  .admin-title {
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* Título principal del admin */
+.admin-title {
     margin: 0;
-    color: #e0f2fe;
-    font-size: 26px;
+    color: var(--text-light);
+    font-size: clamp(1.2rem, 5vw, 1.8rem);
     font-weight: 700;
     letter-spacing: 0.5px;
-  }
-  
-  /* Texto de bienvenida debajo del header */
-  .admin-welcome {
-    margin-top: 10px;
-    font-size: 14px;
     text-align: center;
+    flex: 1;
+    min-width: 200px;
+    word-wrap: break-word;
+}
+
+/* Texto de bienvenida debajo del header */
+.admin-welcome {
     width: 100%;
+    text-align: center;
+    font-size: clamp(0.8rem, 2.5vw, 1rem);
+    color: var(--text-light);
     opacity: 0.9;
-    color: #e0f2fe;
-  }
-  
-  /* Botón de volver */
-  .volver-button {
+    margin-top: var(--spacing-xs);
+    padding: 0 var(--spacing-sm);
+    word-wrap: break-word;
+}
+
+/* Botón de volver */
+.volver-button {
     text-decoration: none;
-    color: #e0f2fe;
+    color: var(--text-light);
     font-weight: bold;
-    padding: 8px 15px;
-    border-radius: 20px;
-    transition: background-color 0.3s ease;
+    padding: clamp(0.5rem, 2vw, 0.8rem) clamp(1rem, 3vw, 1.5rem);
+    border-radius: var(--radius-xl);
+    transition: all 0.3s ease;
     border: 2px solid transparent;
-  }
-  
-  .volver-button:hover {
+    white-space: nowrap;
+    font-size: clamp(0.85rem, 2.5vw, 1rem);
+    /* Mejora área táctil */
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.volver-button:hover {
     background-color: rgba(255, 255, 255, 0.1);
-    border-color: #e0f2fe;
-  }
-  
-  /* Contenedor principal de la página de administración */
-  .admin-container {
-    max-width: 1200px;
-    background: #cce6ff;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-                0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    position: absolute;
-    top: 350px;
-    left: 50px;
-    right: 50px;
-    margin: 0 auto;
-    border: 4px solid #0515a8;  /* Marco azul oscuro */
-  }
-  
-  /* Subtítulo dentro del admin */
-  .admin-subtitle {
-    margin-top: 0;
-    margin-bottom: 25px;
-    font-size: 24px;
-    font-weight: 600;
-    color: #1e3a8a;
+    border-color: var(--text-light);
+}
+
+.volver-button:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
+/* ======================================================
+   4. IMAGEN DE PERSONAJE - RESPONSIVA
+   ====================================================== */
+.character-image {
     position: relative;
-    padding-bottom: 10px;
-  }
-  
-  /* Línea decorativa debajo del subtítulo */
-  .admin-subtitle::after {
+    z-index: 10;
+    height: clamp(120px, 30vw, 250px);
+    width: auto;
+    margin: var(--spacing-md) auto;
+    display: block;
+    pointer-events: none;
+    object-fit: contain;
+}
+
+/* Contenedor para la imagen (solución para posición absoluta anterior) */
+.character-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: var(--spacing-md) 0;
+}
+
+/* ======================================================
+   5. CONTENEDOR PRINCIPAL - FLUIDO
+   ====================================================== */
+.admin-container {
+    max-width: min(95%, 1400px);
+    width: 100%;
+    margin: var(--spacing-md) auto;
+    padding: var(--spacing-lg);
+    background: var(--bg-light);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: clamp(2px, 0.5vw, 4px) solid var(--primary-dark);
+    position: relative;
+    /* Eliminamos la posición absoluta anterior */
+    top: auto;
+    left: auto;
+    right: auto;
+}
+
+/* Para pantallas más grandes restauramos algo de margen */
+@media (min-width: 768px) {
+    .admin-container {
+        margin: var(--spacing-xl) auto;
+    }
+}
+
+/* ======================================================
+   6. SUBTÍTULOS - RESPONSIVOS
+   ====================================================== */
+.admin-subtitle {
+    margin: 0 0 var(--spacing-lg) 0;
+    font-size: clamp(1.3rem, 5vw, 2rem);
+    font-weight: 600;
+    color: var(--text-dark);
+    position: relative;
+    padding-bottom: var(--spacing-sm);
+    word-wrap: break-word;
+}
+
+/* Línea decorativa debajo del subtítulo */
+.admin-subtitle::after {
     content: '';
     position: absolute;
     bottom: 0;
     left: 0;
-    width: 60px;
-    height: 3px;
-    background: #2563eb;
+    width: clamp(40px, 10vw, 60px);
+    height: clamp(2px, 0.3vw, 3px);
+    background: var(--primary-light);
     border-radius: 3px;
-  }
-  
-  /* Tabla de administración */
-  .admin-table {
+}
+
+/* ======================================================
+   7. TABLA DE ADMINISTRACIÓN - COMPLETAMENTE RESPONSIVA
+   ====================================================== */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    margin: var(--spacing-md) 0;
+    border-radius: var(--radius-md);
+    /* Indicador de scroll en móviles */
+    background: linear-gradient(to right, var(--bg-light) 30%, rgba(204, 230, 255, 0)),
+                linear-gradient(to right, rgba(204, 230, 255, 0), var(--bg-light) 70%) 100% 0,
+                radial-gradient(farthest-side at 0 50%, rgba(0,0,0,0.2), transparent),
+                radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,0.2), transparent) 100% 0;
+    background-repeat: no-repeat;
+    background-color: var(--bg-light);
+    background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+    background-position: 0 0, 100% 0, 0 0, 100% 0;
+    background-attachment: local, local, scroll, scroll;
+}
+
+.admin-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    margin-bottom: 70px;
+    min-width: 600px; /* Forza scroll horizontal en móviles si es necesario */
+    background-color: var(--bg-table);
+    color: var(--text-dark);
+    border: clamp(1px, 0.3vw, 2px) solid var(--primary-dark);
+    border-radius: var(--radius-md);
     overflow: hidden;
-    border-radius: 10px;
-    background-color: #cce6ff;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    color: #1e3a8a;
-    border: 4px solid #0515a8;
-    margin: 20px auto;
-    border-radius: 8px;
-  }
-  
-  /* Encabezado de la tabla */
-  .admin-table thead {
-    background: linear-gradient(135deg, #0515a8, #09012c);
+    margin: 0;
+    font-size: clamp(0.85rem, 2.5vw, 1rem);
+}
+
+/* Encabezado de la tabla */
+.admin-table thead {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-darker));
     color: #f1f5f9;
-  }
-  
-  /* Celdas de la tabla */
-  .admin-table th,
-  .admin-table td {
-    padding: 12px 20px;
-    text-align: center;
-    border-bottom: 1px solid #a3c9f9;
-    background-color: #cce6ff;
-  }
-  
-  /* Hover suave en filas */
-  .admin-table tbody tr:hover td {
+}
+
+/* Celdas de la tabla */
+.admin-table th,
+.admin-table td {
+    padding: clamp(0.5rem, 2vw, 1rem) clamp(0.75rem, 2.5vw, 1.25rem);
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-table);
+    white-space: nowrap; /* Evita que el texto se rompa en móviles */
+}
+
+/* Para mejorar lectura en móviles permitimos wrap en algunas celdas */
+@media (max-width: 480px) {
+    .admin-table th,
+    .admin-table td {
+        white-space: normal;
+        min-width: 120px;
+    }
+}
+
+/* Hover suave en filas */
+.admin-table tbody tr:hover td {
     background-color: #b3d8ff;
-  }
-  
-  /* Badges / Etiquetas de estado */
-  .badge {
-    padding: 6px 12px;
-    border-radius: 20px;
+    transition: background-color 0.2s ease;
+}
+
+/* Estilo para filas en dispositivos táctiles (sin hover) */
+@media (hover: none) and (pointer: coarse) {
+    .admin-table tbody tr:active td {
+        background-color: #b3d8ff;
+    }
+}
+
+/* ======================================================
+   8. BADGES / ETIQUETAS DE ESTADO - RESPONSIVAS
+   ====================================================== */
+.badge {
+    padding: clamp(0.25rem, 1vw, 0.5rem) clamp(0.5rem, 1.5vw, 0.75rem);
+    border-radius: var(--radius-xl);
     font-weight: 600;
-    font-size: 0.8em;
+    font-size: clamp(0.7rem, 2vw, 0.85rem);
     display: inline-block;
     letter-spacing: 0.3px;
     text-transform: uppercase;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  }
-  
-  /* Estados específicos con colores */
-  .status-Activo       { background-color: #10b981; color: white; }
-  .status-Inactivo     { background-color: #6c757d; color: white; }
-  .status-Suspendido   { background-color: #facc15; color: black; }
-  .status-Pendiente    { background-color: #38bdf8; color: white; }
-  .status-Baja         { background-color: #ef4444; color: white; }
-  .status-Bloqueado    { background-color: #0f172a; color: white; }
-  
-  /* Colores de fondo generales */
-  .bg-danger   { background-color: #ef4444; color: white; }
-  .bg-warning  { background-color: #facc15; color: black; }
-  .bg-primary  { background-color: #2563eb; color: white; }
-  .bg-success  { background-color: #10b981; color: white; }
-  
-  /* Select para roles */
-  .role-select {
-    padding: 8px 12px;
-    border-radius: 6px;
+    box-shadow: var(--shadow-sm);
+    white-space: nowrap;
+    text-align: center;
+    min-width: 70px;
+}
+
+/* Estados específicos con colores */
+.status-Activo       { background-color: #10b981; color: white; }
+.status-Inactivo     { background-color: #6c757d; color: white; }
+.status-Suspendido   { background-color: #facc15; color: black; }
+.status-Pendiente    { background-color: #38bdf8; color: white; }
+.status-Baja         { background-color: #ef4444; color: white; }
+.status-Bloqueado    { background-color: #0f172a; color: white; }
+
+/* Colores de fondo generales */
+.bg-danger   { background-color: #ef4444; color: white; }
+.bg-warning  { background-color: #facc15; color: black; }
+.bg-primary  { background-color: #2563eb; color: white; }
+.bg-success  { background-color: #10b981; color: white; }
+
+/* ======================================================
+   9. SELECT DE ROLES - RESPONSIVO
+   ====================================================== */
+.role-select {
+    padding: clamp(0.4rem, 1.5vw, 0.6rem) clamp(0.5rem, 2vw, 0.75rem);
+    border-radius: var(--radius-sm);
     border: 1px solid #e5e7eb;
-    background-color: #cce6ff;
-    color: #1e3a8a;
-    font-size: 14px;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    font-size: clamp(0.8rem, 2.2vw, 0.9rem);
     cursor: pointer;
     transition: all 0.3s ease;
-  }
-  
-  .role-select:focus {
+    width: 100%;
+    max-width: 150px;
+    min-height: 38px;
+}
+
+.role-select:focus {
     outline: none;
-    border-color: #2563eb;
+    border-color: var(--primary-light);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
-  }
-  
-  /* Botones de acción en el admin */
-  .admin-btn {
-    background:  #0515a8;
+}
+
+/* ======================================================
+   10. BOTONES DE ACCIÓN - RESPONSIVOS
+   ====================================================== */
+.admin-btn {
+    background: var(--primary-dark);
     color: #f8fafc;
-    padding: 12px 24px;
+    padding: clamp(0.6rem, 2vw, 0.9rem) clamp(1rem, 3vw, 1.5rem);
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     font-weight: 600;
-    font-size: 15px;
+    font-size: clamp(0.85rem, 2.5vw, 1rem);
     letter-spacing: 0.5px;
     transition: all 0.3s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-  }
-  
-  .admin-btn:hover {
-    background:  #09012c;
+    gap: var(--spacing-xs);
+    min-height: 44px;
+    min-width: 44px;
+    text-decoration: none;
+    border: 2px solid transparent;
+}
+
+.admin-btn:hover {
+    background: var(--primary-darker);
     color: #fff;
     transform: translateY(-2px);
-  }
-  
-  .admin-btn:active {
+    box-shadow: var(--shadow-md);
+}
+
+.admin-btn:active {
     transform: translateY(0);
-  }
-  
-  /* Imagen de personaje flotante */
-  .character-image {
-    position: absolute;
-    z-index: 10;
-    height: 250px;
-    width: auto;
-    left: 50%;
-    top: 150px;
-    transform: translateX(-50%);
-    pointer-events: none; /* No permite click sobre la imagen */
-  }
-  
-  /* ======================================================
-      Media queries para pantallas más pequeñas
-    ====================================================== */
-  @media (max-width: 768px) {
+}
+
+.admin-btn:focus-visible {
+    outline: 2px solid var(--primary-light);
+    outline-offset: 2px;
+}
+
+/* Variantes de botones */
+.admin-btn-small {
+    padding: clamp(0.3rem, 1.2vw, 0.5rem) clamp(0.5rem, 2vw, 0.8rem);
+    font-size: clamp(0.75rem, 2vw, 0.85rem);
+    min-height: 36px;
+}
+
+.admin-btn-danger {
+    background: #ef4444;
+}
+
+.admin-btn-danger:hover {
+    background: #dc2626;
+}
+
+/* ======================================================
+   11. GRID DE ACCIONES
+   ====================================================== */
+.admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin: var(--spacing-lg) 0;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* ======================================================
+   12. MEDIA QUERIES - ENFOQUE MOBILE FIRST
+   ====================================================== */
+
+/* Tablets (768px+) */
+@media (min-width: 48rem) {
+    .admin-header {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        padding: var(--spacing-md) var(--spacing-lg);
+    }
+    
+    .header-content {
+        flex-direction: row;
+    }
+    
+    .admin-title {
+        font-size: 1.6rem;
+    }
+    
+    .character-image {
+        height: 200px;
+    }
+}
+
+/* Laptops (1024px+) */
+@media (min-width: 64rem) {
     .admin-container {
-      padding: 20px;
-      margin: 20px;
+        max-width: min(90%, 1200px);
+        padding: var(--spacing-xl);
     }
-  
+    
     .admin-table {
-      display: block; /* Permite scroll horizontal */
-      overflow-x: auto;
+        min-width: 100%;
+        font-size: 1rem;
     }
-  }
-  
+    
+    .admin-table th,
+    .admin-table td {
+        white-space: normal;
+    }
+}
+
+/* Pantallas grandes (1440px+) */
+@media (min-width: 90rem) {
+    .admin-container {
+        max-width: 1400px;
+        padding: 2.5rem;
+    }
+}
+
+/* ======================================================
+   13. ORIENTACIÓN HORIZONTAL EN MÓVILES
+   ====================================================== */
+@media (max-height: 30rem) and (orientation: landscape) {
+    .admin-header {
+        padding: var(--spacing-xs) var(--spacing-sm);
+    }
+    
+    .character-image {
+        height: 80px;
+    }
+    
+    .admin-container {
+        margin: var(--spacing-sm) auto;
+        padding: var(--spacing-md);
+    }
+    
+    .admin-table {
+        font-size: 0.8rem;
+    }
+}
+
+/* ======================================================
+   14. PANTALLAS MUY PEQUEÑAS (PLEGABLES)
+   ====================================================== */
+@media (max-width: 20rem) {
+    .admin-title {
+        font-size: 1rem;
+    }
+    
+    .volver-button {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.75rem;
+    }
+    
+    .badge {
+        min-width: 50px;
+        font-size: 0.65rem;
+    }
+    
+    .admin-table th,
+    .admin-table td {
+        padding: 0.4rem;
+    }
+}
+
+/* ======================================================
+   15. MEJORAS DE ACCESIBILIDAD
+   ====================================================== */
+
+/* Alto contraste */
+@media (prefers-contrast: high) {
+    .admin-table {
+        border: 3px solid #000;
+    }
+    
+    .badge {
+        border: 1px solid #000;
+    }
+    
+    .admin-btn {
+        border: 2px solid #000;
+    }
+}
+
+/* Reducir movimiento */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    
+    .admin-btn:hover {
+        transform: none;
+    }
+}
+
+/* ======================================================
+   16. UTILIDADES RESPONSIVAS
+   ====================================================== */
+
+/* Ocultar en móviles */
+.hide-on-mobile {
+    @media (max-width: 47.999rem) {
+        display: none !important;
+    }
+}
+
+/* Ocultar en desktop */
+.hide-on-desktop {
+    @media (min-width: 48rem) {
+        display: none !important;
+    }
+}
+
+/* Texto que se adapta */
+.text-responsive {
+    font-size: clamp(0.8rem, 2.5vw, 1rem);
+    line-height: 1.5;
+}
+
+/* ======================================================
+   17. IMPRESIÓN
+   ====================================================== */
+@media print {
+    .admin-header,
+    .admin-btn,
+    .character-image,
+    .role-select {
+        display: none !important;
+    }
+    
+    .admin-container {
+        border: 1px solid #000;
+        box-shadow: none;
+        margin: 0;
+        padding: 1rem;
+    }
+    
+    .admin-table {
+        border: 1px solid #000;
+    }
+    
+    .badge {
+        border: 1px solid #000;
+        color: #000 !important;
+        background: #fff !important;
+    }
+}

@@ -4,116 +4,136 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ranking - QueBuenDato</title>
+    
+    {{!-- GOOGLE FONTS --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    {{!-- Font Awesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    {{!-- Estilos del ranking --}}
     <link rel="stylesheet" href="/css/ranking.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1><i class="fas fa-trophy"></i> Ranking</h1>
-            <p>Clasificación de los mejores jugadores según sus puntos totales</p>
+    <div class="ranking-container">
+        <!-- Header -->
+        <header class="ranking-header">
+            <div class="header-content">
+                <i class="fas fa-trophy header-icon"></i>
+                <h1>Ranking</h1>
+            </div>
+            <p>Clasificación de los mejores jugadores</p>
         </header>
         
+        <!-- Podium Top 3 -->
         <div class="podium-section">
-            <h2 class="section-title"><i class="fas fa-medal"></i> Top Jugadores</h2>
+            <h2 class="section-title">
+                <i class="fas fa-medal"></i> 
+                Top 3 Jugadores
+            </h2>
+            
             <div class="podium">
                 {{#if usuarios.length}}
-                    {{#with usuarios.[0]}}
-                    <div class="podium-item">
-                        <div class="podium-badge">🥇</div>
-                        {{#if foto_perfil}}
-                            <img src="{{foto_perfil}}" alt="{{username}}" class="podium-avatar">
-                        {{else}}
-                            <div class="podium-avatar">{{apodo.[0]}}</div>
-                        {{/if}}
-                        <div>
-                            <div class="podium-username">{{username}}</div>
-                            <div class="podium-category">Total - {{puntos}} puntos</div>
-                        </div>
-                    </div>
-                    {{/with}}
-                    
                     {{#with usuarios.[1]}}
-                    <div class="podium-item">
+                    <div class="podium-item second">
                         <div class="podium-badge">🥈</div>
                         {{#if foto_perfil}}
                             <img src="{{foto_perfil}}" alt="{{username}}" class="podium-avatar">
                         {{else}}
-                            <div class="podium-avatar">{{apodo.[0]}}</div>
+                            <div class="podium-avatar no-image">{{apodo.[0]}}</div>
                         {{/if}}
-                        <div>
-                            <div class="podium-username">{{username}}</div>
-                            <div class="podium-category">Total - {{puntos}} puntos</div>
-                        </div>
+                        <div class="podium-username">{{username}}</div>
+                        <div class="podium-score">{{puntos}} pts</div>
+                    </div>
+                    {{/with}}
+                    
+                    {{#with usuarios.[0]}}
+                    <div class="podium-item first">
+                        <div class="podium-badge">🥇</div>
+                        {{#if foto_perfil}}
+                            <img src="{{foto_perfil}}" alt="{{username}}" class="podium-avatar">
+                        {{else}}
+                            <div class="podium-avatar no-image">{{apodo.[0]}}</div>
+                        {{/if}}
+                        <div class="podium-username">{{username}}</div>
+                        <div class="podium-score">{{puntos}} pts</div>
                     </div>
                     {{/with}}
                     
                     {{#with usuarios.[2]}}
-                    <div class="podium-item">
+                    <div class="podium-item third">
                         <div class="podium-badge">🥉</div>
                         {{#if foto_perfil}}
                             <img src="{{foto_perfil}}" alt="{{username}}" class="podium-avatar">
                         {{else}}
-                            <div class="podium-avatar">{{apodo.[0]}}</div>
+                            <div class="podium-avatar no-image">{{apodo.[0]}}</div>
                         {{/if}}
-                        <div>
-                            <div class="podium-username">{{username}}</div>
-                            <div class="podium-category">Total - {{puntos}} puntos</div>
-                        </div>
+                        <div class="podium-username">{{username}}</div>
+                        <div class="podium-score">{{puntos}} pts</div>
                     </div>
                     {{/with}}
                 {{else}}
-                    <div class="podium-item"><div class="podium-badge">🥇</div><div class="podium-username">No hay datos</div></div>
-                    <div class="podium-item"><div class="podium-badge">🥈</div><div class="podium-username">No hay datos</div></div>
-                    <div class="podium-item"><div class="podium-badge">🥉</div><div class="podium-username">No hay datos</div></div>
+                    <div class="podium-item first"><div class="podium-badge">🥇</div><div class="podium-username">Sin datos</div></div>
+                    <div class="podium-item second"><div class="podium-badge">🥈</div><div class="podium-username">Sin datos</div></div>
+                    <div class="podium-item third"><div class="podium-badge">🥉</div><div class="podium-username">Sin datos</div></div>
                 {{/if}}
             </div>
         </div>
         
-        <div class="ranking-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th><i class="fas fa-user"></i> Jugador</th>
-                        <th><i class="fas fa-star"></i> Puntos Totales</th>
-                    </tr>
-                </thead>
-                <tbody id="ranking-body">
-                    {{#each usuarios}}
-                    <tr>
-                        <td>{{inc @index}}</td>
-                        <td>
-                            <div class="user-info">
-                                <div class="avatar">
-                                    {{#if foto_perfil}}
-                                        <img src="{{foto_perfil}}" alt="{{username}}">
-                                    {{else}}
-                                        {{apodo.[0]}}
-                                    {{/if}}
+        <!-- Tabla de Ranking -->
+        <div class="table-section">
+            <h2 class="section-title">
+                <i class="fas fa-list"></i>
+                Clasificación General
+            </h2>
+            
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Jugador</th>
+                            <th>Puntos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each usuarios}}
+                        <tr>
+                            <td class="rank-number">{{inc @index}}</td>
+                            <td>
+                                <div class="user-info">
+                                    <div class="avatar">
+                                        {{#if foto_perfil}}
+                                            <img src="{{foto_perfil}}" alt="{{username}}">
+                                        {{else}}
+                                            <span>{{apodo.[0]}}</span>
+                                        {{/if}}
+                                    </div>
+                                    <span class="username">{{username}}</span>
                                 </div>
-                                <div>
-                                    <div class="username">{{username}}</div>
-                                    <div class="user-category">Todas las materias</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="score">{{puntos}}</td>
-                    </tr>
-                    {{else}}
-                    <tr>
-                        <td colspan="3" style="text-align: center; padding: 20px;">
-                            No hay usuarios para mostrar
-                        </td>
-                    </tr>
-                    {{/each}}
-                </tbody>
-            </table>
+                            </td>
+                            <td class="score">{{puntos}}</td>
+                        </tr>
+                        {{else}}
+                        <tr>
+                            <td colspan="3" class="no-data">
+                                No hay usuarios para mostrar
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
         </div>
+        
+        <!-- Botón flotante -->
+        <button class="floating-btn" onclick="location.href='/menu_principal'" aria-label="Volver al inicio">
+            <i class="fas fa-home"></i>
+        </button>
     </div>
-    
-    <button class="floating-button" onclick="location.href='/menu_principal'">
-        <i class="fas fa-home"></i>
-    </button>
+
+    <script src="/js/theme-manager.js"></script>
 </body>
 </html>

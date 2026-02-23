@@ -1,40 +1,88 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <!-- Configuración de codificación de caracteres -->
-  <meta charset="UTF-8" />
-  <!-- Configuración para que la página sea responsive en dispositivos móviles -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="/css/conocenos.css">
-  <!-- Título de la página -->
-  <title>¡Que Buen Dato!</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conócenos - ¡Que Buen Dato!</title>
+    
+    {{!-- GOOGLE FONTS --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    {{!-- Font Awesome --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    {{!-- Estilos de Conócenos --}}
+    <link rel="stylesheet" href="/css/conocenos.css">
 </head>
 <body>
-  <!-- Contenedor principal: dos paneles lado a lado -->
-  <div class="main-container">
+    <div class="conocenos-container">
+        <!-- Contenedor principal: dos paneles lado a lado -->
+        <div class="content-grid">
+            
+            <!-- Panel izquierdo: Video con fondo degradado -->
+            <div class="video-panel">
+                <div class="video-wrapper">
+                    <video src="/media/videos/curiosidad.mp4" controls autoplay loop muted playsinline></video>
+                </div>
+            </div>
 
-    <!-- Panel izquierdo: Video con fondo degradado -->
-    <div class="left-panel">
-      <video src="/media/videos/curiosidad.mp4" controls autoplay></video>
+            <!-- Panel derecho: información textual sobre la plataforma -->
+            <div class="info-panel">
+                <div class="info-content">
+                    <h1 class="info-title">
+                        <span class="title-accent"></span>
+                        ¿Qué es "¡QueBuenDato!"?
+                    </h1>
+                    
+                    <p class="info-text">
+                        <strong>¡QueBuenDato!</strong> es un sistema web de autoevaluación y competencia académica 
+                        donde los estudiantes ponen a prueba sus conocimientos mediante simuladores, retos 
+                        y rankings.
+                    </p>
+                    
+                    <p class="info-text highlight">
+                        No solo estudias: compites, mejoras y demuestras tu nivel.
+                    </p>
+
+                    <div class="info-divider"></div>
+
+                    <h2 class="info-subtitle">
+                        <span class="subtitle-accent"></span>
+                        ¿Cuál es nuestra misión?
+                    </h2>
+                    
+                    <p class="info-text">
+                        Impulsar el aprendizaje a través de la medición constante del desempeño, 
+                        fomentando la superación personal y la competencia sana entre estudiantes.
+                    </p>
+
+                    <!-- Características visuales -->
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <i class="fas fa-gamepad feature-icon"></i>
+                            <span>Simuladores</span>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-trophy feature-icon"></i>
+                            <span>Rankings</span>
+                        </div>
+                        <div class="feature-card">
+                            <i class="fas fa-users feature-icon"></i>
+                            <span>Competencia sana</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botón flotante para volver al inicio -->
+        <button class="floating-btn" onclick="location.href='/menu_principal'" aria-label="Volver al inicio">
+            <i class="fas fa-home"></i>
+        </button>
     </div>
 
-    <!-- Panel derecho: información textual sobre la plataforma -->
-    <div class="right-panel">
-      <h1>¿Qué es "!QueBuenDato¡"?</h1>
-      <p>
-        <strong>¡QueBuenDato!:</strong> Bienvenido a una nueva forma de aprender y estudiar.
-        Nuestra plataforma ofrece un espacio donde el aprendizaje se vuelve más dinámico y entretenido. 
-        Aquí podrás conectarte con otros estudiantes a través de blogs, compartir ideas, resolver dudas y descubrir nuevas formas de estudio.
-
-        Además, contamos con una versión especialmente diseñada para motivar el aprendizaje de manera divertida, promoviendo el estudio con retos, juegos y herramientas interactivas.
-      </p>
-
-      <h2>¿Cuál es nuestra misión?</h2>
-      <p>
-        Nuestra misión es brindar datos interesantes y relevantes de manera accesible y visualmente atractiva para todos los usuarios.
-      </p>
-    </div>
-
-  </div>
+    <script src="/js/theme-manager.js"></script>
 </body>
 </html>

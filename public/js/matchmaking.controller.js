@@ -725,6 +725,9 @@ socket.on('duelo:iniciarNegociacionApuesta', ({ esProponente, oponente, puntosMa
             estadoNegociacion.activa = true;
             estadoNegociacion.esProponente = esProponente;
             estadoNegociacion.rondaActual = 1;
+
+            arenaContainer.style.display = 'none';
+            draftContainer.style.display = 'block';
             
             // NO ocultar materias, solo deshabilitarlas visualmente
             materiasGrid.style.pointerEvents = 'none';
@@ -949,9 +952,12 @@ document.getElementById('btnEnviarPropuesta').addEventListener('click', () => {
         
         socket.on('duelo:negociacionFinalizada', ({ apuestaFinal, motivo }) => {
             console.log('[NEGOCIACIÓN]: Finalizada -', motivo, '- Apuesta:', apuestaFinal);
-            
+
             cerrarNegociacion();
-            
+
+            draftContainer.style.display = 'none';
+            arenaContainer.style.display = 'flex';
+
             let mensaje = '';
             let tipo = 'info';
             
@@ -1010,16 +1016,17 @@ document.getElementById('btnEnviarPropuesta').addEventListener('click', () => {
         function cerrarNegociacion() {
             detenerTimerNegociacion();
             negociacionContainer.style.display = 'none';
-            
-            // Restaurar interfaz de materias
+
+            // ✅ Ahora sí ocultar el draft
+            draftContainer.style.display = 'none';
+
             materiasGrid.style.pointerEvents = 'auto';
             materiasGrid.style.opacity = '1';
             materiasGrid.style.filter = 'none';
-            
+
             estadoNegociacion.activa = false;
             estadoNegociacion.quieroApostar = false;
-            
-            // Resetear botón
+
             btnQuieroApostar.classList.remove('activo');
             btnQuieroApostar.innerHTML = '💰 QUIERO APOSTAR';
         }
@@ -1171,14 +1178,15 @@ document.getElementById('btnEnviarPropuesta').addEventListener('click', () => {
 
 socket.on('duelo:ocultarDraft', ({ mensaje }) => {
     console.log('[DRAFT]: 🎯 Ocultando vista de categorías');
-    console.log(`   - Mensaje: ${mensaje}`);
-    
-    // Ocultar draft inmediatamente
+
+    // ✅ No ocultar si hay negociación activa
+    if (estadoNegociacion.activa) {
+        console.log('[DRAFT]: ⏳ Negociación activa, esperando...');
+        return;
+    }
+
     draftContainer.style.display = 'none';
-    
-    // Mostrar mensaje de transición
     statusText.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${mensaje}`;
-    
 });
 
 // ================================================================

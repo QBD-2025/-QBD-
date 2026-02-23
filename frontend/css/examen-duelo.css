@@ -1,34 +1,94 @@
-/* ===================================================
-Archivo: examen-duelo.css
-Descripción: Estilos para la interfaz de pre-examen,
-participantes del duelo, preguntas, navegación, panel
-lateral, modales y responsive.
-Autor: [Tu nombre o nombres]
-Fecha: [Fecha de creación o última edición]
-=================================================== */
+/* ===========================================================
+   VARIABLES DE TEMA - MODO DÍA/NOCHE
+   =========================================================== */
 
-/* ========== VARIABLES Y RESET ========== */
+/* Tema oscuro (por defecto) */
+:root {
+  --bg-page: #0f172a;
+  --surface: #1e293b;
+  --surface-hover: #273549;
+  --surface-active: #2d3a52;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border-light: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.12);
+  
+  /* Colores de acento */
+  --accent-blue: #3b82f6;
+  --accent-blue-dark: #1e3a8a;
+  --accent-yellow: #f59e0b;
+  --accent-green: #10b981;
+  --accent-red: #ef4444;
+  --accent-gray: #6c757d;
+  
+  /* Estados */
+  --success-bg: rgba(16, 185, 129, 0.15);
+  --warning-bg: rgba(245, 158, 11, 0.15);
+  --danger-bg: rgba(239, 68, 68, 0.15);
+  
+  /* Sombras */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.5);
+  
+  --transition: 0.2s ease;
+}
+
+/* Tema claro */
+[data-theme="light"] {
+  --bg-page: #f1f5f9;
+  --surface: #ffffff;
+  --surface-hover: #f8fafc;
+  --surface-active: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --border-light: rgba(0, 0, 0, 0.08);
+  --border-medium: rgba(0, 0, 0, 0.12);
+  
+  --accent-blue: #2563eb;
+  --accent-blue-dark: #1e40af;
+  --accent-yellow: #d97706;
+  --accent-green: #059669;
+  --accent-red: #dc2626;
+  --accent-gray: #4b5563;
+  
+  --success-bg: rgba(5, 150, 105, 0.1);
+  --warning-bg: rgba(217, 119, 6, 0.1);
+  --danger-bg: rgba(220, 38, 38, 0.1);
+  
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* ===========================================================
+   RESET Y BASE
+   =========================================================== */
 * {
   margin: 0;
   padding: 0;
-  box-sizing: border-box; /* Asegura que padding y border no aumenten el tamaño */
+  box-sizing: border-box;
 }
 
 html, body {
   height: 100%;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #111;
-  overflow-x: hidden; /* Evita scroll horizontal */
+  background: var(--bg-page);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  transition: background var(--transition), color var(--transition);
 }
 
 /* ========== PRE-EXAMEN STYLES ========== */
 #examenContent {
-  display: none; /* Se muestra solo cuando se inicia el examen */
+  display: none;
 }
 
 .pre-examen-container {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  color: #0c0264;
+  background: var(--bg-page);
+  color: var(--text-primary);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -43,15 +103,15 @@ html, body {
   margin: 0 auto;
 }
 
-/* Header del pre-examen con animación */
+/* Header del pre-examen */
 .pre-examen-header {
   text-align: center;
   padding: 40px 30px;
-  background: linear-gradient(120deg, #0815c5 0%, #0c0264 100%);
+  background: linear-gradient(120deg, var(--accent-blue), var(--accent-blue-dark));
   color: white;
   border-radius: 20px;
   margin-bottom: 30px;
-  box-shadow: 0 10px 30px rgba(8, 21, 197, 0.3);
+  box-shadow: var(--shadow-lg);
   position: relative;
   overflow: hidden;
 }
@@ -96,19 +156,19 @@ html, body {
 
 /* ========== SECCIÓN DE INFORMACIÓN DEL DUELO ========== */
 .duelo-info-section {
-  background: white;
+  background: var(--surface);
   border-radius: 20px;
   padding: 35px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   margin-bottom: 25px;
+  border: 1px solid var(--border-light);
 }
 
-/* Título de sección con icono */
 .section-title {
-  color: #0815c5;
+  color: var(--accent-blue);
   margin-bottom: 30px;
   padding-bottom: 15px;
-  border-bottom: 3px solid #facc15;
+  border-bottom: 3px solid var(--accent-yellow);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -118,6 +178,7 @@ html, body {
 
 .section-title i {
   font-size: 2rem;
+  color: var(--accent-yellow);
 }
 
 /* ========== PARTICIPANTES DEL DUELO ========== */
@@ -128,34 +189,33 @@ html, body {
   align-items: center;
   margin-bottom: 35px;
   padding: 25px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: var(--surface-hover);
   border-radius: 15px;
 }
 
 .participante {
   text-align: center;
   padding: 20px;
-  background: white;
+  background: var(--surface);
   border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow-sm);
   transition: all 0.3s ease;
 }
 
 .participante.yo {
-  border: 3px solid #0815c5;
+  border: 3px solid var(--accent-blue);
   transform: scale(1.02);
 }
 
 .participante.oponente {
-  border: 3px solid #6c757d;
+  border: 3px solid var(--accent-gray);
 }
 
 .participante:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  box-shadow: var(--shadow-md);
 }
 
-/* Badge de participante */
 .participante-badge {
   display: inline-block;
   padding: 8px 20px;
@@ -168,25 +228,25 @@ html, body {
 }
 
 .participante.yo .participante-badge {
-  background: linear-gradient(120deg, #0815c5 0%, #0c0264 100%);
+  background: var(--accent-blue);
   color: white;
 }
 
 .participante.oponente .participante-badge {
-  background: #6c757d;
+  background: var(--accent-gray);
   color: white;
 }
 
 .participante-nombre {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #0c0264;
+  color: var(--text-primary);
 }
 
 .vs-divider {
   font-size: 2.5rem;
   font-weight: 900;
-  color: #0815c5;
+  color: var(--accent-yellow);
   text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
   animation: pulse 1.5s ease-in-out infinite;
 }
@@ -204,20 +264,20 @@ html, body {
   align-items: center;
   gap: 15px;
   padding: 20px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: var(--surface-hover);
   border-radius: 12px;
-  border-left: 4px solid #0815c5;
+  border-left: 4px solid var(--accent-blue);
   transition: all 0.3s ease;
 }
 
 .info-item:hover {
   transform: translateX(5px);
-  box-shadow: 0 4px 15px rgba(8, 21, 197, 0.15);
+  box-shadow: var(--shadow-sm);
 }
 
 .info-item i {
   font-size: 2rem;
-  color: #0815c5;
+  color: var(--accent-blue);
   min-width: 40px;
   text-align: center;
 }
@@ -228,13 +288,13 @@ html, body {
 
 .info-item strong {
   display: block;
-  color: #0c0264;
+  color: var(--text-primary);
   margin-bottom: 5px;
   font-size: 1.05rem;
 }
 
 #countdown-display {
-  color: #0815c5;
+  color: var(--accent-blue);
   font-weight: 700;
   font-size: 1.1rem;
 }
@@ -249,6 +309,7 @@ html, body {
   align-items: flex-start;
   gap: 15px;
   margin-bottom: 30px;
+  color: #856404;
 }
 
 .duelo-warning i {
@@ -259,18 +320,27 @@ html, body {
 
 .duelo-warning p {
   flex: 1;
-  color: #856404;
   line-height: 1.6;
   margin: 0;
 }
 
-.duelo-warning strong {
-  color: #664d03;
-}
-
 #fecha-limite {
   font-weight: 700;
-  color: #664d03;
+}
+
+/* ========== ADVERTENCIA DE PENALIZACIONES ========== */
+.warning-penalizaciones {
+  background: linear-gradient(135deg, var(--accent-red) 0%, #b91c1c 100%) !important;
+  border-color: var(--accent-red) !important;
+  color: white !important;
+}
+
+.warning-penalizaciones i,
+.warning-penalizaciones p,
+.warning-penalizaciones strong,
+.warning-penalizaciones ul,
+.warning-penalizaciones li {
+  color: white !important;
 }
 
 /* ========== BOTONES ========== */
@@ -293,39 +363,37 @@ html, body {
   display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .pre-examen-btn i {
   font-size: 1.2rem;
 }
 
-/* Botones secundarios y éxito */
 .btn-secondary {
-  background: white;
-  color: #0c0264;
-  border: 2px solid #0815c5;
+  background: transparent;
+  color: var(--accent-blue);
+  border: 2px solid var(--accent-blue);
 }
 
 .btn-secondary:hover {
-  background: #0815c5;
+  background: var(--accent-blue);
   color: white;
   transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(8, 21, 197, 0.3);
+  box-shadow: var(--shadow-md);
 }
 
 .btn-success {
-  background: linear-gradient(120deg, #28a745 0%, #1e7e34 100%);
+  background: linear-gradient(120deg, var(--accent-green), #0d9488);
   color: white;
-  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-success:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+  box-shadow: var(--shadow-md);
 }
 
-/* Animación pulse */
 @keyframes pulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
@@ -346,23 +414,23 @@ html, body {
 
 /* ========== EXAMEN STYLES ========== */
 body {
-  padding-top: 300px; /* Añade esto para bajar todo el contenido */
+  padding-top: 300px;
 }
 
 header {
-  background: linear-gradient(135deg, #0515a8, #09012c);
-  color: #f59e0b;
+  background: linear-gradient(135deg, var(--accent-blue-dark), #0f172a);
+  color: var(--accent-yellow);
   padding: 25px 30px;
   text-align: center;
   font-size: 1.8rem;
   font-weight: 700;
-  border-bottom: 4px solid #f59e0b;
+  border-bottom: 4px solid var(--accent-yellow);
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  box-shadow: var(--shadow-md);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -383,7 +451,7 @@ header > div {
 
 .btn-volver {
   padding: 10px 20px;
-  background-color: #f59e0b;
+  background-color: var(--accent-yellow);
   color: white;
   border: none;
   border-radius: 8px;
@@ -401,15 +469,16 @@ header > div {
 
 /* ========== CONTENEDOR DE PREGUNTAS ========== */
 .contenedor-pregunta {
-  background: linear-gradient(135deg, #0815c5, #0c0264);
+  background: linear-gradient(135deg, var(--surface), var(--surface-hover));
   max-width: 850px;
   margin: 120px auto 40px;
   padding: 35px;
   border-radius: 20px;
   display: none;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-  color: white;
+  box-shadow: var(--shadow-lg);
+  color: var(--text-primary);
   position: relative;
+  border: 1px solid var(--border-light);
 }
 
 .contenedor-pregunta.activa {
@@ -426,18 +495,17 @@ header > div {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: white;
+  color: var(--text-primary);
   padding: 15px 25px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--surface-hover);
   border-radius: 12px;
   font-weight: 700;
   font-size: 1.1rem;
   margin-bottom: 25px;
-  backdrop-filter: blur(10px);
 }
 
 .cronometro {
-  background: #f59e0b;
+  background: var(--accent-yellow);
   padding: 8px 18px;
   border-radius: 8px;
   font-size: 1.2rem;
@@ -451,7 +519,7 @@ header > div {
   margin-top: 25px;
   font-size: 1.5rem;
   font-weight: 700;
-  color: white;
+  color: var(--text-primary);
   line-height: 1.6;
   margin-bottom: 30px;
 }
@@ -466,13 +534,13 @@ header > div {
 
 .opciones button {
   padding: 18px 25px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  border: 3px solid var(--border-light);
   border-radius: 12px;
-  background-color: white;
+  background-color: var(--surface-hover);
   cursor: pointer;
   font-size: 1.05rem;
   transition: all 0.3s ease;
-  color: #0a2472;
+  color: var(--text-primary);
   font-weight: 500;
   text-align: left;
   position: relative;
@@ -486,7 +554,7 @@ header > div {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
   transition: left 0.5s;
 }
 
@@ -495,17 +563,17 @@ header > div {
 }
 
 .opciones button:hover {
-  background-color: #e0f0ff;
+  background-color: var(--surface-active);
   transform: translateX(5px);
-  border-color: #0815c5;
+  border-color: var(--accent-blue);
 }
 
 .opciones button.seleccionada {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: white;
-  border-color: #f59e0b;
+  background: var(--accent-yellow);
+  color: var(--surface);
+  border-color: var(--accent-yellow);
   transform: scale(1.02);
-  box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+  box-shadow: var(--shadow-sm);
 }
 
 /* ========== NAVEGACIÓN ========== */
@@ -520,7 +588,7 @@ header > div {
 
 .navegacion button {
   padding: 12px 25px;
-  background-color: #f59e0b;
+  background-color: var(--accent-yellow);
   color: white;
   border: none;
   border-radius: 10px;
@@ -528,29 +596,21 @@ header > div {
   cursor: pointer;
   font-weight: 600;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  box-shadow: var(--shadow-sm);
 }
 
 .navegacion button:hover {
   background-color: #d97706;
   transform: translateY(-3px);
-  box-shadow: 0 6px 15px rgba(245, 158, 11, 0.4);
+  box-shadow: var(--shadow-md);
 }
 
 .btn-finalizar {
-  background: linear-gradient(135deg, #dc3545, #c82333) !important;
-}
-
-.btn-finalizar:hover {
-  background: linear-gradient(135deg, #c82333, #bd2130) !important;
+  background: var(--accent-red) !important;
 }
 
 .btnNoSeguro {
-  background: #6c757d !important;
-}
-
-.btnNoSeguro:hover {
-  background: #5a6268 !important;
+  background: var(--accent-gray) !important;
 }
 
 /* ========== PANEL DE NAVEGACIÓN LATERAL ========== */
@@ -561,12 +621,13 @@ header > div {
   width: 280px;
   max-height: calc(100vh - 150px);
   overflow-y: auto;
-  background: linear-gradient(135deg, #0815c5, #0c0264);
+  background: var(--surface);
   padding: 20px;
   border-radius: 15px;
-  color: white;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-lg);
   z-index: 100;
+  border: 1px solid var(--border-light);
 }
 
 #pendientesContainer::-webkit-scrollbar {
@@ -574,12 +635,12 @@ header > div {
 }
 
 #pendientesContainer::-webkit-scrollbar-track {
-  background: rgba(255,255,255,0.1);
+  background: var(--border-light);
   border-radius: 10px;
 }
 
 #pendientesContainer::-webkit-scrollbar-thumb {
-  background: #f59e0b;
+  background: var(--accent-yellow);
   border-radius: 10px;
 }
 
@@ -589,7 +650,7 @@ header > div {
   justify-content: space-between;
   margin-bottom: 20px;
   padding: 12px;
-  background: rgba(255,255,255,0.1);
+  background: var(--surface-hover);
   border-radius: 8px;
   font-size: 0.9rem;
 }
@@ -616,25 +677,24 @@ header > div {
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 600;
-  background: rgba(255,255,255,0.1);
+  background: var(--surface-hover);
   border: 2px solid transparent;
+  color: var(--text-primary);
 }
 
 .item-navegacion:hover {
-  background-color: #f59e0b;
+  background-color: var(--accent-yellow);
+  color: var(--surface);
   transform: translateX(5px);
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
-  border-color: white;
+  box-shadow: var(--shadow-sm);
 }
 
 .item-navegacion.estado-respondida {
-  background: rgba(40, 167, 69, 0.3);
-  border-color: #28a745;
+  border-color: var(--accent-green);
 }
 
 .item-navegacion.estado-suspenso {
-  background: rgba(255, 193, 7, 0.3);
-  border-color: #ffc107;
+  border-color: var(--accent-yellow);
 }
 
 /* ========== MODAL ========== */
@@ -657,17 +717,18 @@ header > div {
 }
 
 .modal-content {
-  background: white;
+  background: var(--surface);
   padding: 35px 40px;
   border-radius: 20px;
   text-align: center;
   max-width: 500px;
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-lg);
   animation: aparecer 0.3s ease;
+  border: 1px solid var(--border-light);
 }
 
 .modal-content h3 {
-  color: #0815c5;
+  color: var(--accent-blue);
   margin-bottom: 20px;
   font-size: 1.5rem;
   display: flex;
@@ -680,12 +741,12 @@ header > div {
   margin-bottom: 25px;
   font-size: 1.1rem;
   font-weight: 500;
-  color: #333;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
 .modal-content button {
-  background: #0815c5;
+  background: var(--accent-blue);
   color: white;
   border: none;
   padding: 12px 25px;
@@ -698,9 +759,9 @@ header > div {
 }
 
 .modal-content button:hover {
-  background: #0c0264;
+  background: var(--accent-blue-dark);
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(8, 21, 197, 0.3);
+  box-shadow: var(--shadow-sm);
 }
 
 @keyframes aparecer {
@@ -782,5 +843,17 @@ header > div {
   
   .navegacion button {
     width: 100%;
+  }
+}
+
+/* ========== ACCESIBILIDAD ========== */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .pre-examen-header::before {
+    animation: none;
   }
 }

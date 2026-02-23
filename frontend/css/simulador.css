@@ -1,4 +1,11 @@
+/* ===========================================================
+   SIMULADOR.CSS - VERSIÓN COMPLETA CON MODO OSCURO
+   🎨 Tema Claro / 🌙 Tema Oscuro - Mobile First
+   =========================================================== */
+
+/* ================== VARIABLES CSS ================== */
 :root {
+    /* TEMA CLARO (default) */
     --bg-primary: #ffffff;
     --bg-secondary: #f8f9fa;
     --text-primary: #333333;
@@ -10,8 +17,24 @@
     --shadow-light: rgba(0, 0, 0, 0.1);
     --shadow-medium: rgba(0, 0, 0, 0.15);
     --shadow-heavy: rgba(0, 0, 0, 0.25);
+    
+    /* Espaciado fluido */
+    --spacing-xs: clamp(0.25rem, 1vw, 0.5rem);
+    --spacing-sm: clamp(0.5rem, 2vw, 1rem);
+    --spacing-md: clamp(1rem, 3vw, 1.5rem);
+    --spacing-lg: clamp(1.5rem, 4vw, 2rem);
+    --spacing-xl: clamp(2rem, 5vw, 3rem);
+    --spacing-2xl: clamp(3rem, 6vw, 4rem);
+    
+    /* Bordes fluidos */
+    --radius-sm: clamp(8px, 2vw, 12px);
+    --radius-md: clamp(12px, 3vw, 16px);
+    --radius-lg: clamp(16px, 4vw, 20px);
+    --radius-xl: clamp(20px, 5vw, 25px);
+    --radius-full: 50%;
 }
 
+/* TEMA OSCURO - Activado por data-theme="dark" */
 [data-theme="dark"] {
     --bg-primary: #0a0e27;
     --bg-secondary: #151b3d;
@@ -26,30 +49,51 @@
     --shadow-heavy: rgba(0, 0, 0, 0.7);
 }
 
+/* ================== RESET Y TRANSICIONES ================== */
 * {
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
+/* Transiciones suaves para cambio de tema */
+*,
+*::before,
+*::after {
+    transition: background-color 0.3s ease, 
+                color 0.3s ease, 
+                border-color 0.3s ease, 
+                box-shadow 0.3s ease,
+                transform 0.3s ease !important;
+}
+
+/* ================== ESTILOS BASE ================== */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--bg-primary);
     color: var(--text-primary);
     margin: 0;
-    padding: 0;
+    padding: 100;
     min-height: 100vh;
+    min-height: 100dvh;
+    line-height: 1.6;
+    overflow-x: hidden;
 }
 
+/* ================== CONTENEDOR PRINCIPAL ================== */
 .container {
-    max-width: 1200px;
+    max-width: min(1200px, 95%);
     margin: 0 auto;
-    padding: 1rem 2rem 3rem 2rem;
+    padding: var(--spacing-md) var(--spacing-md) var(--spacing-2xl) var(--spacing-md);
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    box-sizing: border-box;
+    min-height: 100dvh;
     animation: fadeIn 0.6s ease-out;
+    width: 100%;
 }
 
+/* ================== ANIMACIONES ================== */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -59,61 +103,6 @@ body {
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-header {
-    width: 100%;
-    text-align: center;
-    background: linear-gradient(135deg, var(--header-gradient-start), var(--header-gradient-end));
-    padding: 3rem 2rem;
-    box-shadow: 0 4px 20px var(--shadow-heavy);
-    margin-bottom: 3rem;
-    box-sizing: border-box;
-    border-radius: 16px;
-    position: relative;
-    overflow: hidden;
-}
-
-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: var(--accent-yellow);
-}
-
-[data-theme="dark"] header {
-    box-shadow: 0 4px 20px rgba(108, 0, 255, 0.4), 0 0 40px rgba(0, 0, 255, 0.2);
-}
-
-header h1 {
-    font-size: 2.5rem;
-    color: var(--accent-yellow);
-    margin-bottom: 0.5rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    animation: fadeIn 0.8s ease-out 0.2s both;
-}
-
-header p {
-    font-size: 1.2rem;
-    color: white;
-    margin: 0;
-    opacity: 0.9;
-    animation: fadeIn 0.8s ease-out 0.4s both;
-}
-
-.practica {
-    text-align: center;
-    background: var(--bg-secondary);
-    margin-bottom: 4rem;
-    padding: 3rem 2rem;
-    border-radius: 16px;
-    box-shadow: 0 6px 20px var(--shadow-light);
-    border: 2px solid var(--accent-yellow);
-    animation: slideUp 0.8s ease-out 0.6s both;
-    transition: all 0.3s ease;
 }
 
 @keyframes slideUp {
@@ -127,190 +116,371 @@ header p {
     }
 }
 
-.practica:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 30px var(--shadow-medium);
-}
-
-.practica h2 {
-    color: var(--accent-blue);
-    margin-bottom: 1.5rem;
-    font-size: 2rem;
-    font-weight: 700;
-    position: relative;
-    display: inline-block;
-}
-
-.practica h2::after {
-    content: '';
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 3px;
-    background: var(--accent-yellow);
-    border-radius: 2px;
-}
-
-.practica p {
-    margin-bottom: 2.5rem;
-    font-size: 1.1rem;
-    color: var(--text-primary);
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
-    line-height: 1.7;
-}
-
-.practica button {
-    background: linear-gradient(135deg, var(--accent-yellow), #ffd44f);
-    border: none;
-    color: var(--text-primary);
-    font-weight: 700;
-    padding: 1.2rem 3rem;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 1.2rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 6px 15px rgba(255, 193, 7, 0.4);
-    border-bottom: 4px solid #e0a800;
-    position: relative;
-    overflow: hidden;
-}
-
-.practica button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    transition: left 0.5s;
-}
-
-.practica button:hover::before {
-    left: 100%;
-}
-
-.practica button:hover {
-    background: linear-gradient(135deg, #ffd44f, var(--accent-yellow));
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(255, 193, 7, 0.6);
-}
-
-.practica button:active {
-    transform: translateY(1px);
-    border-bottom: 2px solid #e0a800;
-}
-
-footer {
-    text-align: center;
-    padding: 2rem 1rem;
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    border-top: 1px solid var(--bg-secondary);
-    margin-top: auto;
-    animation: fadeIn 0.8s ease-out 1s both;
-}
-
-.floating-button {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    background: var(--accent-yellow);
-    color: var(--text-primary);
-    border: none;
-    border-bottom: 4px solid #e0a800;
-    font-size: 28px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 6px 15px var(--shadow-medium);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: pulse 2s infinite;
-}
-
-[data-theme="dark"] .floating-button {
-    background: linear-gradient(135deg, var(--header-gradient-start), var(--header-gradient-end));
-    border-bottom: 4px solid var(--header-gradient-end);
-    color: white;
-}
-
-.floating-button:hover {
-    background: #ffd44f;
-    transform: translateY(-5px) scale(1.05);
-    box-shadow: 0 8px 20px var(--shadow-heavy);
-}
-
-[data-theme="dark"] .floating-button:hover {
-    background: linear-gradient(135deg, var(--header-gradient-end), var(--header-gradient-start));
-    box-shadow: 0 8px 20px rgba(108, 0, 255, 0.6);
-    transform: translateY(-5px) scale(1.05);
-}
-
-.floating-button:active {
-    transform: translateY(2px);
-    border-bottom: 2px solid #e0a800;
-    box-shadow: 0 3px 8px var(--shadow-light);
-}
-
-[data-theme="dark"] .floating-button:active {
-    border-bottom: 2px solid var(--header-gradient-end);
-}
-
-
 @keyframes pulse {
     0% { transform: scale(1); }
     50% { transform: scale(1.1); }
     100% { transform: scale(1); }
 }
 
-@media (max-width: 768px) {
-    .floating-button {
-        width: 60px;
-        height: 60px;
-        font-size: 24px;
-        bottom: 20px;
-        right: 20px;
-    }
-    
-    header {
-        padding: 2rem 1.5rem;
-    }
-    
-    header h1 {
-        font-size: 2rem;
-    }
-    
-    .practica {
-        padding: 2rem 1.5rem;
-        margin-bottom: 3rem;
-    }
-    
-    .practica h2 {
-        font-size: 1.6rem;
-    }
-    
-    .practica button {
-        font-size: 1rem;
-        padding: 1rem 2rem;
-    }
-    
-    .container {
-        padding: 1rem;
+@keyframes shimmer {
+    0% { left: -150%; }
+    100% { left: 150%; }
+}
+
+/* ================== HEADER ================== */
+header {
+    width: 100%;
+    text-align: center;
+    background: linear-gradient(135deg, var(--header-gradient-start), var(--header-gradient-end));
+    padding: var(--spacing-2xl) var(--spacing-xl);
+    box-shadow: 0 clamp(2px, 0.5vw, 4px) clamp(10px, 3vw, 20px) var(--shadow-heavy);
+    margin-bottom: var(--spacing-xl);
+    border-radius: var(--radius-xl);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Línea decorativa superior */
+header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: clamp(2px, 0.5vw, 4px);
+    background: var(--accent-yellow);
+    z-index: 1;
+}
+
+/* Sombra especial para tema oscuro */
+[data-theme="dark"] header {
+    box-shadow: 0 clamp(2px, 0.5vw, 4px) clamp(10px, 3vw, 20px) rgba(108, 0, 255, 0.4),
+                0 0 clamp(20px, 5vw, 40px) rgba(0, 0, 255, 0.2);
+}
+
+/* Título del header */
+header h1 {
+    font-size: clamp(1.8rem, 6vw, 3rem);
+    color: var(--accent-yellow);
+    margin-bottom: var(--spacing-sm);
+    text-shadow: 0 clamp(1px, 0.3vw, 2px) clamp(2px, 0.5vw, 4px) rgba(0, 0, 0, 0.3);
+    animation: fadeIn 0.8s ease-out 0.2s both;
+    line-height: 1.2;
+    word-wrap: break-word;
+}
+
+/* Descripción del header */
+header p {
+    font-size: clamp(1rem, 3vw, 1.3rem);
+    color: white;
+    margin: 0;
+    opacity: 0.9;
+    animation: fadeIn 0.8s ease-out 0.4s both;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+}
+
+/* ================== SECCIÓN DE PRÁCTICA ================== */
+.practica {
+    text-align: center;
+    background: var(--bg-secondary);
+    margin-bottom: var(--spacing-2xl);
+    padding: var(--spacing-2xl) var(--spacing-xl);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 clamp(3px, 1vw, 6px) clamp(10px, 3vw, 20px) var(--shadow-light);
+    border: clamp(1px, 0.3vw, 2px) solid var(--accent-yellow);
+    animation: slideUp 0.8s ease-out 0.6s both;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+/* Hover solo para dispositivos con mouse */
+@media (hover: hover) {
+    .practica:hover {
+        transform: translateY(clamp(-3px, -1vw, -5px));
+        box-shadow: 0 clamp(6px, 2vw, 12px) clamp(15px, 4vw, 30px) var(--shadow-medium);
     }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    * {
-        animation: none !important;
-        transition: none !important;
+/* Título de la sección */
+.practica h2 {
+    color: var(--accent-blue);
+    margin-bottom: var(--spacing-lg);
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
+    font-weight: 700;
+    position: relative;
+    display: inline-block;
+    word-wrap: break-word;
+}
+
+/* Línea decorativa bajo el título */
+.practica h2::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: clamp(50px, 15vw, 80px);
+    height: clamp(2px, 0.5vw, 3px);
+    background: var(--accent-yellow);
+    border-radius: 2px;
+}
+
+/* Párrafo descriptivo */
+.practica p {
+    margin-bottom: var(--spacing-xl);
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    color: var(--text-primary);
+    max-width: min(700px, 90%);
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
+    word-wrap: break-word;
+}
+
+/* ================== BOTÓN PRINCIPAL ================== */
+.practica button {
+    background: linear-gradient(135deg, var(--accent-yellow), #ffd44f);
+    border: none;
+    color: var(--text-primary);
+    font-weight: 700;
+    padding: clamp(0.8rem, 3vw, 1.2rem) clamp(1.5rem, 5vw, 3rem);
+    border-radius: clamp(20px, 5vw, 30px);
+    cursor: pointer;
+    font-size: clamp(1rem, 3vw, 1.3rem);
+    transition: all 0.3s ease;
+    box-shadow: 0 clamp(3px, 1vw, 6px) clamp(8px, 2vw, 15px) rgba(255, 193, 7, 0.4);
+    border-bottom: clamp(2px, 0.5vw, 4px) solid #e0a800;
+    position: relative;
+    overflow: hidden;
+    min-width: 200px;
+    min-height: 50px;
+}
+
+/* Efecto de brillo */
+.practica button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s;
+    pointer-events: none;
+}
+
+@media (hover: hover) {
+    .practica button:hover::before {
+        left: 150%;
+        animation: shimmer 0.8s;
+    }
+    
+    .practica button:hover {
+        background: linear-gradient(135deg, #ffd44f, var(--accent-yellow));
+        transform: translateY(clamp(-2px, -0.5vw, -3px));
+        box-shadow: 0 clamp(5px, 1.5vw, 10px) clamp(15px, 4vw, 25px) rgba(255, 193, 7, 0.6);
     }
 }
+
+.practica button:active {
+    transform: translateY(1px);
+    border-bottom-width: clamp(1px, 0.3vw, 2px);
+}
+
+/* ================== FOOTER ================== */
+footer {
+    text-align: center;
+    padding: var(--spacing-xl) var(--spacing-md);
+    font-size: clamp(0.85rem, 2vw, 1rem);
+    color: var(--text-secondary);
+    border-top: 1px solid var(--bg-secondary);
+    margin-top: auto;
+    animation: fadeIn 0.8s ease-out 1s both;
+    width: 100%;
+}
+
+/* ================== BOTÓN FLOTANTE ================== */
+.floating-button {
+    position: fixed;
+    bottom: clamp(15px, 4vw, 25px);
+    right: clamp(15px, 4vw, 25px);
+    width: clamp(50px, 12vw, 70px);
+    height: clamp(50px, 12vw, 70px);
+    border-radius: var(--radius-full);
+    background: var(--accent-yellow);
+    color: var(--text-primary);
+    border: none;
+    border-bottom: clamp(2px, 0.5vw, 4px) solid #e0a800;
+    font-size: clamp(20px, 5vw, 28px);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 clamp(3px, 1vw, 6px) clamp(8px, 2vw, 15px) var(--shadow-medium);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2s infinite;
+    /* Mejora área táctil */
+    min-width: 44px;
+    min-height: 44px;
+}
+
+/* Estilo específico para tema oscuro */
+[data-theme="dark"] .floating-button {
+    background: linear-gradient(135deg, var(--header-gradient-start), var(--header-gradient-end));
+    border-bottom: clamp(2px, 0.5vw, 4px) solid var(--header-gradient-end);
+    color: white;
+}
+
+/* Hover solo para dispositivos con mouse */
+@media (hover: hover) {
+    .floating-button:hover {
+        background: #ffd44f;
+        transform: translateY(clamp(-3px, -1vw, -5px)) scale(1.05);
+        box-shadow: 0 clamp(4px, 1.2vw, 8px) clamp(10px, 3vw, 20px) var(--shadow-heavy);
+        animation: none;
+    }
+    
+    [data-theme="dark"] .floating-button:hover {
+        background: linear-gradient(135deg, var(--header-gradient-end), var(--header-gradient-start));
+        box-shadow: 0 clamp(4px, 1.2vw, 8px) clamp(10px, 3vw, 20px) rgba(108, 0, 255, 0.6);
+    }
+}
+
+.floating-button:active {
+    transform: translateY(2px);
+    border-bottom-width: clamp(1px, 0.3vw, 2px);
+    box-shadow: 0 clamp(2px, 0.5vw, 3px) clamp(4px, 1vw, 8px) var(--shadow-light);
+}
+
+[data-theme="dark"] .floating-button:active {
+    border-bottom-color: var(--header-gradient-end);
+}
+
+/* ================== MEDIA QUERIES ================== */
+
+/* Móviles pequeños (hasta 480px) */
+@media (max-width: 30rem) {
+    .container {
+        padding: var(--spacing-sm);
+    }
+    
+    header {
+        padding: var(--spacing-xl) var(--spacing-md);
+    }
+    
+    .practica {
+        padding: var(--spacing-xl) var(--spacing-md);
+    }
+    
+    .practica button {
+        min-width: 160px;
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+/* Tablets (768px - 1024px) */
+@media (min-width: 48rem) and (max-width: 64rem) {
+    .container {
+        max-width: 90%;
+    }
+    
+    header h1 {
+        font-size: 2.2rem;
+    }
+}
+
+/* Orientación horizontal en móviles */
+@media (max-height: 30rem) and (orientation: landscape) {
+    header {
+        padding: var(--spacing-lg) var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .practica {
+        padding: var(--spacing-lg) var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .floating-button {
+        width: 45px;
+        height: 45px;
+        font-size: 20px;
+    }
+}
+
+/* ================== ACCESIBILIDAD ================== */
+
+/* Reducir movimiento */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+    
+    .floating-button {
+        animation: none !important;
+    }
+}
+
+/* Alto contraste */
+@media (prefers-contrast: high) {
+    .practica {
+        border: 3px solid var(--text-primary);
+    }
+    
+    .practica button {
+        border: 2px solid #000;
+    }
+}
+
+/* Focus states para accesibilidad */
+.practica button:focus-visible,
+.floating-button:focus-visible {
+    outline: 3px solid var(--accent-yellow);
+    outline-offset: 3px;
+}
+
+/* ================== UTILIDADES ================== */
+
+/* Clase para ocultar en móviles */
+.hide-on-mobile {
+    @media (max-width: 47.999rem) {
+        display: none !important;
+    }
+}
+
+/* Clase para mostrar solo en móviles */
+.show-on-mobile {
+    @media (min-width: 48rem) {
+        display: none !important;
+    }
+}
+
+/* ================== SOPORTE PARA PANTALLAS GRANDES ================== */
+@media (min-width: 90rem) {
+    .container {
+        max-width: 1400px;
+    }
+    
+    header h1 {
+        font-size: 3.5rem;
+    }
+    
+    header p {
+        font-size: 1.4rem;
+    }
+    
+    .practica h2 {
+        font-size: 2.5rem;
+    }
+}
+
+/* ================== FIN DEL ARCHIVO ================== */ 

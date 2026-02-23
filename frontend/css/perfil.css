@@ -301,7 +301,7 @@
 /* Mantener las variaciones sutiles con hue-rotate */
 
 .mode-container.minijuegos {
-    /* Usa el degradado normal por defecto */
+    filter: hue-rotate(5deg);
 }
 
 .mode-container.examenes {
@@ -489,4 +489,4 @@
     .mode-container::before {
         animation: none !important;
     }
-}
+}   

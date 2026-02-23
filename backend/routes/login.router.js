@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const { enviarCorreoRecuperacion } = require('../utils/mail.js');
+const { enviarCorreoVerificacion } = require('../utils/mail.js');
+const crypto = require('crypto')
 
 // ----------------- Sesiones activas -----------------
 global.sesionesActivas = new Set();
@@ -27,6 +28,10 @@ const isEditor = (req, res, next) => {
         mensajeError: 'Acceso reservado para editores',
     });
 };
+
+function generarToken() {
+  return crypto.randomBytes(32).toString('hex')
+}
 
 // ----------------- Rutas -----------------
 
@@ -122,7 +127,17 @@ router.post('/login', async (req, res) => {
 
         // Usuario no verificado
         if (user.verificado === 0) {
-            return res.redirect(`/verificacion?correo=${encodeURIComponent(email)}&error=Cuenta no verificada`);
+            const token = generarToken()
+            const expira = new Date(Date.now() + 1000 * 60 * 10) // 10 min
+
+            await req.pool.query(
+            'UPDATE usuario SET token=?, token_expira=? WHERE id_usuario=?',
+            [token, expira, user.id_usuario]
+            )
+
+            await enviarCorreoVerificacion(user.email, token)
+
+            return res.redirect(`/verificacion?correo=${encodeURIComponent(email)}&error=Cuenta no verificada`)
         }
 
         const match = await bcrypt.compare(password, user.password);

@@ -149,15 +149,15 @@ if (window.usuarioActual) {
                     </button>
                 `;
             }
-            // ADMIN
-            else if (notif.tipo === 'promocion_admin_disponible') {
+            // REVISOR
+            else if (notif.tipo === 'promocion_revisor_disponible') {
                 li.innerHTML = `
                     <span>👑 ${notif.mensaje}</span>
                     <button class="btn-promocionar" 
                             data-id="${notif.id_notificacion}"
-                            data-tipo="admin"
+                            data-tipo="revisor"
                             style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-left: 10px; font-weight: bold;">
-                        Ser Administrador
+                        Ser Revisor
                     </button>
                     <button class="btn-eliminar" 
                             data-id="${notif.id_notificacion}" 
@@ -434,6 +434,7 @@ if (window.usuarioActual) {
         document.getElementById('notification-list')?.addEventListener('click', e => e.stopPropagation());
 
         const socket = io();
+        socket.emit('registrar_usuario', window.usuarioActual.id_usuario);
 
         // ═══════════════════════════════════════════════════════════
         // LISTENERS DE BOTONES DE NOTIFICACIONES
@@ -442,14 +443,14 @@ if (window.usuarioActual) {
             // 👑 BOTÓN PROMOCIONAR
             if (event.target.classList.contains('btn-promocionar')) {
                 const notifId = event.target.dataset.id;
-                const tipoPromocion = event.target.dataset.tipo; // 'editor' o 'admin'
+                const tipoPromocion = event.target.dataset.tipo; // 'editor' o 'revisor'
                 const button = event.target;
                 
                 // Confirmación
                 const confirmar = confirm(
                     tipoPromocion === 'editor' 
-                        ? '¿Deseas convertirte en Editor? (5,000 puntos)' 
-                        : '¿Deseas convertirte en Administrador? (10,000 puntos)'
+                        ? '¿Deseas convertirte en Editor? (2,500 puntos)' 
+                        : '¿Deseas convertirte en Revisor? (5,000 puntos)'
                 );
                 
                 if (!confirmar) return;
@@ -460,7 +461,7 @@ if (window.usuarioActual) {
                 try {
                     const endpoint = tipoPromocion === 'editor' 
                         ? '/api/promocion/promocionar-editor' 
-                        : '/api/promocion/promocionar-admin';
+                        : '/api/promocion/promocionar-revisor';
                     
                     const response = await fetch(endpoint, {
                         method: 'POST',
@@ -518,13 +519,13 @@ if (window.usuarioActual) {
                     } else {
                         alert(data.mensaje || 'Error al procesar promoción');
                         button.disabled = false;
-                        button.textContent = tipoPromocion === 'editor' ? 'Ser Editor' : 'Ser Administrador';
+                        button.textContent = tipoPromocion === 'editor' ? 'Ser Editor' : 'Ser Revisor';
                     }
                 } catch (error) {
                     console.error('[PROMOCIÓN ERROR]:', error);
                     alert('Error al procesar la promoción');
                     button.disabled = false;
-                    button.textContent = tipoPromocion === 'editor' ? 'Ser Editor' : 'Ser Administrador';
+                    button.textContent = tipoPromocion === 'editor' ? 'Ser Editor' : 'Ser Revisor';
                 }
                 return; // ✅ IMPORTANTE: Salir después de procesar promoción
             }

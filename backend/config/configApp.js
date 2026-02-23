@@ -25,23 +25,37 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
-// ------------------ Inicialización de Express ------------------
+// ---------------- Inicialización de Express ------------------
 const app = express();
 
-// =================== ⚙️ SERVIDOR HTTPS ===================
-const sslOptions = {
-  key: fs.readFileSync('/etc/letsencrypt/live/quebuendato.duckdns.org/privkey.pem'),
-  cert: fs.readFileSync('/etc/letsencrypt/live/quebuendato.duckdns.org/fullchain.pem')
-};
+// =================== 🌍 CONFIGURACIÓN DE SERVIDOR ADAPTATIVA ===================
+const http = require('http');
 
-const httpsServer = https.createServer(sslOptions, app);
-const io = new Server(httpsServer, {
-  cors: { 
+// Detectar entorno
+const isProduction = process.env.NODE_ENV === 'production';
+
+let server;
+if (isProduction) {
+  console.log("🚀 Iniciando en modo PRODUCCIÓN (HTTPS)");
+  const sslOptions = {
+    key: fs.readFileSync('/etc/letsencrypt/live/quebuendato.duckdns.org/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/quebuendato.duckdns.org/fullchain.pem')
+  };
+  const https = require('https');
+  server = https.createServer(sslOptions, app);
+} else {
+  console.log("💻 Iniciando en modo DESARROLLO (HTTP local)");
+  server = http.createServer(app);
+}
+
+// Inicializar Socket.IO
+const io = new Server(server, {
+  cors: {
     origin: [
-      "https://quebuendato.duckdns.org:3005",
-      "http://quebuendato.duckdns.org:3005",
+      "http://localhost:3000",
       "http://localhost:3005",
-      "https://localhost:3005"
+      "https://quebuendato.duckdns.org",
+      "https://quebuendato.duckdns.org:3005"
     ],
     methods: ["GET", "POST"],
     credentials: true
@@ -49,17 +63,13 @@ const io = new Server(httpsServer, {
   maxHttpBufferSize: 1e8,
   pingTimeout: 60000
 });
+
+// Exponer IO globalmente
+app.set('io', io);
+global.io = io;
+console.log('[SOCKET.IO]: ✅ Configuración adaptable activa');
 // =================== 🔁 REDIRECCIÓN AUTOMÁTICA HTTP→HTTPS ===================
-const http = require('http');
-http.createServer((req, res) => {
-  const redirectUrl = `https://${req.headers.host}${req.url}`;
-  res.writeHead(301, { Location: redirectUrl });
-  res.end();
-}).listen(80, () => console.log('🌐 Servidor HTTP redirigiendo todo a HTTPS'));
-app.use((req, res, next) => {
-  if (req.secure) return next();
-  return res.redirect('https://' + req.headers.host + req.url);
-});
+
 // ✅ Exponer Socket.IO globalmente
 app.set('io', io);
 global.io = io;
@@ -198,10 +208,10 @@ const sessionMiddleware = session({
   resave: false,
   saveUninitialized: false,
   cookie: { 
-    maxAge: 1000 * 60 * 60 * 24,
-    secure: true, // 🔒 Cookies solo por HTTPS
-    sameSite: 'lax'
-  }
+  maxAge: 1000 * 60 * 60 * 24,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+}
 });
 app.use(sessionMiddleware);
 io.engine.use(sessionMiddleware);
@@ -564,6 +574,7 @@ const promocionR = require("../routes/rangos.router.js");
 const materiasCarrera =require("../routes/materias_carrera.router.js")
 const amistades =require("../routes/amistades.router.js")
 const sinCarreraR = require('../routes/sin-carrera.js');
+const revisorR = require ("../routes/revisor.router.js")
 
 // ════════════════════════════════════════════════════════════════
 // ✅✅✅ ORDEN CRÍTICO DE MONTAJE
@@ -606,6 +617,7 @@ app.use('/api/promocion', promocionR);
 // 6️⃣ SEXTO: Rutas de administración y editor
 app.use('/editor', editorR);
 app.use('/', verificaAdminR);
+app.use('/revisor', revisorR)
 
 // 7️⃣ SÉPTIMO: Rutas de contenido
 app.use('/',amistades)
@@ -882,16 +894,14 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 // ------------------ INICIO DEL SERVIDOR HTTPS ------------------
+// =================== 🚀 INICIO DEL SERVIDOR ADAPTATIVO ===================
 const PORT = process.env.PORT || 3005;
-httpsServer.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`
 ╔═══════════════════════════════════════════════════════════════╗
-║  🔒 SERVIDOR SEGURO (HTTPS) - ¡QUE BUEN DATO!                ║
-║  🌍 Dominio: https://quebuendato.duckdns.org:${PORT}          ║
-║  ✅ HTTPS con Let's Encrypt activo                            ║
-║  ✅ Redirección HTTP→HTTPS configurada                        ║
-║  ✅ Socket.IO y sesiones funcionando                          ║
-║  ✅ Sistema de rangos, duelos y estadísticas en línea         ║
+║  🚀 Servidor iniciado en modo ${isProduction ? 'PRODUCCIÓN (HTTPS)' : 'DESARROLLO (HTTP)'}        ║
+║  🌍 URL: ${isProduction ? 'https://quebuendato.duckdns.org' : 'http://localhost:' + PORT}         ║
+║  🔌 Socket.IO, sesiones y rutas activas                        ║
 ╚═══════════════════════════════════════════════════════════════╝
   `);
 });

@@ -1,105 +1,433 @@
-/* ================== Reset y base ================== */
+/* ===========================================================
+   CONOCENOS.CSS - Versión compacta sin efectos de luz
+   Modo día/noche incluido
+   Basado en el CSS original pero optimizado
+   =========================================================== */
+
+/* ================== VARIABLES MODO DÍA ================== */
+:root {
+    --bg-page: #f5f7fa;
+    --surface: #ffffff;
+    --text-primary: #1a1a1a;
+    --text-secondary: #555555;
+    --text-highlight: #facc15;
+    --border-light: #e0e0e0;
+    --accent-yellow: #facc15;
+    --accent-yellow-light: #fde047;
+    --accent-purple: #6a1b9a;
+    --accent-purple-light: #9c4dcc;
+    
+    /* Video panel */
+    --video-bg: linear-gradient(135deg, #0815c5, #0c0264);
+    --video-border: #facc15;
+    --video-shadow: rgba(0, 0, 0, 0.2);
+    
+    /* Info panel */
+    --info-bg: #ffffff;
+    --info-title: #6a1b9a;
+    --info-subtitle: #6a1b9a;
+    --info-text: #333333;
+    --info-divider: #facc15;
+    
+    /* Features */
+    --feature-bg: #f8f9fa;
+    --feature-border: #e0e0e0;
+    --feature-icon: #6a1b9a;
+    --feature-text: #333333;
+    --feature-hover: #facc15;
+    
+    /* Botón flotante */
+    --floating-bg: #facc15;
+    --floating-color: #1a1a1a;
+    --floating-hover: #fde047;
+    
+    /* Sombras */
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* ================== VARIABLES MODO NOCHE ================== */
+[data-theme="dark"] {
+    --bg-page: #0a0e1a;
+    --surface: #1a1f2f;
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0b0;
+    --text-highlight: #6c00ff;
+    --border-light: #2a2f40;
+    --accent-yellow: #6c00ff;
+    --accent-yellow-light: #8b5cf6;
+    --accent-purple: #9c4dcc;
+    --accent-purple-light: #b77ee8;
+    
+    /* Video panel */
+    --video-bg: linear-gradient(135deg, #1a1f2f, #0f1422);
+    --video-border: #6c00ff;
+    --video-shadow: rgba(108, 0, 255, 0.2);
+    
+    /* Info panel */
+    --info-bg: #1a1f2f;
+    --info-title: #b77ee8;
+    --info-subtitle: #b77ee8;
+    --info-text: #e0e0e0;
+    --info-divider: #6c00ff;
+    
+    /* Features */
+    --feature-bg: #252b3d;
+    --feature-border: #2a2f40;
+    --feature-icon: #b77ee8;
+    --feature-text: #ffffff;
+    --feature-hover: #6c00ff;
+    
+    /* Botón flotante */
+    --floating-bg: #6c00ff;
+    --floating-color: #ffffff;
+    --floating-hover: #8b5cf6;
+    
+    /* Sombras */
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* ================== RESET Y BASE ================== */
 * {
-    margin: 0; /* Elimina márgenes por defecto */
-    padding: 0; /* Elimina padding por defecto */
-    box-sizing: border-box; /* Incluye padding y borde en el ancho total */
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', 'Segoe UI', sans-serif;
 }
 
 html, body {
-    height: 100%; /* Asegura que ocupen toda la pantalla */
+    height: 100%;
     width: 100%;
-    font-family: 'Segoe UI', sans-serif; /* Fuente principal */
 }
 
 body {
-    display: flex; /* Flex para contenedor principal */
-    overflow: hidden; /* Evita scroll horizontal */
+    background: var(--bg-page);
+    color: var(--text-primary);
+    transition: background 0.2s ease;
+    overflow-x: hidden;
 }
 
-/* ================== Contenedor principal ================== */
-.main-container {
-    display: flex; /* Contenedor con flex horizontal */
-    flex-direction: row; /* Elementos en fila */
+/* ================== CONTENEDOR PRINCIPAL ================== */
+.conocenos-container {
+    min-height: 100vh;
     width: 100%;
-    height: 100vh; /* Altura total de la ventana */
-}
-
-/* ================== Panel izquierdo ================== */
-.left-panel {
-    flex: 1; /* Ocupa la mitad de la pantalla */
-    background: linear-gradient(to bottom right, #0815c5, #0c0264); /* Fondo degradado */
     display: flex;
-    justify-content: center; /* Centra el video horizontalmente */
-    align-items: center; /* Centra el video verticalmente */
-    padding: 100px;
-    color: white; /* Color de texto blanco (por si hay contenido) */
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
 }
 
-/* Estilo del video */
-.left-panel video {
-    width: 170%; /* Se amplía más allá del contenedor para efecto visual */
+.content-grid {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    max-width: 1400px;
+    height: auto;
+    min-height: 600px;
+    border-radius: 32px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    background: var(--surface);
+}
+
+/* ================== PANEL DE VIDEO ================== */
+.video-panel {
+    flex: 1;
+    background: var(--video-bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    position: relative;
+}
+
+.video-wrapper {
+    width: 100%;
     max-width: 600px;
-    height: auto; /* Mantiene proporción */
-    border-radius: 12px; /* Bordes redondeados */
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3); /* Sombra suave */
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 15px 30px var(--video-shadow);
+    border: 3px solid var(--video-border);
+    transform: scale(1);
+    transition: transform 0.3s ease;
 }
 
-/* ================== Panel derecho ================== */
-.right-panel {
-    flex: 1; /* Ocupa la otra mitad */
-    background-color: #ffffff; /* Fondo blanco */
+.video-wrapper:hover {
+    transform: scale(1.02);
+}
+
+.video-wrapper video {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 20px;
+}
+
+/* ================== PANEL DE INFORMACIÓN ================== */
+.info-panel {
+    flex: 1;
+    background: var(--info-bg);
     display: flex;
-    flex-direction: column; /* Elementos en columna */
-    justify-content: center; /* Centrado vertical */
-    padding: 60px;
-    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1); /* Sombra sutil a la izquierda */
+    align-items: center;
+    justify-content: center;
+    padding: 50px;
 }
 
-/* Título principal */
-.right-panel h1 {
-    color: #6a1b9a; /* Color púrpura */
-    font-size: 2.5rem; /* Tamaño grande */
+.info-content {
+    max-width: 550px;
+    width: 100%;
+}
+
+/* Títulos */
+.info-title {
+    color: var(--info-title);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    line-height: 1.2;
+    position: relative;
+    display: inline-block;
+}
+
+.title-accent {
+    display: block;
+    width: 60px;
+    height: 4px;
+    background: var(--accent-yellow);
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+.info-subtitle {
+    color: var(--info-subtitle);
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 30px 0 15px;
+    position: relative;
+}
+
+.subtitle-accent {
+    display: block;
+    width: 40px;
+    height: 3px;
+    background: var(--accent-yellow);
+    margin-bottom: 10px;
+    border-radius: 3px;
+}
+
+/* Texto */
+.info-text {
+    font-size: 1.1rem;
+    color: var(--info-text);
+    line-height: 1.7;
     margin-bottom: 20px;
 }
 
-/* Subtítulos */
-.right-panel h2 {
-    color: #6a1b9a;
-    font-size: 1.8rem;
-    margin-top: 30px;
-    margin-bottom: 10px;
+.info-text strong {
+    color: var(--info-title);
+    font-weight: 600;
 }
 
-/* Párrafos de texto */
-.right-panel p {
-    font-size: 1.1rem;
-    color: #333333;
-    line-height: 1.6; /* Espaciado entre líneas */
+.info-text.highlight {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--accent-yellow);
+    padding: 10px 0;
+    border-left: 4px solid var(--accent-yellow);
+    padding-left: 20px;
+    background: rgba(250, 204, 21, 0.05);
+    border-radius: 0 12px 12px 0;
 }
 
-/* ================== Responsive ================== */
-@media (max-width: 768px) {
-    /* Para pantallas pequeñas, cambiar a columna */
-    .main-container {
-    flex-direction: column;
-    }
+[data-theme="dark"] .info-text.highlight {
+    background: rgba(108, 0, 255, 0.1);
+}
 
-    /* Paneles ocupan toda la anchura y la mitad de la altura */
-    .left-panel, .right-panel {
+/* Divisor */
+.info-divider {
     width: 100%;
-    height: 50vh;
-    }
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent-yellow), transparent);
+    margin: 25px 0;
+    opacity: 0.3;
+}
 
-    /* Ajustes de padding y alineación */
-    .right-panel {
-    padding: 30px;
+/* ================== FEATURES GRID ================== */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.feature-card {
+    background: var(--feature-bg);
+    border: 1px solid var(--feature-border);
+    border-radius: 16px;
+    padding: 15px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
-    box-shadow: none; /* Quitar sombra para dispositivos pequeños */
-    }
+    gap: 8px;
+    transition: all 0.2s ease;
+    cursor: default;
+}
 
-    /* Ajuste del video */
-    .left-panel video {
-    width: 90%;
-    max-width: 100%;
+.feature-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--feature-hover);
+    box-shadow: var(--shadow-sm);
+}
+
+.feature-icon {
+    font-size: 1.8rem;
+    color: var(--feature-icon);
+    transition: color 0.2s ease;
+}
+
+.feature-card:hover .feature-icon {
+    color: var(--feature-hover);
+}
+
+.feature-card span {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--feature-text);
+}
+
+/* ================== BOTÓN FLOTANTE ================== */
+.floating-btn {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: var(--floating-bg);
+    color: var(--floating-color);
+    border: 2px solid var(--border-light);
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.floating-btn:hover {
+    transform: scale(1.1);
+    background: var(--floating-hover);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+/* ================== RESPONSIVE ================== */
+@media (max-width: 900px) {
+    .content-grid {
+        flex-direction: column;
+        min-height: auto;
+    }
+    
+    .video-panel {
+        padding: 30px;
+    }
+    
+    .video-wrapper {
+        max-width: 500px;
+    }
+    
+    .info-panel {
+        padding: 40px 30px;
+    }
+    
+    .info-title {
+        font-size: 2.2rem;
+    }
+    
+    .info-subtitle {
+        font-size: 1.6rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .conocenos-container {
+        padding: 15px;
+    }
+    
+    .video-panel {
+        padding: 20px;
+    }
+    
+    .video-wrapper {
+        border-width: 2px;
+    }
+    
+    .info-panel {
+        padding: 30px 20px;
+    }
+    
+    .info-title {
+        font-size: 1.8rem;
+    }
+    
+    .info-subtitle {
+        font-size: 1.4rem;
+        margin-top: 20px;
+    }
+    
+    .info-text {
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+    
+    .info-text.highlight {
+        font-size: 1.1rem;
+        padding-left: 15px;
+    }
+    
+    .features-grid {
+        gap: 10px;
+    }
+    
+    .feature-card {
+        padding: 12px 5px;
+    }
+    
+    .feature-icon {
+        font-size: 1.5rem;
+    }
+    
+    .feature-card span {
+        font-size: 0.85rem;
+    }
+    
+    .floating-btn {
+        width: 50px;
+        height: 50px;
+        bottom: 20px;
+        right: 20px;
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .feature-card {
+        flex-direction: row;
+        justify-content: center;
+        gap: 15px;
+    }
+}
+
+/* ================== ACCESIBILIDAD ================== */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
     }
 }

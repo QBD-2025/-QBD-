@@ -1,13 +1,11 @@
-
 /* ========================================
-   MODERN CSS - MOBILE FIRST APPROACH
-   Optimized, Scalable, Production-Ready
+   MODERN CSS - FULLY RESPONSIVE
+   Mobile First Approach - Optimized for All Devices
    ======================================== */
 
 /* ========================================
    1. RESET & BASE STYLES
    ======================================== */
-/*styles.css para el main y la top bar ,esta descolocada en los moviles*/
 *,
 *::before,
 *::after {
@@ -25,18 +23,19 @@ html {
 
 body {
   min-height: 100vh;
-  padding-top: 3.75rem; /* 60px - navbar móvil */
+  padding-top: 3.75rem; /* 60px - altura navbar móvil */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.6;
   overflow-x: hidden;
+  width: 100%;
+  position: relative;
 }
 
 /* ========================================
    2. CSS CUSTOM PROPERTIES (VARIABLES)
    ======================================== */
-
 :root {
   /* Colors - Light Theme */
   --bg-primary: #ffffff;
@@ -54,13 +53,13 @@ body {
   --shadow-lg: 0 1rem 2.5rem rgba(0, 0, 0, 0.25);
   --shadow-header: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.3);
   
-  /* Spacing Scale */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  --spacing-2xl: 3rem;
+  /* Spacing Scale - Fluid using clamp */
+  --spacing-xs: clamp(0.25rem, 0.5vw, 0.375rem);
+  --spacing-sm: clamp(0.5rem, 1vw, 0.75rem);
+  --spacing-md: clamp(1rem, 2vw, 1.5rem);
+  --spacing-lg: clamp(1.5rem, 3vw, 2rem);
+  --spacing-xl: clamp(2rem, 4vw, 3rem);
+  --spacing-2xl: clamp(3rem, 6vw, 4rem);
   
   /* Border Radius */
   --radius-sm: 0.375rem;
@@ -74,11 +73,11 @@ body {
   --transition-base: 300ms ease-in-out;
   --transition-slow: 500ms ease-in-out;
   
-  /* Layout */
-  --header-height-mobile: 3.75rem; /* 60px */
-  --header-height-desktop: 4.6875rem; /* 75px */
-  --container-max-width: 75rem; /* 1200px */
-  --container-padding: 1.25rem; /* 20px */
+  /* Layout - Fluid */
+  --header-height-mobile: 3.75rem;
+  --header-height-desktop: clamp(4.2rem, 6vw, 4.6875rem);
+  --container-max-width: min(90%, 75rem);
+  --container-padding: clamp(1rem, 3vw, 2rem);
 }
 
 /* Dark Theme */
@@ -108,7 +107,7 @@ body {
 }
 
 /* ========================================
-   3. HEADER / NAVBAR
+   3. HEADER / NAVBAR - COMPLETELY RESPONSIVE
    Mobile First - Fixed Position
    ======================================== */
 
@@ -123,53 +122,89 @@ body {
   box-shadow: var(--shadow-header);
   z-index: 1000;
   
-  /* Flexbox Layout */
+  /* Flexbox Layout - Responsive */
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 var(--spacing-md);
+  flex-wrap: nowrap;
 }
 
-[data-theme="dark"] .global-header-elements {
-  box-shadow: 0 0.25rem 1.25rem rgba(108, 0, 255, 0.4),
-              0 0 2.5rem rgba(0, 0, 255, 0.2);
+/* Header en tablets y desktop */
+@media (min-width: 48rem) {
+  .global-header-elements {
+    height: var(--header-height-desktop);
+    padding: 0 var(--spacing-xl);
+  }
+}
+
+/* Para móviles muy pequeños */
+@media (max-width: 20rem) {
+  .global-header-elements {
+    padding: 0 var(--spacing-xs);
+  }
 }
 
 /* Left Side - Logo */
 .top-left-logo {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: clamp(0.5rem, 2vw, 1.5rem);
   flex-shrink: 0;
+  max-width: 50%;
 }
 
 .top-left-logo img {
-  width: 5rem; /* 80px mobile */
+  width: clamp(3.5rem, 15vw, 6.25rem);
   height: auto;
   display: block;
+  max-width: 100%;
+  object-fit: contain;
 }
 
 /* Right Side - Navigation */
 .top-right-nav {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: clamp(0.25rem, 1.5vw, 0.75rem);
   flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: 50%;
 }
 
-/* Header Links & Buttons */
+/* Header Links & Buttons - Responsive */
 .header-link,
 .header-button {
   display: inline-flex;
   align-items: center;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem; /* 14px mobile */
+  padding: clamp(0.4rem, 1vw, 0.6rem) clamp(0.5rem, 1.5vw, 0.9375rem);
+  font-size: clamp(0.8rem, 2.5vw, 1.2rem);
   font-weight: 600;
   color: #ffffff;
   text-decoration: none;
   border-radius: var(--radius-xl);
   transition: all var(--transition-base);
   white-space: nowrap;
+}
+
+/* Ocultar texto en móviles muy pequeños y mostrar solo iconos */
+@media (max-width: 30rem) {
+  .header-link span:not(.nav-username),
+  .header-button span {
+    display: none;
+  }
+  
+  .header-link i,
+  .header-button i {
+    font-size: 1.2rem;
+  }
+  
+  .nav-username {
+    display: inline-block;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 .header-link:hover,
@@ -185,23 +220,27 @@ body {
 .nav-username {
   font-weight: 700;
   color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: clamp(60px, 15vw, 150px);
 }
 
 /* ========================================
-   4. THEME TOGGLE
+   4. THEME TOGGLE - RESPONSIVE
    ======================================== */
 
 .theme-toggle-wrapper {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  margin-left: var(--spacing-md);
+  margin-left: clamp(0.25rem, 2vw, 1rem);
 }
 
 .theme-toggle-container {
   position: relative;
-  width: 3.75rem; /* 60px mobile */
-  height: 1.875rem; /* 30px mobile */
+  width: clamp(3rem, 10vw, 4.375rem);
+  height: clamp(1.5rem, 5vw, 2.125rem);
 }
 
 .theme-toggle-input {
@@ -227,14 +266,14 @@ body {
   position: absolute;
   left: 0.25rem;
   bottom: 0.125rem;
-  width: 1.375rem; /* 22px */
-  height: 1.375rem;
+  width: clamp(1.2rem, 4vw, 1.625rem);
+  height: clamp(1.2rem, 4vw, 1.625rem);
   background-color: #ffffff;
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.5rem; /* 8px */
+  font-size: clamp(0.4rem, 1.5vw, 0.6rem);
   font-weight: 700;
   color: #000000;
   transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -246,13 +285,13 @@ body {
 }
 
 .theme-toggle-input:checked + .theme-toggle-slider::before {
-  transform: translateX(1.875rem); /* 30px */
+  transform: translateX(clamp(1.5rem, 5vw, 2.25rem));
   background: linear-gradient(135deg, #6c00ff 0%, #8b5cf6 100%);
   color: #ffffff;
 }
 
 /* ========================================
-   5. NOTIFICATIONS
+   5. NOTIFICATIONS - RESPONSIVE
    ======================================== */
 
 .notification-container {
@@ -260,8 +299,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 0.75rem;
-  font-size: 1.25rem; /* 20px mobile */
+  padding: clamp(0.4rem, 1vw, 0.6rem) clamp(0.5rem, 1.5vw, 0.75rem);
+  font-size: clamp(1.1rem, 3vw, 1.5rem);
   background: rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-full);
   cursor: pointer;
@@ -278,32 +317,39 @@ body {
   position: absolute;
   top: -0.3125rem;
   right: -0.3125rem;
-  width: 1.25rem;
-  height: 1.25rem;
+  width: clamp(1rem, 3vw, 1.25rem);
+  height: clamp(1rem, 3vw, 1.25rem);
   background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
   color: #ffffff;
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.6875rem;
+  font-size: clamp(0.6rem, 1.5vw, 0.6875rem);
   font-weight: 700;
 }
 
-/* Notification Dropdown */
+/* Notification Dropdown - Responsive */
 .notification-dropdown {
   position: absolute;
   top: calc(var(--header-height-mobile) + 0.5rem);
   right: var(--spacing-md);
-  min-width: 18.75rem; /* 300px mobile */
-  max-width: 90vw;
-  max-height: 31.25rem;
+  min-width: min(18.75rem, 90vw);
+  max-width: min(25rem, 95vw);
+  max-height: min(31.25rem, 80vh);
   background: var(--bg-primary);
   border: 0.0625rem solid var(--bg-secondary);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   overflow-y: auto;
   z-index: 1000;
+}
+
+@media (min-width: 48rem) {
+  .notification-dropdown {
+    top: calc(var(--header-height-desktop) + 0.625rem);
+    min-width: 21.875rem;
+  }
 }
 
 #notifications-ul {
@@ -319,66 +365,56 @@ body {
   border-left: 0.25rem solid #667eea;
   border-radius: var(--radius-md);
   transition: all var(--transition-base);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 #notifications-ul li:hover {
   transform: translateX(0.25rem);
 }
 
-/* Notification Buttons */
+/* Notification Buttons - Responsive */
+.notification-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+}
+
 .btn-aceptar,
 .btn-rechazar,
 .btn-ir-examen,
 .btn-eliminar {
   display: inline-block;
-  padding: 0.5rem 1rem;
+  padding: clamp(0.4rem, 1.5vw, 0.6rem) clamp(0.6rem, 2vw, 1rem);
   margin-top: var(--spacing-xs);
   margin-right: var(--spacing-sm);
-  font-size: 0.8125rem;
+  font-size: clamp(0.7rem, 2vw, 0.9rem);
   font-weight: 600;
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all var(--transition-base);
+  white-space: nowrap;
 }
 
-.btn-aceptar {
-  background: linear-gradient(135deg, #00b894, #00d2a0);
-  color: #ffffff;
-}
-
-.btn-aceptar:hover {
-  box-shadow: 0 0.25rem 0.75rem rgba(0, 184, 148, 0.3);
-  transform: translateY(-0.125rem);
-}
-
-.btn-rechazar {
-  background: linear-gradient(135deg, #d63031, #e74c3c);
-  color: #ffffff;
-}
-
-.btn-rechazar:hover {
-  box-shadow: 0 0.25rem 0.75rem rgba(214, 48, 49, 0.3);
-  transform: translateY(-0.125rem);
-}
-
-.btn-ir-examen {
-  background: linear-gradient(135deg, #28a745, #34ce57);
-  color: #ffffff;
-}
-
-.btn-ir-examen:hover {
-  box-shadow: 0 0.25rem 0.75rem rgba(40, 167, 69, 0.3);
-  transform: translateY(-0.125rem);
-}
-
-.btn-eliminar {
-  background: linear-gradient(135deg, #6c757d, #5a6268);
-  color: #ffffff;
+@media (max-width: 30rem) {
+  .notification-actions {
+    flex-direction: column;
+  }
+  
+  .btn-aceptar,
+  .btn-rechazar,
+  .btn-ir-examen,
+  .btn-eliminar {
+    width: 100%;
+    margin-right: 0;
+    white-space: normal;
+  }
 }
 
 /* ========================================
-   6. KEBAB MENU (User Dropdown)
+   6. KEBAB MENU (User Dropdown) - RESPONSIVE
    ======================================== */
 
 .kebab-menu {
@@ -392,8 +428,8 @@ body {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  height: 2.5rem;
-  padding: 0.5rem 0.75rem;
+  height: clamp(2rem, 6vw, 2.5rem);
+  padding: clamp(0.4rem, 1vw, 0.6rem) clamp(0.5rem, 1.5vw, 0.75rem);
   background: rgba(255, 255, 255, 0.1);
   border: 0.125rem solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-md);
@@ -403,6 +439,12 @@ body {
   transition: all var(--transition-base);
 }
 
+@media (max-width: 30rem) {
+  .kebab-button span {
+    display: none;
+  }
+}
+
 .kebab-button:hover,
 .kebab-button:focus {
   background: rgba(255, 255, 255, 0.2);
@@ -410,8 +452,8 @@ body {
 }
 
 .kebab-avatar {
-  width: 2rem;
-  height: 2rem;
+  width: clamp(1.5rem, 5vw, 2rem);
+  height: clamp(1.5rem, 5vw, 2rem);
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border: 0.125rem solid var(--accent-yellow);
   border-radius: var(--radius-full);
@@ -419,17 +461,18 @@ body {
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  font-size: 0.875rem;
+  font-size: clamp(0.7rem, 2vw, 0.875rem);
   font-weight: 700;
   flex-shrink: 0;
 }
 
-/* Kebab Dropdown */
+/* Kebab Dropdown - Responsive */
 .kebab-dropdown {
   position: absolute;
   right: 0;
   top: calc(100% + 0.3125rem);
-  min-width: 17.5rem; /* 280px */
+  min-width: min(17.5rem, 85vw);
+  max-width: min(20rem, 90vw);
   background: var(--bg-primary);
   border: 0.0625rem solid var(--bg-secondary);
   border-radius: var(--radius-md);
@@ -440,6 +483,12 @@ body {
   transform: translateY(-0.625rem);
   transition: all var(--transition-base);
   z-index: 1100;
+}
+
+@media (min-width: 64rem) {
+  .kebab-dropdown {
+    min-width: 17.5rem;
+  }
 }
 
 .kebab-menu.active .kebab-dropdown {
@@ -460,11 +509,12 @@ body {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
+  flex-wrap: wrap;
 }
 
 .profile-avatar {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: clamp(2rem, 6vw, 2.5rem);
+  height: clamp(2rem, 6vw, 2.5rem);
   background: #ffffff;
   border: 0.125rem solid #ffffff;
   border-radius: var(--radius-full);
@@ -472,7 +522,7 @@ body {
   align-items: center;
   justify-content: center;
   color: var(--header-gradient-start);
-  font-size: 1rem;
+  font-size: clamp(0.8rem, 2.5vw, 1rem);
   font-weight: 700;
   flex-shrink: 0;
   overflow: hidden;
@@ -488,12 +538,12 @@ body {
 .profile-details {
   flex: 1;
   color: #ffffff;
-  min-width: 0;
+  min-width: 0; /* Para que funcione el text-overflow */
 }
 
 .profile-details strong {
   display: block;
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
   margin-bottom: 0.125rem;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -502,7 +552,7 @@ body {
 
 .profile-details span {
   display: block;
-  font-size: 0.8rem;
+  font-size: clamp(0.7rem, 1.8vw, 0.8rem);
   opacity: 0.9;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -514,12 +564,13 @@ body {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
-  padding: 0.75rem var(--spacing-md);
+  padding: clamp(0.6rem, 2vw, 0.8rem) var(--spacing-md);
   color: var(--text-primary);
-  font-size: 0.875rem;
+  font-size: clamp(0.8rem, 2.2vw, 0.9rem);
   text-decoration: none;
   border-bottom: 0.0625rem solid var(--bg-secondary);
   transition: all var(--transition-fast);
+  word-break: break-word;
 }
 
 .kebab-dropdown li a:hover,
@@ -534,7 +585,7 @@ body {
 }
 
 /* ========================================
-   7. MAIN CONTENT LAYOUT
+   7. MAIN CONTENT LAYOUT - FLUID
    ======================================== */
 
 .resultado-container,
@@ -546,12 +597,19 @@ main {
   padding: var(--container-padding);
 }
 
+/* Grid responsivo para contenido principal */
+.main-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: var(--spacing-lg);
+}
+
 /* ========================================
    8. SCROLLBAR STYLING
    ======================================== */
 
 ::-webkit-scrollbar {
-  width: 0.75rem;
+  width: clamp(0.5rem, 1.5vw, 0.75rem);
 }
 
 ::-webkit-scrollbar-track {
@@ -620,18 +678,23 @@ textarea:focus-visible {
 
 /* ========================================
    10. RESPONSIVE BREAKPOINTS
-   Mobile First Approach
+   Mobile First Approach - Fluid por defecto
    ======================================== */
 
-/* Small Tablets & Large Phones (576px+) */
-@media (min-width: 36rem) {
-  .notification-dropdown {
-    min-width: 21.875rem; /* 350px */
+/* Pequeños ajustes para diferentes tamaños */
+
+/* Móviles pequeños (hasta 360px) */
+@media (max-width: 22.5rem) {
+  :root {
+    --container-padding: 0.75rem;
   }
   
-  .header-link,
-  .header-button {
-    font-size: 1rem;
+  .top-right-nav {
+    gap: 0.25rem;
+  }
+  
+  .theme-toggle-wrapper {
+    margin-left: 0.25rem;
   }
 }
 
@@ -640,105 +703,75 @@ textarea:focus-visible {
   body {
     padding-top: var(--header-height-desktop);
   }
-  
-  .global-header-elements {
-    height: var(--header-height-desktop);
-    padding: 0 var(--spacing-xl);
-  }
-  
-  .top-left-logo {
-    gap: var(--spacing-xl);
-  }
-  
-  .top-left-logo img {
-    width: 6.25rem; /* 100px */
-  }
-  
-  .top-right-nav {
-    gap: var(--spacing-md);
-  }
-  
-  .header-link,
-  .header-button {
-    padding: 0.5rem 0.9375rem;
-    font-size: 1.2rem;
-  }
-  
-  .theme-toggle-container {
-    width: 4.375rem; /* 70px */
-    height: 2.125rem; /* 34px */
-  }
-  
-  .theme-toggle-slider::before {
-    width: 1.625rem; /* 26px */
-    height: 1.625rem;
-  }
-  
-  .theme-toggle-input:checked + .theme-toggle-slider::before {
-    transform: translateX(2.25rem); /* 36px */
-  }
-  
-  .notification-container {
-    font-size: 1.5rem;
-    padding: 0.5rem 0.75rem;
-  }
-  
-  .notification-dropdown {
-    top: calc(var(--header-height-desktop) + 0.625rem);
-  }
-  
-  .kebab-avatar {
-    width: 2rem;
-    height: 2rem;
-    font-size: 0.875rem;
-  }
-  
-  .kebab-dropdown {
-    min-width: 17.5rem; /* 280px */
-  }
 }
 
 /* Laptops (1024px+) */
 @media (min-width: 64rem) {
   :root {
-    --container-padding: 1.5rem;
-  }
-  
-  .global-header-elements {
-    padding: 0 var(--spacing-2xl);
-  }
-  
-  .notification-dropdown,
-  .kebab-dropdown {
-    max-height: 37.5rem; /* 600px */
+    --container-max-width: min(90%, 75rem);
   }
 }
 
 /* Large Desktops (1440px+) */
 @media (min-width: 90rem) {
   :root {
-    --container-max-width: 87.5rem; /* 1400px */
-    --container-padding: 2rem;
-  }
-  
-  .notification-dropdown {
-    min-width: 25rem; /* 400px */
-  }
-  
-  .kebab-dropdown {
-    min-width: 20rem; /* 320px */
+    --container-max-width: 87.5rem;
   }
 }
 
 /* Ultra-wide (1920px+) */
 @media (min-width: 120rem) {
   :root {
-    --container-max-width: 100rem; /* 1600px */
+    --container-max-width: 100rem;
+  }
+}
+
+/* Orientación horizontal en móviles */
+@media (max-width: 48rem) and (orientation: landscape) {
+  .global-header-elements {
+    height: 3.5rem;
+  }
+  
+  body {
+    padding-top: 3.5rem;
+  }
+  
+  .notification-dropdown {
+    max-height: 70vh;
   }
 }
 
 /* ========================================
-   11. PRINT STYLES
+   11. UTILITY CLASSES - RESPONSIVE
+   ======================================== */
+
+/* Ocultar elementos según el dispositivo */
+.hide-on-mobile {
+  @media (max-width: 47.999rem) {
+    display: none !important;
+  }
+}
+
+.hide-on-desktop {
+  @media (min-width: 48rem) {
+    display: none !important;
+  }
+}
+
+/* Texto responsivo */
+.text-responsive {
+  font-size: clamp(0.875rem, 2vw, 1rem);
+}
+
+/* Contenedor flexible */
+.flex-responsive {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+/* ========================================
+   12. PRINT STYLES
    ======================================== */
 
 @media print {

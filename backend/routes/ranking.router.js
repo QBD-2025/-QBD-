@@ -16,6 +16,7 @@ router.get('/ranking', async (req, res) => {
                 r.fecha_actualizacion
             FROM usuario u
             LEFT JOIN ranking r ON u.id_usuario = r.id_usuario
+            where u.verificado = 1
             ORDER BY u.puntos DESC, r.fecha_actualizacion ASC
             LIMIT 100
         `);
@@ -40,7 +41,7 @@ router.get('/ranking', async (req, res) => {
         res.render('ranking', {
             title: 'Ranking',
             usuarios: usuariosConAvatar,
-            layout: false
+            layout: "main"
         });
     } catch (err) {
         console.error('Error al obtener ranking:', err);

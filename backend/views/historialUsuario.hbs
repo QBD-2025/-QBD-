@@ -4,6 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>📊 Mi Progreso</title>
+
+  {{!-- Sincronizar tema antes de renderizar --}}
+<script>
+  // ✅ Aplicar tema guardado al cargar la página
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme) {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  }
+
+  // Sincronizar si cambia desde otra pestaña
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'theme' && e.newValue) {
+      document.documentElement.setAttribute('data-theme', e.newValue);
+    }
+  });
+</script>
+
   <link rel="stylesheet" href="/css/historialUnificado.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
@@ -100,9 +117,7 @@
               {{#each duelos}}
                 <tr class="duelo-row {{resultado}}">
                   <td>{{inc @index}}</td>
-                  <td>
-                    <strong>{{oponente}}</strong>
-                  </td>
+                  <td><strong>{{oponente}}</strong></td>
                   <td>
                     <span class="badge-tipo {{tipo}}">
                       {{#if (eq tipo 'carrera')}}🎓 Carrera{{else}}🌍 General{{/if}}
@@ -115,23 +130,14 @@
                       {{else}}😔 Derrota{{/if}}
                     </span>
                   </td>
+                  <td>{{mis_correctas}}/{{total}} <small>({{porcentaje}}%)</small></td>
                   <td>
-                    {{mis_correctas}}/{{total}} 
-                    <small>({{porcentaje}}%)</small>
+                    <span class="badge-dificultad {{dificultad}}">{{dificultad}}</span>
                   </td>
-                  <td>
-                    <span class="badge-dificultad {{dificultad}}">
-                      {{dificultad}}
-                    </span>
-                  </td>
-                  <td>
-                    <span class="apuesta">{{apuesta}} pts</span>
-                  </td>
+                  <td><span class="apuesta">{{apuesta}} pts</span></td>
                   <td>{{fecha}}</td>
                   <td>
-                    <a href="/usuario/historial/duelo/{{id_duelo}}" class="btn-accion">
-                      👁️ Ver
-                    </a>
+                    <a href="/usuario/historial/duelo/{{id_duelo}}" class="btn-accion">👁️ Ver</a>
                   </td>
                 </tr>
               {{/each}}
@@ -151,87 +157,61 @@
     <section id="tab-estadisticas" class="tab-content">
       <h2>📈 Mis Estadísticas de Duelos</h2>
       
-      <!-- Loading -->
       <div id="loading" class="loading-overlay" style="display: none;">
         <div class="spinner"></div>
         <p>Cargando estadísticas...</p>
       </div>
 
-      <!-- Resumen -->
       <div class="stats-summary">
         <div class="stat-card">
           <div class="stat-icon">🏆</div>
-          <div class="stat-content">
-            <h3 id="victorias">-</h3>
-            <p>Victorias</p>
-          </div>
+          <div class="stat-content"><h3 id="victorias">-</h3><p>Victorias</p></div>
         </div>
         <div class="stat-card">
           <div class="stat-icon">😔</div>
-          <div class="stat-content">
-            <h3 id="derrotas">-</h3>
-            <p>Derrotas</p>
-          </div>
+          <div class="stat-content"><h3 id="derrotas">-</h3><p>Derrotas</p></div>
         </div>
         <div class="stat-card">
           <div class="stat-icon">🤝</div>
-          <div class="stat-content">
-            <h3 id="empates">-</h3>
-            <p>Empates</p>
-          </div>
+          <div class="stat-content"><h3 id="empates">-</h3><p>Empates</p></div>
         </div>
         <div class="stat-card">
           <div class="stat-icon">📈</div>
-          <div class="stat-content">
-            <h3 id="promedio">-%</h3>
-            <p>Promedio</p>
-          </div>
+          <div class="stat-content"><h3 id="promedio">-%</h3><p>Promedio</p></div>
         </div>
         <div class="stat-card">
           <div class="stat-icon">💎</div>
-          <div class="stat-content">
-            <h3 id="puntos">-</h3>
-            <p>Puntos</p>
-          </div>
+          <div class="stat-content"><h3 id="puntos">-</h3><p>Puntos</p></div>
         </div>
         <div class="stat-card">
           <div class="stat-icon">🔥</div>
-          <div class="stat-content">
-            <h3 id="racha">-</h3>
-            <p>Racha</p>
-          </div>
+          <div class="stat-content"><h3 id="racha">-</h3><p>Racha</p></div>
         </div>
       </div>
 
-      <!-- Gráficas -->
       <div class="charts-grid">
         <div class="chart-container">
           <h3>📊 Distribución de Resultados</h3>
           <canvas id="chartResultados"></canvas>
         </div>
-
         <div class="chart-container">
           <h3>📊 Rendimiento por Dificultad</h3>
           <canvas id="chartDificultad"></canvas>
         </div>
-
         <div class="chart-container full-width">
           <h3>📈 Evolución (Últimos 30 duelos)</h3>
           <canvas id="chartEvolucion"></canvas>
         </div>
-
         <div class="chart-container">
           <h3>⚔️ Por Tipo de Duelo</h3>
           <canvas id="chartTipo"></canvas>
         </div>
-
         <div class="chart-container">
           <h3>🏅 Top 5 Jugadores</h3>
           <canvas id="chartTop5"></canvas>
         </div>
       </div>
 
-      <!-- Recomendaciones -->
       <div class="recommendations">
         <h3>💡 Recomendaciones</h3>
         <div id="recommendationsContent"></div>

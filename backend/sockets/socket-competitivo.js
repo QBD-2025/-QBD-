@@ -691,6 +691,11 @@ module.exports = (io, socket) => {
         });
     });
 
+    socket.on('registrar_usuario', (idUsuario) => {
+        global.usuariosConectados.set(parseInt(idUsuario), socket.id);
+        console.log(`[SOCKET]: Usuario ${idUsuario} registrado → ${socket.id}`);
+    });
+
     // ✅ HANDLER CORRECTO: Confirmar Rendición
     socket.on('duelo:confirmarRendicion', async ({ salaId, userId }) => {
         console.log('═══════════════════════════════════════════════════════════');

@@ -1,272 +1,467 @@
 /* ===========================================================
-Archivo: ranking.css
------------------------------------------------------------
-CSS limpio sin colores morados. Mantiene podio dorado,
-tabla clara, botón amarillo y diseño minimalista.
-=========================================================== */
+   RANKING.CSS - Versión compacta sin efectos de luz
+   Modo día/noche incluido
+   =========================================================== */
 
-/* ================== Variables globales ================== */
+/* ================== VARIABLES MODO DÍA ================== */
 :root {
-    --color-primary: #333;          /* Neutral */
-    --color-secondary: #facc15;     /* Amarillo */
-    --color-dark: #111;             /* Gris muy oscuro */
-    --color-light: #ffffff;         /* Blanco */
-    --color-gray: #ededed;
-    --color-gold: #FFD700;
-    --color-silver: #C0C0C0;
-    --color-bronze: #CD7F32;
+    --bg-page: #f5f7fa;
+    --surface: #ffffff;
+    --surface-hover: #f0f2f5;
+    --text-primary: #1a1a1a;
+    --text-secondary: #666666;
+    --border-light: #e0e0e0;
+    --accent-yellow: #facc15;
+    --accent-yellow-light: #fde047;
+    
+    /* Header */
+    --header-bg: #1e1e1e;
+    --header-text: #ffffff;
+    
+    /* Podium */
+    --podium-first-bg: linear-gradient(135deg, #FFD700, #DAA520);
+    --podium-first-text: #3d2e00;
+    --podium-second-bg: linear-gradient(135deg, #E0E0E0, #B0B0B0);
+    --podium-second-text: #2d2d2d;
+    --podium-third-bg: linear-gradient(135deg, #CD7F32, #A0522D);
+    --podium-third-text: #ffffff;
+    
+    /* Tabla */
+    --table-header-bg: #2d2d2d;
+    --table-header-text: #ffffff;
+    --table-row-hover: #f5f5f5;
+    --avatar-bg: #facc15;
+    --avatar-text: #1a1a1a;
+    
+    /* Botón flotante */
+    --floating-bg: #facc15;
+    --floating-color: #1a1a1a;
+    --floating-hover: #fde047;
+    
+    /* Sombras suaves */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* ================== Reset básico ================== */
+/* ================== VARIABLES MODO NOCHE ================== */
+[data-theme="dark"] {
+    --bg-page: #0a0e1a;
+    --surface: #1a1f2f;
+    --surface-hover: #252b3d;
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0b0;
+    --border-light: #2a2f40;
+    --accent-yellow: #6c00ff;
+    --accent-yellow-light: #8b5cf6;
+    
+    --header-bg: linear-gradient(135deg, #1a1f2f, #0f1422);
+    --header-text: #ffffff;
+    
+    --podium-first-bg: linear-gradient(135deg, #8B6910, #5A4508);
+    --podium-first-text: #FFD700;
+    --podium-second-bg: linear-gradient(135deg, #4a4a4a, #2a2a2a);
+    --podium-second-text: #E0E0E0;
+    --podium-third-bg: linear-gradient(135deg, #6B4226, #4A2E1A);
+    --podium-third-text: #FFB347;
+    
+    --table-header-bg: #252b3d;
+    --table-header-text: #ffffff;
+    --table-row-hover: #252b3d;
+    --avatar-bg: #6c00ff;
+    --avatar-text: #ffffff;
+    
+    --floating-bg: #6c00ff;
+    --floating-color: #ffffff;
+    --floating-hover: #8b5cf6;
+    
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* ================== RESET Y BASE ================== */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 body {
-    background: linear-gradient(135deg, #f5f7fa 0%, #dfe4ec 100%);
-    color: var(--color-dark);
+    background: var(--bg-page);
+    color: var(--text-primary);
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
+    transition: background 0.2s ease;
+    line-height: 1.5;
 }
 
-/* ================== Contenedor principal ================== */
-.container {
-    width: 100%;
+/* ================== CONTENEDOR PRINCIPAL ================== */
+.ranking-container {
     max-width: 1000px;
     margin: 0 auto;
-}
-
-/* ================== Header ================== */
-header {
-    text-align: center;
     padding: 20px;
-    background: linear-gradient(120deg, #444 0%, #222 100%);
-    color: white;
-    border-radius: 15px;
-    margin-bottom: 25px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
-header h1 { font-size: 2.2rem; margin-bottom: 10px; }
-header p { font-size: 1rem; opacity: 0.9; }
-
-/* ================== Sección Podio ================== */
-.podium-section {
-    background: white;
-    border-radius: 15px;
-    padding: 25px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-    margin-bottom: 25px;
+/* ================== HEADER COMPACTO ================== */
+.ranking-header {
+    background: var(--header-bg);
+    color: var(--header-text);
+    padding: 20px 25px;
+    border-radius: 20px;
+    box-shadow: var(--shadow-md);
 }
 
-.section-title {
-    color: var(--color-primary);
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid var(--color-secondary);
+.header-content {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 10px;
+    gap: 12px;
+    margin-bottom: 5px;
 }
 
+.header-icon {
+    font-size: 2rem;
+    color: var(--accent-yellow);
+}
+
+.ranking-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.ranking-header p {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    margin-left: 52px;
+}
+
+/* ================== SECCIONES ================== */
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+.section-title i {
+    color: var(--accent-yellow);
+    font-size: 1.4rem;
+}
+
+.podium-section,
+.table-section {
+    background: var(--surface);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-light);
+}
+
+/* ================== PODIUM COMPACTO ================== */
 .podium {
     display: flex;
     justify-content: center;
     align-items: flex-end;
-    gap: 20px;
-    margin-top: 30px;
+    gap: 15px;
+    margin: 10px 0 5px;
 }
 
 .podium-item {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    flex: 1;
+    max-width: 180px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    transition: transform 0.3s;
-    width: 30%;
-    max-width: 250px;
+    padding: 20px 10px 15px;
+    border-radius: 20px;
+    text-align: center;
+    transition: transform 0.2s ease;
+    box-shadow: var(--shadow-sm);
 }
 
-.podium-item:hover { transform: translateY(-5px); }
-
-.podium-item:nth-child(1) {
-    background: linear-gradient(135deg, var(--color-gold) 0%, #DAA520 100%);
-    color: #704c00;
-    height: 280px;
-    order: 2;
+.podium-item:hover {
+    transform: translateY(-5px);
 }
 
-.podium-item:nth-child(2) {
-    background: linear-gradient(135deg, var(--color-silver) 0%, #A9A9A9 100%);
-    color: #464646;
-    height: 250px;
-    order: 1;
+.podium-item.first {
+    background: var(--podium-first-bg);
+    color: var(--podium-first-text);
+    min-height: 220px;
 }
 
-.podium-item:nth-child(3) {
-    background: linear-gradient(135deg, var(--color-bronze) 0%, #8C6B46 100%);
-    color: white;
-    height: 230px;
-    order: 3;
+.podium-item.second {
+    background: var(--podium-second-bg);
+    color: var(--podium-second-text);
+    min-height: 190px;
 }
 
-.podium-badge { font-size: 2.5rem; margin-bottom: 15px; }
+.podium-item.third {
+    background: var(--podium-third-bg);
+    color: var(--podium-third-text);
+    min-height: 170px;
+}
+
+.podium-badge {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
 
 .podium-avatar {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
-    border: 3px solid white;
-    margin-bottom: 15px;
+    border: 3px solid currentColor;
+    margin-bottom: 8px;
     object-fit: cover;
-    background: rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: bold;
+    background: rgba(255,255,255,0.2);
 }
 
-.podium-username { font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
-
-.podium-category {
-    font-size: 0.9rem;
-    margin-bottom: 15px;
-    background: rgba(255, 255, 255, 0.3);
-    padding: 5px 10px;
-    border-radius: 20px;
-}
-
-/* ================== Tabla de ranking ================== */
-.ranking-container {
-    background: white;
-    border-radius: 15px;
+.podium-username {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+    max-width: 140px;
     overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-    margin-bottom: 30px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.podium-score {
+    font-weight: 600;
+    font-size: 1rem;
+    background: rgba(255,255,255,0.2);
+    padding: 4px 12px;
+    border-radius: 30px;
+}
+
+/* ================== TABLA COMPACTA ================== */
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: 16px;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
+    font-size: 0.95rem;
 }
 
-thead {
-    background: linear-gradient(120deg, #444 0%, #222 100%);
-    color: white;
+thead tr {
+    background: var(--table-header-bg);
+    color: var(--table-header-text);
 }
 
 th {
-    padding: 16px 15px;
+    padding: 12px 15px;
     text-align: left;
     font-weight: 600;
-    font-size: 0.9rem;
 }
 
-th:first-child { width: 70px; text-align: center; padding-left: 20px; }
-th:nth-child(2) { width: 40%; }
+th:first-child {
+    width: 60px;
+    text-align: center;
+    border-radius: 12px 0 0 0;
+}
 
-tbody tr { border-bottom: 1px solid #eee; transition: background 0.3s; }
-tbody tr:hover { background: #f8f9fa; }
+th:last-child {
+    width: 100px;
+    text-align: center;
+    border-radius: 0 12px 0 0;
+}
+
+tbody tr {
+    border-bottom: 1px solid var(--border-light);
+    transition: background 0.15s ease;
+}
+
+tbody tr:hover {
+    background: var(--table-row-hover);
+}
 
 td {
-    padding: 14px 15px;
-    font-size: 1rem;
+    padding: 10px 15px;
 }
 
-td:first-child {
+.rank-number {
     text-align: center;
     font-weight: 700;
-    font-size: 1.1rem;
-    padding-left: 20px;
-    color: var(--color-dark);
+    color: var(--text-primary);
 }
 
 .user-info {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .avatar {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background: var(--color-secondary);
+    background: var(--avatar-bg);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
-    font-size: 1.1rem;
-    color: var(--color-dark);
-    object-fit: cover;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--avatar-text);
+    border: 2px solid var(--border-light);
+    overflow: hidden;
 }
 
 .avatar img {
     width: 100%;
     height: 100%;
-    border-radius: 50%;
+    object-fit: cover;
 }
 
-.username { font-weight: 600; color: var(--color-dark); }
-.user-category { font-size: 0.85rem; color: #6c757d; }
-.score { font-weight: 700; font-size: 1.1rem; }
+.username {
+    font-weight: 500;
+    color: var(--text-primary);
+}
 
-/* ================== Botón flotante ================== */
-.floating-button {
+.score {
+    text-align: center;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.no-data {
+    text-align: center;
+    padding: 30px;
+    color: var(--text-secondary);
+}
+
+/* ================== BOTÓN FLOTANTE COMPACTO ================== */
+.floating-btn {
     position: fixed;
     bottom: 25px;
     right: 25px;
-    width: 60px;
-    height: 60px;
+    width: 55px;
+    height: 55px;
     border-radius: 50%;
-    background-color: var(--color-secondary);
-    color: #333;
+    background: var(--floating-bg);
+    color: var(--floating-color);
     border: none;
-    border-bottom: 4px solid #e0a800;
-    font-size: 24px;
+    font-size: 1.5rem;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-    z-index: 1000;
+    box-shadow: var(--shadow-md);
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 2px solid var(--border-light);
 }
 
-.floating-button:hover {
-    background-color: #ffd44f;
-    transform: translateY(-5px) scale(1.05);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+.floating-btn:hover {
+    transform: scale(1.1);
+    background: var(--floating-hover);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
 }
 
-/* ================== Responsive ================== */
-@media (max-width: 768px) {
+/* ================== RESPONSIVE ================== */
+@media (max-width: 700px) {
+    .ranking-container {
+        padding: 15px;
+        gap: 15px;
+    }
+    
+    .podium {
+        gap: 10px;
+    }
+    
+    .podium-item {
+        padding: 15px 8px 10px;
+    }
+    
+    .podium-avatar {
+        width: 55px;
+        height: 55px;
+        font-size: 1.4rem;
+    }
+    
+    .podium-username {
+        font-size: 0.95rem;
+    }
+    
+    .podium-score {
+        font-size: 0.85rem;
+        padding: 3px 8px;
+    }
+    
+    th, td {
+        padding: 10px 8px;
+        font-size: 0.9rem;
+    }
+    
+    .avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 500px) {
+    .ranking-header h1 {
+        font-size: 1.6rem;
+    }
+    
+    .header-icon {
+        font-size: 1.6rem;
+    }
+    
+    .ranking-header p {
+        font-size: 0.85rem;
+        margin-left: 0;
+    }
+    
     .podium {
         flex-direction: column;
         align-items: center;
     }
-
+    
     .podium-item {
+        max-width: 250px;
         width: 100%;
-        max-width: 300px;
-        height: auto !important;
-        margin-bottom: 20px;
         flex-direction: row;
+        min-height: auto !important;
         text-align: left;
+        gap: 10px;
     }
-
+    
     .podium-avatar {
-        margin-right: 15px;
+        width: 50px;
+        height: 50px;
         margin-bottom: 0;
-        width: 60px;
-        height: 60px;
-        font-size: 1.4rem;
+    }
+    
+    .podium-badge {
+        font-size: 1.8rem;
+        margin-bottom: 0;
+    }
+    
+    .floating-btn {
+        width: 50px;
+        height: 50px;
+        bottom: 20px;
+        right: 20px;
+        font-size: 1.3rem;
+    }
+}
+
+/* ================== ACCESIBILIDAD ================== */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
     }
 }

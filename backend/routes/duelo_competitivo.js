@@ -122,7 +122,7 @@ router.get('/com/api/ranking/carrera/:idCarrera', async (req, res) => {
             FROM usuario u
             INNER JOIN usuario_carrera uc ON u.id_usuario = uc.id_usuario
             LEFT JOIN usuario_puntos_carrera upc ON u.id_usuario = upc.id_usuario AND upc.id_carrera = uc.id_carrera
-            WHERE uc.id_carrera = ?
+            WHERE uc.id_carrera = ? and u.verificado = 1
             ORDER BY COALESCE(upc.puntos, 0) DESC
             LIMIT 100
         `, [idCarrera]);
@@ -189,7 +189,7 @@ router.post('/api/desafio/procesar/:idNotificacion', async (req, res) => {
     }
 });
 
-// ✅ RUTA PARA OBTENER ESTADÍSTICAS DE USUARIO ESPECÍFICO
+
 router.get('/api/usuario/:idUsuario/stats', async (req, res) => {
     try {
         const { idUsuario } = req.params;
@@ -204,7 +204,7 @@ router.get('/api/usuario/:idUsuario/stats', async (req, res) => {
                 SUM(CASE WHEN h.id_ganador != u.id_usuario AND h.id_ganador IS NOT NULL THEN 1 ELSE 0 END) as derrotas
             FROM usuario u
             LEFT JOIN historial_duelos h ON (h.id_retador = u.id_usuario OR h.id_defensor = u.id_usuario)
-            WHERE u.id_usuario = ?
+            WHERE u.id_usuario = ? and u.verificado = 1
             GROUP BY u.id_usuario`, 
             [idUsuario]
         );

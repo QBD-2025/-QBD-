@@ -27,7 +27,7 @@ async function enviarCorreoVerificacion(correoDestino, token) {
     const htmlBody = `
       <html lang='es'>
       <head><meta charset='UTF-8'></head>
-      <body style='font-family: Arial, sans-serif;'>
+      <body style='font-family: Arial, sans-serif;'>  
         <h2 style='color:#28a745;'>¡Hola!</h2>
         <p>Gracias por registrarte en <strong>¡QUE BUEN DATO!</strong>.</p>
         <p>Haz clic en el siguiente botón para verificar tu cuenta:</p>

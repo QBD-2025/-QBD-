@@ -31,7 +31,7 @@
         async function verificarEstadoCorreo() {
             if (!correo) return;
             try {
-                const response = await fetch(`/api/verificar-estado-correo?correo=${encodeURIComponent(correo)}`);
+                const response = await fetch(`/verificar-estado-correo?correo=${encodeURIComponent(correo)}`);
                 const data = await response.json();
 
                 if (data.estado === 'verificado') {

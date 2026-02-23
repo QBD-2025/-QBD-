@@ -19,123 +19,209 @@ Todos los elementos tienen transiciones y sombras para
 un efecto visual moderno y limpio.
 Fecha: [Fecha de creación o última edición]
 =========================================================== */
+/* ===========================================================
+   ESTILOS DE LA PÁGINA DE LOGIN - VERSIÓN RESPONSIVA
+   Mobile First - Optimizado para todos los dispositivos
+   =========================================================== */
 
 /* ================== Reset y estilos generales ================== */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fuente principal */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* ================== Body y fondo ================== */
+/* ================== Body y fondo con gradiente ================== */
 body {
-    background: linear-gradient(-135deg, #0515a8, #09012c); /* Gradiente de fondo */
-    min-height: 100vh; /* Ocupa toda la altura de la ventana */
+    background: linear-gradient(-135deg, #0515a8, #09012c);
+    min-height: 100vh;
+    min-height: 100dvh; /* Usa dynamic viewport height para mejor soporte móvil */
     margin: 0;
-    padding: 1rem;
+    padding: clamp(0.5rem, 3vw, 1.5rem);
     display: flex;
     justify-content: center;
-    align-items: center; /* Centra vertical y horizontalmente */
+    align-items: center;
+    /* Asegura que el body ocupe toda la altura incluso en navegadores móviles */
+    height: 100%;
 }
 
-/* ================== Contenedor principal ================== */
+/* ================== Contenedor principal del login ================== */
 .login-container {
-    max-width: 450px; /* Ancho máximo */
+    max-width: min(450px, 95%);
     width: 100%;
     margin: 0 auto;
-    background-color: white; /* Fondo del contenedor */
-    border-radius: 12px;
+    background-color: white;
+    border-radius: clamp(12px, 3vw, 20px);
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Sombra suave */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    /* Animación suave al cargar */
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ================== Sección del logo ================== */
 .logo-section {
-    padding: 2rem;
+    padding: clamp(1.5rem, 5vw, 2.5rem) clamp(1rem, 4vw, 2rem);
     text-align: center;
-    background-color: #f8f9fa; /* Fondo claro */
-    border-bottom: 1px solid #e9ecef; /* Línea separadora */
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
 }
 
 .logo {
-    max-height: 104px;
-    width: auto; /* Mantiene proporción */
+    max-height: clamp(70px, 15vw, 104px);
+    width: auto;
+    display: inline-block;
+    /* Asegura que la imagen no se deforme */
+    object-fit: contain;
 }
 
 /* ================== Formulario de login ================== */
 #loginForm {
-    padding: 2rem 2.5rem;
+    padding: clamp(1.25rem, 4vw, 2.5rem) clamp(1rem, 4vw, 2.5rem);
 }
 
 /* Encabezado del formulario */
 h2 {
     color: #333;
     text-align: center;
-    margin-bottom: 2rem;
-    font-size: 1.75rem;
+    margin-bottom: clamp(1.25rem, 4vw, 2rem);
+    font-size: clamp(1.35rem, 5vw, 1.85rem);
     font-weight: 600;
+    line-height: 1.2;
+    word-wrap: break-word;
 }
 
-/* Grupo de inputs */
+/* Grupo de inputs - versión mejorada para móviles */
 .input-group {
-    margin-bottom: 1.75rem;
+    margin-bottom: clamp(1.25rem, 3vw, 1.75rem);
     position: relative;
+    width: 100%;
 }
 
 /* Etiquetas */
 label {
     display: block;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
     color: #495057;
     font-weight: 500;
-    font-size: 0.95rem;
+    font-size: clamp(0.85rem, 2.5vw, 0.95rem);
 }
 
-/* Campos de entrada */
+/* Contenedor de contraseña - adaptado para móviles */
+.password-container {
+    position: relative;
+    width: 100%;
+}
+
+/* Campos de entrada - completamente responsivos */
 input {
     width: 100%;
-    padding: 14px 16px;
+    padding: clamp(12px, 3vw, 16px) clamp(14px, 3vw, 16px);
     border: 1px solid #ced4da;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: all 0.3s;
+    border-radius: clamp(6px, 2vw, 8px);
+    font-size: clamp(0.9rem, 3vw, 1rem);
+    transition: all 0.3s ease;
     background-color: #f8f9fa;
+    -webkit-appearance: none; /* Elimina estilos por defecto en iOS */
+    appearance: none;
+}
+
+/* Ajuste específico para inputs de contraseña */
+input[type="password"],
+input[type="text"] {
+    padding-right: 45px; /* Espacio para el botón toggle */
+    width: 100%;
 }
 
 input:focus {
     outline: none;
-    border-color: #6a1b9a; /* Color al enfocar */
+    border-color: #6a1b9a;
     box-shadow: 0 0 0 3px rgba(106, 27, 154, 0.1);
     background-color: white;
 }
 
+/* Placeholder más claro en móviles */
+input::placeholder {
+    color: #adb5bd;
+    opacity: 1;
+    font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+}
+
+/* ================== Botón de mostrar contraseña ================== */
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-size: clamp(1.1rem, 3.5vw, 1.3rem);
+    color: #6c757d;
+    padding: 8px 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+    z-index: 2;
+    /* Área táctil más grande para móviles */
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.toggle-password:hover {
+    color: #6a1b9a;
+}
+
+.toggle-password:focus-visible {
+    outline: 2px solid #6a1b9a;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
 /* ================== Mensajes de error ================== */
-#login-error, .error-message {
+#login-error, 
+.error-message {
     display: block;
-    margin: 0.25rem 0 1rem;
+    margin: 0.25rem 0 0.5rem;
     color: #dc3545;
-    font-size: 0.85rem;
+    font-size: clamp(0.75rem, 2.2vw, 0.85rem);
     text-align: center;
+    line-height: 1.4;
+    word-wrap: break-word;
+    padding: 0 5px;
 }
 
 /* ================== Botón de login ================== */
 .login-actions {
-    margin: 2.5rem 0 1.5rem;
+    margin: clamp(1.5rem, 4vw, 2.5rem) 0 clamp(1rem, 3vw, 1.5rem);
 }
 
 button[type="submit"] {
     width: 100%;
-    padding: 14px;
-    background-color: #FFC107; /* Amarillo */
+    padding: clamp(12px, 3.5vw, 16px);
+    background-color: #FFC107;
     color: #212529;
     border: none;
-    border-radius: 8px;
-    font-size: 1.05rem;
+    border-radius: clamp(6px, 2vw, 8px);
+    font-size: clamp(0.95rem, 3.5vw, 1.1rem);
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    /* Área táctil más grande */
+    min-height: 44px;
 }
 
 button[type="submit"]:hover {
@@ -148,21 +234,33 @@ button[type="submit"]:active {
     transform: translateY(0);
 }
 
+button[type="submit"]:focus-visible {
+    outline: 2px solid #6a1b9a;
+    outline-offset: 2px;
+}
+
 /* ================== Enlace para registro ================== */
 .register-link {
     text-align: center;
-    margin: 2rem 0 1rem;
-    padding-top: 1.5rem;
+    margin: 1.5rem 0 0.5rem;
+    padding-top: 1.25rem;
     border-top: 1px solid #e9ecef;
     color: #6c757d;
-    font-size: 0.95rem;
+    font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+    line-height: 1.5;
 }
 
 .register-link a {
     color: #6a1b9a;
     text-decoration: none;
     font-weight: 600;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    display: inline-block;
+    padding: 5px;
+    /* Mejor área táctil */
+    min-height: 44px;
+    min-width: 44px;
+    line-height: 34px; /* 44px - 10px de padding */
 }
 
 .register-link a:hover {
@@ -170,49 +268,202 @@ button[type="submit"]:active {
     color: #4a148c;
 }
 
-/* ================== Responsive ================== */
-@media (max-width: 480px) {
+.register-link a:focus-visible {
+    outline: 2px solid #6a1b9a;
+    outline-offset: 2px;
+    border-radius: 4px;
+    text-decoration: underline;
+}
+
+/* ================== Media Queries - Enfoque Mobile First ================== */
+
+/* Móviles pequeños (hasta 360px) */
+@media (max-width: 22.5rem) {
+    body {
+        padding: 0.5rem;
+    }
+    
+    .login-container {
+        max-width: 100%;
+        border-radius: 12px;
+    }
+    
+    #loginForm {
+        padding: 1.25rem 1rem;
+    }
+    
+    h2 {
+        font-size: 1.3rem;
+    }
+    
+    .toggle-password {
+        right: 8px;
+    }
+}
+
+/* Móviles medianos (361px - 480px) */
+@media (min-width: 22.5625rem) and (max-width: 30rem) {
     .login-container {
         max-width: 95%;
     }
     
     #loginForm {
-        padding: 1.75rem;
-    }
-    
-    h2 {
-        font-size: 1.5rem;
-        margin-bottom: 1.75rem;
-    }
-    
-    input {
-        padding: 12px 14px;
-    }
-    
-    button[type="submit"] {
-        padding: 12px;
+        padding: 1.5rem 1.5rem;
     }
 }
 
-    /* Contenedor relativo para posicionar el botón de mostrar contraseña */
-    .password-container {
-      position: relative;
+/* Tablets (481px - 768px) */
+@media (min-width: 30.0625rem) and (max-width: 48rem) {
+    .login-container {
+        max-width: 70%;
     }
+    
+    h2 {
+        font-size: 1.7rem;
+    }
+}
 
-    /* Botón de toggle para mostrar/ocultar contraseña */
+/* Orientación horizontal en móviles */
+@media (max-height: 30rem) and (orientation: landscape) {
+    body {
+        padding: 0.5rem;
+        align-items: flex-start;
+        min-height: auto;
+    }
+    
+    .login-container {
+        margin: 1rem auto;
+    }
+    
+    .logo-section {
+        padding: 1rem;
+    }
+    
+    .logo {
+        max-height: 50px;
+    }
+    
+    #loginForm {
+        padding: 1rem;
+    }
+    
+    .input-group {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Dispositivos con pantallas muy grandes (1440px+) */
+@media (min-width: 90rem) {
+    .login-container {
+        max-width: 500px;
+    }
+    
+    .logo {
+        max-height: 120px;
+    }
+    
+    h2 {
+        font-size: 2rem;
+    }
+}
+
+/* ================== Soporte para pantallas plegables ================== */
+@media (max-width: 280px) {
+    .logo-section {
+        padding: 1rem 0.5rem;
+    }
+    
+    .logo {
+        max-height: 50px;
+    }
+    
+    h2 {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+    
+    input {
+        padding: 10px;
+    }
+    
     .toggle-password {
-      position: absolute;
-      right: 5px;
-      top: 44px;
-      cursor: pointer;
-      background: none;
-      border: none;
-      font-size: 1.2em;
+        right: 5px;
+        min-width: 40px;
+        min-height: 40px;
     }
+}
 
-    /* Ajuste de ancho del input considerando espacio para el botón toggle */
-    input[type="password"],
-    input[type="text"] {
-      padding-right: 37px;
-      width: calc(100% - 43px);
+/* ================== Mejoras de accesibilidad ================== */
+
+/* Alto contraste para usuarios que lo necesiten */
+@media (prefers-contrast: high) {
+    input {
+        border-width: 2px;
+        border-color: #000;
     }
+    
+    button[type="submit"] {
+        border: 2px solid #000;
+    }
+    
+    .register-link a {
+        text-decoration: underline;
+    }
+}
+
+/* Reducir movimiento para usuarios sensibles */
+@media (prefers-reduced-motion: reduce) {
+    .login-container {
+        animation: none;
+    }
+    
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ================== Utilidades adicionales ================== */
+
+/* Mejora para touch devices */
+@media (hover: none) and (pointer: coarse) {
+    button[type="submit"],
+    .toggle-password,
+    .register-link a {
+        /* Ya tienen min-height: 44px para mejor touch target */
+        cursor: default;
+    }
+    
+    button[type="submit"]:hover {
+        transform: none; /* Elimina hover en dispositivos táctiles */
+    }
+}
+
+/* Estilo para cuando el formulario está enviando datos */
+button[type="submit"].loading {
+    position: relative;
+    color: transparent;
+    pointer-events: none;
+}
+
+button[type="submit"].loading::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin-left: -10px;
+    margin-top: -10px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spinner 0.6s linear infinite;
+}
+
+@keyframes spinner {
+    to { transform: rotate(360deg); }
+}

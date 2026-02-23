@@ -1,5 +1,8 @@
+const { enviarCorreoVerificacion } = require('../utils/mail');
 const express = require('express');
 const router = express.Router();
+const crypto = require('crypto');
+const pool = require('../db/conexion')
 
 // Ruta GET para la pantalla de verificación (renderiza verificacion.hbs)
 router.get('/verificacion', (req, res) => {
@@ -95,5 +98,42 @@ router.post('/reenviar-verificacion', async (req, res) => {
         res.status(500).json({ ok: false, mensaje: 'Error del servidor.' });
     }
 });
+
+// Ruta GET para que el frontend consulte si el usuario ya verificó su cuenta
+router.get('/verificar-estado-correo', async (req, res) => {
+    const { correo } = req.query;
+
+    if (!correo) {
+        return res.json({ estado: 'no_encontrado' });
+    }
+
+    try {
+        const [rows] = await req.pool.query(
+            'SELECT verificado, token_expira FROM usuario WHERE email = ?',
+            [correo]
+        );
+
+        if (rows.length === 0) {
+            return res.json({ estado: 'no_encontrado' });
+        }
+
+        const user = rows[0];
+
+        if (user.verificado) {
+            return res.json({ estado: 'verificado' });
+        }
+
+        if (user.token_expira && new Date() > new Date(user.token_expira)) {
+            return res.json({ estado: 'expirado' });
+        }
+
+        return res.json({ estado: 'pendiente' });
+
+    } catch (err) {
+        console.error('Error verificar estado correo:', err);
+        res.status(500).json({ estado: 'error' });
+    }
+});
+
 
 module.exports = router;    

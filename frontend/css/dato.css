@@ -5,8 +5,40 @@ Autor: Equipo de desarrollo
 Última modificación: 12 de octubre de 2025
 ================================================================ */
 
+/* ===== VARIABLES - TEMA CLARO (DEFAULT) ===== */
+:root {
+  --bg-gradient-start: #f0f4ff;
+  --bg-gradient-end:   #dbe9ff;
+  --color-principal:   #0a2472;
+  --card-bg:           #ffffff;
+  --card-sombra:       rgba(0, 0, 0, 0.15);
+  --card-sombra-hover: rgba(0, 0, 0, 0.2);
+  --texto-tarjeta:     #333333;
+  --texto-sin-datos:   #555555;
+  --btn-bg:            #e6b421;
+  --btn-bg-hover:      #001c5a;
+  --btn-color:         #ffffff;
+
+  --transicion: 0.3s ease;
+}
+
+/* ===== VARIABLES - TEMA OSCURO ===== */
+[data-theme="dark"] {
+  --bg-gradient-start: #0d1b3e;
+  --bg-gradient-end:   #0a2472;
+  --color-principal:   #a8c4ff;
+  --card-bg:           #1a2e5a;
+  --card-sombra:       rgba(0, 0, 0, 0.4);
+  --card-sombra-hover: rgba(0, 0, 0, 0.6);
+  --texto-tarjeta:     #dbe9ff;
+  --texto-sin-datos:   #a8c4ff;
+  --btn-bg:            #e6b421;
+  --btn-bg-hover:      #a8c4ff;
+  --btn-color:         #0a2472;
+}
+
 /* ===== RESET BÁSICO ===== */
-* {
+*, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -15,36 +47,64 @@ Autor: Equipo de desarrollo
 /* ===== ESTILOS GENERALES ===== */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(to right, #f0f4ff, #dbe9ff); /* Fondo degradado suave */
-  color: #0a2472;
+  background: linear-gradient(to right, var(--bg-gradient-start), var(--bg-gradient-end));
+  color: var(--color-principal);
   display: flex;
-  justify-content: center; /* Centra el contenedor horizontalmente */
-  align-items: start;      /* Alinea al inicio verticalmente */
+  justify-content: center;
+  align-items: start;
   min-height: 100vh;
   padding: 40px 20px;
+  transition: background var(--transicion), color var(--transicion);
 }
 
 .contenedor-datos {
   width: 100%;
-  max-width: 1000px; /* Limita el ancho máximo del contenedor */
+  max-width: 1000px;
 }
 
 /* ===== BOTÓN VOLVER ===== */
 .boton-volver {
   margin-top: 50px;
   margin-bottom: 20px;
-  background-color: #e6b421;
-  color: white;
+  background-color: var(--btn-bg);
+  color: var(--btn-color);
   padding: 30px 18px;
   border: none;
   border-radius: 10px;
   font-size: 15px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color var(--transicion);
 }
 
 .boton-volver:hover {
-  background-color: #001c5a; /* Cambio de color al pasar el cursor */
+  background-color: var(--btn-bg-hover);
+  color: var(--btn-color);
+}
+
+/* ===== BOTÓN TOGGLE TEMA ===== */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--btn-bg);
+  border: 2px solid var(--color-principal);
+  color: var(--btn-color);
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 12px var(--card-sombra);
+  transition: all var(--transicion);
+  z-index: 1000;
+}
+
+.theme-toggle:hover {
+  background: var(--btn-bg-hover);
+  transform: scale(1.1) rotate(15deg);
 }
 
 /* ===== TÍTULO PRINCIPAL ===== */
@@ -52,44 +112,44 @@ body {
   text-align: center;
   font-size: 2.4rem;
   margin-bottom: 30px;
-  color: #0a2472;
+  color: var(--color-principal);
 }
 
 /* ===== LISTA DE TARJETAS DE DATOS ===== */
 .lista-datos {
   display: flex;
-  flex-wrap: wrap;      /* Permite que las tarjetas pasen a la siguiente fila */
+  flex-wrap: wrap;
   justify-content: center;
   gap: 25px;
 }
 
 /* ===== TARJETA INDIVIDUAL ===== */
 .tarjeta-dato {
-  background: white;
+  background: var(--card-bg);
   border-radius: 16px;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 15px var(--card-sombra);
   padding: 20px;
   width: 300px;
   min-height: 250px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform var(--transicion), box-shadow var(--transicion), background var(--transicion);
 }
 
 .tarjeta-dato:hover {
-  transform: translateY(-5px); /* Efecto de elevación al pasar el cursor */
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px var(--card-sombra-hover);
 }
 
 /* ===== TEXTO DENTRO DE LA TARJETA ===== */
 .texto-dato {
   font-size: 1.1rem;
-  color: #333;
-  text-align: left;    /* Alinea texto a la izquierda dentro de la tarjeta */
+  color: var(--texto-tarjeta);
+  text-align: left;
   margin-bottom: 15px;
-  width: 100%;         /* Ocupa todo el ancho de la tarjeta */
-  line-height: 1.5;    /* Mejora la legibilidad */
+  width: 100%;
+  line-height: 1.5;
 }
 
 /* ===== IMAGEN DENTRO DE LA TARJETA ===== */
@@ -98,13 +158,13 @@ body {
   height: auto;
   border-radius: 10px;
   max-height: 200px;
-  object-fit: cover;   /* Mantiene proporción de la imagen */
+  object-fit: cover;
 }
 
-/* ===== ESTILO PARA MENSAJE CUANDO NO HAY DATOS ===== */
+/* ===== MENSAJE CUANDO NO HAY DATOS ===== */
 .sin-datos {
   text-align: center;
   font-size: 1.2rem;
-  color: #555;
+  color: var(--texto-sin-datos);
   margin-top: 50px;
 }

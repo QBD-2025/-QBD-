@@ -2,7 +2,15 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Duelo de Ascenso</title>
+  
+  <!-- ✅ TEMA DÍA/NOCHE AGREGADO -->
+  <script>
+    const tema = localStorage.getItem('theme');
+    if (tema) document.documentElement.setAttribute('data-theme', tema);
+  </script>
+  
   <link rel="stylesheet" href="/css/examen-duelo.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
@@ -134,15 +142,17 @@
         <p><strong>Importante:</strong> Solo tienes una oportunidad. Una vez que inicies, debes completarlo. El duelo expira el: <strong><span id="fecha-limite"></span></strong></p>
       </div>
 
-      <!-- ✅ Advertencia de penalizaciones -->
-      <div class="duelo-warning" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); color: white;">
+      <!-- ✅ Advertencia de penalizaciones - SIN STYLE INLINE -->
+      <div class="duelo-warning warning-penalizaciones">
         <i class="fas fa-shield-alt"></i>
-        <p><strong>⚠️ Sistema Anti-Abandono:</strong></p>
-        <ul style="text-align: left; margin: 10px 0 0 20px;">
-          <li>Rendirse: -30% de tus puntos</li>
-          <li>Cerrar navegador: -40% de tus puntos</li>
-          <li>Desconexión: -20% de tus puntos (30 min para reconectar)</li>
-        </ul>
+        <div>
+          <p><strong>⚠️ Sistema Anti-Abandono:</strong></p>
+          <ul style="text-align: left; margin: 10px 0 0 20px;">
+            <li>Rendirse: -30% de tus puntos</li>
+            <li>Cerrar navegador: -40% de tus puntos</li>
+            <li>Desconexión: -20% de tus puntos (30 min para reconectar)</li>
+          </ul>
+        </div>
       </div>
 
       <!-- Botones -->
@@ -272,4 +282,4 @@
 <script src="/public/js/examenDueloIndivi.controller.js" defer></script>
 
 </body>
-</html>
+</html> 

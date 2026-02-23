@@ -253,12 +253,7 @@ function waitForUserInteraction() {
         introTimeline.play();
     };
 
-    if (localStorage.getItem("startClicked") === "true") {
-        localStorage.removeItem("startClicked");
-        startIntro();
-    } else {
-        document.addEventListener('click', startIntro);
-    }
+    startIntro()
 }
 
 // Limpiar al descargar la página

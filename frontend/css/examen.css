@@ -7,7 +7,12 @@
 /* ========================================
    1. VARIABLES ESPECÍFICAS DE EXAMEN
    Heredan las globales de styles.css
-   ======================================== */
+
+}   ======================================== */
+
+
+
+
 :root {
   --exam-header-height: 3.75rem; /* Header del examen móvil */
   --sidebar-width: 17.5rem;
@@ -924,5 +929,169 @@
     border: 1px solid #000;
     background: #fff;
     color: #000;
+  }
+}
+
+
+
+/* ========================================
+   RESPONSIVE SYSTEM (Mobile First)
+   ======================================== */
+
+/* ====== BASE MOBILE (hasta 480px) ====== */
+@media (max-width: 480px) {
+
+  /* Contenedores */
+  .pre-examen-container,
+  #examenContent {
+    padding: 15px;
+  }
+
+  /* Header */
+  .pre-examen-header,
+  #examenContent header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  /* Usuario top */
+  .top-player-section {
+    flex-direction: column;
+    text-align: center;
+    padding: 15px;
+  }
+
+  .top-player-card {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .top-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+
+  /* Info examen */
+  .exam-info {
+    grid-template-columns: 1fr;
+  }
+
+  .info-item {
+    font-size: 0.9rem;
+  }
+
+  /* Preguntas */
+  .contenedor-pregunta {
+    padding: 15px;
+  }
+
+  .contenedor-pregunta h3 {
+    font-size: 1rem;
+  }
+
+  /* Opciones */
+  .opciones {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .opciones button {
+    width: 100%;
+    font-size: 0.9rem;
+    padding: 12px;
+  }
+
+  /* Botones */
+  .btn-primary,
+  .btn-success {
+    width: 100%;
+    padding: 12px;
+    font-size: 0.95rem;
+  }
+
+  /* Modales */
+  .modal-content,
+  .modal-dificultad-content {
+    width: 90%;
+    padding: 20px;
+  }
+
+  /* Ranking */
+  .previous-result {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+}
+
+
+/* ====== TABLET (481px - 768px) ====== */
+@media (max-width: 768px) {
+
+  .pre-examen-header,
+  #examenContent header {
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  .top-player-section {
+    padding: 20px;
+  }
+
+  .exam-info {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+
+  .contenedor-pregunta {
+    padding: 20px;
+  }
+
+  .opciones button {
+    font-size: 0.95rem;
+  }
+
+  .modal-content,
+  .modal-dificultad-content {
+    width: 80%;
+  }
+}
+
+
+/* ====== LAPTOP (769px - 1200px) ====== */
+@media (max-width: 1200px) {
+
+  .pre-examen-container,
+  #examenContent {
+    padding: 25px;
+  }
+
+  .exam-info {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .contenedor-pregunta {
+    padding: 25px;
+  }
+}
+
+
+/* ====== PANTALLAS GRANDES ====== */
+@media (min-width: 1400px) {
+
+  .pre-examen-container,
+  #examenContent {
+    max-width: 1200px;
+    margin: auto;
+  }
+
+  .contenedor-pregunta {
+    padding: 30px;
+  }
+
+  .contenedor-pregunta h3 {
+    font-size: 1.3rem;
   }
 }

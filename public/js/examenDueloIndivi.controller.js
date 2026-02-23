@@ -439,7 +439,7 @@
     function mostrarPantallaAbandono(data) {
         document.body.innerHTML = `
             <div style="display: flex; justify-content: center; align-items: center; 
-                        min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        min-height: 100vh; background: linear-gradient(135deg, #2400f3 0%, #380070 100%);">
                 <div style="background: white; padding: 40px; border-radius: 20px; 
                             box-shadow: 0 10px 40px rgba(0,0,0,0.3); max-width: 500px; text-align: center;">
                     <div style="font-size: 80px; margin-bottom: 20px;">😔</div>
